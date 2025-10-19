@@ -1,0 +1,16 @@
+{
+  "name": "famly",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "update:claude:tree": "bash scripts/update-claude-tree.sh",
+    "claude": "pnpm run update:claude:tree && claude"
+  },
+  "keywords": [],
+  "author": "",
+  "private": true,
+  "license": "ISC",
+  "packageManager": "pnpm@10.7.1"
+}
