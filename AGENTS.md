@@ -1,12 +1,26 @@
-# Famly Project
+# famly Development Guidelines
 
-## Project Overview
+Auto-generated from all feature plans. Last updated: 2025-10-19
 
-This is a monorepo project using pnpm workspaces.
+## Active Technologies
+- TypeScript 5.6 (Node.js 20 runtime) (001-add-user-auth)
 
 ## Project Structure
+```
+src/
+tests/
+```
 
-<!-- TREE START -->
+## Commands
+npm test && npm run lint
+
+## Code Style
+TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
+
+## Recent Changes
+- 001-add-user-auth: Added TypeScript 5.6 (Node.js 20 runtime)
+
+<!-- MANUAL ADDITIONS START -->
 ```
 .
 ├── AGENTS.md
@@ -51,7 +65,8 @@ This is a monorepo project using pnpm workspaces.
 ├── pnpm-lock.yaml
 ├── pnpm-workspace.yaml
 ├── scripts
-│   └── update-claude-tree.sh
+│   ├── update-claude-tree.sh
+│   └── update-codex-tree.sh
 └── specs
     └── 001-add-user-auth
         ├── checklists
@@ -64,28 +79,9 @@ This is a monorepo project using pnpm workspaces.
         ├── research.md
         └── spec.md
 
-16 directories, 39 files
-```
-<!-- TREE END -->
-
-## Getting Started
-
-To use this file with Claude, run:
-
-```bash
-pnpm run claude
+16 directories, 40 files
 ```
 
-This will generate an up-to-date project tree and open Claude.
-
-## Development
-
-### Scripts
-
-- `pnpm run claude` - Update project tree and open Claude
-- `pnpm run update:claude:tree` - Update the project tree in this file
-
-
-### Task management
+## Task management
 
 We track work in Beads instead of Markdown. Run \`bd quickstart\` to see how.

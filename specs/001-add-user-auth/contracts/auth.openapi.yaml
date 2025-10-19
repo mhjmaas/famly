@@ -1,0 +1,167 @@
+openapi: 3.1.0
+info:
+  title: Famly Authentication API
+  version: 0.1.0
+  description: Email/password authentication endpoints backed by better-auth and MongoDB.
+servers:
+  - url: http://localhost:3000/v1
+paths:
+  /auth/register:
+    post:
+      summary: Register a new account
+      description: Creates a user using the supplied email and password; returns 201 when successful.
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Account created
+          headers:
+            Set-Cookie:
+              description: Optional session cookie when auto-login is enabled.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccessResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /auth/login:
+    post:
+      summary: Authenticate existing user
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          headers:
+            Set-Cookie:
+              description: Session cookie (httpOnly, secure, SameSite=lax)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthSuccessResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /auth/me:
+    get:
+      summary: Retrieve current authenticated user
+      operationId: getCurrentUser
+      security:
+        - SessionCookieAuth: []
+      responses:
+        '200':
+          description: Returns the current user's profile summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+        '401':
+          description: Missing or expired session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  securitySchemes:
+    SessionCookieAuth:
+      type: apiKey
+      in: cookie
+      name: famly_session
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Must be unique and is stored lowercase.
+        password:
+          type: string
+          minLength: 8
+          description: Clear-text password that will be hashed server-side.
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+    AuthSuccessResponse:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        sessionExpiresAt:
+          type: string
+          format: date-time
+          description: Expiration timestamp for the issued session.
+    ProfileResponse:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+  responses:
+    ValidationError:
+      description: Request failed validation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalError:
+      description: Unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ErrorResponse:
+      description: Standard error envelope
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - error
+            properties:
+              error:
+                type: string
