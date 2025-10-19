@@ -9,6 +9,9 @@
     "build:web": "pnpm --filter web build",
     "lint:web": "pnpm --filter web lint",
     "format:web": "pnpm --filter web format",
+    "dev:api": "pnpm --filter api dev",
+    "build:api": "pnpm --filter api build",
+    "test:api": "pnpm --filter api test",
     "update:claude:tree": "bash scripts/update-claude-tree.sh",
     "claude": "pnpm run update:claude:tree && claude",
     "codex": "export CODEX_HOME=./.codex && codex"

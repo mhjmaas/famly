@@ -9,13 +9,50 @@ This is a monorepo project using pnpm workspaces.
 <!-- TREE START -->
 ```
 .
+├── CLAUDE.md
+├── README.md
 ├── apps
-├── packages
-├── scripts
-│   └── update-claude-tree.sh
+│   ├── api
+│   │   ├── jest.config.js
+│   │   ├── package.json
+│   │   ├── src
+│   │   │   ├── app.ts
+│   │   │   ├── routes
+│   │   │   │   └── health.ts
+│   │   │   └── server.ts
+│   │   ├── tests
+│   │   │   ├── health.test.ts
+│   │   │   └── tsconfig.json
+│   │   ├── tsconfig.json
+│   │   └── tsconfig.spec.json
+│   └── web
+│       ├── README.md
+│       ├── biome.json
+│       ├── next-env.d.ts
+│       ├── next.config.ts
+│       ├── package.json
+│       ├── postcss.config.mjs
+│       ├── public
+│       │   ├── file.svg
+│       │   ├── globe.svg
+│       │   ├── next.svg
+│       │   ├── vercel.svg
+│       │   └── window.svg
+│       ├── src
+│       │   └── app
+│       │       ├── favicon.ico
+│       │       ├── globals.css
+│       │       ├── layout.tsx
+│       │       └── page.tsx
+│       └── tsconfig.json
 ├── package.json
+├── packages
+├── pnpm-lock.yaml
 ├── pnpm-workspace.yaml
-└── .gitignore
+└── scripts
+    └── update-claude-tree.sh
+
+12 directories, 31 files
 ```
 <!-- TREE END -->
 
