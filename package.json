@@ -5,8 +5,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:web": "pnpm --filter web dev",
+    "build:web": "pnpm --filter web build",
+    "lint:web": "pnpm --filter web lint",
+    "format:web": "pnpm --filter web format",
     "update:claude:tree": "bash scripts/update-claude-tree.sh",
-    "claude": "pnpm run update:claude:tree && claude"
+    "claude": "pnpm run update:claude:tree && claude",
+    "codex": "export CODEX_HOME=./.codex && codex"
   },
   "keywords": [],
   "author": "",
