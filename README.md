@@ -2,6 +2,26 @@
 
 Famly is a comprehensive family organization app designed to streamline task management, allowance tracking, shared calendar events, and more - all in one place. This README outlines the core features for our minimum viable product (MVP) as well as extended ideas for future development.
 
+## Getting started with development
+
+### Start database
+
+```bash
+docker run --name mongodb-famly -d -p 27017:27017 mongo
+```
+
+### Start API
+
+```bash
+pnpm run dev:api
+```
+
+### Start Web
+
+```bash
+pnpm run dev:web
+```
+
 ## 🧩 Core Features (MVP)
 
 ### 👥 Family Management

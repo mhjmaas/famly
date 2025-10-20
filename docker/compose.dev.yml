@@ -1,0 +1,45 @@
+version: '3.9'
+
+services:
+  mongo:
+    image: mongo:7.0-alpine
+    container_name: famly-mongo-dev
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_DATABASE: famly
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - --eval
+        - 'db.adminCommand("ping").ok'
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ../apps/api
+      dockerfile: docker/Dockerfile
+    container_name: famly-api-dev
+    ports:
+      - '3000:3000'
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/famly
+      NODE_ENV: development
+      PORT: 3000
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev_better_auth_secret_min_32_chars_required_here}
+      BETTER_AUTH_URL: http://localhost:3000
+    volumes:
+      - ../apps/api/src:/app/src
+      - ../apps/api/node_modules:/app/node_modules
+    command: npm run dev
+
+volumes:
+  mongo-data: {}

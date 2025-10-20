@@ -77,6 +77,8 @@ paths:
       operationId: getCurrentUser
       security:
         - SessionCookieAuth: []
+        - BearerAuth: []
+      description: Supports three authentication methods - cookie (web), JWT token (mobile/API - stateless), or session token (mobile/API - database-backed)
       responses:
         '200':
           description: Returns the current user's profile summary
@@ -92,12 +94,46 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
           $ref: '#/components/responses/InternalError'
+  /auth/token:
+    get:
+      summary: Refresh JWT access token
+      operationId: refreshToken
+      security:
+        - BearerAuth: []
+      description: Exchange a session token for a new JWT access token. Use session token (not JWT) in Authorization header.
+      responses:
+        '200':
+          description: New JWT access token issued
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - token
+                properties:
+                  token:
+                    type: string
+                    description: New JWT access token (valid for 15 minutes)
+        '401':
+          description: Invalid or expired session token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
 components:
   securitySchemes:
     SessionCookieAuth:
       type: apiKey
       in: cookie
-      name: famly_session
+      name: better-auth.session_token
+      description: HTTP-only session cookie for web clients
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token or session token for mobile/API clients
   schemas:
     RegisterRequest:
       type: object
@@ -127,20 +163,87 @@ components:
           minLength: 8
     AuthSuccessResponse:
       type: object
+      required:
+        - user
+        - session
       properties:
-        email:
+        user:
+          type: object
+          required:
+            - id
+            - email
+            - emailVerified
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+              description: Unique user identifier
+            email:
+              type: string
+              format: email
+            name:
+              type: string
+              description: User's display name
+            emailVerified:
+              type: boolean
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+        session:
+          type: object
+          required:
+            - expiresAt
+          properties:
+            expiresAt:
+              type: string
+              format: date-time
+              description: Session expiration timestamp
+        accessToken:
           type: string
-          format: email
-        sessionExpiresAt:
+          nullable: true
+          description: JWT token (short-lived, 15 min) for stateless API authentication. Use in Authorization Bearer header for API requests.
+        sessionToken:
           type: string
-          format: date-time
-          description: Expiration timestamp for the issued session.
+          nullable: true
+          description: Session token (long-lived, 14 days) for refreshing access tokens. Use only with /auth/token endpoint.
     ProfileResponse:
       type: object
+      required:
+        - user
+        - authType
       properties:
-        email:
+        user:
+          type: object
+          required:
+            - id
+            - email
+            - emailVerified
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: string
+            email:
+              type: string
+              format: email
+            name:
+              type: string
+            emailVerified:
+              type: boolean
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+        authType:
           type: string
-          format: email
+          enum: [cookie, bearer-jwt, bearer-session]
+          description: Authentication method used for this request
   responses:
     ValidationError:
       description: Request failed validation

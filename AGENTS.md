@@ -28,16 +28,66 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 ├── README.md
 ├── apps
 │   ├── api
+│   │   ├── README.md
+│   │   ├── TESTING.md
+│   │   ├── docker
+│   │   │   └── Dockerfile
+│   │   ├── jest.config.e2e.js
 │   │   ├── jest.config.js
+│   │   ├── jest.config.unit.js
 │   │   ├── package.json
 │   │   ├── src
 │   │   │   ├── app.ts
+│   │   │   ├── config
+│   │   │   │   ├── env.ts
+│   │   │   │   └── settings.ts
+│   │   │   ├── infra
+│   │   │   │   └── mongo
+│   │   │   │       ├── client.ts
+│   │   │   │       └── indexes.ts
+│   │   │   ├── lib
+│   │   │   │   └── http-error.ts
+│   │   │   ├── middleware
+│   │   │   │   └── error-handler.ts
+│   │   │   ├── modules
+│   │   │   │   └── auth
+│   │   │   │       ├── better-auth.ts
+│   │   │   │       ├── middleware
+│   │   │   │       │   └── authenticate.ts
+│   │   │   │       └── routes
+│   │   │   │           ├── auth.router.ts
+│   │   │   │           ├── login.route.ts
+│   │   │   │           ├── me.route.ts
+│   │   │   │           └── register.route.ts
 │   │   │   ├── routes
 │   │   │   │   └── health.ts
 │   │   │   └── server.ts
 │   │   ├── tests
+│   │   │   ├── e2e
+│   │   │   │   ├── auth
+│   │   │   │   │   ├── login.e2e.test.ts
+│   │   │   │   │   ├── me.e2e.test.ts
+│   │   │   │   │   └── register.e2e.test.ts
+│   │   │   │   └── setup
+│   │   │   │       └── testcontainers-setup.ts
 │   │   │   ├── health.test.ts
-│   │   │   └── tsconfig.json
+│   │   │   ├── integration
+│   │   │   │   └── auth
+│   │   │   │       ├── register-conflict.test.ts
+│   │   │   │       └── register-success.test.ts
+│   │   │   ├── setup
+│   │   │   │   ├── global-setup.ts
+│   │   │   │   ├── global-teardown.ts
+│   │   │   │   ├── jest-setup.ts
+│   │   │   │   └── test-app.ts
+│   │   │   ├── tsconfig.json
+│   │   │   └── unit
+│   │   │       ├── modules
+│   │   │       │   └── auth
+│   │   │       │       └── user.repository.test.ts
+│   │   │       └── validators
+│   │   │           ├── login.validator.test.ts
+│   │   │           └── register.validator.test.ts
 │   │   ├── tsconfig.json
 │   │   └── tsconfig.spec.json
 │   └── web
@@ -60,6 +110,10 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │       ├── layout.tsx
 │       │       └── page.tsx
 │       └── tsconfig.json
+├── docker
+│   ├── compose.dev.yml
+│   └── scripts
+│       └── mongo-init.js
 ├── package.json
 ├── packages
 ├── pnpm-lock.yaml
@@ -77,11 +131,8 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
         ├── plan.md
         ├── quickstart.md
         ├── research.md
-        └── spec.md
+        ├── spec.md
+        └── tasks.md
 
-16 directories, 40 files
+38 directories, 73 files
 ```
-
-## Task management
-
-We track work in Beads instead of Markdown. Run \`bd quickstart\` to see how.

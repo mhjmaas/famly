@@ -1,0 +1,116 @@
+import { Router, Request, Response, NextFunction } from 'express';
+import { fromNodeHeaders } from 'better-auth/node';
+import { getAuth } from '../better-auth';
+import { HttpError } from '@lib/http-error';
+import { logger } from '@lib/logger';
+
+/**
+ * Login route using better-auth's built-in email/password sign-in.
+ *
+ * Request body:
+ * - email: string (required)
+ * - password: string (required)
+ * - rememberMe: boolean (optional, extends session duration)
+ *
+ * Response (200):
+ * - user: { id, email, name, emailVerified, createdAt, updatedAt }
+ * - session: { expiresAt }
+ * - accessToken: JWT token (short-lived, stateless, for API requests)
+ * - sessionToken: Session token (long-lived, database-backed, for token refresh)
+ *
+ * Response (401): Invalid credentials
+ */
+export function createLoginRoute(): Router {
+  const router = Router();
+
+  router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const auth = getAuth();
+
+      // Use better-auth's built-in signIn method
+      const result = await auth.api.signInEmail({
+        body: {
+          email: req.body.email,
+          password: req.body.password,
+          rememberMe: req.body.rememberMe || false,
+        },
+        headers: fromNodeHeaders(req.headers),
+        asResponse: true,
+      });
+
+      // Copy session cookie from better-auth response to our response (for web)
+      // MUST be done BEFORE sending JSON response
+      const setCookieHeader = result.headers.get('set-cookie');
+      if (setCookieHeader) {
+        res.setHeader('set-cookie', setCookieHeader);
+      }
+
+      // Parse the response body
+      const data = await result.json();
+
+      if (!data.user) {
+        throw HttpError.unauthorized('Invalid email or password');
+      }
+
+      // Extract session token from Better Auth response
+      const sessionToken = data.token; // Session token (long-lived, database-backed)
+      
+      // Get JWT access token by calling the token endpoint with the session
+      let accessToken: string | null = null;
+      try {
+        const tokenResult = await auth.api.getToken({
+          headers: {
+            authorization: `Bearer ${sessionToken}`,
+          },
+        });
+        accessToken = tokenResult.token;
+      } catch (error) {
+        logger.error('Failed to generate JWT token:', error);
+        // Continue without JWT - client can get it later via /v1/auth/token
+      }
+      
+      // Set tokens in response headers for clients that prefer header extraction
+      if (sessionToken) {
+        res.setHeader('set-auth-token', sessionToken);
+      }
+      if (accessToken) {
+        res.setHeader('set-auth-jwt', accessToken);
+      }
+
+      // Return user data with dual-token strategy
+      res.status(200).json({
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.name,
+          emailVerified: data.user.emailVerified,
+          createdAt: data.user.createdAt,
+          updatedAt: data.user.updatedAt,
+        },
+        session: {
+          expiresAt: data.session?.expiresAt || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        },
+        // Access token (JWT): Short-lived, stateless, for API requests
+        accessToken: accessToken || null,
+        // Session token: Long-lived, database-backed, for token refresh
+        sessionToken: sessionToken || null,
+      });
+    } catch (error) {
+      // Handle better-auth errors
+      if (error && typeof error === 'object' && 'status' in error) {
+        const authError = error as any;
+        if (authError.status === 401 || authError.message?.includes('Invalid')) {
+          next(HttpError.unauthorized('Invalid email or password'));
+        } else if (authError.status === 400) {
+          next(HttpError.badRequest(authError.message || 'Invalid login data'));
+        } else {
+          next(error);
+        }
+      } else {
+        next(error);
+      }
+    }
+  });
+
+  return router;
+}

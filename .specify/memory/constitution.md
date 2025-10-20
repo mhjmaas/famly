@@ -1,11 +1,12 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 1.0.0 → 1.0.1
+Version change: 1.0.1 → 1.1.0
 Modified principles:
-  - Principle II (DRY): Added third exception criterion and "Rule of Three" guidance
-  - Enhanced rationale to explicitly acknowledge tension with SOLID principles
-Added sections: N/A
+  - Introduced Principle VI (KISS) emphasizing simple, minimal solutions and discouraging overengineering
+  - Expanded rationale to highlight cognitive load considerations
+Added sections:
+  - KISS (Keep It Simple, Stupid)
 Removed sections: N/A
 Templates requiring updates:
   ✅ plan-template.md - No updates needed (Constitution Check remains valid)
@@ -109,6 +110,18 @@ Code MUST be written for long-term maintainability, not short-term convenience:
 
 **Rationale**: Code is read far more often than it is written. Maintainable code reduces onboarding time, enables faster feature development, and minimizes bugs introduced during changes.
 
+### VI. KISS (Keep It Simple, Stupid)
+
+Solutions MUST favor simplicity and minimalism to reduce cognitive load:
+
+- Implement the smallest viable change that fulfills the requirements before considering additional abstractions.
+- Prefer straightforward control flow, data structures, and dependency graphs unless complexity is justified in writing.
+- Avoid speculative features, hooks, or extension points until a real need is proven by the product roadmap or third confirmed use case.
+- Replace intricate patterns with simpler alternatives when they offer equivalent clarity, safety, and performance.
+- Remove obsolete code paths, toggles, and indirection layers once their purpose expires.
+
+**Rationale**: Simple, elegant code is easier to comprehend, test, and maintain for both humans and tooling. Minimizing moving parts limits regression risk, speeds up reviews, and keeps the system adaptable to change.
+
 ## Quality Standards
 
 ### Code Quality Metrics
@@ -170,4 +183,4 @@ Constitution versions follow semantic versioning:
 - **MINOR**: New principles added or existing principles materially expanded
 - **PATCH**: Clarifications, typo fixes, non-semantic wording improvements
 
-**Version**: 1.0.1 | **Ratified**: 2025-10-19 | **Last Amended**: 2025-10-19
+**Version**: 1.1.0 | **Ratified**: 2025-10-19 | **Last Amended**: 2025-10-20
