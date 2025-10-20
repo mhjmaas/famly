@@ -1,12 +1,26 @@
-# Famly Project
+# famly Development Guidelines
 
-## Project Overview
+Auto-generated from all feature plans. Last updated: 2025-10-19
 
-This is a monorepo project using pnpm workspaces.
+## Active Technologies
+- TypeScript 5.6 (Node.js 20 runtime) (001-add-user-auth)
 
 ## Project Structure
+```
+src/
+tests/
+```
 
-<!-- TREE START -->
+## Commands
+npm test && npm run lint
+
+## Code Style
+TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
+
+## Recent Changes
+- 001-add-user-auth: Added TypeScript 5.6 (Node.js 20 runtime)
+
+<!-- MANUAL ADDITIONS START -->
 ```
 .
 ├── AGENTS.md
@@ -15,6 +29,7 @@ This is a monorepo project using pnpm workspaces.
 ├── apps
 │   ├── api
 │   │   ├── README.md
+│   │   ├── TESTING.md
 │   │   ├── docker
 │   │   │   └── Dockerfile
 │   │   ├── jest.config.e2e.js
@@ -28,7 +43,8 @@ This is a monorepo project using pnpm workspaces.
 │   │   │   │   └── settings.ts
 │   │   │   ├── infra
 │   │   │   │   └── mongo
-│   │   │   │       └── client.ts
+│   │   │   │       ├── client.ts
+│   │   │   │       └── indexes.ts
 │   │   │   ├── lib
 │   │   │   │   └── http-error.ts
 │   │   │   ├── middleware
@@ -36,18 +52,13 @@ This is a monorepo project using pnpm workspaces.
 │   │   │   ├── modules
 │   │   │   │   └── auth
 │   │   │   │       ├── better-auth.ts
-│   │   │   │       ├── domain
-│   │   │   │       │   └── user.ts
 │   │   │   │       ├── middleware
-│   │   │   │       │   ├── authenticate.ts
-│   │   │   │       │   └── jwt-verify.ts
-│   │   │   │       ├── routes
-│   │   │   │       │   ├── auth.router.ts
-│   │   │   │       │   ├── login.route.ts
-│   │   │   │       │   ├── me.route.ts
-│   │   │   │       │   └── register.route.ts
-│   │   │   │       └── validators
-│   │   │   │           └── login.validator.ts
+│   │   │   │       │   └── authenticate.ts
+│   │   │   │       └── routes
+│   │   │   │           ├── auth.router.ts
+│   │   │   │           ├── login.route.ts
+│   │   │   │           ├── me.route.ts
+│   │   │   │           └── register.route.ts
 │   │   │   ├── routes
 │   │   │   │   └── health.ts
 │   │   │   └── server.ts
@@ -57,17 +68,26 @@ This is a monorepo project using pnpm workspaces.
 │   │   │   │   │   ├── login.e2e.test.ts
 │   │   │   │   │   ├── me.e2e.test.ts
 │   │   │   │   │   └── register.e2e.test.ts
-│   │   │   │   ├── health.e2e.test.ts
 │   │   │   │   └── setup
 │   │   │   │       └── testcontainers-setup.ts
+│   │   │   ├── health.test.ts
+│   │   │   ├── integration
+│   │   │   │   └── auth
+│   │   │   │       ├── register-conflict.test.ts
+│   │   │   │       └── register-success.test.ts
 │   │   │   ├── setup
 │   │   │   │   ├── global-setup.ts
 │   │   │   │   ├── global-teardown.ts
-│   │   │   │   └── jest-setup.ts
+│   │   │   │   ├── jest-setup.ts
+│   │   │   │   └── test-app.ts
 │   │   │   ├── tsconfig.json
 │   │   │   └── unit
-│   │   │       └── lib
-│   │   │           └── http-error.test.ts
+│   │   │       ├── modules
+│   │   │       │   └── auth
+│   │   │       │       └── user.repository.test.ts
+│   │   │       └── validators
+│   │   │           ├── login.validator.test.ts
+│   │   │           └── register.validator.test.ts
 │   │   ├── tsconfig.json
 │   │   └── tsconfig.spec.json
 │   └── web
@@ -114,21 +134,5 @@ This is a monorepo project using pnpm workspaces.
         ├── spec.md
         └── tasks.md
 
-36 directories, 69 files
+38 directories, 73 files
 ```
-<!-- TREE END -->
-
-## Development
-
-### Scripts
-
-- `pnpm run claude` - Update project tree and open Claude
-- `pnpm run update:claude:tree` - Update the project tree in this file
-
-### Task management
-
-We track work in Beads instead of Markdown. Run \`bd quickstart\` to see how.
-
-### Document writing
-
-You will not write summary markdown documents unless you are explicitly asked to by the user.
