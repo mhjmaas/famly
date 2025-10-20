@@ -1,15 +1,18 @@
 /** @type {import('jest').Config} */
 module.exports = {
+  displayName: 'unit',
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/tests'],
-  collectCoverageFrom: ['src/**/*.ts'],
-  coverageDirectory: 'coverage',
+  roots: ['<rootDir>/tests/unit'],
+  testMatch: ['**/*.test.ts'],
+  collectCoverageFrom: [
+    'src/**/*.ts',
+    '!src/**/*.d.ts',
+    '!src/**/index.ts',
+  ],
+  coverageDirectory: 'coverage/unit',
   clearMocks: true,
   moduleFileExtensions: ['ts', 'js', 'json', 'node'],
-  setupFilesAfterEnv: ['<rootDir>/tests/setup/jest-setup.ts'],
-  globalSetup: '<rootDir>/tests/setup/global-setup.ts',
-  globalTeardown: '<rootDir>/tests/setup/global-teardown.ts',
   transform: {
     '^.+\\.ts$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }]
   },

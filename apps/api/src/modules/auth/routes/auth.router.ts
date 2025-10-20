@@ -1,0 +1,25 @@
+import { Router } from 'express';
+import { toNodeHandler } from 'better-auth/node';
+import { getAuth } from '../better-auth';
+import { createRegisterRoute } from './register.route';
+import { createLoginRoute } from './login.route';
+import { createMeRoute } from './me.route';
+
+export function createAuthRouter(): Router {
+  const router = Router();
+
+  // Custom routes (override Better Auth defaults for better DX)
+  router.use(createRegisterRoute());
+  router.use(createLoginRoute());
+  router.use(createMeRoute());
+
+  // Mount Better Auth handler for all other endpoints:
+  // - GET /token - Get new JWT access token
+  // - GET /jwks - Get public keys for JWT verification
+  // - POST /sign-out - Sign out and invalidate session
+  // - GET /get-session - Get current session
+  // And many more: https://www.better-auth.com/docs/concepts/api
+  router.all('*', toNodeHandler(getAuth()));
+
+  return router;
+}
