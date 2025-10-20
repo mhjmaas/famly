@@ -4,6 +4,15 @@
 
 This is a monorepo project using pnpm workspaces.
 
+## Active Technologies
+- TypeScript 5.6 (Node.js 20 runtime) (001-add-user-auth)
+- TypeScript 5.6 (Node.js 20 runtime) + Express, better-auth (bearer + JWT plugins), MongoDB driver, Zod, Winston (002-add-family-management)
+- MongoDB (shared `famly` database via `infra/mongo/client`) (002-add-family-management)
+
+## Recent Changes
+- 002-add-family-management: Added TypeScript 5.6 (Node.js 20 runtime) + Express, better-auth (bearer + JWT plugins), MongoDB driver, Zod, Winston
+- 001-add-user-auth: Added TypeScript 5.6 (Node.js 20 runtime)
+
 ## Project Structure
 
 <!-- TREE START -->
@@ -30,7 +39,8 @@ This is a monorepo project using pnpm workspaces.
 │   │   │   │   └── mongo
 │   │   │   │       └── client.ts
 │   │   │   ├── lib
-│   │   │   │   └── http-error.ts
+│   │   │   │   ├── http-error.ts
+│   │   │   │   └── logger.ts
 │   │   │   ├── middleware
 │   │   │   │   └── error-handler.ts
 │   │   │   ├── modules
@@ -67,7 +77,8 @@ This is a monorepo project using pnpm workspaces.
 │   │   │   ├── tsconfig.json
 │   │   │   └── unit
 │   │   │       └── lib
-│   │   │           └── http-error.test.ts
+│   │   │           ├── http-error.test.ts
+│   │   │           └── logger.test.ts
 │   │   ├── tsconfig.json
 │   │   └── tsconfig.spec.json
 │   └── web
@@ -93,7 +104,6 @@ This is a monorepo project using pnpm workspaces.
 ├── docker
 │   ├── compose.dev.yml
 │   └── scripts
-│       └── mongo-init.js
 ├── package.json
 ├── packages
 ├── pnpm-lock.yaml
@@ -102,11 +112,22 @@ This is a monorepo project using pnpm workspaces.
 │   ├── update-claude-tree.sh
 │   └── update-codex-tree.sh
 └── specs
-    └── 001-add-user-auth
+    ├── 001-add-user-auth
+    │   ├── checklists
+    │   │   └── requirements.md
+    │   ├── contracts
+    │   │   └── auth.openapi.yaml
+    │   ├── data-model.md
+    │   ├── plan.md
+    │   ├── quickstart.md
+    │   ├── research.md
+    │   ├── spec.md
+    │   └── tasks.md
+    └── 002-add-family-management
         ├── checklists
         │   └── requirements.md
         ├── contracts
-        │   └── auth.openapi.yaml
+        │   └── family.openapi.yaml
         ├── data-model.md
         ├── plan.md
         ├── quickstart.md
@@ -114,7 +135,7 @@ This is a monorepo project using pnpm workspaces.
         ├── spec.md
         └── tasks.md
 
-36 directories, 69 files
+39 directories, 78 files
 ```
 <!-- TREE END -->
 
