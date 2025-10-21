@@ -21,3 +21,29 @@ settings {
   encodeUrl: true
   timeout: 0
 }
+
+script:post-response {
+  try {
+    const body = res.body;
+    const fromHeaders = (headerName) => {
+      const headers = res.headers || {};
+      const headerValue = Object.keys(headers).find(
+        (name) => name.toLowerCase() === headerName.toLowerCase()
+      );
+      return headerValue ? headers[headerValue] : null;
+    };
+
+    const accessToken = body?.accessToken || fromHeaders('set-auth-jwt');
+    const sessionToken =
+      body?.sessionToken || body?.session?.token || fromHeaders('set-auth-token');
+
+    if (sessionToken) {
+      bru.setEnvVar('sessionToken', sessionToken);
+    }
+    if (accessToken) {
+      bru.setEnvVar('accessToken', accessToken);
+    }
+  } catch (error) {
+    console.log('Failed to persist auth tokens: ' + error?.message);
+  }
+}
