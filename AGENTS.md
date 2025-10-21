@@ -19,9 +19,9 @@ pnpm test && pnpm run lint
 TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 
 ## Recent Changes
+- 004-remove-family-member: Added TypeScript 5.6 on Node.js 20 + Express 4, better-auth (bearer + JWT plugins), MongoDB Node driver, Zod, Winston
 - 003-add-family-member: Added TypeScript 5.6 on Node.js 20 + Express 4, better-auth (bearer + JWT plugins), MongoDB Node driver, Zod, Winston
 - 002-add-family-management: Added TypeScript 5.6 (Node.js 20 runtime) + Express, better-auth (bearer + JWT plugins), MongoDB driver, Zod, Winston
-- 001-add-user-auth: Added TypeScript 5.6 (Node.js 20 runtime)
 
 <!-- MANUAL ADDITIONS START -->
 ```

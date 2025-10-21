@@ -1,0 +1,16 @@
+meta {
+  name: delete member
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{baseUrl}}/v1/families/68f7e33bad37ac0dd2058d77/members/68f7f660f1fa0297d1d4f56a
+  body: json
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

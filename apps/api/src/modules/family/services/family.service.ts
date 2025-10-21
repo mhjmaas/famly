@@ -253,4 +253,77 @@ export class FamilyService {
       throw error;
     }
   }
+
+  /**
+   * Remove a member from a family and enforce parent guardrails
+   *
+   * @param familyId - Family the member belongs to
+   * @param removedBy - Parent initiating the removal
+   * @param memberId - User being removed from the family
+   */
+  async removeFamilyMember(
+    familyId: ObjectId,
+    removedBy: ObjectId,
+    memberId: ObjectId
+  ): Promise<void> {
+    try {
+      logger.info('Removing family member', {
+        familyId: familyId.toString(),
+        removedBy: removedBy.toString(),
+        memberId: memberId.toString(),
+      });
+
+      const family = await this.familyRepository.findById(familyId);
+      if (!family) {
+        throw HttpError.notFound('Family not found');
+      }
+
+      const initiatorMembership = await this.membershipRepository.findByFamilyAndUser(
+        familyId,
+        removedBy
+      );
+
+      if (!initiatorMembership || initiatorMembership.role !== FamilyRole.Parent) {
+        throw HttpError.forbidden('Only parents can remove family members');
+      }
+
+      const targetMembership = await this.membershipRepository.findByFamilyAndUser(
+        familyId,
+        memberId
+      );
+
+      if (!targetMembership) {
+        throw HttpError.notFound('Member not found in family');
+      }
+
+      if (targetMembership.role === FamilyRole.Parent) {
+        const memberships = await this.membershipRepository.findByFamily(familyId);
+        const parentCount = memberships.filter((membership) => membership.role === FamilyRole.Parent)
+          .length;
+
+        if (parentCount <= 1) {
+          throw HttpError.conflict('Family must retain at least one parent');
+        }
+      }
+
+      const deleted = await this.membershipRepository.deleteMembership(familyId, memberId);
+      if (!deleted) {
+        throw HttpError.notFound('Member not found in family');
+      }
+
+      logger.info('Family member removed successfully', {
+        familyId: familyId.toString(),
+        removedBy: removedBy.toString(),
+        memberId: memberId.toString(),
+      });
+    } catch (error) {
+      logger.error('Failed to remove family member', {
+        familyId: familyId.toString(),
+        removedBy: removedBy.toString(),
+        memberId: memberId.toString(),
+        error,
+      });
+      throw error;
+    }
+  }
 }
