@@ -71,6 +71,13 @@ describe('E2E: GET /v1/families', () => {
       });
       expect(listResponse.body[0]).toHaveProperty('familyId');
       expect(listResponse.body[0]).toHaveProperty('linkedAt');
+      expect(Array.isArray(listResponse.body[0].members)).toBe(true);
+      expect(listResponse.body[0].members).toHaveLength(1);
+      expect(listResponse.body[0].members[0]).toMatchObject({
+        memberId: expect.any(String),
+        role: 'Parent',
+      });
+      expect(listResponse.body[0].members[0]).toHaveProperty('linkedAt');
     });
 
     it('should return multiple families in correct order (newest first)', async () => {
@@ -121,6 +128,8 @@ describe('E2E: GET /v1/families', () => {
       // All should be Parent role
       listResponse.body.forEach((family: any) => {
         expect(family.role).toBe('Parent');
+        expect(Array.isArray(family.members)).toBe(true);
+        expect(family.members.length).toBeGreaterThan(0);
       });
     });
 
@@ -150,6 +159,110 @@ describe('E2E: GET /v1/families', () => {
       expect(listResponse.status).toBe(200);
       expect(listResponse.body).toHaveLength(1);
       expect(listResponse.body[0].name).toBeNull();
+      expect(Array.isArray(listResponse.body[0].members)).toBe(true);
+      expect(listResponse.body[0].members.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Members Array', () => {
+    it('should include all family members with correct details', async () => {
+      const timestamp = Date.now();
+
+      // 1. Register parent and create family
+      const parentRes = await request(baseUrl)
+        .post('/v1/auth/register')
+        .send({
+          email: `parent-${timestamp}@example.com`,
+          password: 'parentpass123',
+          name: 'Parent User',
+        });
+
+      const parentToken = parentRes.body.accessToken || parentRes.body.sessionToken;
+      const parentId = parentRes.body.user.id;
+
+      const familyRes = await request(baseUrl)
+        .post('/v1/families')
+        .set('Authorization', `Bearer ${parentToken}`)
+        .send({ name: 'Test Family' });
+
+      const familyId = familyRes.body.familyId;
+
+      // 2. Add a child member
+      const childRes = await request(baseUrl)
+        .post(`/v1/families/${familyId}/members`)
+        .set('Authorization', `Bearer ${parentToken}`)
+        .send({
+          email: `child-${timestamp}@example.com`,
+          password: 'childpass123',
+          role: 'Child',
+        });
+
+      const childId = childRes.body.memberId;
+
+      // 3. Add a co-parent
+      const coParentRes = await request(baseUrl)
+        .post(`/v1/families/${familyId}/members`)
+        .set('Authorization', `Bearer ${parentToken}`)
+        .send({
+          email: `coparent-${timestamp}@example.com`,
+          password: 'coparentpass123',
+          role: 'Parent',
+        });
+
+      const coParentId = coParentRes.body.memberId;
+
+      // 4. List families and verify members array
+      const listResponse = await request(baseUrl)
+        .get('/v1/families')
+        .set('Authorization', `Bearer ${parentToken}`);
+
+      expect(listResponse.status).toBe(200);
+      expect(listResponse.body).toHaveLength(1);
+
+      const family = listResponse.body[0];
+
+      // Verify family structure
+      expect(family).toMatchObject({
+        familyId,
+        name: 'Test Family',
+        role: 'Parent',
+        linkedAt: expect.any(String),
+      });
+
+      // Verify members array exists and has correct length
+      expect(Array.isArray(family.members)).toBe(true);
+      expect(family.members).toHaveLength(3);
+
+      // Verify all members have required fields
+      family.members.forEach((member: any) => {
+        expect(member).toMatchObject({
+          memberId: expect.any(String),
+          role: expect.stringMatching(/^(Parent|Child)$/),
+          linkedAt: expect.any(String),
+        });
+      });
+
+      // Verify specific member details
+      const parentMember = family.members.find((m: any) => m.memberId === parentId);
+      const childMember = family.members.find((m: any) => m.memberId === childId);
+      const coParentMember = family.members.find((m: any) => m.memberId === coParentId);
+
+      expect(parentMember).toBeDefined();
+      expect(parentMember.role).toBe('Parent');
+      expect(parentMember).not.toHaveProperty('addedBy'); // Original creator has no addedBy
+
+      expect(childMember).toBeDefined();
+      expect(childMember.role).toBe('Child');
+      expect(childMember.addedBy).toBe(parentId);
+
+      expect(coParentMember).toBeDefined();
+      expect(coParentMember.role).toBe('Parent');
+      expect(coParentMember.addedBy).toBe(parentId);
+
+      // Verify ISO date format for linkedAt
+      family.members.forEach((member: any) => {
+        expect(new Date(member.linkedAt).toISOString()).toBe(member.linkedAt);
+      });
     });
   });
 
@@ -183,8 +296,11 @@ describe('E2E: GET /v1/families', () => {
 
       const listedFamily = listResponse.body[0];
 
-      // Verify exact match
-      expect(listedFamily).toEqual(createdFamily);
+      // Verify base payload matches create response and members array is included
+      const { members, ...familyWithoutMembers } = listedFamily;
+      expect(familyWithoutMembers).toEqual(createdFamily);
+      expect(Array.isArray(members)).toBe(true);
+      expect(members.length).toBeGreaterThan(0);
     });
   });
 

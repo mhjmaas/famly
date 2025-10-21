@@ -15,6 +15,7 @@ export * from './repositories/family-membership.repository';
 
 // Validator exports
 export * from './validators/create-family.validator';
+export * from './validators/add-family-member.validator';
 
 // Route exports
 export * from './routes';
