@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Famly API - Family Member Removal
   version: 0.1.0
-  description: Parent-managed endpoint for unlinking an existing member from a family while preserving audit history.
+  description: Parent-managed endpoint for unlinking an existing member from a family while keeping membership records consistent.
 servers:
   - url: https://api.famly.local/v1
 paths:

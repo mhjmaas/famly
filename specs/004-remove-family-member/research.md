@@ -14,9 +14,9 @@
   - MongoDB transaction with aggregation pipeline to enforce parent count (rejected: unnecessary complexity for single-document deletion when simple pre-check suffices).
   - Denormalized parent counter on the family document (rejected: adds write contention and drift risk for minimal benefit).
 
-## Decision 3: Auditable removal history
-- **Decision**: Insert a removal record into a new `family_membership_removals` collection containing family ID, user ID, removedBy, and removedAt timestamp.
-- **Rationale**: Provides durable audit trail separate from active memberships, mirrors the additive audit field (`addedBy`) and supports future reporting without polluting the active membership schema.
+## Decision 3: Storage strategy for removals
+- **Decision**: Rely on deleting the existing family membership document; no additional audit collection or soft-delete markers are introduced.
+- **Rationale**: Matches the request to keep the flow simple, avoids redundant data, and leverages the unique index to guarantee clean state for future re-joins.
 - **Alternatives Considered**:
-  - Rely solely on application logs (rejected: logs are ephemeral and hard to query for support teams).
-  - Add soft-delete fields (`removedAt`, `removedBy`) to the membership document (rejected: conflicts with spec requirement to sever membership and complicates unique index enforcement).
+  - Dedicated removal audit collection (rejected: over-engineered for current requirements).
+  - Soft-delete flags on membership records (rejected: adds complexity to queries and index enforcement without tangible benefit).

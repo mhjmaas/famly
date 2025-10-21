@@ -7,7 +7,7 @@
 
 ## Summary
 
-Enable parent-role members to unlink existing family members while enforcing guardrails that prevent orphaning families, revoke access immediately, and capture auditable removal events. The feature will extend the existing family service, repositories, and Express routes under `apps/api`, reusing established authorization middleware and validator patterns.
+Enable parent-role members to unlink existing family members while enforcing guardrails that prevent orphaning families and ensuring the roster reflects changes immediately. The feature will extend the existing family service, repositories, and Express routes under `apps/api`, reusing established authorization middleware and validator patterns.
 
 ## Technical Context
 

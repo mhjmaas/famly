@@ -2,7 +2,7 @@
 
 ## Prerequisites
 - Node.js 20 with pnpm installed.
-- MongoDB running via `docker/compose.dev.yml` or Testcontainers.
+- MongoDB available via `docker/compose.dev.yml` or Testcontainers runtime (required for E2E tests).
 - Parent session token available (sign up via `/v1/auth/register`).
 
 ## Local Development
@@ -16,7 +16,13 @@
      -H "Content-Type: application/json" \
      -d '{"email":"parent@example.com","password":"parentpass123","name":"Parent"}'
    ```
-3. Add at least two parents or a parent plus child to the family using the existing add-member endpoint.
+3. Add at least one additional member so the delete scenarios have targets:
+   ```bash
+   curl -X POST http://localhost:3333/v1/families/<familyId>/members \
+     -H "Authorization: Bearer <parent-session-or-jwt>" \
+     -H "Content-Type: application/json" \
+     -d '{"email":"child@example.com","password":"childpass123","role":"Child"}'
+   ```
 4. Remove a member as a parent:
    ```bash
    curl -X DELETE http://localhost:3333/v1/families/<familyId>/members/<memberUserId> \
@@ -28,13 +34,15 @@
    - Removed user can no longer access parent-only endpoints (should receive 403).
 
 ## Testing
-1. Unit tests for validator/service helpers:
+1. Unit tests for validators and helpers:
    ```bash
-   pnpm --filter api test:unit -- family
+   pnpm --filter api test:unit
    ```
-2. End-to-end tests covering happy path, authorization, and guardrails:
+2. End-to-end suites (require Testcontainers runtime):
    ```bash
-   pnpm --filter api test -- remove-family-member
+   pnpm --filter api test -- remove-member
+   pnpm --filter api test -- remove-parent-guard
+   pnpm --filter api test -- remove-non-parent
    ```
 3. Lint and typecheck before committing:
    ```bash
@@ -45,5 +53,4 @@
 - Parent receives 204 response when removing a child or co-parent while another parent remains.
 - Attempting to remove the final parent yields HTTP 409 with explanatory message.
 - Non-parent removal attempts return HTTP 403.
-- Audit collection `family_membership_removals` stores `familyId`, `userId`, `removedBy`, `removedAt`.
 - Roster returned by `/v1/families` updates immediately after removal.

@@ -68,13 +68,11 @@ Family members without the parent role must be prevented from altering the house
 - **FR-005**: System MUST immediately revoke the removed member's access to family-only content, notifications, and permissions once the unlinking is confirmed.
 - **FR-006**: System MUST confirm successful removal to the initiating parent and refresh any family roster views to reflect the change within the same interaction.
 - **FR-007**: System MUST retain the removed member's underlying account while severing the family relationship so they may join or form other families later.
-- **FR-008**: System MUST record each removal event with timestamp, initiating parent, and affected member so support teams can audit changes without capturing removal reasons.
 
 ### Key Entities *(include if feature involves data)*
 
 - **Family**: Household group that owns shared content, requires at least one active parent, and references its current members.
-- **Family Membership**: Association between a user account and a family, including role, status (active or removed), and history of changes.
-- **Membership Removal Record**: Audit entry capturing who initiated the removal, the affected member, when it occurred, and any provided rationale.
+- **Family Membership**: Association between a user account and a family, including role and history of changes.
 
 ## Assumptions
 
@@ -95,4 +93,4 @@ Family members without the parent role must be prevented from altering the house
 - **SC-001**: 95% of parent participants in moderated testing remove an existing member successfully on their first attempt without facilitator help.
 - **SC-002**: 100% of attempts by non-parent roles to remove members are blocked with an explanatory message during acceptance testing.
 - **SC-003**: 90% of removal actions are reflected in the family roster view within 30 seconds of confirmation during system testing.
-- **SC-004**: Support teams can access an audit entry for 100% of removal events within one business day of the action.
+- **SC-004**: 90% of parent participants report roster clarity immediately after removal without needing manual refresh.
