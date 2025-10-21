@@ -1,8 +1,8 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { fromNodeHeaders } from 'better-auth/node';
-import { getAuth } from '../better-auth';
 import { HttpError } from '@lib/http-error';
 import { logger } from '@lib/logger';
+import { fromNodeHeaders } from 'better-auth/node';
+import { NextFunction, Request, Response, Router } from 'express';
+import { getAuth } from '../better-auth';
 
 /**
  * Register route using better-auth's built-in email/password registration.
@@ -43,16 +43,16 @@ export function createRegisterRoute(): Router {
       if (!result.ok) {
         const errorData = await result.json();
         const errorMsg = typeof errorData.error === 'string' ? errorData.error : (errorData.error?.message || errorData.message || '');
-        
+
         // Check for duplicate email - Better Auth may return various error messages
-        if (errorMsg.toLowerCase().includes('already') || 
-            errorMsg.toLowerCase().includes('exist') ||
-            errorMsg.toLowerCase().includes('duplicate') ||
-            errorMsg.toLowerCase().includes('unique') ||
-            (errorMsg.toLowerCase().includes('email') && errorMsg.toLowerCase().includes('taken'))) {
+        if (errorMsg.toLowerCase().includes('already') ||
+          errorMsg.toLowerCase().includes('exist') ||
+          errorMsg.toLowerCase().includes('duplicate') ||
+          errorMsg.toLowerCase().includes('unique') ||
+          (errorMsg.toLowerCase().includes('email') && errorMsg.toLowerCase().includes('taken'))) {
           throw HttpError.conflict('Email already registered');
         }
-        
+
         throw HttpError.badRequest(errorMsg || 'Registration failed');
       }
 
@@ -73,7 +73,7 @@ export function createRegisterRoute(): Router {
 
       // Extract session token from Better Auth response
       const sessionToken = data.token; // Session token (long-lived, database-backed)
-      
+
       // Get JWT access token by calling the token endpoint with the session
       let accessToken: string | null = null;
       try {
@@ -83,11 +83,13 @@ export function createRegisterRoute(): Router {
           },
         });
         accessToken = tokenResult.token;
+        logger.debug('JWT token generated successfully');
       } catch (error) {
-        logger.error('Failed to generate JWT token:', error);
-        // Continue without JWT - client can get it later via /v1/auth/token
+        logger.warn('Failed to generate JWT token - continuing with session token only:', error);
+        // Gracefully degrade: session token still works for authentication
+        // Client can request JWT later via /v1/auth/token endpoint if needed
       }
-      
+
       // Set tokens in response headers for clients that prefer header extraction
       if (sessionToken) {
         res.setHeader('set-auth-token', sessionToken);
@@ -105,6 +107,7 @@ export function createRegisterRoute(): Router {
           emailVerified: data.user.emailVerified,
           createdAt: data.user.createdAt,
           updatedAt: data.user.updatedAt,
+          families: [], // New users have no families yet
         },
         session: {
           expiresAt: data.session?.expiresAt || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),

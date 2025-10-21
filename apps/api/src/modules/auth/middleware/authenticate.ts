@@ -1,8 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { fromNodeHeaders } from 'better-auth/node';
+import { ObjectId } from 'mongodb';
 import { getAuth } from '../better-auth';
 import { HttpError } from '@lib/http-error';
 import { verifyJWT, isJWT } from './jwt-verify';
+import type { FamilyMembershipView } from '@modules/family/domain/family';
 
 /**
  * Extended Express Request with authentication context
@@ -16,6 +18,7 @@ export interface AuthenticatedRequest extends Request {
     image?: string;
     createdAt: Date;
     updatedAt: Date;
+    families?: FamilyMembershipView[];
   };
   session?: {
     id: string;
@@ -58,7 +61,7 @@ export async function authenticate(
     if (bearerToken && isJWT(bearerToken)) {
       try {
         const payload = await verifyJWT(bearerToken);
-        
+
         // JWT payload contains user data (no DB lookup needed!)
         req.user = {
           id: payload.id as string,
@@ -69,7 +72,7 @@ export async function authenticate(
           createdAt: new Date(payload.createdAt as string),
           updatedAt: new Date(payload.updatedAt as string),
         };
-        
+
         // JWT doesn't have session info (it's stateless)
         req.session = {
           id: payload.sub as string, // JWT subject is typically the session/user ID
@@ -78,8 +81,29 @@ export async function authenticate(
           ipAddress: undefined,
           userAgent: undefined,
         };
-        
+
         req.authType = 'bearer-jwt';
+
+        // Hydrate families for JWT auth (requires DB lookup)
+        if (req.user) {
+          try {
+            const { FamilyService } = await import('@modules/family/services/family.service');
+            const { FamilyRepository } = await import('@modules/family/repositories/family.repository');
+            const { FamilyMembershipRepository } = await import('@modules/family/repositories/family-membership.repository');
+
+            const familyService = new FamilyService(
+              new FamilyRepository(),
+              new FamilyMembershipRepository()
+            );
+
+            const userId = new ObjectId(req.user.id);
+            req.user.families = await familyService.listFamiliesForUser(userId);
+          } catch (error) {
+            // Gracefully handle family hydration failure
+            req.user.families = [];
+          }
+        }
+
         return next();
       } catch (error) {
         throw HttpError.unauthorized('Invalid or expired JWT token');
@@ -114,6 +138,27 @@ export async function authenticate(
     // Attach user and session to request
     req.user = sessionData.user;
     req.session = sessionData.session;
+
+    // Hydrate families for session-based auth
+    if (req.user) {
+      try {
+        const { FamilyService } = await import('@modules/family/services/family.service');
+        const { FamilyRepository } = await import('@modules/family/repositories/family.repository');
+        const { FamilyMembershipRepository } = await import('@modules/family/repositories/family-membership.repository');
+
+        const familyService = new FamilyService(
+          new FamilyRepository(),
+          new FamilyMembershipRepository()
+        );
+
+        const userId = new ObjectId(req.user.id);
+        req.user.families = await familyService.listFamiliesForUser(userId);
+      } catch (error) {
+        // Gracefully handle family hydration failure
+        // Don't fail authentication if family lookup fails
+        req.user.families = [];
+      }
+    }
 
     next();
   } catch (error) {

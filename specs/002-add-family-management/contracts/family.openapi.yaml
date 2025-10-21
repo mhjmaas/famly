@@ -27,7 +27,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FamilyMembershipResponse'
+                $ref: '#/components/schemas/FamilyMembershipView'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -45,14 +45,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  families:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/FamilyMembershipView'
-                required:
-                  - families
+                type: array
+                items:
+                  $ref: '#/components/schemas/FamilyMembershipView'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -101,13 +96,6 @@ components:
         - familyId
         - role
         - linkedAt
-    FamilyMembershipResponse:
-      type: object
-      properties:
-        family:
-          $ref: '#/components/schemas/FamilyMembershipView'
-      required:
-        - family
     ErrorResponse:
       type: object
       properties:

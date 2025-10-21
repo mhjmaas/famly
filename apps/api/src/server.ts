@@ -16,6 +16,18 @@ async function start() {
   await connectMongo();
   logger.info('MongoDB connected successfully');
 
+  // Initialize family module indexes
+  logger.info('Initializing family module indexes...');
+  const { FamilyRepository } = await import('@modules/family/repositories/family.repository');
+  const { FamilyMembershipRepository } = await import('@modules/family/repositories/family-membership.repository');
+  const familyRepo = new FamilyRepository();
+  const membershipRepo = new FamilyMembershipRepository();
+  await Promise.all([
+    familyRepo.ensureIndexes(),
+    membershipRepo.ensureIndexes(),
+  ]);
+  logger.info('Family module indexes initialized successfully');
+
   // Create and start the Express app
   logger.info('Creating Express app...');
   const app = createApp();

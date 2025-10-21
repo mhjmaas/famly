@@ -33,7 +33,7 @@ function initAuth() {
     return authInstance;
   }
 
-  authInstance = betterAuthInit({
+  const config = {
     appName: 'Famly',
     baseURL: settings.betterAuthUrl,
     basePath: '/v1/auth',
@@ -50,6 +50,8 @@ function initAuth() {
     },
 
     // Enable bearer token plugin for mobile/API clients and JWT for stateless auth
+    // Note: JWT tokens are stateless and don't include families claim
+    // Families are hydrated in the authenticate middleware for both JWT and session-based auth
     plugins: [
       bearer(),
       jwt(),
@@ -68,7 +70,16 @@ function initAuth() {
       // Disable CSRF check in development
       disableCSRFCheck: settings.isDevelopment,
     },
-  });
+  };
+
+  const runtimeConfig = settings.isTest
+    ? {
+        ...config,
+        rateLimit: { enabled: false },
+      }
+    : config;
+
+  authInstance = betterAuthInit(runtimeConfig);
 
   return authInstance;
 }
@@ -76,4 +87,12 @@ function initAuth() {
 // Lazy-load auth to avoid initializing before DB connection
 export function getAuth() {
   return initAuth();
+}
+
+/**
+ * Reset the auth instance.
+ * Useful for testing to ensure clean state between test files.
+ */
+export function resetAuth(): void {
+  authInstance = null;
 }

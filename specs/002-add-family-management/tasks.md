@@ -20,8 +20,8 @@ description: "Task list for 002-add-family-management feature implementation"
 
 **Purpose**: Prepare project structure for the new family module and its tests.
 
-- [ ] T001 Scaffold family module directories (`apps/api/src/modules/family/{domain,repositories,services,routes,validators,lib}`) and add placeholder index exports in `apps/api/src/modules/family/index.ts` to match existing module conventions.
-- [ ] T002 Create dedicated family test folders (`apps/api/tests/unit/family`, `apps/api/tests/e2e/family`) with README placeholders describing intended coverage focus.
+- [X] T001 Scaffold family module directories (`apps/api/src/modules/family/{domain,repositories,services,routes,validators,lib}`) and add placeholder index exports in `apps/api/src/modules/family/index.ts` to match existing module conventions.
+- [X] T002 Create dedicated family test folders (`apps/api/tests/unit/family`, `apps/api/tests/e2e/family`) with README placeholders describing intended coverage focus.
 
 ---
 
@@ -29,8 +29,8 @@ description: "Task list for 002-add-family-management feature implementation"
 
 **Purpose**: Define shared domain contracts used by all user stories.
 
-- [ ] T003 Author TypeScript domain types for families and memberships in `apps/api/src/modules/family/domain/family.ts`, including `Family`, `FamilyMembership`, and `FamilyRole` enum aligned with data-model.md.
-- [ ] T004 Introduce a reusable DTO mapper in `apps/api/src/modules/family/lib/family.mapper.ts` that converts Mongo documents into the canonical `FamilyMembershipView` shape consumed by routes, JWT claims, and `/v1/auth/me`.
+- [X] T003 Author TypeScript domain types for families and memberships in `apps/api/src/modules/family/domain/family.ts`, including `Family`, `FamilyMembership`, and `FamilyRole` enum aligned with data-model.md.
+- [X] T004 Introduce a reusable DTO mapper in `apps/api/src/modules/family/lib/family.mapper.ts` that converts Mongo documents into the canonical `FamilyMembershipView` shape consumed by routes, JWT claims, and `/v1/auth/me`.
 
 **Checkpoint**: Domain scaffolding ready—user story phases can start.
 
@@ -44,18 +44,18 @@ description: "Task list for 002-add-family-management feature implementation"
 
 ### Tests for User Story 1
 
-- [ ] T005 [P] [US1] Add failing unit tests for `FamilyService.createFamily` in `apps/api/tests/unit/family/family.service.create.test.ts` covering optional name normalization and Parent membership creation.
-- [ ] T006 [P] [US1] Add failing e2e test for `POST /v1/families` in `apps/api/tests/e2e/family/create-family.e2e.test.ts` validating 201 response, response payload shape, and persistence side effects.
-- [ ] T007 [P] [US1] Extend `apps/api/tests/unit/family/family.service.create.test.ts` with a failing case asserting persisted family and membership records set `createdAt` and `updatedAt` timestamps.
+- [X] T005 [P] [US1] Add failing unit tests for `FamilyService.createFamily` in `apps/api/tests/unit/family/family.service.create.test.ts` covering optional name normalization and Parent membership creation.
+- [X] T006 [P] [US1] Add failing e2e test for `POST /v1/families` in `apps/api/tests/e2e/family/create-family.e2e.test.ts` validating 201 response, response payload shape, and persistence side effects.
+- [X] T007 [P] [US1] Extend `apps/api/tests/unit/family/family.service.create.test.ts` with a failing case asserting persisted family and membership records set `createdAt` and `updatedAt` timestamps.
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Implement `FamilyMembershipRepository` with `insertMembership`, `findByFamilyAndUser`, and index helpers in `apps/api/src/modules/family/repositories/family-membership.repository.ts` using Mongo unique index enforcement.
-- [ ] T009 [US1] Implement `FamilyRepository` with `createFamily` persistence and projection helpers in `apps/api/src/modules/family/repositories/family.repository.ts`.
-- [ ] T010 [US1] Implement `FamilyService.createFamily` in `apps/api/src/modules/family/services/family.service.ts` orchestrating validation, duplicate checks, repository writes, and DTO mapping.
-- [ ] T011 [US1] Create Zod validator for create-family payload (trims name, enforces length, rejects empty string) in `apps/api/src/modules/family/validators/create-family.validator.ts`.
-- [ ] T012 [US1] Build `createFamiliesRouter` with POST handler in `apps/api/src/modules/family/routes/families.route.ts`, invoking service and returning 201 JSON per OpenAPI contract.
-- [ ] T013 [US1] Wire the new router into the app by exporting it via `apps/api/src/modules/family/routes/index.ts`, registering it under `/v1/families` in `apps/api/src/app.ts`, and invoking repository index initialization during startup.
+- [X] T008 [US1] Implement `FamilyMembershipRepository` with `insertMembership`, `findByFamilyAndUser`, and index helpers in `apps/api/src/modules/family/repositories/family-membership.repository.ts` using Mongo unique index enforcement.
+- [X] T009 [US1] Implement `FamilyRepository` with `createFamily` persistence and projection helpers in `apps/api/src/modules/family/repositories/family.repository.ts`.
+- [X] T010 [US1] Implement `FamilyService.createFamily` in `apps/api/src/modules/family/services/family.service.ts` orchestrating validation, duplicate checks, repository writes, and DTO mapping.
+- [X] T011 [US1] Create Zod validator for create-family payload (trims name, enforces length, rejects empty string) in `apps/api/src/modules/family/validators/create-family.validator.ts`.
+- [X] T012 [US1] Build `createFamiliesRouter` with POST handler in `apps/api/src/modules/family/routes/families.route.ts`, invoking service and returning 201 JSON per OpenAPI contract.
+- [X] T013 [US1] Wire the new router into the app by exporting it via `apps/api/src/modules/family/routes/index.ts`, registering it under `/v1/families` in `apps/api/src/app.ts`, and invoking repository index initialization during startup.
 
 **Checkpoint**: `POST /v1/families` is producible and fully tested.
 
@@ -76,18 +76,18 @@ Task T008 (membership repository) & Task T009 (family repository)
 
 ### Tests for User Story 2
 
-- [ ] T014 [P] [US2] Add failing unit tests for `FamilyService.listFamiliesForUser` in `apps/api/tests/unit/family/family.service.list.test.ts` covering multiple memberships ordering and null name handling.
-- [ ] T015 [P] [US2] Add failing e2e test for `GET /v1/families` in `apps/api/tests/e2e/family/list-families.e2e.test.ts` validating 200 response and payload consistency.
+- [X] T014 [P] [US2] Add failing unit tests for `FamilyService.listFamiliesForUser` in `apps/api/tests/unit/family/family.service.list.test.ts` covering multiple memberships ordering and null name handling.
+- [X] T015 [P] [US2] Add failing e2e test for `GET /v1/families` in `apps/api/tests/e2e/family/list-families.e2e.test.ts` validating 200 response and payload consistency.
 - [ ] T016 [P] [US2] Extend auth E2E specs (`apps/api/tests/e2e/auth/me.e2e.test.ts` and `apps/api/tests/e2e/auth/login.e2e.test.ts`) to assert `/v1/auth/me` and JWT claims include the family membership view.
 
 ### Implementation for User Story 2
 
-- [ ] T017 [US2] Implement `FamilyService.listFamiliesForUser` and supporting repository query in `apps/api/src/modules/family/services/family.service.ts` and `apps/api/src/modules/family/repositories/family-membership.repository.ts` using indexed lookup.
-- [ ] T018 [US2] Add `GET /v1/families` handler to `apps/api/src/modules/family/routes/families.route.ts` reusing DTO mapper and enforcing authentication.
-- [ ] T019 [US2] Update `/v1/auth/me` handler in `apps/api/src/modules/auth/routes/me.route.ts` to include a `families` array derived from `req.user`.
-- [ ] T020 [US2] Enhance `authenticate` middleware in `apps/api/src/modules/auth/middleware/authenticate.ts` to hydrate `req.user.families` by invoking `FamilyService.listFamiliesForUser` for both JWT and session flows.
-- [ ] T021 [US2] Extend Better Auth initialization in `apps/api/src/modules/auth/better-auth.ts` to enrich JWT claims with current family memberships using the FamilyService and ensure refreshed tokens stay consistent.
-- [ ] T022 [US2] Mirror family data in login responses by updating `apps/api/src/modules/auth/routes/login.route.ts` (and any token issue helpers) so API clients receive the `families` array alongside tokens.
+- [X] T017 [US2] Implement `FamilyService.listFamiliesForUser` and supporting repository query in `apps/api/src/modules/family/services/family.service.ts` and `apps/api/src/modules/family/repositories/family-membership.repository.ts` using indexed lookup.
+- [X] T018 [US2] Add `GET /v1/families` handler to `apps/api/src/modules/family/routes/families.route.ts` reusing DTO mapper and enforcing authentication.
+- [X] T019 [US2] Update `/v1/auth/me` handler in `apps/api/src/modules/auth/routes/me.route.ts` to include a `families` array derived from `req.user`.
+- [X] T020 [US2] Enhance `authenticate` middleware in `apps/api/src/modules/auth/middleware/authenticate.ts` to hydrate `req.user.families` by invoking `FamilyService.listFamiliesForUser` for both JWT and session flows.
+- [X] T021 [US2] Extend Better Auth initialization in `apps/api/src/modules/auth/better-auth.ts` to enrich JWT claims with current family memberships using the FamilyService and ensure refreshed tokens stay consistent.
+- [X] T022 [US2] Mirror family data in login responses by updating `apps/api/src/modules/auth/routes/login.route.ts` (and any token issue helpers) so API clients receive the `families` array alongside tokens.
 
 **Checkpoint**: `/v1/families`, `/v1/auth/me`, and JWT payloads expose synchronized family membership data.
 

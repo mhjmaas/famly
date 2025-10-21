@@ -44,20 +44,36 @@ This is a monorepo project using pnpm workspaces.
 │   │   │   ├── middleware
 │   │   │   │   └── error-handler.ts
 │   │   │   ├── modules
-│   │   │   │   └── auth
-│   │   │   │       ├── better-auth.ts
+│   │   │   │   ├── auth
+│   │   │   │   │   ├── better-auth.ts
+│   │   │   │   │   ├── domain
+│   │   │   │   │   │   └── user.ts
+│   │   │   │   │   ├── middleware
+│   │   │   │   │   │   ├── authenticate.ts
+│   │   │   │   │   │   └── jwt-verify.ts
+│   │   │   │   │   ├── routes
+│   │   │   │   │   │   ├── auth.router.ts
+│   │   │   │   │   │   ├── login.route.ts
+│   │   │   │   │   │   ├── me.route.ts
+│   │   │   │   │   │   └── register.route.ts
+│   │   │   │   │   └── validators
+│   │   │   │   │       └── login.validator.ts
+│   │   │   │   └── family
 │   │   │   │       ├── domain
-│   │   │   │       │   └── user.ts
-│   │   │   │       ├── middleware
-│   │   │   │       │   ├── authenticate.ts
-│   │   │   │       │   └── jwt-verify.ts
+│   │   │   │       │   └── family.ts
+│   │   │   │       ├── index.ts
+│   │   │   │       ├── lib
+│   │   │   │       │   └── family.mapper.ts
+│   │   │   │       ├── repositories
+│   │   │   │       │   ├── family-membership.repository.ts
+│   │   │   │       │   └── family.repository.ts
 │   │   │   │       ├── routes
-│   │   │   │       │   ├── auth.router.ts
-│   │   │   │       │   ├── login.route.ts
-│   │   │   │       │   ├── me.route.ts
-│   │   │   │       │   └── register.route.ts
+│   │   │   │       │   ├── families.route.ts
+│   │   │   │       │   └── index.ts
+│   │   │   │       ├── services
+│   │   │   │       │   └── family.service.ts
 │   │   │   │       └── validators
-│   │   │   │           └── login.validator.ts
+│   │   │   │           └── create-family.validator.ts
 │   │   │   ├── routes
 │   │   │   │   └── health.ts
 │   │   │   └── server.ts
@@ -67,7 +83,14 @@ This is a monorepo project using pnpm workspaces.
 │   │   │   │   │   ├── login.e2e.test.ts
 │   │   │   │   │   ├── me.e2e.test.ts
 │   │   │   │   │   └── register.e2e.test.ts
+│   │   │   │   ├── family
+│   │   │   │   │   ├── README.md
+│   │   │   │   │   ├── create-family.e2e.test.ts
+│   │   │   │   │   └── list-families.e2e.test.ts
 │   │   │   │   ├── health.e2e.test.ts
+│   │   │   │   ├── helpers
+│   │   │   │   │   ├── database.ts
+│   │   │   │   │   └── test-app.ts
 │   │   │   │   └── setup
 │   │   │   │       └── testcontainers-setup.ts
 │   │   │   ├── setup
@@ -76,6 +99,11 @@ This is a monorepo project using pnpm workspaces.
 │   │   │   │   └── jest-setup.ts
 │   │   │   ├── tsconfig.json
 │   │   │   └── unit
+│   │   │       ├── family
+│   │   │       │   ├── README.md
+│   │   │       │   ├── create-family.validator.test.ts
+│   │   │       │   ├── family.service.create.test.ts
+│   │   │       │   └── family.service.list.test.ts
 │   │   │       └── lib
 │   │   │           ├── http-error.test.ts
 │   │   │           └── logger.test.ts
@@ -101,6 +129,21 @@ This is a monorepo project using pnpm workspaces.
 │       │       ├── layout.tsx
 │       │       └── page.tsx
 │       └── tsconfig.json
+├── bruno
+│   └── Famly
+│       ├── auth
+│       │   ├── folder.bru
+│       │   ├── login.bru
+│       │   ├── me.bru
+│       │   ├── refresh.bru
+│       │   └── signup.bru
+│       ├── bruno.json
+│       ├── environments
+│       │   └── local.bru
+│       └── family
+│           ├── create.bru
+│           ├── folder.bru
+│           └── get all.bru
 ├── docker
 │   ├── compose.dev.yml
 │   └── scripts
@@ -135,7 +178,7 @@ This is a monorepo project using pnpm workspaces.
         ├── spec.md
         └── tasks.md
 
-39 directories, 78 files
+54 directories, 106 files
 ```
 <!-- TREE END -->
 

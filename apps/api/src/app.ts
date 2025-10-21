@@ -2,6 +2,7 @@ import express, { Express } from 'express';
 import cookieParser from 'cookie-parser';
 import { createHealthRouter } from './routes/health';
 import { createAuthRouter } from './modules/auth/routes/auth.router';
+import { createFamiliesRouter } from './modules/family/routes';
 import { errorHandler } from '@middleware/error-handler';
 
 export const createApp = (): Express => {
@@ -21,6 +22,9 @@ export const createApp = (): Express => {
 
   // Auth routes (Better Auth manages its own indexes)
   app.use('/v1/auth', createAuthRouter());
+
+  // Family routes (requires authentication)
+  app.use('/v1/families', createFamiliesRouter());
 
   // Error handling middleware (last)
   app.use(errorHandler);
