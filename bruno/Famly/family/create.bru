@@ -1,0 +1,22 @@
+meta {
+  name: create
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/families
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "testfamily"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

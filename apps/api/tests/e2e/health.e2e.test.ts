@@ -1,16 +1,12 @@
 import request from 'supertest';
-import { setupE2E, teardownE2E } from './setup/testcontainers-setup';
+import { getTestApp } from './helpers/test-app';
 
 describe('E2E: GET /v1/health', () => {
   let baseUrl: string;
 
-  beforeAll(async () => {
-    baseUrl = await setupE2E();
-  }, 120000); // 2 minutes timeout for container startup
-
-  afterAll(async () => {
-    await teardownE2E();
-  }, 30000);
+  beforeAll(() => {
+    baseUrl = getTestApp();
+  });
 
   describe('Health Check', () => {
     it('should respond with status ok and HTTP 200', async () => {

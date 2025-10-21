@@ -1,0 +1,20 @@
+meta {
+  name: refresh
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/v1/auth/token
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{sessionToken}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

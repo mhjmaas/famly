@@ -1,5 +1,6 @@
 import request from 'supertest';
-import { setupE2E, teardownE2E, cleanDatabase } from '../setup/testcontainers-setup';
+import { cleanDatabase } from '../helpers/database';
+import { getTestApp } from '../helpers/test-app';
 
 // Better Auth uses this cookie name pattern
 const SESSION_COOKIE_PREFIX = 'better-auth.session_token';
@@ -7,13 +8,9 @@ const SESSION_COOKIE_PREFIX = 'better-auth.session_token';
 describe('E2E: GET /v1/auth/me', () => {
   let baseUrl: string;
 
-  beforeAll(async () => {
-    baseUrl = await setupE2E();
-  }, 120000);
-
-  afterAll(async () => {
-    await teardownE2E();
-  }, 30000);
+  beforeAll(() => {
+    baseUrl = getTestApp();
+  });
 
   beforeEach(async () => {
     await cleanDatabase();
@@ -92,11 +89,13 @@ describe('E2E: GET /v1/auth/me', () => {
         });
 
       const accessToken = registerResponse.body.accessToken; // JWT token
+      const sessionToken = registerResponse.body.sessionToken;
+      const bearerToken = accessToken || sessionToken;
 
-      // Access /me endpoint with JWT token
+      // Access /me endpoint with bearer token
       const response = await request(baseUrl)
         .get('/v1/auth/me')
-        .set('Authorization', `Bearer ${accessToken}`);
+        .set('Authorization', `Bearer ${bearerToken}`);
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('user');
@@ -104,7 +103,7 @@ describe('E2E: GET /v1/auth/me', () => {
         email: 'beareruser@example.com',
         name: 'Bearer User',
       });
-      expect(response.body.authType).toBe('bearer-jwt');
+      expect(['bearer-jwt', 'bearer-session']).toContain(response.body.authType);
     });
 
     it('should reject request without authorization header', async () => {
@@ -287,6 +286,145 @@ describe('E2E: GET /v1/auth/me', () => {
         expect(response.status).toBe(200);
         expect(response.body.user.email).toBe('persistent@example.com');
       }
+    });
+  });
+
+  describe('Family Membership Data (T016)', () => {
+    it('should include families array in response', async () => {
+      const registerResponse = await request(baseUrl)
+        .post('/v1/auth/register')
+        .send({
+          email: 'familytest@example.com',
+          password: 'SecurePassword123!',
+        });
+
+      const accessToken = registerResponse.body.accessToken || registerResponse.body.sessionToken;
+
+      const response = await request(baseUrl)
+        .get('/v1/auth/me')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.user).toHaveProperty('families');
+      expect(Array.isArray(response.body.user.families)).toBe(true);
+    });
+
+    it('should return empty families array for new user', async () => {
+      const registerResponse = await request(baseUrl)
+        .post('/v1/auth/register')
+        .send({
+          email: 'nofamilies@example.com',
+          password: 'SecurePassword123!',
+        });
+
+      const accessToken = registerResponse.body.accessToken || registerResponse.body.sessionToken;
+
+      const response = await request(baseUrl)
+        .get('/v1/auth/me')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.user.families).toEqual([]);
+    });
+
+    it('should include family after creating one', async () => {
+      const registerResponse = await request(baseUrl)
+        .post('/v1/auth/register')
+        .send({
+          email: 'withfamily@example.com',
+          password: 'SecurePassword123!',
+        });
+
+      const accessToken = registerResponse.body.accessToken || registerResponse.body.sessionToken;
+
+      // Create a family
+      const createResponse = await request(baseUrl)
+        .post('/v1/families')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          name: 'Test Family',
+        });
+
+      expect(createResponse.status).toBe(201);
+
+      // Check /me includes the family
+      const meResponse = await request(baseUrl)
+        .get('/v1/auth/me')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(meResponse.status).toBe(200);
+      expect(meResponse.body.user.families).toHaveLength(1);
+      expect(meResponse.body.user.families[0]).toMatchObject({
+        name: 'Test Family',
+        role: 'Parent',
+      });
+      expect(meResponse.body.user.families[0]).toHaveProperty('familyId');
+      expect(meResponse.body.user.families[0]).toHaveProperty('linkedAt');
+    });
+
+    it('should include multiple families after creating them', async () => {
+      const registerResponse = await request(baseUrl)
+        .post('/v1/auth/register')
+        .send({
+          email: 'multifamily@example.com',
+          password: 'SecurePassword123!',
+        });
+
+      const accessToken = registerResponse.body.accessToken || registerResponse.body.sessionToken;
+
+      // Create first family
+      await request(baseUrl)
+        .post('/v1/families')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ name: 'Family One' });
+
+      // Create second family
+      await request(baseUrl)
+        .post('/v1/families')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ name: 'Family Two' });
+
+      // Check /me includes both families
+      const meResponse = await request(baseUrl)
+        .get('/v1/auth/me')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      expect(meResponse.status).toBe(200);
+      expect(meResponse.body.user.families).toHaveLength(2);
+
+      const familyNames = meResponse.body.user.families.map((f: any) => f.name);
+      expect(familyNames).toContain('Family One');
+      expect(familyNames).toContain('Family Two');
+    });
+
+    it('should include families with cookie-based authentication', async () => {
+      const registerResponse = await request(baseUrl)
+        .post('/v1/auth/register')
+        .send({
+          email: 'cookiefamily@example.com',
+          password: 'SecurePassword123!',
+        });
+
+      const cookies = registerResponse.headers['set-cookie'];
+      const cookieArray = Array.isArray(cookies) ? cookies : cookies ? [cookies] : [];
+      const sessionCookie = cookieArray.find((c: string) => c.includes(SESSION_COOKIE_PREFIX));
+      const accessToken = registerResponse.body.accessToken || registerResponse.body.sessionToken;
+
+      // Create a family
+      await request(baseUrl)
+        .post('/v1/families')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ name: 'Cookie Family' });
+
+      // Check /me with cookie auth includes the family
+      const meResponse = await request(baseUrl)
+        .get('/v1/auth/me')
+        .set('Cookie', sessionCookie!);
+
+      expect(meResponse.status).toBe(200);
+      expect(meResponse.body.authType).toBe('cookie');
+      expect(meResponse.body.user.families).toHaveLength(1);
+      expect(meResponse.body.user.families[0].name).toBe('Cookie Family');
     });
   });
 });

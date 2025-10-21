@@ -1,0 +1,120 @@
+openapi: 3.1.0
+info:
+  title: Famly API - Family Management
+  version: 0.1.0
+  description: |-
+    Endpoints for creating families and listing memberships. Responses align with JWT claim payloads and `/v1/auth/me` enrichment.
+servers:
+  - url: https://api.famly.local/v1
+paths:
+  /families:
+    post:
+      summary: Create a family
+      description: Creates a new family for the authenticated user and links them as a Parent.
+      security:
+        - cookieAuth: []
+        - bearerSession: []
+        - bearerJwt: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFamilyInput'
+      responses:
+        '201':
+          description: Family created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FamilyMembershipView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    get:
+      summary: List families for current user
+      description: Returns all families the authenticated user belongs to, including their role.
+      security:
+        - cookieAuth: []
+        - bearerSession: []
+        - bearerJwt: []
+      responses:
+        '200':
+          description: List of family memberships
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FamilyMembershipView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: better-auth.session_token
+    bearerSession:
+      type: http
+      scheme: bearer
+      bearerFormat: SessionToken
+    bearerJwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CreateFamilyInput:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+          maxLength: 120
+          description: Optional family display name. Trimmed; empty string treated as null.
+      additionalProperties: false
+    FamilyMembershipView:
+      type: object
+      properties:
+        familyId:
+          type: string
+          description: Hex-encoded ObjectId of the family.
+          example: "64f83be2c13e4f7c9b2a45d1"
+        name:
+          type: string
+          nullable: true
+          example: "The Parkers"
+        role:
+          type: string
+          enum: [Parent, Child]
+        linkedAt:
+          type: string
+          format: date-time
+      required:
+        - familyId
+        - role
+        - linkedAt
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+      required:
+        - error
+  responses:
+    BadRequest:
+      description: Invalid input payload
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

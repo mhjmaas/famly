@@ -1,31 +1,103 @@
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import { logger } from '../../src/lib/logger';
+import { MongoDBContainer, StartedMongoDBContainer } from '@testcontainers/mongodb';
+import { ChildProcess, spawn } from 'child_process';
 
 declare global {
   var __MONGO_URI__: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  var __MONGO_INSTANCE__: any;
+  var __MONGO_CONTAINER__: StartedMongoDBContainer;
+  var __SERVER_PROCESS__: ChildProcess;
+  var __TEST_BASE_URL__: string;
 }
 
-let mongoServer: MongoMemoryServer;
-
 export default async function globalSetup() {
-  // Start in-memory MongoDB server
-  mongoServer = await MongoMemoryServer.create({
-    binary: {
-      version: '7.0.0',
+  // Set env vars BEFORE any imports that depend on them
+  process.env.BETTER_AUTH_SECRET = 'test_better_auth_secret_min_32_chars_long_x';
+  process.env.BETTER_AUTH_URL = 'http://localhost:3001';
+  process.env.NODE_ENV = 'test';
+  
+  console.log('Starting shared MongoDB container for e2e tests...');
+  
+  // Start MongoDB container (shared across all test files)
+  const mongoContainer = await new MongoDBContainer('mongo:7.0').start();
+  
+  const host = mongoContainer.getHost();
+  const port = mongoContainer.getMappedPort(27017);
+  const mongoUri = `mongodb://${host}:${port}`;
+  
+  // Set MongoDB URI BEFORE importing anything that validates env
+  process.env.MONGODB_URI = mongoUri;
+
+  // Store globally for teardown and test access
+  global.__MONGO_URI__ = mongoUri;
+  global.__MONGO_CONTAINER__ = mongoContainer;
+
+  console.log(`Shared MongoDB container started at ${mongoUri}`);
+  
+  // Start API server (shared across all test files)
+  console.log('Starting shared API server for e2e tests...');
+  const serverPort = 3001;
+  
+  const serverProcess = spawn('npx', ['tsx', 'src/server.ts'], {
+    env: {
+      ...process.env,
+      MONGODB_URI: mongoUri,
+      NODE_ENV: 'test',
+      PORT: serverPort.toString(),
+      BETTER_AUTH_SECRET: 'test_better_auth_secret_min_32_chars_x',
+      BETTER_AUTH_URL: `http://localhost:${serverPort}`,
     },
+    stdio: ['ignore', 'pipe', 'pipe'],
   });
 
-  const mongoUri = mongoServer.getUri();
-  process.env.MONGODB_URI = mongoUri;
-  process.env.BETTER_AUTH_SECRET = 'test_better_auth_secret_min_32_chars_long_x';
-  process.env.BETTER_AUTH_URL = 'http://localhost:3000';
-  process.env.NODE_ENV = 'test';
+  const allOutput: string[] = [];
 
-  // Store the URI globally so globalTeardown can access it
-  global.__MONGO_URI__ = mongoUri;
-  global.__MONGO_INSTANCE__ = mongoServer;
+  serverProcess.stdout?.on('data', (data) => {
+    allOutput.push(`[stdout] ${data.toString()}`);
+  });
 
-  logger.info(`MongoDB Memory Server started at ${mongoUri}`);
+  serverProcess.stderr?.on('data', (data) => {
+    allOutput.push(`[stderr] ${data.toString()}`);
+  });
+
+  // Wait for server to be ready
+  await new Promise<void>((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      console.log('Server output:', allOutput.join(''));
+      reject(new Error('Server failed to start within 15 seconds'));
+    }, 15000);
+
+    let resolved = false;
+
+    const checkAndResolve = () => {
+      const fullOutput = allOutput.join('');
+      if (!resolved && fullOutput.includes('listening on port')) {
+        resolved = true;
+        clearTimeout(timeout);
+        setTimeout(() => resolve(), 500);
+      }
+    };
+
+    const interval = setInterval(checkAndResolve, 100);
+
+    serverProcess.on('error', (error) => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+      console.log('Server output:', allOutput.join(''));
+      reject(error);
+    });
+
+    serverProcess.on('exit', (code) => {
+      if (!resolved) {
+        clearTimeout(timeout);
+        clearInterval(interval);
+        console.log('Server output:', allOutput.join(''));
+        reject(new Error(`Server exited with code ${code}`));
+      }
+    });
+  });
+
+  const baseUrl = `http://localhost:${serverPort}`;
+  global.__SERVER_PROCESS__ = serverProcess;
+  global.__TEST_BASE_URL__ = baseUrl;
+
+  console.log(`Shared API server ready at ${baseUrl}`);
 }

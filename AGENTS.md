@@ -4,6 +4,8 @@ Auto-generated from all feature plans. Last updated: 2025-10-19
 
 ## Active Technologies
 - TypeScript 5.6 (Node.js 20 runtime) (001-add-user-auth)
+- TypeScript 5.6 (Node.js 20 runtime) + Express, better-auth (bearer + JWT plugins), MongoDB driver, Zod, Winston (002-add-family-management)
+- MongoDB (shared `famly` database via `infra/mongo/client`) (002-add-family-management)
 
 ## Project Structure
 ```
@@ -12,12 +14,13 @@ tests/
 ```
 
 ## Commands
-npm test && npm run lint
+pnpm test && pnpm run lint
 
 ## Code Style
 TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 
 ## Recent Changes
+- 002-add-family-management: Added TypeScript 5.6 (Node.js 20 runtime) + Express, better-auth (bearer + JWT plugins), MongoDB driver, Zod, Winston
 - 001-add-user-auth: Added TypeScript 5.6 (Node.js 20 runtime)
 
 <!-- MANUAL ADDITIONS START -->
@@ -29,7 +32,6 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 ├── apps
 │   ├── api
 │   │   ├── README.md
-│   │   ├── TESTING.md
 │   │   ├── docker
 │   │   │   └── Dockerfile
 │   │   ├── jest.config.e2e.js
@@ -43,22 +45,43 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │   │   │   │   └── settings.ts
 │   │   │   ├── infra
 │   │   │   │   └── mongo
-│   │   │   │       ├── client.ts
-│   │   │   │       └── indexes.ts
+│   │   │   │       └── client.ts
 │   │   │   ├── lib
-│   │   │   │   └── http-error.ts
+│   │   │   │   ├── http-error.ts
+│   │   │   │   └── logger.ts
 │   │   │   ├── middleware
 │   │   │   │   └── error-handler.ts
 │   │   │   ├── modules
-│   │   │   │   └── auth
-│   │   │   │       ├── better-auth.ts
-│   │   │   │       ├── middleware
-│   │   │   │       │   └── authenticate.ts
-│   │   │   │       └── routes
-│   │   │   │           ├── auth.router.ts
-│   │   │   │           ├── login.route.ts
-│   │   │   │           ├── me.route.ts
-│   │   │   │           └── register.route.ts
+│   │   │   │   ├── auth
+│   │   │   │   │   ├── better-auth.ts
+│   │   │   │   │   ├── domain
+│   │   │   │   │   │   └── user.ts
+│   │   │   │   │   ├── middleware
+│   │   │   │   │   │   ├── authenticate.ts
+│   │   │   │   │   │   └── jwt-verify.ts
+│   │   │   │   │   ├── routes
+│   │   │   │   │   │   ├── auth.router.ts
+│   │   │   │   │   │   ├── login.route.ts
+│   │   │   │   │   │   ├── me.route.ts
+│   │   │   │   │   │   └── register.route.ts
+│   │   │   │   │   └── validators
+│   │   │   │   │       └── login.validator.ts
+│   │   │   │   └── family
+│   │   │   │       ├── domain
+│   │   │   │       │   └── family.ts
+│   │   │   │       ├── index.ts
+│   │   │   │       ├── lib
+│   │   │   │       │   └── family.mapper.ts
+│   │   │   │       ├── repositories
+│   │   │   │       │   ├── family-membership.repository.ts
+│   │   │   │       │   └── family.repository.ts
+│   │   │   │       ├── routes
+│   │   │   │       │   ├── families.route.ts
+│   │   │   │       │   └── index.ts
+│   │   │   │       ├── services
+│   │   │   │       │   └── family.service.ts
+│   │   │   │       └── validators
+│   │   │   │           └── create-family.validator.ts
 │   │   │   ├── routes
 │   │   │   │   └── health.ts
 │   │   │   └── server.ts
@@ -68,26 +91,30 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │   │   │   │   │   ├── login.e2e.test.ts
 │   │   │   │   │   ├── me.e2e.test.ts
 │   │   │   │   │   └── register.e2e.test.ts
+│   │   │   │   ├── family
+│   │   │   │   │   ├── README.md
+│   │   │   │   │   ├── create-family.e2e.test.ts
+│   │   │   │   │   └── list-families.e2e.test.ts
+│   │   │   │   ├── health.e2e.test.ts
+│   │   │   │   ├── helpers
+│   │   │   │   │   ├── database.ts
+│   │   │   │   │   └── test-app.ts
 │   │   │   │   └── setup
 │   │   │   │       └── testcontainers-setup.ts
-│   │   │   ├── health.test.ts
-│   │   │   ├── integration
-│   │   │   │   └── auth
-│   │   │   │       ├── register-conflict.test.ts
-│   │   │   │       └── register-success.test.ts
 │   │   │   ├── setup
 │   │   │   │   ├── global-setup.ts
 │   │   │   │   ├── global-teardown.ts
-│   │   │   │   ├── jest-setup.ts
-│   │   │   │   └── test-app.ts
+│   │   │   │   └── jest-setup.ts
 │   │   │   ├── tsconfig.json
 │   │   │   └── unit
-│   │   │       ├── modules
-│   │   │       │   └── auth
-│   │   │       │       └── user.repository.test.ts
-│   │   │       └── validators
-│   │   │           ├── login.validator.test.ts
-│   │   │           └── register.validator.test.ts
+│   │   │       ├── family
+│   │   │       │   ├── README.md
+│   │   │       │   ├── create-family.validator.test.ts
+│   │   │       │   ├── family.service.create.test.ts
+│   │   │       │   └── family.service.list.test.ts
+│   │   │       └── lib
+│   │   │           ├── http-error.test.ts
+│   │   │           └── logger.test.ts
 │   │   ├── tsconfig.json
 │   │   └── tsconfig.spec.json
 │   └── web
@@ -110,10 +137,24 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │       ├── layout.tsx
 │       │       └── page.tsx
 │       └── tsconfig.json
+├── bruno
+│   └── Famly
+│       ├── auth
+│       │   ├── folder.bru
+│       │   ├── login.bru
+│       │   ├── me.bru
+│       │   ├── refresh.bru
+│       │   └── signup.bru
+│       ├── bruno.json
+│       ├── environments
+│       │   └── local.bru
+│       └── family
+│           ├── create.bru
+│           ├── folder.bru
+│           └── get all.bru
 ├── docker
 │   ├── compose.dev.yml
 │   └── scripts
-│       └── mongo-init.js
 ├── package.json
 ├── packages
 ├── pnpm-lock.yaml
@@ -122,11 +163,22 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │   ├── update-claude-tree.sh
 │   └── update-codex-tree.sh
 └── specs
-    └── 001-add-user-auth
+    ├── 001-add-user-auth
+    │   ├── checklists
+    │   │   └── requirements.md
+    │   ├── contracts
+    │   │   └── auth.openapi.yaml
+    │   ├── data-model.md
+    │   ├── plan.md
+    │   ├── quickstart.md
+    │   ├── research.md
+    │   ├── spec.md
+    │   └── tasks.md
+    └── 002-add-family-management
         ├── checklists
         │   └── requirements.md
         ├── contracts
-        │   └── auth.openapi.yaml
+        │   └── family.openapi.yaml
         ├── data-model.md
         ├── plan.md
         ├── quickstart.md
@@ -134,5 +186,5 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
         ├── spec.md
         └── tasks.md
 
-38 directories, 73 files
+54 directories, 106 files
 ```

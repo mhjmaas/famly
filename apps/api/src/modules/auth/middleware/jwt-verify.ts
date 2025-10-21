@@ -6,15 +6,31 @@ import { settings } from '@config/settings';
  */
 
 // Cache JWKS for performance (keys don't change frequently)
+// In test environment, always fetch fresh to avoid stale key issues
 let jwksCache: ReturnType<typeof createRemoteJWKSet> | null = null;
 
 function getJWKS() {
+  // In test environment, don't cache JWKS to prevent stale key issues
+  if (settings.isTest) {
+    return createRemoteJWKSet(
+      new URL(`${settings.betterAuthUrl}/v1/auth/jwks`)
+    );
+  }
+  
   if (!jwksCache) {
     jwksCache = createRemoteJWKSet(
       new URL(`${settings.betterAuthUrl}/v1/auth/jwks`)
     );
   }
   return jwksCache;
+}
+
+/**
+ * Clear the JWKS cache.
+ * Useful for testing or when keys are rotated.
+ */
+export function clearJWKSCache(): void {
+  jwksCache = null;
 }
 
 /**

@@ -1,6 +1,18 @@
 import { MongoDBContainer, StartedMongoDBContainer } from '@testcontainers/mongodb';
 import { ChildProcess, spawn } from 'child_process';
 import { MongoClient } from 'mongodb';
+
+// Set minimal env vars before any imports
+if (!process.env.MONGODB_URI) {
+  process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
+}
+if (!process.env.BETTER_AUTH_SECRET) {
+  process.env.BETTER_AUTH_SECRET = 'test_better_auth_secret_min_32_chars_x';
+}
+if (!process.env.BETTER_AUTH_URL) {
+  process.env.BETTER_AUTH_URL = 'http://localhost:3001';
+}
+
 import { logger } from '../../../src/lib/logger';
 
 let mongoContainer: StartedMongoDBContainer;
@@ -66,8 +78,8 @@ export async function setupE2E(): Promise<string> {
     const timeout = setTimeout(() => {
       logger.debug('Server output:');
       logger.debug(allOutput.join(''));
-      reject(new Error('Server failed to start within 30 seconds'));
-    }, 30000);
+      reject(new Error('Server failed to start within 15 seconds'));
+    }, 15000);
 
     let resolved = false;
 

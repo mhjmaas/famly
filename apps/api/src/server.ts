@@ -1,7 +1,9 @@
 import 'dotenv/config';
 import { createApp } from './app';
-import { connectMongo } from '@infra/mongo/client';
+import { connectMongo, disconnectMongo } from '@infra/mongo/client';
 import { logger } from '@lib/logger';
+import { FamilyRepository } from '@modules/family/repositories/family.repository';
+import { FamilyMembershipRepository } from '@modules/family/repositories/family-membership.repository';
 
 const DEFAULT_PORT = 4000;
 const port = Number(process.env.PORT ?? DEFAULT_PORT);
@@ -15,6 +17,16 @@ async function start() {
   logger.info('Connecting to MongoDB...');
   await connectMongo();
   logger.info('MongoDB connected successfully');
+
+  // Initialize family module indexes
+  logger.info('Initializing family module indexes...');
+  const familyRepo = new FamilyRepository();
+  const membershipRepo = new FamilyMembershipRepository();
+  await Promise.all([
+    familyRepo.ensureIndexes(),
+    membershipRepo.ensureIndexes(),
+  ]);
+  logger.info('Family module indexes initialized successfully');
 
   // Create and start the Express app
   logger.info('Creating Express app...');
@@ -34,7 +46,6 @@ async function start() {
 
       // Close MongoDB connection
       try {
-        const { disconnectMongo } = await import('@infra/mongo/client');
         await disconnectMongo();
         logger.info('MongoDB disconnected');
         process.exit(0);

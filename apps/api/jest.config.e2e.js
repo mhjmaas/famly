@@ -32,10 +32,14 @@ module.exports = {
   },
   // Allow transformation of better-auth ESM modules
   transformIgnorePatterns: [
-    'node_modules/(?!(better-auth|@better-auth|@better-fetch|jose|oauth4webapi)/)'
+    'node_modules/(?!(better-auth|@better-auth|@better-fetch|oauth4webapi|jose))'
   ],
   // Run tests serially for E2E (avoids port conflicts and container issues)
   maxWorkers: 1,
   // Force exit after tests complete to prevent hanging
   forceExit: true,
+  // Global setup and teardown for test environment
+  globalSetup: '<rootDir>/tests/setup/global-setup.ts',
+  globalTeardown: '<rootDir>/tests/setup/global-teardown.ts',
+  setupFilesAfterEnv: ['<rootDir>/tests/setup/jest-setup.ts'],
 };

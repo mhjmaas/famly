@@ -30,6 +30,7 @@ export function createMeRoute(): Router {
           emailVerified: req.user!.emailVerified,
           createdAt: req.user!.createdAt,
           updatedAt: req.user!.updatedAt,
+          families: req.user!.families || [],
         },
         authType: req.authType,
       });

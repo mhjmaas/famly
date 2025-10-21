@@ -1,4 +1,3 @@
-import winston from 'winston';
 import { logger } from '@lib/logger';
 
 /**
@@ -11,15 +10,9 @@ import { logger } from '@lib/logger';
  */
 
 describe('Logger', () => {
-  let originalWinstonCreate: typeof winston.createLogger;
-  let mockTransportLog: jest.Mock;
-
   beforeEach(() => {
-    // Capture the original createLogger
-    originalWinstonCreate = winston.createLogger;
-
-    // Mock transport to capture logs without console output
-    mockTransportLog = jest.fn();
+    // Reset any potential mocks
+    jest.clearAllMocks();
   });
 
   afterEach(() => {
@@ -81,7 +74,6 @@ describe('Logger', () => {
 
   describe('logger configuration', () => {
     test('should be configured for console output', () => {
-      const transports = (logger as any)._readableState?.transports || [];
       // Logger should have at least console transport configured
       expect(logger).toBeDefined();
     });
