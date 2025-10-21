@@ -5,11 +5,11 @@
 This is a monorepo project using pnpm workspaces.
 
 ## Active Technologies
-- TypeScript 5.6 (Node.js 20 runtime) (001-add-user-auth)
-- TypeScript 5.6 (Node.js 20 runtime) + Express, better-auth (bearer + JWT plugins), MongoDB driver, Zod, Winston (002-add-family-management)
-- MongoDB (shared `famly` database via `infra/mongo/client`) (002-add-family-management)
+- TypeScript 5.6 on Node.js 20 + Express 4, better-auth (bearer + JWT plugins), MongoDB Node driver, Zod, Winston (003-add-family-member)
+- MongoDB (`famly` database via `infra/mongo/client`) (003-add-family-member)
 
 ## Recent Changes
+- 003-add-family-member
 - 002-add-family-management: Added TypeScript 5.6 (Node.js 20 runtime) + Express, better-auth (bearer + JWT plugins), MongoDB driver, Zod, Winston
 - 001-add-user-auth: Added TypeScript 5.6 (Node.js 20 runtime)
 
@@ -166,11 +166,22 @@ This is a monorepo project using pnpm workspaces.
     │   ├── research.md
     │   ├── spec.md
     │   └── tasks.md
-    └── 002-add-family-management
+    ├── 002-add-family-management
+    │   ├── checklists
+    │   │   └── requirements.md
+    │   ├── contracts
+    │   │   └── family.openapi.yaml
+    │   ├── data-model.md
+    │   ├── plan.md
+    │   ├── quickstart.md
+    │   ├── research.md
+    │   ├── spec.md
+    │   └── tasks.md
+    └── 003-add-family-member
         ├── checklists
         │   └── requirements.md
         ├── contracts
-        │   └── family.openapi.yaml
+        │   └── family-members.openapi.yaml
         ├── data-model.md
         ├── plan.md
         ├── quickstart.md
@@ -178,7 +189,7 @@ This is a monorepo project using pnpm workspaces.
         ├── spec.md
         └── tasks.md
 
-54 directories, 106 files
+57 directories, 114 files
 ```
 <!-- TREE END -->
 

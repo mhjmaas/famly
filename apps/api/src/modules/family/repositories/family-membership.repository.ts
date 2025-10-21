@@ -41,12 +41,14 @@ export class FamilyMembershipRepository {
    * @param familyId - The family ID
    * @param userId - The user ID
    * @param role - The role (Parent or Child)
+   * @param addedBy - Optional: The user who added this member
    * @returns The created membership document
    */
   async insertMembership(
     familyId: ObjectId,
     userId: ObjectId,
-    role: FamilyRole
+    role: FamilyRole,
+    addedBy?: ObjectId
   ): Promise<FamilyMembership> {
     const now = new Date();
 
@@ -55,6 +57,7 @@ export class FamilyMembershipRepository {
       familyId,
       userId,
       role,
+      addedBy,
       createdAt: now,
       updatedAt: now,
     };
@@ -101,6 +104,23 @@ export class FamilyMembershipRepository {
   async findByFamily(familyId: ObjectId): Promise<FamilyMembership[]> {
     return this.collection
       .find({ familyId })
+      .sort({ createdAt: -1 })
+      .toArray();
+  }
+
+  /**
+   * Find all memberships for the provided family IDs
+   *
+   * @param familyIds - Array of family IDs
+   * @returns Array of membership documents across the families
+   */
+  async findByFamilyIds(familyIds: ObjectId[]): Promise<FamilyMembership[]> {
+    if (familyIds.length === 0) {
+      return [];
+    }
+
+    return this.collection
+      .find({ familyId: { $in: familyIds } })
       .sort({ createdAt: -1 })
       .toArray();
   }

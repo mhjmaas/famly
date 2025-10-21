@@ -1,0 +1,24 @@
+meta {
+  name: add member
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/v1/families/68f7e33bad37ac0dd2058d77/members
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "testchild@gmail.com",
+    "password": "securePasswordChild1234",
+    "role": "Child"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -29,6 +29,7 @@ export interface FamilyMembership {
   familyId: ObjectId;
   userId: ObjectId;
   role: FamilyRole;
+  addedBy?: ObjectId; // Parent who added this member (optional for backward compatibility)
   createdAt: Date;
   updatedAt: Date;
 }
@@ -60,3 +61,23 @@ export type CreateFamilyResponse = FamilyMembershipView;
  * List families response
  */
 export type ListFamiliesResponse = FamilyMembershipView[];
+
+/**
+ * Add family member input payload
+ */
+export interface AddFamilyMemberRequest {
+  email: string;
+  password: string;
+  role: FamilyRole;
+}
+
+/**
+ * Add family member response
+ */
+export interface AddFamilyMemberResult {
+  memberId: string;
+  familyId: string;
+  role: FamilyRole;
+  linkedAt: string; // ISO 8601 timestamp
+  addedBy: string;
+}

@@ -6,9 +6,14 @@ import {
   CreateFamilyResponse,
   FamilyRole,
   ListFamiliesResponse,
+  AddFamilyMemberRequest,
+  AddFamilyMemberResult,
 } from '../domain/family';
-import { toFamilyMembershipView, normalizeFamilyName } from '../lib/family.mapper';
+import { toFamilyMembershipView, normalizeFamilyName, toAddFamilyMemberResult } from '../lib/family.mapper';
 import { logger } from '@lib/logger';
+import { HttpError } from '@lib/http-error';
+import { getAuth } from '@modules/auth/better-auth';
+import { getDb } from '@infra/mongo/client';
 
 export class FamilyService {
   constructor(
@@ -109,6 +114,140 @@ export class FamilyService {
     } catch (error) {
       logger.error('Failed to list families for user', {
         userId: userId.toString(),
+        error,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Add a new member to a family
+   * Parent can add both Parent and Child roles
+   * Creates user via better-auth without auto-login
+   *
+   * @param familyId - The ID of the family
+   * @param addedBy - The ID of the parent adding the member
+   * @param input - Add family member input payload
+   * @returns Add family member result
+   */
+  async addFamilyMember(
+    familyId: ObjectId,
+    addedBy: ObjectId,
+    input: AddFamilyMemberRequest
+  ): Promise<AddFamilyMemberResult> {
+    try {
+      logger.info('Adding family member', {
+        familyId: familyId.toString(),
+        addedBy: addedBy.toString(),
+        role: input.role,
+        email: input.email,
+      });
+
+      // 1. Verify family exists
+      const family = await this.familyRepository.findById(familyId);
+      if (!family) {
+        throw HttpError.notFound('Family not found');
+      }
+
+      // 2. Create user via better-auth (without auto-login) or use existing user
+      const auth = getAuth();
+      let newUserId: ObjectId;
+
+      try {
+        const signUpResult = await auth.api.signUpEmail({
+          body: {
+            email: input.email,
+            password: input.password,
+            name: input.email.split('@')[0], // Use email prefix as name
+          },
+        });
+
+        newUserId = new ObjectId(signUpResult.user.id);
+
+        logger.debug('User created via better-auth', {
+          userId: newUserId.toString(),
+          email: input.email,
+        });
+      } catch (error) {
+        // If user creation fails, check if it's because the email already exists
+        logger.debug('User creation failed, checking if user exists', {
+          email: input.email,
+          error,
+        });
+
+        // Query the users collection via MongoDB directly
+        const db = getDb();
+        const usersCollection = db.collection('user');
+
+        const existingUser = await usersCollection.findOne({
+          email: input.email.toLowerCase()
+        });
+
+        if (!existingUser) {
+          // Email doesn't exist, so this is a different error
+          logger.error('Failed to create user via better-auth', {
+            email: input.email,
+            error,
+          });
+          throw HttpError.badRequest('Failed to create user account');
+        }
+
+        // User exists, check if they belong to a different family
+        newUserId = new ObjectId(existingUser._id);
+
+        const existingMemberships = await this.membershipRepository.findByUser(newUserId);
+
+        if (existingMemberships.length > 0) {
+          // Check if user is in THIS family
+          const membershipInThisFamily = existingMemberships.find(
+            (m) => m.familyId.toString() === familyId.toString()
+          );
+
+          if (membershipInThisFamily) {
+            throw HttpError.conflict('User is already a member of this family');
+          }
+
+          // User belongs to a different family
+          throw HttpError.conflict('Email is already associated with another family');
+        }
+
+        logger.debug('Using existing user without family membership', {
+          userId: newUserId.toString(),
+          email: input.email,
+        });
+      }
+
+      // 3. Check if user already member of this family (final check)
+      const existingMembership = await this.membershipRepository.findByFamilyAndUser(
+        familyId,
+        newUserId
+      );
+
+      if (existingMembership) {
+        throw HttpError.conflict('User is already a member of this family');
+      }
+
+      // 4. Create family membership with addedBy metadata
+      const membership = await this.membershipRepository.insertMembership(
+        familyId,
+        newUserId,
+        input.role,
+        addedBy
+      );
+
+      logger.info('Family member added successfully', {
+        familyId: familyId.toString(),
+        memberId: newUserId.toString(),
+        role: input.role,
+        addedBy: addedBy.toString(),
+      });
+
+      // 5. Map to result DTO (without auth tokens)
+      return toAddFamilyMemberResult(membership, familyId, addedBy);
+    } catch (error) {
+      logger.error('Failed to add family member', {
+        familyId: familyId.toString(),
+        addedBy: addedBy.toString(),
         error,
       });
       throw error;

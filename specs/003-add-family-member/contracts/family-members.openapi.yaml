@@ -1,0 +1,137 @@
+openapi: 3.1.0
+info:
+  title: Famly API - Family Membership Management
+  version: 0.1.0
+  description: Parent-managed endpoints for adding new members to an existing family.
+servers:
+  - url: https://api.famly.local/v1
+paths:
+  /families/{familyId}/members:
+    post:
+      summary: Add a member to a family
+      description: |
+        Allows a parent in the specified family to create a new user (parent or child) and link them to the family.
+        The newly created user is not authenticated automatically; credentials must be shared out-of-band.
+      security:
+        - cookieAuth: []
+        - bearerSession: []
+        - bearerJwt: []
+      parameters:
+        - name: familyId
+          in: path
+          required: true
+          description: Hex-encoded ObjectId of the family receiving the member.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddFamilyMemberInput'
+      responses:
+        '201':
+          description: Member created and linked to the family
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddFamilyMemberResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: better-auth.session_token
+    bearerSession:
+      type: http
+      scheme: bearer
+      bearerFormat: SessionToken
+    bearerJwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AddFamilyMemberInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        role:
+          type: string
+          enum: [Parent, Child]
+      required:
+        - email
+        - password
+        - role
+      additionalProperties: false
+    AddFamilyMemberResult:
+      type: object
+      properties:
+        memberId:
+          type: string
+          description: Hex-encoded ObjectId of the created user.
+        familyId:
+          type: string
+          description: Hex-encoded ObjectId of the family.
+        role:
+          type: string
+          enum: [Parent, Child]
+        linkedAt:
+          type: string
+          format: date-time
+        addedBy:
+          type: string
+          description: Hex-encoded ObjectId of the initiating parent.
+      required:
+        - memberId
+        - familyId
+        - role
+        - linkedAt
+        - addedBy
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+      required:
+        - error
+  responses:
+    BadRequest:
+      description: Invalid input payload
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Caller is not a parent in the specified family
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Email already associated with a family membership
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
