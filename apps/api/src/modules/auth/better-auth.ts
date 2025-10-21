@@ -1,8 +1,8 @@
+import { settings } from '@config/settings';
+import { getDb } from '@infra/mongo/client';
 import { betterAuth as betterAuthInit } from 'better-auth';
 import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import { bearer, jwt } from 'better-auth/plugins';
-import { getDb } from '@infra/mongo/client';
-import { settings } from '@config/settings';
 
 let authInstance: any = null;
 
@@ -72,14 +72,7 @@ function initAuth() {
     },
   };
 
-  const runtimeConfig = settings.isTest
-    ? {
-        ...config,
-        rateLimit: { enabled: false },
-      }
-    : config;
-
-  authInstance = betterAuthInit(runtimeConfig);
+  authInstance = betterAuthInit(config);
 
   return authInstance;
 }

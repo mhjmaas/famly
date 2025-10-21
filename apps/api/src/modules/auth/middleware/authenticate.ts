@@ -31,6 +31,34 @@ export interface AuthenticatedRequest extends Request {
 }
 
 /**
+ * Hydrate user's family memberships.
+ * Uses dynamic imports to avoid circular dependency with family module.
+ * 
+ * @param userId - The user's ObjectId
+ * @returns Array of family memberships or empty array on error
+ */
+async function hydrateFamilies(userId: ObjectId): Promise<FamilyMembershipView[]> {
+  try {
+    // Dynamic imports required to break circular dependency:
+    // auth/middleware → family/services → family/routes → auth/middleware
+    const { FamilyService } = await import('@modules/family/services/family.service');
+    const { FamilyRepository } = await import('@modules/family/repositories/family.repository');
+    const { FamilyMembershipRepository } = await import('@modules/family/repositories/family-membership.repository');
+
+    const familyService = new FamilyService(
+      new FamilyRepository(),
+      new FamilyMembershipRepository()
+    );
+
+    return await familyService.listFamiliesForUser(userId);
+  } catch (error) {
+    // Gracefully handle family hydration failure
+    // Don't fail authentication if family lookup fails
+    return [];
+  }
+}
+
+/**
  * Middleware to authenticate requests using better-auth.
  *
  * Supports three authentication flows:
@@ -86,22 +114,8 @@ export async function authenticate(
 
         // Hydrate families for JWT auth (requires DB lookup)
         if (req.user) {
-          try {
-            const { FamilyService } = await import('@modules/family/services/family.service');
-            const { FamilyRepository } = await import('@modules/family/repositories/family.repository');
-            const { FamilyMembershipRepository } = await import('@modules/family/repositories/family-membership.repository');
-
-            const familyService = new FamilyService(
-              new FamilyRepository(),
-              new FamilyMembershipRepository()
-            );
-
-            const userId = new ObjectId(req.user.id);
-            req.user.families = await familyService.listFamiliesForUser(userId);
-          } catch (error) {
-            // Gracefully handle family hydration failure
-            req.user.families = [];
-          }
+          const userId = new ObjectId(req.user.id);
+          req.user.families = await hydrateFamilies(userId);
         }
 
         return next();
@@ -141,23 +155,8 @@ export async function authenticate(
 
     // Hydrate families for session-based auth
     if (req.user) {
-      try {
-        const { FamilyService } = await import('@modules/family/services/family.service');
-        const { FamilyRepository } = await import('@modules/family/repositories/family.repository');
-        const { FamilyMembershipRepository } = await import('@modules/family/repositories/family-membership.repository');
-
-        const familyService = new FamilyService(
-          new FamilyRepository(),
-          new FamilyMembershipRepository()
-        );
-
-        const userId = new ObjectId(req.user.id);
-        req.user.families = await familyService.listFamiliesForUser(userId);
-      } catch (error) {
-        // Gracefully handle family hydration failure
-        // Don't fail authentication if family lookup fails
-        req.user.families = [];
-      }
+      const userId = new ObjectId(req.user.id);
+      req.user.families = await hydrateFamilies(userId);
     }
 
     next();
