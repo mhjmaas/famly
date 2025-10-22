@@ -67,8 +67,8 @@ Testing is NON-NEGOTIABLE and MUST follow the test-first approach:
 - Bug fixes MUST include a failing test that reproduces the bug before the fix.
 
 **Test Coverage Requirements**:
-- Unit tests for all business logic and utilities
-- Integration tests for API endpoints, service interactions, and data access layers
+- Unit tests for utilities, pure functions, validators and mappers
+- Integration (e2e) tests for API endpoints, service interactions, and data access layers
 - Contract tests for external API boundaries
 - End-to-end tests for critical user journeys (at minimum, P1 user stories)
 
