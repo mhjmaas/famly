@@ -1,6 +1,24 @@
+<!-- OPENSPEC:START -->
+# OpenSpec Instructions
+
+These instructions are for AI assistants working in this project.
+
+Always open `@/openspec/AGENTS.md` when the request:
+- Mentions planning or proposals (words like proposal, spec, change, plan)
+- Introduces new capabilities, breaking changes, architecture shifts, or big performance/security work
+- Sounds ambiguous and you need the authoritative spec before coding
+
+Use `@/openspec/AGENTS.md` to learn:
+- How to create and apply change proposals
+- Spec format and conventions
+- Project structure and guidelines
+
+Keep this managed block so 'openspec update' can refresh the instructions.
+
+<!-- OPENSPEC:END -->
+
 # famly Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2025-10-19
 
 ## Active Technologies
 - TypeScript 5.6 on Node.js 20 + Express 4, better-auth (bearer + JWT plugins), MongoDB Node driver, Zod, Winston (003-add-family-member)
@@ -17,11 +35,6 @@ pnpm test && pnpm run lint
 
 ## Code Style
 TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
-
-## Recent Changes
-- 004-remove-family-member: Added TypeScript 5.6 on Node.js 20 + Express 4, better-auth (bearer + JWT plugins), MongoDB Node driver, Zod, Winston
-- 003-add-family-member: Added TypeScript 5.6 on Node.js 20 + Express 4, better-auth (bearer + JWT plugins), MongoDB Node driver, Zod, Winston
-- 002-add-family-management: Added TypeScript 5.6 (Node.js 20 runtime) + Express, better-auth (bearer + JWT plugins), MongoDB driver, Zod, Winston
 
 <!-- MANUAL ADDITIONS START -->
 ```
@@ -102,7 +115,10 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │   │   │   │   │   ├── add-member-authorization.e2e.test.ts
 │   │   │   │   │   ├── add-parent-member.e2e.test.ts
 │   │   │   │   │   ├── create-family.e2e.test.ts
-│   │   │   │   │   └── list-families.e2e.test.ts
+│   │   │   │   │   ├── list-families.e2e.test.ts
+│   │   │   │   │   ├── remove-member.e2e.test.ts
+│   │   │   │   │   ├── remove-non-parent.e2e.test.ts
+│   │   │   │   │   └── remove-parent-guard.e2e.test.ts
 │   │   │   │   ├── health.e2e.test.ts
 │   │   │   │   ├── helpers
 │   │   │   │   │   ├── database.ts
@@ -159,52 +175,25 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       └── family
 │           ├── add member.bru
 │           ├── create.bru
+│           ├── delete member.bru
 │           ├── folder.bru
 │           └── get all.bru
 ├── docker
 │   ├── compose.dev.yml
 │   └── scripts
+├── openspec
+│   ├── AGENTS.md
+│   ├── changes
+│   │   └── archive
+│   ├── project.md
+│   └── specs
 ├── package.json
 ├── packages
 ├── pnpm-lock.yaml
 ├── pnpm-workspace.yaml
-├── scripts
-│   ├── update-claude-tree.sh
-│   └── update-codex-tree.sh
-└── specs
-    ├── 001-add-user-auth
-    │   ├── checklists
-    │   │   └── requirements.md
-    │   ├── contracts
-    │   │   └── auth.openapi.yaml
-    │   ├── data-model.md
-    │   ├── plan.md
-    │   ├── quickstart.md
-    │   ├── research.md
-    │   ├── spec.md
-    │   └── tasks.md
-    ├── 002-add-family-management
-    │   ├── checklists
-    │   │   └── requirements.md
-    │   ├── contracts
-    │   │   └── family.openapi.yaml
-    │   ├── data-model.md
-    │   ├── plan.md
-    │   ├── quickstart.md
-    │   ├── research.md
-    │   ├── spec.md
-    │   └── tasks.md
-    └── 003-add-family-member
-        ├── checklists
-        │   └── requirements.md
-        ├── contracts
-        │   └── family-members.openapi.yaml
-        ├── data-model.md
-        ├── plan.md
-        ├── quickstart.md
-        ├── research.md
-        ├── spec.md
-        └── tasks.md
+└── scripts
+    ├── update-claude-tree.sh
+    └── update-codex-tree.sh
 
-59 directories, 121 files
+53 directories, 103 files
 ```
