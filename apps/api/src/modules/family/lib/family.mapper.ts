@@ -5,9 +5,9 @@ import {
   FamilyRole,
   AddFamilyMemberResult,
   type ListFamiliesResponse,
-} from '../domain/family';
-import { HttpError } from '@lib/http-error';
-import { ObjectId } from 'mongodb';
+} from "../domain/family";
+import { HttpError } from "@lib/http-error";
+import { ObjectId } from "mongodb";
 
 export interface FamilyMemberView {
   memberId: string;
@@ -32,12 +32,12 @@ export type FamiliesWithMembersResponse = Array<
  */
 export function toFamilyMembershipView(
   family: Family,
-  membership: FamilyMembership
+  membership: FamilyMembership,
 ): FamilyMembershipView {
   // Validate role is one of the allowed values
   if (!Object.values(FamilyRole).includes(membership.role)) {
     throw HttpError.badRequest(
-      `Invalid role: ${membership.role}. Only Parent and Child roles are supported.`
+      `Invalid role: ${membership.role}. Only Parent and Child roles are supported.`,
     );
   }
 
@@ -58,7 +58,7 @@ export function toFamilyMembershipView(
 export function validateRole(role: string): asserts role is FamilyRole {
   if (!Object.values(FamilyRole).includes(role as FamilyRole)) {
     throw HttpError.badRequest(
-      `Invalid role: ${role}. Only Parent and Child roles are supported.`
+      `Invalid role: ${role}. Only Parent and Child roles are supported.`,
     );
   }
 }
@@ -73,7 +73,7 @@ export function validateRole(role: string): asserts role is FamilyRole {
  * @returns Normalized name or null
  */
 export function normalizeFamilyName(name?: string | null): string | null {
-  if (!name || typeof name !== 'string') {
+  if (!name || typeof name !== "string") {
     return null;
   }
 
@@ -83,7 +83,7 @@ export function normalizeFamilyName(name?: string | null): string | null {
   }
 
   if (trimmed.length > 120) {
-    throw HttpError.badRequest('Family name cannot exceed 120 characters.');
+    throw HttpError.badRequest("Family name cannot exceed 120 characters.");
   }
 
   return trimmed;
@@ -101,7 +101,7 @@ export function normalizeFamilyName(name?: string | null): string | null {
 export function toAddFamilyMemberResult(
   membership: FamilyMembership,
   familyId: ObjectId,
-  addedBy: ObjectId
+  addedBy: ObjectId,
 ): AddFamilyMemberResult {
   return {
     memberId: membership.userId.toString(),
@@ -123,12 +123,15 @@ export function toAddFamilyMemberResult(
 export function toFamilyMemberView(
   membership: FamilyMembership,
   userName: string,
-  userBirthdate: string | Date
+  userBirthdate: string | Date,
 ): FamilyMemberView {
   return {
     memberId: membership.userId.toString(),
     name: userName,
-    birthdate: typeof userBirthdate === 'string' ? userBirthdate : userBirthdate.toISOString(),
+    birthdate:
+      typeof userBirthdate === "string"
+        ? userBirthdate
+        : userBirthdate.toISOString(),
     role: membership.role,
     linkedAt: membership.createdAt.toISOString(),
     ...(membership.addedBy ? { addedBy: membership.addedBy.toString() } : {}),
@@ -145,7 +148,9 @@ export function toFamilyMemberView(
  */
 export function buildFamiliesWithMembersResponse(
   families: ListFamiliesResponse,
-  memberships: Array<FamilyMembership & { user?: { name: string; birthdate: string | Date } }>
+  memberships: Array<
+    FamilyMembership & { user?: { name: string; birthdate: string | Date } }
+  >,
 ): FamiliesWithMembersResponse {
   const membersByFamily = new Map<string, FamilyMemberView[]>();
 
@@ -153,13 +158,15 @@ export function buildFamiliesWithMembersResponse(
     const familyKey = membership.familyId.toString();
     const memberViews = membersByFamily.get(familyKey);
 
-    const userName = membership.user?.name || '';
-    const userBirthdate = membership.user?.birthdate || '';
+    const userName = membership.user?.name || "";
+    const userBirthdate = membership.user?.birthdate || "";
 
     if (memberViews) {
       memberViews.push(toFamilyMemberView(membership, userName, userBirthdate));
     } else {
-      membersByFamily.set(familyKey, [toFamilyMemberView(membership, userName, userBirthdate)]);
+      membersByFamily.set(familyKey, [
+        toFamilyMemberView(membership, userName, userBirthdate),
+      ]);
     }
   }
 

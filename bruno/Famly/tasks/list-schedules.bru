@@ -1,0 +1,16 @@
+meta {
+  name: list schedules
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/tasks/schedules
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

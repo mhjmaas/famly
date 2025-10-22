@@ -1,9 +1,9 @@
-import { settings } from '@config/settings';
-import { getDb } from '@infra/mongo/client';
-import { betterAuth as betterAuthInit } from 'better-auth';
-import { mongodbAdapter } from 'better-auth/adapters/mongodb';
-import { bearer, jwt, customSession } from 'better-auth/plugins';
-import { ObjectId } from 'mongodb';
+import { settings } from "@config/settings";
+import { getDb } from "@infra/mongo/client";
+import { betterAuth as betterAuthInit } from "better-auth";
+import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { bearer, jwt, customSession } from "better-auth/plugins";
+import { ObjectId } from "mongodb";
 
 let authInstance: any = null;
 
@@ -35,9 +35,9 @@ function initAuth() {
   }
 
   const config = {
-    appName: 'Famly',
+    appName: "Famly",
     baseURL: settings.betterAuthUrl,
-    basePath: '/v1/auth',
+    basePath: "/v1/auth",
     secret: settings.betterAuthSecret,
 
     database: mongodbAdapter(getDb()),
@@ -54,7 +54,7 @@ function initAuth() {
     user: {
       additionalFields: {
         birthdate: {
-          type: 'date' as const,
+          type: "date" as const,
           required: true,
           input: true, // Allow users to provide value during signup
         },
@@ -65,34 +65,32 @@ function initAuth() {
     // Note: JWT tokens are stateless and don't include families claim
     // Families are hydrated in the authenticate middleware for both JWT and session-based auth
     plugins: [
-      customSession(
-        async ({ user, session }) => {
-          // Note: better-auth doesn't automatically include additionalFields in the user object
-          // We need to manually fetch them from MongoDB for all user/session responses
-          try {
-            const db = getDb();
-            const fullUser = await db
-              .collection('user')
-              .findOne({ _id: new ObjectId(user.id) });
+      customSession(async ({ user, session }) => {
+        // Note: better-auth doesn't automatically include additionalFields in the user object
+        // We need to manually fetch them from MongoDB for all user/session responses
+        try {
+          const db = getDb();
+          const fullUser = await db
+            .collection("user")
+            .findOne({ _id: new ObjectId(user.id) });
 
-            return {
-              user: {
-                ...user,
-                // Include additionalFields from database
-                birthdate: fullUser?.birthdate ?? null,
-              },
-              session,
-            };
-          } catch (error) {
-            // If fetch fails, return user without additionalFields
-            // The client can fetch from /me endpoint if needed
-            return {
-              user,
-              session,
-            };
-          }
+          return {
+            user: {
+              ...user,
+              // Include additionalFields from database
+              birthdate: fullUser?.birthdate ?? null,
+            },
+            session,
+          };
+        } catch (error) {
+          // If fetch fails, return user without additionalFields
+          // The client can fetch from /me endpoint if needed
+          return {
+            user,
+            session,
+          };
         }
-      ),
+      }),
       bearer(),
       jwt(),
     ],

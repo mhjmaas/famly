@@ -1,13 +1,13 @@
-import { Collection, ObjectId } from 'mongodb';
-import { getDb } from '@infra/mongo/client';
-import { Family } from '../domain/family';
-import { logger } from '@lib/logger';
+import { Collection, ObjectId } from "mongodb";
+import { getDb } from "@infra/mongo/client";
+import { Family } from "../domain/family";
+import { logger } from "@lib/logger";
 
 export class FamilyRepository {
   private collection: Collection<Family>;
 
   constructor() {
-    this.collection = getDb().collection<Family>('families');
+    this.collection = getDb().collection<Family>("families");
   }
 
   /**
@@ -19,18 +19,18 @@ export class FamilyRepository {
       // Index on creatorId for listing families created by a user
       await this.collection.createIndex(
         { creatorId: 1 },
-        { name: 'idx_creator_families' }
+        { name: "idx_creator_families" },
       );
 
       // Non-unique index on name for future case-insensitive search
       await this.collection.createIndex(
         { name: 1 },
-        { name: 'idx_family_name' }
+        { name: "idx_family_name" },
       );
 
-      logger.info('Family indexes created successfully');
+      logger.info("Family indexes created successfully");
     } catch (error) {
-      logger.error('Failed to create family indexes:', error);
+      logger.error("Failed to create family indexes:", error);
       throw error;
     }
   }
@@ -42,7 +42,10 @@ export class FamilyRepository {
    * @param name - Optional family name (normalized)
    * @returns The created family document
    */
-  async createFamily(creatorId: ObjectId, name: string | null): Promise<Family> {
+  async createFamily(
+    creatorId: ObjectId,
+    name: string | null,
+  ): Promise<Family> {
     const now = new Date();
 
     const family: Family = {
@@ -99,7 +102,10 @@ export class FamilyRepository {
    * @param name - New family name (normalized)
    * @returns The updated family document or null if not found
    */
-  async updateName(familyId: ObjectId, name: string | null): Promise<Family | null> {
+  async updateName(
+    familyId: ObjectId,
+    name: string | null,
+  ): Promise<Family | null> {
     const result = await this.collection.findOneAndUpdate(
       { _id: familyId },
       {
@@ -108,7 +114,7 @@ export class FamilyRepository {
           updatedAt: new Date(),
         },
       },
-      { returnDocument: 'after' }
+      { returnDocument: "after" },
     );
 
     return result || null;

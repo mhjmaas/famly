@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient } from "mongodb";
 
 let mongoClient: MongoClient | null = null;
 
@@ -10,7 +10,7 @@ async function getMongoClient(): Promise<MongoClient> {
   if (!mongoClient) {
     const mongoUri = process.env.MONGODB_URI || global.__MONGO_URI__;
     if (!mongoUri) {
-      throw new Error('MongoDB URI not found. Ensure global setup has run.');
+      throw new Error("MongoDB URI not found. Ensure global setup has run.");
     }
     mongoClient = new MongoClient(mongoUri, { directConnection: true });
     await mongoClient.connect();
@@ -24,11 +24,11 @@ async function getMongoClient(): Promise<MongoClient> {
  */
 export async function cleanDatabase(): Promise<void> {
   const client = await getMongoClient();
-  const db = client.db();
+  const db = client.db("famly");
 
   // Get all collections
   const collections = await db.listCollections().toArray();
-  
+
   // Delete all documents in parallel (much faster than sequential)
   await Promise.all(
     collections.map(async (collection) => {
@@ -36,7 +36,7 @@ export async function cleanDatabase(): Promise<void> {
       if (count > 0) {
         await db.collection(collection.name).deleteMany({});
       }
-    })
+    }),
   );
 }
 
@@ -47,15 +47,17 @@ export async function cleanDatabase(): Promise<void> {
 export async function clearAuthCaches(): Promise<void> {
   // Clear JWKS cache to force re-fetching keys
   try {
-    const { clearJWKSCache } = await import('@modules/auth/middleware/jwt-verify');
+    const { clearJWKSCache } = await import(
+      "@modules/auth/middleware/jwt-verify"
+    );
     clearJWKSCache();
   } catch (error) {
     // Ignore if module not available
   }
-  
+
   // Reset Better Auth instance to clear any internal state corruption
   try {
-    const { resetAuth } = await import('@modules/auth/better-auth');
+    const { resetAuth } = await import("@modules/auth/better-auth");
     resetAuth();
   } catch (error) {
     // Ignore if module not available

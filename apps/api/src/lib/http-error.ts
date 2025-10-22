@@ -12,7 +12,7 @@ export class HttpError extends Error {
 
   constructor(options: HttpErrorOptions) {
     super(options.message);
-    this.name = 'HttpError';
+    this.name = "HttpError";
     this.statusCode = options.statusCode;
     this.error = options.error;
     this.details = options.details;
@@ -38,32 +38,32 @@ export class HttpError extends Error {
     return new HttpError({
       statusCode: 400,
       message,
-      error: 'BAD_REQUEST',
+      error: "BAD_REQUEST",
       details,
     });
   }
 
-  static unauthorized(message: string = 'Unauthorized'): HttpError {
+  static unauthorized(message: string = "Unauthorized"): HttpError {
     return new HttpError({
       statusCode: 401,
       message,
-      error: 'UNAUTHORIZED',
+      error: "UNAUTHORIZED",
     });
   }
 
-  static forbidden(message: string = 'Forbidden'): HttpError {
+  static forbidden(message: string = "Forbidden"): HttpError {
     return new HttpError({
       statusCode: 403,
       message,
-      error: 'FORBIDDEN',
+      error: "FORBIDDEN",
     });
   }
 
-  static notFound(message: string = 'Not Found'): HttpError {
+  static notFound(message: string = "Not Found"): HttpError {
     return new HttpError({
       statusCode: 404,
       message,
-      error: 'NOT_FOUND',
+      error: "NOT_FOUND",
     });
   }
 
@@ -71,15 +71,17 @@ export class HttpError extends Error {
     return new HttpError({
       statusCode: 409,
       message,
-      error: 'CONFLICT',
+      error: "CONFLICT",
     });
   }
 
-  static internalServerError(message: string = 'Internal Server Error'): HttpError {
+  static internalServerError(
+    message: string = "Internal Server Error",
+  ): HttpError {
     return new HttpError({
       statusCode: 500,
       message,
-      error: 'INTERNAL_SERVER_ERROR',
+      error: "INTERNAL_SERVER_ERROR",
     });
   }
 }

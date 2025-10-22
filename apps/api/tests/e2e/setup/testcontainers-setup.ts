@@ -1,19 +1,22 @@
-import { MongoDBContainer, StartedMongoDBContainer } from '@testcontainers/mongodb';
-import { ChildProcess, spawn } from 'child_process';
-import { MongoClient } from 'mongodb';
+import {
+  MongoDBContainer,
+  StartedMongoDBContainer,
+} from "@testcontainers/mongodb";
+import { ChildProcess, spawn } from "child_process";
+import { MongoClient } from "mongodb";
 
 // Set minimal env vars before any imports
 if (!process.env.MONGODB_URI) {
-  process.env.MONGODB_URI = 'mongodb://localhost:27017/test';
+  process.env.MONGODB_URI = "mongodb://localhost:27017/test";
 }
 if (!process.env.BETTER_AUTH_SECRET) {
-  process.env.BETTER_AUTH_SECRET = 'test_better_auth_secret_min_32_chars_x';
+  process.env.BETTER_AUTH_SECRET = "test_better_auth_secret_min_32_chars_x";
 }
 if (!process.env.BETTER_AUTH_URL) {
-  process.env.BETTER_AUTH_URL = 'http://localhost:3001';
+  process.env.BETTER_AUTH_URL = "http://localhost:3001";
 }
 
-import { logger } from '../../../src/lib/logger';
+import { logger } from "../../../src/lib/logger";
 
 let mongoContainer: StartedMongoDBContainer;
 let serverProcess: ChildProcess;
@@ -31,44 +34,44 @@ let mongoClient: MongoClient;
 
 export async function setupE2E(): Promise<string> {
   // Start MongoDB container
-  logger.info('Starting MongoDB container...');
-  mongoContainer = await new MongoDBContainer('mongo:7.0').start();
+  logger.info("Starting MongoDB container...");
+  mongoContainer = await new MongoDBContainer("mongo:7.0").start();
 
   // Build connection string with localhost
   const host = mongoContainer.getHost();
   const mongoPort = mongoContainer.getMappedPort(27017);
   const mongoUri = `mongodb://${host}:${mongoPort}`;
-  logger.info('MongoDB container started at:', mongoUri);
+  logger.info("MongoDB container started at:", mongoUri);
 
   // Create MongoDB client for test utilities
   mongoClient = new MongoClient(mongoUri, { directConnection: true });
   await mongoClient.connect();
 
   // Start the server as a child process
-  logger.info('Starting API server...');
+  logger.info("Starting API server...");
   const port = 3001;
 
-  serverProcess = spawn('npx', ['tsx', 'src/server.ts'], {
+  serverProcess = spawn("npx", ["tsx", "src/server.ts"], {
     env: {
       ...process.env,
       MONGODB_URI: mongoUri,
-      NODE_ENV: 'test',
+      NODE_ENV: "test",
       PORT: port.toString(),
-      BETTER_AUTH_SECRET: 'test_better_auth_secret_min_32_chars_x',
+      BETTER_AUTH_SECRET: "test_better_auth_secret_min_32_chars_x",
       BETTER_AUTH_URL: `http://localhost:${port}`,
     },
-    stdio: ['ignore', 'pipe', 'pipe'],
+    stdio: ["ignore", "pipe", "pipe"],
   });
 
   // Collect all output for debugging
   const allOutput: string[] = [];
 
-  serverProcess.stdout?.on('data', (data) => {
+  serverProcess.stdout?.on("data", (data) => {
     const output = data.toString();
     allOutput.push(`[stdout] ${output}`);
   });
 
-  serverProcess.stderr?.on('data', (data) => {
+  serverProcess.stderr?.on("data", (data) => {
     const output = data.toString();
     allOutput.push(`[stderr] ${output}`);
   });
@@ -76,16 +79,16 @@ export async function setupE2E(): Promise<string> {
   // Wait for server to be ready
   await new Promise<void>((resolve, reject) => {
     const timeout = setTimeout(() => {
-      logger.debug('Server output:');
-      logger.debug(allOutput.join(''));
-      reject(new Error('Server failed to start within 15 seconds'));
+      logger.debug("Server output:");
+      logger.debug(allOutput.join(""));
+      reject(new Error("Server failed to start within 15 seconds"));
     }, 15000);
 
     let resolved = false;
 
     const checkAndResolve = () => {
-      const fullOutput = allOutput.join('');
-      if (!resolved && fullOutput.includes('listening on port')) {
+      const fullOutput = allOutput.join("");
+      if (!resolved && fullOutput.includes("listening on port")) {
         resolved = true;
         clearTimeout(timeout);
         // Wait a bit more for the server to be fully ready
@@ -96,44 +99,44 @@ export async function setupE2E(): Promise<string> {
     // Check output every 100ms
     const interval = setInterval(checkAndResolve, 100);
 
-    serverProcess.on('error', (error) => {
+    serverProcess.on("error", (error) => {
       clearTimeout(timeout);
       clearInterval(interval);
-      logger.debug('Server output:');
-      logger.debug(allOutput.join(''));
+      logger.debug("Server output:");
+      logger.debug(allOutput.join(""));
       reject(error);
     });
 
-    serverProcess.on('exit', (code) => {
+    serverProcess.on("exit", (code) => {
       if (!resolved) {
         clearTimeout(timeout);
         clearInterval(interval);
-        logger.debug('Server output:');
-        logger.debug(allOutput.join(''));
+        logger.debug("Server output:");
+        logger.debug(allOutput.join(""));
         reject(new Error(`Server exited with code ${code}`));
       }
     });
   });
 
-  logger.info('E2E test environment ready');
+  logger.info("E2E test environment ready");
   const baseUrl = `http://localhost:${port}`;
   return baseUrl;
 }
 
 export async function teardownE2E(): Promise<void> {
-  logger.info('Tearing down E2E test environment...');
+  logger.info("Tearing down E2E test environment...");
 
   // Kill server process
   if (serverProcess) {
-    serverProcess.kill('SIGTERM');
+    serverProcess.kill("SIGTERM");
     await new Promise<void>((resolve) => {
-      serverProcess.on('exit', () => {
-        logger.info('Server process stopped');
+      serverProcess.on("exit", () => {
+        logger.info("Server process stopped");
         resolve();
       });
       // Force kill after 5 seconds
       setTimeout(() => {
-        serverProcess.kill('SIGKILL');
+        serverProcess.kill("SIGKILL");
         resolve();
       }, 5000);
     });
@@ -147,7 +150,7 @@ export async function teardownE2E(): Promise<void> {
   // Stop MongoDB container
   if (mongoContainer) {
     await mongoContainer.stop();
-    logger.info('MongoDB container stopped');
+    logger.info("MongoDB container stopped");
   }
 }
 
@@ -156,10 +159,10 @@ export async function teardownE2E(): Promise<void> {
  */
 export async function cleanDatabase(): Promise<void> {
   if (!mongoClient) {
-    throw new Error('MongoDB client not initialized. Call setupE2E() first.');
+    throw new Error("MongoDB client not initialized. Call setupE2E() first.");
   }
 
-  const db = mongoClient.db();
+  const db = mongoClient.db("famly"); // Use 'famly' database to match server
 
   // Drop all collections
   const collections = await db.listCollections().toArray();

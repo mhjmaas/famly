@@ -1,5 +1,8 @@
-import { Router, Response, NextFunction } from 'express';
-import { authenticate, type AuthenticatedRequest } from '../middleware/authenticate';
+import { Router, Response, NextFunction } from "express";
+import {
+  authenticate,
+  type AuthenticatedRequest,
+} from "../middleware/authenticate";
 
 /**
  * Get current user profile endpoint.
@@ -19,26 +22,30 @@ import { authenticate, type AuthenticatedRequest } from '../middleware/authentic
 export function createMeRoute(): Router {
   const router = Router();
 
-  router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      // User is guaranteed to exist due to authenticate middleware
-      res.status(200).json({
-        user: {
-          id: req.user!.id,
-          email: req.user!.email,
-          name: req.user!.name,
-          birthdate: req.user!.birthdate,
-          emailVerified: req.user!.emailVerified,
-          createdAt: req.user!.createdAt,
-          updatedAt: req.user!.updatedAt,
-          families: req.user!.families || [],
-        },
-        authType: req.authType,
-      });
-    } catch (error) {
-      next(error);
-    }
-  });
+  router.get(
+    "/me",
+    authenticate,
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+      try {
+        // User is guaranteed to exist due to authenticate middleware
+        res.status(200).json({
+          user: {
+            id: req.user!.id,
+            email: req.user!.email,
+            name: req.user!.name,
+            birthdate: req.user!.birthdate,
+            emailVerified: req.user!.emailVerified,
+            createdAt: req.user!.createdAt,
+            updatedAt: req.user!.updatedAt,
+            families: req.user!.families || [],
+          },
+          authType: req.authType,
+        });
+      } catch (error) {
+        next(error);
+      }
+    },
+  );
 
   return router;
 }

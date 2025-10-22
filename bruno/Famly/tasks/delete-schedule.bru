@@ -1,0 +1,16 @@
+meta {
+  name: delete schedule
+  type: http
+  seq: 10
+}
+
+delete {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/tasks/schedules/{{currentScheduleId}}
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

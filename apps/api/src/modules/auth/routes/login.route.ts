@@ -1,12 +1,12 @@
-import { HttpError } from '@lib/http-error';
-import { logger } from '@lib/logger';
-import { FamilyMembershipRepository } from '@modules/family/repositories/family-membership.repository';
-import { FamilyRepository } from '@modules/family/repositories/family.repository';
-import { FamilyService } from '@modules/family/services/family.service';
-import { fromNodeHeaders } from 'better-auth/node';
-import { NextFunction, Request, Response, Router } from 'express';
-import { ObjectId } from 'mongodb';
-import { getAuth } from '../better-auth';
+import { HttpError } from "@lib/http-error";
+import { logger } from "@lib/logger";
+import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
+import { FamilyRepository } from "@modules/family/repositories/family.repository";
+import { FamilyService } from "@modules/family/services/family.service";
+import { fromNodeHeaders } from "better-auth/node";
+import { NextFunction, Request, Response, Router } from "express";
+import { ObjectId } from "mongodb";
+import { getAuth } from "../better-auth";
 
 /**
  * Login route using better-auth's built-in email/password sign-in.
@@ -27,128 +27,144 @@ import { getAuth } from '../better-auth';
 export function createLoginRoute(): Router {
   const router = Router();
 
-  router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const auth = getAuth();
-
-      // Use better-auth's built-in signIn method
-      const result = await auth.api.signInEmail({
-        body: {
-          email: req.body.email,
-          password: req.body.password,
-          rememberMe: req.body.rememberMe || false,
-        },
-        headers: fromNodeHeaders(req.headers),
-        asResponse: true,
-      });
-
-      // Copy session cookie from better-auth response to our response (for web)
-      // MUST be done BEFORE sending JSON response
-      const setCookieHeader = result.headers.get('set-cookie');
-      if (setCookieHeader) {
-        res.setHeader('set-cookie', setCookieHeader);
-      }
-
-      // Parse the response body
-      const data = await result.json();
-
-      if (!data.user) {
-        throw HttpError.unauthorized('Invalid email or password');
-      }
-
-      // Extract session token from Better Auth response
-      const sessionToken = data.token; // Session token (long-lived, database-backed)
-
-      // Get session with additionalFields via customSession plugin
-      let fullUser = data.user;
+  router.post(
+    "/login",
+    async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const sessionData = await auth.api.getSession({
-          headers: {
-            authorization: `Bearer ${sessionToken}`,
+        const auth = getAuth();
+
+        // Use better-auth's built-in signIn method
+        const result = await auth.api.signInEmail({
+          body: {
+            email: req.body.email,
+            password: req.body.password,
+            rememberMe: req.body.rememberMe || false,
           },
+          headers: fromNodeHeaders(req.headers),
+          asResponse: true,
         });
-        if (sessionData.user) {
-          fullUser = sessionData.user;
+
+        // Copy session cookie from better-auth response to our response (for web)
+        // MUST be done BEFORE sending JSON response
+        const setCookieHeader = result.headers.get("set-cookie");
+        if (setCookieHeader) {
+          res.setHeader("set-cookie", setCookieHeader);
         }
-      } catch (error) {
-        logger.warn('Failed to fetch full user session with additionalFields:', error);
-        // Continue with basic user data from signInEmail response
-      }
 
-      // Get JWT access token by calling the token endpoint with the session
-      let accessToken: string | null = null;
-      try {
-        const tokenResult = await auth.api.getToken({
-          headers: {
-            authorization: `Bearer ${sessionToken}`,
+        // Parse the response body
+        const data = await result.json();
+
+        if (!data.user) {
+          throw HttpError.unauthorized("Invalid email or password");
+        }
+
+        // Extract session token from Better Auth response
+        const sessionToken = data.token; // Session token (long-lived, database-backed)
+
+        // Get session with additionalFields via customSession plugin
+        let fullUser = data.user;
+        try {
+          const sessionData = await auth.api.getSession({
+            headers: {
+              authorization: `Bearer ${sessionToken}`,
+            },
+          });
+          if (sessionData.user) {
+            fullUser = sessionData.user;
+          }
+        } catch (error) {
+          logger.warn(
+            "Failed to fetch full user session with additionalFields:",
+            error,
+          );
+          // Continue with basic user data from signInEmail response
+        }
+
+        // Get JWT access token by calling the token endpoint with the session
+        let accessToken: string | null = null;
+        try {
+          const tokenResult = await auth.api.getToken({
+            headers: {
+              authorization: `Bearer ${sessionToken}`,
+            },
+          });
+          accessToken = tokenResult.token;
+          logger.debug("JWT token generated successfully");
+        } catch (error) {
+          logger.warn(
+            "Failed to generate JWT token - continuing with session token only:",
+            error,
+          );
+          // Gracefully degrade: session token still works for authentication
+          // Client can request JWT later via /v1/auth/token endpoint if needed
+        }
+
+        // Set tokens in response headers for clients that prefer header extraction
+        if (sessionToken) {
+          res.setHeader("set-auth-token", sessionToken);
+        }
+        if (accessToken) {
+          res.setHeader("set-auth-jwt", accessToken);
+        }
+
+        // Hydrate families for login response
+        let families: any[] = [];
+        try {
+          const familyService = new FamilyService(
+            new FamilyRepository(),
+            new FamilyMembershipRepository(),
+          );
+          const userId = new ObjectId(fullUser.id);
+          families = await familyService.listFamiliesForUser(userId);
+        } catch (error) {
+          logger.error("Failed to load families for login response:", error);
+          // Continue with empty families array
+        }
+
+        // Return user data with dual-token strategy
+        res.status(200).json({
+          user: {
+            id: fullUser.id,
+            email: fullUser.email,
+            name: fullUser.name,
+            birthdate: fullUser.birthdate,
+            emailVerified: fullUser.emailVerified,
+            createdAt: fullUser.createdAt,
+            updatedAt: fullUser.updatedAt,
+            families,
           },
+          session: {
+            expiresAt:
+              data.session?.expiresAt ||
+              new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          },
+          // Access token (JWT): Short-lived, stateless, for API requests
+          accessToken: accessToken || null,
+          // Session token: Long-lived, database-backed, for token refresh
+          sessionToken: sessionToken || null,
         });
-        accessToken = tokenResult.token;
-        logger.debug('JWT token generated successfully');
       } catch (error) {
-        logger.warn('Failed to generate JWT token - continuing with session token only:', error);
-        // Gracefully degrade: session token still works for authentication
-        // Client can request JWT later via /v1/auth/token endpoint if needed
-      }
-
-      // Set tokens in response headers for clients that prefer header extraction
-      if (sessionToken) {
-        res.setHeader('set-auth-token', sessionToken);
-      }
-      if (accessToken) {
-        res.setHeader('set-auth-jwt', accessToken);
-      }
-
-      // Hydrate families for login response
-      let families: any[] = [];
-      try {
-        const familyService = new FamilyService(
-          new FamilyRepository(),
-          new FamilyMembershipRepository()
-        );
-        const userId = new ObjectId(fullUser.id);
-        families = await familyService.listFamiliesForUser(userId);
-      } catch (error) {
-        logger.error('Failed to load families for login response:', error);
-        // Continue with empty families array
-      }
-
-      // Return user data with dual-token strategy
-      res.status(200).json({
-        user: {
-          id: fullUser.id,
-          email: fullUser.email,
-          name: fullUser.name,
-          birthdate: fullUser.birthdate,
-          emailVerified: fullUser.emailVerified,
-          createdAt: fullUser.createdAt,
-          updatedAt: fullUser.updatedAt,
-          families,
-        },
-        session: {
-          expiresAt: data.session?.expiresAt || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-        // Access token (JWT): Short-lived, stateless, for API requests
-        accessToken: accessToken || null,
-        // Session token: Long-lived, database-backed, for token refresh
-        sessionToken: sessionToken || null,
-      });
-    } catch (error) {
-      // Handle better-auth errors
-      if (error && typeof error === 'object' && 'status' in error) {
-        const authError = error as any;
-        if (authError.status === 401 || authError.message?.includes('Invalid')) {
-          next(HttpError.unauthorized('Invalid email or password'));
-        } else if (authError.status === 400) {
-          next(HttpError.badRequest(authError.message || 'Invalid login data'));
+        // Handle better-auth errors
+        if (error && typeof error === "object" && "status" in error) {
+          const authError = error as any;
+          if (
+            authError.status === 401 ||
+            authError.message?.includes("Invalid")
+          ) {
+            next(HttpError.unauthorized("Invalid email or password"));
+          } else if (authError.status === 400) {
+            next(
+              HttpError.badRequest(authError.message || "Invalid login data"),
+            );
+          } else {
+            next(error);
+          }
         } else {
           next(error);
         }
-      } else {
-        next(error);
       }
-    }
-  });
+    },
+  );
 
   return router;
 }

@@ -1,0 +1,39 @@
+meta {
+  name: create task
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/tasks
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Buy groceries",
+    "description": "Get milk, eggs, and bread",
+    "dueDate": "2025-01-15T10:00:00Z",
+    "assignment": {
+      "type": "unassigned"
+    }
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+script:post-response {
+  try {
+    const body = res.body;
+    
+    if (body?._id) {
+      bru.setEnvVar('currentTaskId', body._id);
+    }
+  } catch (error) {
+    console.log('Failed to persist task ID: ' + error?.message);
+  }
+}

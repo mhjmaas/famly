@@ -2,4 +2,4 @@
  * Family routes exports
  */
 
-export { createFamiliesRouter } from './families.route';
+export { createFamiliesRouter } from "./families.route";

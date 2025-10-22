@@ -1,9 +1,9 @@
-import type { Request, Response, NextFunction } from 'express';
-import { ObjectId } from 'mongodb';
-import { requireFamilyRole } from '../lib/require-family-role';
-import { FamilyRole } from '@modules/family/domain/family';
-import type { AuthenticatedRequest } from './authenticate';
-import { HttpError } from '@lib/http-error';
+import type { Request, Response, NextFunction } from "express";
+import { ObjectId } from "mongodb";
+import { requireFamilyRole } from "../lib/require-family-role";
+import { FamilyRole } from "@modules/family/domain/family";
+import type { AuthenticatedRequest } from "./authenticate";
+import { HttpError } from "@lib/http-error";
 
 /**
  * Options for family role authorization middleware
@@ -45,23 +45,29 @@ export interface AuthorizeFamilyRoleOptions {
  * @returns Express middleware function
  */
 export function authorizeFamilyRole(
-  options: AuthorizeFamilyRoleOptions
+  options: AuthorizeFamilyRoleOptions,
 ): (req: Request, res: Response, next: NextFunction) => Promise<void> {
-  const { familyIdParam = 'familyId', allowedRoles } = options;
+  const { familyIdParam = "familyId", allowedRoles } = options;
 
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  return async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const authReq = req as AuthenticatedRequest;
 
       // Ensure user is authenticated
       if (!authReq.user) {
-        throw HttpError.unauthorized('Authentication required');
+        throw HttpError.unauthorized("Authentication required");
       }
 
       // Extract familyId from route parameters
       const familyIdStr = req.params[familyIdParam];
       if (!familyIdStr) {
-        throw HttpError.badRequest(`Missing required parameter: ${familyIdParam}`);
+        throw HttpError.badRequest(
+          `Missing required parameter: ${familyIdParam}`,
+        );
       }
 
       // Validate familyId format

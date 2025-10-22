@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
-import { isHttpError } from '@lib/http-error';
-import { logger } from '@lib/logger';
+import { Request, Response, NextFunction } from "express";
+import { isHttpError } from "@lib/http-error";
+import { logger } from "@lib/logger";
 
 export interface ErrorResponse {
   error: string;
@@ -8,8 +8,13 @@ export interface ErrorResponse {
   details?: unknown;
 }
 
-export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction): void {
-  logger.error('[Error]', err);
+export function errorHandler(
+  err: unknown,
+  _req: Request,
+  res: Response,
+  _next: NextFunction,
+): void {
+  logger.error("[Error]", err);
 
   if (isHttpError(err)) {
     const response: ErrorResponse = {
@@ -25,10 +30,10 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
     return;
   }
 
-  if (err instanceof SyntaxError && 'body' in err) {
+  if (err instanceof SyntaxError && "body" in err) {
     const response: ErrorResponse = {
-      error: 'Invalid JSON',
-      code: 'BAD_REQUEST',
+      error: "Invalid JSON",
+      code: "BAD_REQUEST",
     };
     res.status(400).json(response);
     return;
@@ -36,8 +41,8 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
 
   // Include details in development and test modes
   const response: ErrorResponse = {
-    error: 'Internal Server Error',
-    code: 'INTERNAL_SERVER_ERROR',
+    error: "Internal Server Error",
+    code: "INTERNAL_SERVER_ERROR",
   };
 
   // Always show details for debugging

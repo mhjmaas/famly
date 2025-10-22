@@ -1,0 +1,27 @@
+meta {
+  name: update schedule
+  type: http
+  seq: 9
+}
+
+patch {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/tasks/schedules/{{currentScheduleId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Weekly Cleaning - Updated",
+    "schedule": {
+      "daysOfWeek": [1, 3, 5],
+      "weeklyInterval": 1,
+      "startDate": "2025-01-01T00:00:00Z"
+    }
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

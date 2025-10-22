@@ -84,23 +84,46 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   └── validators
 │   │   │   │   │       ├── login.validator.ts
 │   │   │   │   │       └── register.validator.ts
-│   │   │   │   └── family
+│   │   │   │   ├── family
+│   │   │   │   │   ├── domain
+│   │   │   │   │   │   └── family.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── lib
+│   │   │   │   │   │   └── family.mapper.ts
+│   │   │   │   │   ├── repositories
+│   │   │   │   │   │   ├── family-membership.repository.ts
+│   │   │   │   │   │   └── family.repository.ts
+│   │   │   │   │   ├── routes
+│   │   │   │   │   │   ├── families.route.ts
+│   │   │   │   │   │   └── index.ts
+│   │   │   │   │   ├── services
+│   │   │   │   │   │   └── family.service.ts
+│   │   │   │   │   └── validators
+│   │   │   │   │       ├── add-family-member.validator.ts
+│   │   │   │   │       └── create-family.validator.ts
+│   │   │   │   └── tasks
 │   │   │   │       ├── domain
-│   │   │   │       │   └── family.ts
+│   │   │   │       │   └── task.ts
 │   │   │   │       ├── index.ts
 │   │   │   │       ├── lib
-│   │   │   │       │   └── family.mapper.ts
+│   │   │   │       │   ├── schedule-matcher.ts
+│   │   │   │       │   ├── task-scheduler.ts
+│   │   │   │       │   └── task.mapper.ts
 │   │   │   │       ├── repositories
-│   │   │   │       │   ├── family-membership.repository.ts
-│   │   │   │       │   └── family.repository.ts
+│   │   │   │       │   ├── schedule.repository.ts
+│   │   │   │       │   └── task.repository.ts
 │   │   │   │       ├── routes
-│   │   │   │       │   ├── families.route.ts
-│   │   │   │       │   └── index.ts
+│   │   │   │       │   ├── create-task.route.ts
+│   │   │   │       │   └── tasks.router.ts
 │   │   │   │       ├── services
-│   │   │   │       │   └── family.service.ts
+│   │   │   │       │   ├── schedule.service.ts
+│   │   │   │       │   ├── task-generator.service.ts
+│   │   │   │       │   └── task.service.ts
 │   │   │   │       └── validators
-│   │   │   │           ├── add-family-member.validator.ts
-│   │   │   │           └── create-family.validator.ts
+│   │   │   │           ├── create-schedule.validator.ts
+│   │   │   │           ├── create-task.validator.ts
+│   │   │   │           ├── update-schedule.validator.ts
+│   │   │   │           └── update-task.validator.ts
 │   │   │   ├── routes
 │   │   │   │   └── health.ts
 │   │   │   └── server.ts
@@ -125,8 +148,10 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   ├── helpers
 │   │   │   │   │   ├── database.ts
 │   │   │   │   │   └── test-app.ts
-│   │   │   │   └── setup
-│   │   │   │       └── testcontainers-setup.ts
+│   │   │   │   ├── setup
+│   │   │   │   │   └── testcontainers-setup.ts
+│   │   │   │   └── tasks
+│   │   │   │       └── create-task.e2e.test.ts
 │   │   │   ├── setup
 │   │   │   │   ├── global-setup.ts
 │   │   │   │   ├── global-teardown.ts
@@ -139,8 +164,15 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │       │   ├── README.md
 │   │   │       │   ├── add-family-member.validator.test.ts
 │   │   │       │   └── create-family.validator.test.ts
-│   │   │       └── lib
-│   │   │           └── http-error.test.ts
+│   │   │       ├── lib
+│   │   │       │   └── http-error.test.ts
+│   │   │       └── tasks
+│   │   │           ├── create-schedule.validator.test.ts
+│   │   │           ├── create-task.validator.test.ts
+│   │   │           ├── schedule-matcher.test.ts
+│   │   │           ├── task.mapper.test.ts
+│   │   │           ├── update-schedule.validator.test.ts
+│   │   │           └── update-task.validator.test.ts
 │   │   ├── tsconfig.json
 │   │   └── tsconfig.spec.json
 │   └── web
@@ -187,6 +219,13 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
+│   │   └── add-family-task-management
+│   │       ├── design.md
+│   │       ├── proposal.md
+│   │       ├── specs
+│   │       │   └── tasks
+│   │       │       └── spec.md
+│   │       └── tasks.md
 │   ├── project.md
 │   └── specs
 │       ├── auth
@@ -201,7 +240,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-54 directories, 107 files
+66 directories, 134 files
 ```
 <!-- TREE END -->
 

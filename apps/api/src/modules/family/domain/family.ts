@@ -1,12 +1,12 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from "mongodb";
 
 /**
  * Family role enum
  * Defines the allowed roles for family memberships
  */
 export enum FamilyRole {
-  Parent = 'Parent',
-  Child = 'Child',
+  Parent = "Parent",
+  Child = "Child",
 }
 
 /**
