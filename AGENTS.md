@@ -68,8 +68,6 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │   │   │   ├── modules
 │   │   │   │   ├── auth
 │   │   │   │   │   ├── better-auth.ts
-│   │   │   │   │   ├── domain
-│   │   │   │   │   │   └── user.ts
 │   │   │   │   │   ├── lib
 │   │   │   │   │   │   └── require-family-role.ts
 │   │   │   │   │   ├── middleware
@@ -77,13 +75,15 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │   │   │   │   │   │   ├── authorize-family-role.ts
 │   │   │   │   │   │   ├── index.ts
 │   │   │   │   │   │   └── jwt-verify.ts
+│   │   │   │   │   ├── repositories
 │   │   │   │   │   ├── routes
 │   │   │   │   │   │   ├── auth.router.ts
 │   │   │   │   │   │   ├── login.route.ts
 │   │   │   │   │   │   ├── me.route.ts
 │   │   │   │   │   │   └── register.route.ts
 │   │   │   │   │   └── validators
-│   │   │   │   │       └── login.validator.ts
+│   │   │   │   │       ├── login.validator.ts
+│   │   │   │   │       └── register.validator.ts
 │   │   │   │   └── family
 │   │   │   │       ├── domain
 │   │   │   │       │   └── family.ts
@@ -109,6 +109,7 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │   │   │   │   ├── auth
 │   │   │   │   │   ├── login.e2e.test.ts
 │   │   │   │   │   ├── me.e2e.test.ts
+│   │   │   │   │   ├── me.e2e.test.ts.bak
 │   │   │   │   │   └── register.e2e.test.ts
 │   │   │   │   ├── family
 │   │   │   │   │   ├── README.md
@@ -179,15 +180,19 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │           ├── delete member.bru
 │           ├── folder.bru
 │           └── get all.bru
+├── constitution.md
 ├── docker
 │   ├── compose.dev.yml
 │   └── scripts
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   └── archive
 │   ├── project.md
 │   └── specs
+│       ├── auth
+│       │   └── spec.md
+│       └── family
+│           └── spec.md
 ├── package.json
 ├── packages
 ├── pnpm-lock.yaml
@@ -196,5 +201,5 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-53 directories, 103 files
+54 directories, 107 files
 ```

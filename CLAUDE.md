@@ -68,8 +68,6 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   ├── modules
 │   │   │   │   ├── auth
 │   │   │   │   │   ├── better-auth.ts
-│   │   │   │   │   ├── domain
-│   │   │   │   │   │   └── user.ts
 │   │   │   │   │   ├── lib
 │   │   │   │   │   │   └── require-family-role.ts
 │   │   │   │   │   ├── middleware
@@ -84,7 +82,8 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   │   ├── me.route.ts
 │   │   │   │   │   │   └── register.route.ts
 │   │   │   │   │   └── validators
-│   │   │   │   │       └── login.validator.ts
+│   │   │   │   │       ├── login.validator.ts
+│   │   │   │   │       └── register.validator.ts
 │   │   │   │   └── family
 │   │   │   │       ├── domain
 │   │   │   │       │   └── family.ts
@@ -110,6 +109,7 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   ├── auth
 │   │   │   │   │   ├── login.e2e.test.ts
 │   │   │   │   │   ├── me.e2e.test.ts
+│   │   │   │   │   ├── me.e2e.test.ts.bak
 │   │   │   │   │   └── register.e2e.test.ts
 │   │   │   │   ├── family
 │   │   │   │   │   ├── README.md
@@ -187,17 +187,12 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   ├── add-user-profile-fields
-│   │   │   ├── proposal.md
-│   │   │   ├── specs
-│   │   │   │   ├── auth
-│   │   │   │   │   └── spec.md
-│   │   │   │   └── family
-│   │   │   │       └── spec.md
-│   │   │   └── tasks.md
-│   │   └── archive
 │   ├── project.md
 │   └── specs
+│       ├── auth
+│       │   └── spec.md
+│       └── family
+│           └── spec.md
 ├── package.json
 ├── packages
 ├── pnpm-lock.yaml
@@ -206,7 +201,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-58 directories, 108 files
+54 directories, 107 files
 ```
 <!-- TREE END -->
 
