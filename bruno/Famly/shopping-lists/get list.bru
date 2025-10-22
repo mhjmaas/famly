@@ -1,0 +1,50 @@
+meta {
+  name: Get List
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/v1/families/:currentFamilyId/shopping-lists/:listId
+  body: none
+  auth: bearer
+}
+
+params:path {
+  listId: 68f95b4f1db775ab782cedcf
+  currentFamilyId: {{currentFamilyId}}
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  # Get Shopping List
+  
+  Retrieve a specific shopping list by ID.
+  
+  ## Path Parameters
+  
+  - `familyId`: ID of the family
+  - `listId`: ID of the shopping list
+  
+  ## Response
+  
+  Returns the shopping list with the following properties:
+  - `_id`: Unique identifier
+  - `familyId`: ID of the family
+  - `name`: Shopping list name
+  - `tags`: Array of tags
+  - `items`: Array of items
+  - `createdBy`: ID of the user who created it
+  - `createdAt`: Creation timestamp
+  - `updatedAt`: Last update timestamp
+  
+  ## Status Codes
+  
+  - `200`: Shopping list retrieved successfully
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not a family member)
+  - `404`: Shopping list not found
+}
