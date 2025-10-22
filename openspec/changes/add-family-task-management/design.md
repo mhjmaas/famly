@@ -13,11 +13,11 @@ Families need to coordinate household tasks and chores. The design must support 
 - Keep implementation simple and maintainable
 
 **Non-Goals:**
-- Task completion tracking/status management (future enhancement)
 - Task reminders or notifications (future enhancement)
 - Task templates or pre-defined chore lists (future enhancement)
 - Complex scheduling beyond weekly recurrence patterns
 - Task dependencies or hierarchies
+- Task completion history tracking (future enhancement)
 
 ## Decisions
 
@@ -127,6 +127,7 @@ type TaskAssignment =
   dueDate?: Date,                  // Optional due datetime
   assignment: TaskAssignment,
   scheduleId?: ObjectId,           // Reference if generated from schedule
+  completedAt?: Date,              // Optional completion timestamp
   createdBy: ObjectId,
   createdAt: Date,
   updatedAt: Date
@@ -161,6 +162,7 @@ tasks:
   - { familyId: 1, dueDate: 1 }
   - { familyId: 1, scheduleId: 1 }
   - { familyId: 1, createdAt: -1 }
+  - { familyId: 1, completedAt: 1 }
 
 task_schedules:
   - { familyId: 1 }

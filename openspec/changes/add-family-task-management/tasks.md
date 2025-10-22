@@ -8,7 +8,7 @@
 
 - [ ] 2.1 Create `apps/api/src/modules/tasks/domain/task.ts` with TypeScript interfaces:
   - `TaskAssignment` discriminated union type
-  - `Task` interface matching MongoDB schema
+  - `Task` interface matching MongoDB schema (including `completedAt?: Date`)
   - `TaskSchedule` interface with schedule configuration
   - `Schedule` interface for recurrence rules
   - Input/output DTOs for API operations
@@ -28,6 +28,8 @@
 - [ ] 3.4 Write failing unit tests in `apps/api/tests/unit/tasks/update-task.validator.test.ts`:
   - Partial update validation
   - Field-specific validation
+  - CompletedAt date format validation (ISO 8601)
+  - CompletedAt can be null (to mark incomplete)
 - [ ] 3.5 Implement `apps/api/src/modules/tasks/validators/update-task.validator.ts`
 - [ ] 3.6 Verify tests pass
 
@@ -165,7 +167,9 @@
   - PATCH /v1/families/:familyId/tasks/:taskId updates fields
   - Partial updates work correctly
   - updatedAt timestamp refreshed
-  - Validation errors for invalid data
+  - Complete task by setting completedAt timestamp
+  - Mark task incomplete by setting completedAt to null
+  - Validation errors for invalid data (including invalid completedAt format)
   - Authorization checks
 - [ ] 13.4.2 Implement `apps/api/src/modules/tasks/routes/update-task.route.ts` (PATCH)
 - [ ] 13.4.3 Verify tests pass
@@ -284,6 +288,7 @@
   - list-tasks.bru
   - get-task.bru
   - update-task.bru
+  - complete-task.bru (PATCH with completedAt)
   - delete-task.bru
   - create-schedule.bru
   - list-schedules.bru

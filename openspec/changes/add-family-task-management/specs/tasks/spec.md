@@ -223,6 +223,31 @@ The system MUST enforce field length and format constraints.
 - **WHEN** they create a schedule with invalid `timeOfDay` format (not HH:mm)
 - **THEN** the API responds with HTTP 400 and validation error
 
+### Requirement: Task Completion
+Family members MUST be able to mark tasks as completed via a PATCH operation.
+
+#### Scenario: Complete a task successfully
+- **GIVEN** an authenticated family member
+- **WHEN** they PATCH `/v1/families/{familyId}/tasks/{taskId}` with `{ completedAt: '2025-01-15T10:30:00Z' }`
+- **THEN** the API responds with HTTP 200 and the updated task
+- **AND** the task's `completedAt` field is set to the provided timestamp
+- **AND** `updatedAt` timestamp is refreshed
+
+#### Scenario: Mark task as incomplete by clearing completedAt
+- **GIVEN** an authenticated family member with a completed task
+- **WHEN** they PATCH with `{ completedAt: null }`
+- **THEN** the task's `completedAt` field is set to null (marking it incomplete)
+
+#### Scenario: Complete task with current timestamp
+- **GIVEN** an authenticated family member
+- **WHEN** they PATCH with `{ completedAt: new Date().toISOString() }`
+- **THEN** the task is marked as completed with the current timestamp
+
+#### Scenario: Reject invalid completedAt format
+- **GIVEN** an authenticated family member
+- **WHEN** they PATCH with an invalid date format for `completedAt`
+- **THEN** the API responds with HTTP 400 and indicates proper ISO 8601 format required
+
 ### Requirement: Authorization
 Only family members MUST be authorized to access family tasks and schedules.
 

@@ -8,6 +8,7 @@ Families need a way to coordinate and track household tasks and chores. Currentl
 - Introduce two MongoDB collections: `tasks` (individual task instances) and `task_schedules` (recurring task templates)
 - Implement task CRUD operations with role-based permissions (both parents and children can create/manage tasks)
 - Support flexible task assignment: specific family member, all members with a role (parent/child), or unassigned
+- Enable task completion tracking via PATCH operation with `completedAt` timestamp field
 - Enable recurring task functionality with schedule definitions (days of week, weekly intervals 1-4 weeks)
 - Add daily cron job using the `cron` npm package to generate task instances from schedules
 - Create RESTful API endpoints under `/v1/families/:familyId/tasks` route structure
