@@ -1,0 +1,45 @@
+meta {
+  name: create schedule
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/tasks/schedules
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Weekly Cleaning",
+    "description": "Clean the house every Monday",
+    "assignment": {
+      "type": "role",
+      "role": "child"
+    },
+    "schedule": {
+      "daysOfWeek": [1],
+      "weeklyInterval": 1,
+      "startDate": "2025-01-01T00:00:00Z"
+    },
+    "timeOfDay": "09:00"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+script:post-response {
+  try {
+    const body = res.body;
+    
+    if (body?._id) {
+      bru.setEnvVar('currentScheduleId', body._id);
+    }
+  } catch (error) {
+    console.log('Failed to persist schedule ID: ' + error?.message);
+  }
+}

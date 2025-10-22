@@ -1,7 +1,10 @@
-import type { ObjectId } from 'mongodb';
-import { HttpError } from '@lib/http-error';
-import { FamilyRole, type FamilyMembershipView } from '@modules/family/domain/family';
-import type { FamilyMembershipRepository } from '@modules/family/repositories/family-membership.repository';
+import { HttpError } from "@lib/http-error";
+import type {
+  FamilyMembershipView,
+  FamilyRole,
+} from "@modules/family/domain/family";
+import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
+import type { ObjectId } from "mongodb";
 
 /**
  * Options for role-based family authorization
@@ -71,21 +74,33 @@ export interface RequireFamilyRoleOptions {
  * @throws {HttpError} 403 Forbidden if user lacks required role or membership
  */
 export async function requireFamilyRole(
-  options: RequireFamilyRoleOptions
+  options: RequireFamilyRoleOptions,
 ): Promise<boolean> {
-  const { userId, familyId, allowedRoles, userFamilies, membershipRepository } = options;
+  const { userId, familyId, allowedRoles, userFamilies, membershipRepository } =
+    options;
 
   // Fast path: Use pre-hydrated families from req.user
   if (userFamilies !== undefined) {
-    return checkRoleFromFamilies(familyId.toString(), allowedRoles, userFamilies);
+    return checkRoleFromFamilies(
+      familyId.toString(),
+      allowedRoles,
+      userFamilies,
+    );
   }
 
   // Fallback path: Query repository
   if (!membershipRepository) {
-    throw new Error('Either userFamilies or membershipRepository must be provided');
+    throw new Error(
+      "Either userFamilies or membershipRepository must be provided",
+    );
   }
 
-  return await checkRoleFromRepository(userId, familyId, allowedRoles, membershipRepository);
+  return await checkRoleFromRepository(
+    userId,
+    familyId,
+    allowedRoles,
+    membershipRepository,
+  );
 }
 
 /**
@@ -94,18 +109,18 @@ export async function requireFamilyRole(
 function checkRoleFromFamilies(
   familyIdStr: string,
   allowedRoles: FamilyRole[],
-  userFamilies: FamilyMembershipView[]
+  userFamilies: FamilyMembershipView[],
 ): boolean {
-  const membership = userFamilies.find(f => f.familyId === familyIdStr);
+  const membership = userFamilies.find((f) => f.familyId === familyIdStr);
 
   if (!membership) {
-    throw HttpError.forbidden('You are not a member of this family');
+    throw HttpError.forbidden("You are not a member of this family");
   }
 
   if (!allowedRoles.includes(membership.role)) {
     const rolesStr = formatRolesList(allowedRoles);
     throw HttpError.forbidden(
-      `You must be a ${rolesStr} in this family to perform this action`
+      `You must be a ${rolesStr} in this family to perform this action`,
     );
   }
 
@@ -119,18 +134,18 @@ async function checkRoleFromRepository(
   userId: ObjectId,
   familyId: ObjectId,
   allowedRoles: FamilyRole[],
-  repository: FamilyMembershipRepository
+  repository: FamilyMembershipRepository,
 ): Promise<boolean> {
   const membership = await repository.findByFamilyAndUser(familyId, userId);
 
   if (!membership) {
-    throw HttpError.forbidden('You are not a member of this family');
+    throw HttpError.forbidden("You are not a member of this family");
   }
 
   if (!allowedRoles.includes(membership.role)) {
     const rolesStr = formatRolesList(allowedRoles);
     throw HttpError.forbidden(
-      `You must be a ${rolesStr} in this family to perform this action`
+      `You must be a ${rolesStr} in this family to perform this action`,
     );
   }
 
@@ -147,5 +162,5 @@ function formatRolesList(roles: FamilyRole[]): string {
   if (roles.length === 1) {
     return roles[0];
   }
-  return roles.join(' or ');
+  return roles.join(" or ");
 }

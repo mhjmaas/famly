@@ -1,5 +1,8 @@
-import { Router, Response, NextFunction } from 'express';
-import { authenticate, type AuthenticatedRequest } from '../middleware/authenticate';
+import { type NextFunction, type Response, Router } from "express";
+import {
+  type AuthenticatedRequest,
+  authenticate,
+} from "../middleware/authenticate";
 
 /**
  * Get current user profile endpoint.
@@ -11,33 +14,42 @@ import { authenticate, type AuthenticatedRequest } from '../middleware/authentic
  * - Authorization: Bearer <token> (for mobile/API)
  *
  * Response (200):
- * - user: { id, email, name, emailVerified, createdAt, updatedAt }
- * - authType: "cookie" | "bearer"
+ * - user: { id, email, name, birthdate, emailVerified, createdAt, updatedAt, families }
+ * - authType: "cookie" | "bearer-jwt" | "bearer-session"
  *
  * Response (401): Unauthorized (no valid session or token)
  */
 export function createMeRoute(): Router {
   const router = Router();
 
-  router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-      // User is guaranteed to exist due to authenticate middleware
-      res.status(200).json({
-        user: {
-          id: req.user!.id,
-          email: req.user!.email,
-          name: req.user!.name,
-          emailVerified: req.user!.emailVerified,
-          createdAt: req.user!.createdAt,
-          updatedAt: req.user!.updatedAt,
-          families: req.user!.families || [],
-        },
-        authType: req.authType,
-      });
-    } catch (error) {
-      next(error);
-    }
-  });
+  router.get(
+    "/me",
+    authenticate,
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+      try {
+        // User is guaranteed to exist due to authenticate middleware
+        if (!req.user) {
+          return res.status(500).json({ error: "User not found in request" });
+        }
+
+        res.status(200).json({
+          user: {
+            id: req.user.id,
+            email: req.user.email,
+            name: req.user.name,
+            birthdate: req.user.birthdate,
+            emailVerified: req.user.emailVerified,
+            createdAt: req.user.createdAt,
+            updatedAt: req.user.updatedAt,
+            families: req.user.families || [],
+          },
+          authType: req.authType,
+        });
+      } catch (error) {
+        next(error);
+      }
+    },
+  );
 
   return router;
 }

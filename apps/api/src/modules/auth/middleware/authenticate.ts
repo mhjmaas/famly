@@ -1,10 +1,10 @@
-import { Request, Response, NextFunction } from 'express';
-import { fromNodeHeaders } from 'better-auth/node';
-import { ObjectId } from 'mongodb';
-import { getAuth } from '../better-auth';
-import { HttpError } from '@lib/http-error';
-import { verifyJWT, isJWT } from './jwt-verify';
-import type { FamilyMembershipView } from '@modules/family/domain/family';
+import { HttpError } from "@lib/http-error";
+import type { FamilyMembershipView } from "@modules/family/domain/family";
+import { fromNodeHeaders } from "better-auth/node";
+import type { NextFunction, Request, Response } from "express";
+import { ObjectId } from "mongodb";
+import { getAuth } from "../better-auth";
+import { isJWT, verifyJWT } from "./jwt-verify";
 
 /**
  * Extended Express Request with authentication context
@@ -14,6 +14,7 @@ export interface AuthenticatedRequest extends Request {
     id: string;
     email: string;
     name: string;
+    birthdate?: Date;
     emailVerified: boolean;
     image?: string;
     createdAt: Date;
@@ -27,31 +28,39 @@ export interface AuthenticatedRequest extends Request {
     ipAddress?: string;
     userAgent?: string;
   };
-  authType?: 'cookie' | 'bearer-jwt' | 'bearer-session';
+  authType?: "cookie" | "bearer-jwt" | "bearer-session";
 }
 
 /**
  * Hydrate user's family memberships.
  * Uses dynamic imports to avoid circular dependency with family module.
- * 
+ *
  * @param userId - The user's ObjectId
  * @returns Array of family memberships or empty array on error
  */
-async function hydrateFamilies(userId: ObjectId): Promise<FamilyMembershipView[]> {
+async function hydrateFamilies(
+  userId: ObjectId,
+): Promise<FamilyMembershipView[]> {
   try {
     // Dynamic imports required to break circular dependency:
     // auth/middleware → family/services → family/routes → auth/middleware
-    const { FamilyService } = await import('@modules/family/services/family.service');
-    const { FamilyRepository } = await import('@modules/family/repositories/family.repository');
-    const { FamilyMembershipRepository } = await import('@modules/family/repositories/family-membership.repository');
+    const { FamilyService } = await import(
+      "@modules/family/services/family.service"
+    );
+    const { FamilyRepository } = await import(
+      "@modules/family/repositories/family.repository"
+    );
+    const { FamilyMembershipRepository } = await import(
+      "@modules/family/repositories/family-membership.repository"
+    );
 
     const familyService = new FamilyService(
       new FamilyRepository(),
-      new FamilyMembershipRepository()
+      new FamilyMembershipRepository(),
     );
 
     return await familyService.listFamiliesForUser(userId);
-  } catch (error) {
+  } catch (_error) {
     // Gracefully handle family hydration failure
     // Don't fail authentication if family lookup fails
     return [];
@@ -75,15 +84,15 @@ async function hydrateFamilies(userId: ObjectId): Promise<FamilyMembershipView[]
 export async function authenticate(
   req: AuthenticatedRequest,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const auth = getAuth();
     const authHeader = req.headers.authorization;
-    const hasBearerToken = authHeader?.startsWith('Bearer ');
-    
+    const hasBearerToken = authHeader?.startsWith("Bearer ");
+
     // Extract bearer token if present
-    const bearerToken = hasBearerToken ? authHeader!.substring(7) : null;
+    const bearerToken = hasBearerToken ? authHeader?.substring(7) : null;
 
     // Strategy 1: JWT Token (stateless verification using JWKS)
     if (bearerToken && isJWT(bearerToken)) {
@@ -95,6 +104,7 @@ export async function authenticate(
           id: payload.id as string,
           email: payload.email as string,
           name: payload.name as string,
+          birthdate: new Date(payload.birthdate as string),
           emailVerified: payload.emailVerified as boolean,
           image: payload.image as string | undefined,
           createdAt: new Date(payload.createdAt as string),
@@ -110,7 +120,7 @@ export async function authenticate(
           userAgent: undefined,
         };
 
-        req.authType = 'bearer-jwt';
+        req.authType = "bearer-jwt";
 
         // Hydrate families for JWT auth (requires DB lookup)
         if (req.user) {
@@ -119,18 +129,18 @@ export async function authenticate(
         }
 
         return next();
-      } catch (error) {
-        throw HttpError.unauthorized('Invalid or expired JWT token');
+      } catch (_error) {
+        throw HttpError.unauthorized("Invalid or expired JWT token");
       }
     }
 
     // Strategy 2 & 3: Session token (bearer or cookie) - requires database lookup
     let headers = fromNodeHeaders(req.headers);
-    if (hasBearerToken && !isJWT(bearerToken!)) {
+    if (hasBearerToken && bearerToken && !isJWT(bearerToken)) {
       // Session token in bearer header - remove cookie to force bearer auth
       const headersWithoutCookie: Record<string, string> = {};
       for (const [key, value] of Object.entries(req.headers)) {
-        if (key.toLowerCase() !== 'cookie' && typeof value === 'string') {
+        if (key.toLowerCase() !== "cookie" && typeof value === "string") {
           headersWithoutCookie[key] = value;
         }
       }
@@ -143,15 +153,34 @@ export async function authenticate(
     });
 
     if (!sessionData) {
-      throw HttpError.unauthorized('No valid session or bearer token found');
+      throw HttpError.unauthorized("No valid session or bearer token found");
     }
 
     // Set authentication type
-    req.authType = hasBearerToken ? 'bearer-session' : 'cookie';
+    req.authType = hasBearerToken ? "bearer-session" : "cookie";
 
     // Attach user and session to request
-    req.user = sessionData.user;
-    req.session = sessionData.session;
+    req.user = {
+      id: sessionData.user.id,
+      email: sessionData.user.email,
+      name: sessionData.user.name,
+      birthdate: sessionData.user.birthdate
+        ? new Date(sessionData.user.birthdate)
+        : undefined,
+      emailVerified: sessionData.user.emailVerified,
+      image: sessionData.user.image ?? undefined,
+      createdAt: new Date(sessionData.user.createdAt),
+      updatedAt: new Date(sessionData.user.updatedAt),
+      families: req.user?.families,
+    };
+
+    req.session = {
+      id: sessionData.session.id,
+      userId: sessionData.session.userId,
+      expiresAt: new Date(sessionData.session.expiresAt),
+      ipAddress: sessionData.session.ipAddress ?? undefined,
+      userAgent: sessionData.session.userAgent ?? undefined,
+    };
 
     // Hydrate families for session-based auth
     if (req.user) {
@@ -164,7 +193,7 @@ export async function authenticate(
     if (error instanceof HttpError) {
       next(error);
     } else {
-      next(HttpError.unauthorized('Session validation failed'));
+      next(HttpError.unauthorized("Session validation failed"));
     }
   }
 }

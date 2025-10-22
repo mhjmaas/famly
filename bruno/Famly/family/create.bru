@@ -20,3 +20,15 @@ settings {
   encodeUrl: true
   timeout: 0
 }
+
+script:post-response {
+  try {
+    const body = res.body;
+
+    if (body?.familyId) {
+      bru.setEnvVar('currentFamilyId', body.familyId);
+    }
+  } catch (error) {
+    console.log('Failed to persist family ID: ' + error?.message);
+  }
+}

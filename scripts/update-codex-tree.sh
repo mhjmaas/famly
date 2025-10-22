@@ -5,7 +5,7 @@ tree_temp=$(mktemp)
 output_temp=$(mktemp)
 
 # Generate tree output
-tree . -I "node_modules" -I "dist" -I "test-results" -I "playwright-report"  > "$tree_temp"
+tree . -I "node_modules" -I "dist" -I "test-results" -I "playwright-report" --matchdirs -I "*archive*"  > "$tree_temp"
 
 # Process the AGENTS.md file
 awk '

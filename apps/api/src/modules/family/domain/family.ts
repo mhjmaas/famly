@@ -1,12 +1,12 @@
-import { ObjectId } from 'mongodb';
+import type { ObjectId } from "mongodb";
 
 /**
  * Family role enum
  * Defines the allowed roles for family memberships
  */
 export enum FamilyRole {
-  Parent = 'Parent',
-  Child = 'Child',
+  Parent = "Parent",
+  Child = "Child",
 }
 
 /**
@@ -68,6 +68,8 @@ export type ListFamiliesResponse = FamilyMembershipView[];
 export interface AddFamilyMemberRequest {
   email: string;
   password: string;
+  name: string;
+  birthdate: string; // ISO 8601 format (YYYY-MM-DD)
   role: FamilyRole;
 }
 

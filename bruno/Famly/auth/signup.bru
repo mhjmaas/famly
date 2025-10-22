@@ -14,13 +14,9 @@ body:json {
   {
     "email": "user@example.com",
     "password": "securePassword123",
-    "name": "John Doe"  // Optional, defaults to email prefix
+    "name": "John Doe",
+    "birthdate": "1986-01-01"
   }
-}
-
-settings {
-  encodeUrl: true
-  timeout: 0
 }
 
 script:post-response {
@@ -33,11 +29,11 @@ script:post-response {
       );
       return headerValue ? headers[headerValue] : null;
     };
-
+  
     const accessToken = body?.accessToken || fromHeaders('set-auth-jwt');
     const sessionToken =
       body?.sessionToken || body?.session?.token || fromHeaders('set-auth-token');
-
+  
     if (sessionToken) {
       bru.setEnvVar('sessionToken', sessionToken);
     }
@@ -47,4 +43,9 @@ script:post-response {
   } catch (error) {
     console.log('Failed to persist auth tokens: ' + error?.message);
   }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
 }

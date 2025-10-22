@@ -1,30 +1,28 @@
-import request from 'supertest';
-import { getTestApp } from './helpers/test-app';
+import request from "supertest";
+import { getTestApp } from "./helpers/test-app";
 
-describe('E2E: GET /v1/health', () => {
+describe("E2E: GET /v1/health", () => {
   let baseUrl: string;
 
   beforeAll(() => {
     baseUrl = getTestApp();
   });
 
-  describe('Health Check', () => {
-    it('should respond with status ok and HTTP 200', async () => {
-      const response = await request(baseUrl)
-        .get('/v1/health');
+  describe("Health Check", () => {
+    it("should respond with status ok and HTTP 200", async () => {
+      const response = await request(baseUrl).get("/v1/health");
 
       expect(response.status).toBe(200);
-      expect(response.headers['content-type']).toMatch(/application\/json/);
+      expect(response.headers["content-type"]).toMatch(/application\/json/);
       expect(response.body).toEqual({
-        status: 'ok',
+        status: "ok",
       });
     });
 
-    it('should respond quickly (< 100ms)', async () => {
+    it("should respond quickly (< 100ms)", async () => {
       const startTime = Date.now();
-      
-      const response = await request(baseUrl)
-        .get('/v1/health');
+
+      const response = await request(baseUrl).get("/v1/health");
 
       const duration = Date.now() - startTime;
 
@@ -32,24 +30,22 @@ describe('E2E: GET /v1/health', () => {
       expect(duration).toBeLessThan(100);
     });
 
-    it('should not require authentication', async () => {
+    it("should not require authentication", async () => {
       // Health endpoint should work without any auth
-      const response = await request(baseUrl)
-        .get('/v1/health');
+      const response = await request(baseUrl).get("/v1/health");
 
       expect(response.status).toBe(200);
-      expect(response.body.status).toBe('ok');
+      expect(response.body.status).toBe("ok");
     });
 
-    it('should return consistent response format', async () => {
+    it("should return consistent response format", async () => {
       // Make multiple requests to ensure consistency
       for (let i = 0; i < 3; i++) {
-        const response = await request(baseUrl)
-          .get('/v1/health');
+        const response = await request(baseUrl).get("/v1/health");
 
         expect(response.status).toBe(200);
-        expect(response.body).toHaveProperty('status');
-        expect(response.body.status).toBe('ok');
+        expect(response.body).toHaveProperty("status");
+        expect(response.body.status).toBe("ok");
       }
     });
   });

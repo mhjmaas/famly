@@ -1,13 +1,14 @@
-import { Collection, ObjectId } from 'mongodb';
-import { getDb } from '@infra/mongo/client';
-import { FamilyMembership, FamilyRole } from '../domain/family';
-import { logger } from '@lib/logger';
+import { getDb } from "@infra/mongo/client";
+import { logger } from "@lib/logger";
+import { type Collection, ObjectId } from "mongodb";
+import type { FamilyMembership, FamilyRole } from "../domain/family";
 
 export class FamilyMembershipRepository {
   private collection: Collection<FamilyMembership>;
 
   constructor() {
-    this.collection = getDb().collection<FamilyMembership>('family_memberships');
+    this.collection =
+      getDb().collection<FamilyMembership>("family_memberships");
   }
 
   /**
@@ -19,18 +20,18 @@ export class FamilyMembershipRepository {
       // Unique compound index to enforce single membership per user per family
       await this.collection.createIndex(
         { familyId: 1, userId: 1 },
-        { unique: true, name: 'idx_family_user_unique' }
+        { unique: true, name: "idx_family_user_unique" },
       );
 
       // Index on userId for efficient lookups when listing user's families
       await this.collection.createIndex(
         { userId: 1 },
-        { name: 'idx_user_families' }
+        { name: "idx_user_families" },
       );
 
-      logger.info('Family membership indexes created successfully');
+      logger.info("Family membership indexes created successfully");
     } catch (error) {
-      logger.error('Failed to create family membership indexes:', error);
+      logger.error("Failed to create family membership indexes:", error);
       throw error;
     }
   }
@@ -48,7 +49,7 @@ export class FamilyMembershipRepository {
     familyId: ObjectId,
     userId: ObjectId,
     role: FamilyRole,
-    addedBy?: ObjectId
+    addedBy?: ObjectId,
   ): Promise<FamilyMembership> {
     const now = new Date();
 
@@ -76,7 +77,7 @@ export class FamilyMembershipRepository {
    */
   async findByFamilyAndUser(
     familyId: ObjectId,
-    userId: ObjectId
+    userId: ObjectId,
   ): Promise<FamilyMembership | null> {
     return this.collection.findOne({ familyId, userId });
   }
@@ -89,10 +90,7 @@ export class FamilyMembershipRepository {
    * @returns Array of membership documents
    */
   async findByUser(userId: ObjectId): Promise<FamilyMembership[]> {
-    return this.collection
-      .find({ userId })
-      .sort({ createdAt: -1 })
-      .toArray();
+    return this.collection.find({ userId }).sort({ createdAt: -1 }).toArray();
   }
 
   /**
@@ -102,10 +100,7 @@ export class FamilyMembershipRepository {
    * @returns Array of membership documents
    */
   async findByFamily(familyId: ObjectId): Promise<FamilyMembership[]> {
-    return this.collection
-      .find({ familyId })
-      .sort({ createdAt: -1 })
-      .toArray();
+    return this.collection.find({ familyId }).sort({ createdAt: -1 }).toArray();
   }
 
   /**
@@ -132,7 +127,10 @@ export class FamilyMembershipRepository {
    * @param userId - The user ID
    * @returns True if deleted, false if not found
    */
-  async deleteMembership(familyId: ObjectId, userId: ObjectId): Promise<boolean> {
+  async deleteMembership(
+    familyId: ObjectId,
+    userId: ObjectId,
+  ): Promise<boolean> {
     const result = await this.collection.deleteOne({ familyId, userId });
     return result.deletedCount > 0;
   }

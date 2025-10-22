@@ -9,7 +9,9 @@ declare global {
 export function getTestApp(): string {
   const baseUrl = global.__TEST_BASE_URL__;
   if (!baseUrl) {
-    throw new Error('Test server not initialized. Ensure global setup has run.');
+    throw new Error(
+      "Test server not initialized. Ensure global setup has run.",
+    );
   }
   return baseUrl;
 }

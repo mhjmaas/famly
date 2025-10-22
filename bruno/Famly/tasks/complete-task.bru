@@ -1,0 +1,22 @@
+meta {
+  name: complete task
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/tasks/{{currentTaskId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "completedAt": "{{now}}"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

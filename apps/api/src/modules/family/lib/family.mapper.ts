@@ -1,16 +1,18 @@
+import { HttpError } from "@lib/http-error";
+import type { ObjectId } from "mongodb";
 import {
-  Family,
-  FamilyMembership,
-  FamilyMembershipView,
+  type AddFamilyMemberResult,
+  type Family,
+  type FamilyMembership,
+  type FamilyMembershipView,
   FamilyRole,
-  AddFamilyMemberResult,
   type ListFamiliesResponse,
-} from '../domain/family';
-import { HttpError } from '@lib/http-error';
-import { ObjectId } from 'mongodb';
+} from "../domain/family";
 
 export interface FamilyMemberView {
   memberId: string;
+  name: string;
+  birthdate: string | Date; // ISO 8601 date string or Date object
   role: FamilyRole;
   linkedAt: string;
   addedBy?: string;
@@ -30,12 +32,12 @@ export type FamiliesWithMembersResponse = Array<
  */
 export function toFamilyMembershipView(
   family: Family,
-  membership: FamilyMembership
+  membership: FamilyMembership,
 ): FamilyMembershipView {
   // Validate role is one of the allowed values
   if (!Object.values(FamilyRole).includes(membership.role)) {
     throw HttpError.badRequest(
-      `Invalid role: ${membership.role}. Only Parent and Child roles are supported.`
+      `Invalid role: ${membership.role}. Only Parent and Child roles are supported.`,
     );
   }
 
@@ -56,7 +58,7 @@ export function toFamilyMembershipView(
 export function validateRole(role: string): asserts role is FamilyRole {
   if (!Object.values(FamilyRole).includes(role as FamilyRole)) {
     throw HttpError.badRequest(
-      `Invalid role: ${role}. Only Parent and Child roles are supported.`
+      `Invalid role: ${role}. Only Parent and Child roles are supported.`,
     );
   }
 }
@@ -71,7 +73,7 @@ export function validateRole(role: string): asserts role is FamilyRole {
  * @returns Normalized name or null
  */
 export function normalizeFamilyName(name?: string | null): string | null {
-  if (!name || typeof name !== 'string') {
+  if (!name || typeof name !== "string") {
     return null;
   }
 
@@ -81,7 +83,7 @@ export function normalizeFamilyName(name?: string | null): string | null {
   }
 
   if (trimmed.length > 120) {
-    throw HttpError.badRequest('Family name cannot exceed 120 characters.');
+    throw HttpError.badRequest("Family name cannot exceed 120 characters.");
   }
 
   return trimmed;
@@ -99,7 +101,7 @@ export function normalizeFamilyName(name?: string | null): string | null {
 export function toAddFamilyMemberResult(
   membership: FamilyMembership,
   familyId: ObjectId,
-  addedBy: ObjectId
+  addedBy: ObjectId,
 ): AddFamilyMemberResult {
   return {
     memberId: membership.userId.toString(),
@@ -114,11 +116,22 @@ export function toAddFamilyMemberResult(
  * Maps membership document to response view used when listing families with members
  *
  * @param membership - FamilyMembership document from MongoDB
+ * @param userName - User's name from the user collection
+ * @param userBirthdate - User's birthdate from the user collection
  * @returns FamilyMemberView DTO
  */
-export function toFamilyMemberView(membership: FamilyMembership): FamilyMemberView {
+export function toFamilyMemberView(
+  membership: FamilyMembership,
+  userName: string,
+  userBirthdate: string | Date,
+): FamilyMemberView {
   return {
     memberId: membership.userId.toString(),
+    name: userName,
+    birthdate:
+      typeof userBirthdate === "string"
+        ? userBirthdate
+        : userBirthdate.toISOString(),
     role: membership.role,
     linkedAt: membership.createdAt.toISOString(),
     ...(membership.addedBy ? { addedBy: membership.addedBy.toString() } : {}),
@@ -127,14 +140,17 @@ export function toFamilyMemberView(membership: FamilyMembership): FamilyMemberVi
 
 /**
  * Combines family membership views with their linked members
+ * Requires user data to be passed with memberships for name and birthdate
  *
  * @param families - Existing family membership views for the authenticated user
- * @param memberships - Membership documents for the family IDs
+ * @param memberships - Membership documents with associated user data
  * @returns Families listed with their members
  */
 export function buildFamiliesWithMembersResponse(
   families: ListFamiliesResponse,
-  memberships: FamilyMembership[]
+  memberships: Array<
+    FamilyMembership & { user?: { name: string; birthdate: string | Date } }
+  >,
 ): FamiliesWithMembersResponse {
   const membersByFamily = new Map<string, FamilyMemberView[]>();
 
@@ -142,10 +158,15 @@ export function buildFamiliesWithMembersResponse(
     const familyKey = membership.familyId.toString();
     const memberViews = membersByFamily.get(familyKey);
 
+    const userName = membership.user?.name || "";
+    const userBirthdate = membership.user?.birthdate || "";
+
     if (memberViews) {
-      memberViews.push(toFamilyMemberView(membership));
+      memberViews.push(toFamilyMemberView(membership, userName, userBirthdate));
     } else {
-      membersByFamily.set(familyKey, [toFamilyMemberView(membership)]);
+      membersByFamily.set(familyKey, [
+        toFamilyMemberView(membership, userName, userBirthdate),
+      ]);
     }
   }
 

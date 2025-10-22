@@ -1,11 +1,11 @@
-import request from 'supertest';
-import { cleanDatabase } from '../helpers/database';
-import { getTestApp } from '../helpers/test-app';
+import request from "supertest";
+import { cleanDatabase } from "../helpers/database";
+import { getTestApp } from "../helpers/test-app";
 
 // Better Auth uses this cookie name pattern
-const SESSION_COOKIE_PREFIX = 'better-auth.session_token';
+const SESSION_COOKIE_PREFIX = "better-auth.session_token";
 
-describe('E2E: GET /v1/auth/me', () => {
+describe("E2E: GET /v1/auth/me", () => {
   let baseUrl: string;
 
   beforeAll(() => {
@@ -16,76 +16,87 @@ describe('E2E: GET /v1/auth/me', () => {
     await cleanDatabase();
   });
 
-  describe('Cookie-based Authentication', () => {
-    it('should return current user with valid session cookie', async () => {
+  describe("Cookie-based Authentication", () => {
+    it("should return current user with valid session cookie", async () => {
       // Register and login
       const loginResponse = await request(baseUrl)
-        .post('/v1/auth/register')
+        .post("/v1/auth/register")
         .send({
-          email: 'cookieuser@example.com',
-          password: 'SecurePassword123!',
-          name: 'Cookie User',
+          email: "cookieuser@example.com",
+          password: "SecurePassword123!",
+          name: "Cookie User",
+          birthdate: "1990-05-12",
         });
 
-      const cookies = loginResponse.headers['set-cookie'];
-      const cookieArray = Array.isArray(cookies) ? cookies : cookies ? [cookies] : [];
-      const sessionCookie = cookieArray.find((c: string) => c.includes(SESSION_COOKIE_PREFIX));
+      const cookies = loginResponse.headers["set-cookie"];
+      const cookieArray = Array.isArray(cookies)
+        ? cookies
+        : cookies
+          ? [cookies]
+          : [];
+      const sessionCookie = cookieArray.find((c: string) =>
+        c.includes(SESSION_COOKIE_PREFIX),
+      );
 
       // Access /me endpoint with cookie
+      if (!sessionCookie) {
+        throw new Error("Session cookie not found");
+      }
       const response = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Cookie', sessionCookie!);
+        .get("/v1/auth/me")
+        .set("Cookie", sessionCookie);
 
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('user');
+      expect(response.body).toHaveProperty("user");
       expect(response.body.user).toMatchObject({
-        email: 'cookieuser@example.com',
-        name: 'Cookie User',
+        email: "cookieuser@example.com",
+        name: "Cookie User",
         emailVerified: false,
       });
-      expect(response.body.user).toHaveProperty('id');
-      expect(response.body.user).toHaveProperty('createdAt');
-      expect(response.body.user).toHaveProperty('updatedAt');
-      expect(response.body.authType).toBe('cookie');
+      expect(response.body.user).toHaveProperty("id");
+      expect(response.body.user).toHaveProperty("birthdate");
+      expect(response.body.user).toHaveProperty("createdAt");
+      expect(response.body.user).toHaveProperty("updatedAt");
+      expect(response.body.authType).toBe("cookie");
     });
 
-    it('should reject request without session cookie', async () => {
-      const response = await request(baseUrl)
-        .get('/v1/auth/me');
+    it("should reject request without session cookie", async () => {
+      const response = await request(baseUrl).get("/v1/auth/me");
 
       expect(response.status).toBe(401);
-      expect(response.body).toHaveProperty('error');
+      expect(response.body).toHaveProperty("error");
     });
 
-    it('should reject request with invalid session cookie', async () => {
+    it("should reject request with invalid session cookie", async () => {
       const response = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Cookie', `${SESSION_COOKIE_PREFIX}=invalid-session-token-xyz`);
+        .get("/v1/auth/me")
+        .set("Cookie", `${SESSION_COOKIE_PREFIX}=invalid-session-token-xyz`);
 
       expect(response.status).toBe(401);
-      expect(response.body).toHaveProperty('error');
+      expect(response.body).toHaveProperty("error");
     });
 
-    it('should reject request with expired session cookie', async () => {
+    it("should reject request with expired session cookie", async () => {
       // This test would require time travel or manipulating the session
       // For now, we test with an invalid token format
       const response = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Cookie', `${SESSION_COOKIE_PREFIX}=expired-token`);
+        .get("/v1/auth/me")
+        .set("Cookie", `${SESSION_COOKIE_PREFIX}=expired-token`);
 
       expect(response.status).toBe(401);
     });
   });
 
-  describe('Bearer Token Authentication', () => {
-    it('should return current user with valid bearer token', async () => {
+  describe("Bearer Token Authentication", () => {
+    it("should return current user with valid bearer token", async () => {
       // Register and get bearer token
       const registerResponse = await request(baseUrl)
-        .post('/v1/auth/register')
+        .post("/v1/auth/register")
         .send({
-          email: 'beareruser@example.com',
-          password: 'SecurePassword123!',
-          name: 'Bearer User',
+          email: "beareruser@example.com",
+          password: "SecurePassword123!",
+          name: "Bearer User",
+          birthdate: "1998-03-21",
         });
 
       const accessToken = registerResponse.body.accessToken; // JWT token
@@ -94,185 +105,215 @@ describe('E2E: GET /v1/auth/me', () => {
 
       // Access /me endpoint with bearer token
       const response = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Authorization', `Bearer ${bearerToken}`);
+        .get("/v1/auth/me")
+        .set("Authorization", `Bearer ${bearerToken}`);
 
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('user');
+      expect(response.body).toHaveProperty("user");
       expect(response.body.user).toMatchObject({
-        email: 'beareruser@example.com',
-        name: 'Bearer User',
+        email: "beareruser@example.com",
+        name: "Bearer User",
       });
-      expect(['bearer-jwt', 'bearer-session']).toContain(response.body.authType);
+      expect(["bearer-jwt", "bearer-session"]).toContain(
+        response.body.authType,
+      );
     });
 
-    it('should reject request without authorization header', async () => {
-      const response = await request(baseUrl)
-        .get('/v1/auth/me');
+    it("should reject request without authorization header", async () => {
+      const response = await request(baseUrl).get("/v1/auth/me");
 
       expect(response.status).toBe(401);
-      expect(response.body).toHaveProperty('error');
+      expect(response.body).toHaveProperty("error");
     });
 
-    it('should reject request with invalid bearer token', async () => {
+    it("should reject request with invalid bearer token", async () => {
       const response = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Authorization', 'Bearer invalid-token-xyz-123');
+        .get("/v1/auth/me")
+        .set("Authorization", "Bearer invalid-token-xyz-123");
 
       expect(response.status).toBe(401);
-      expect(response.body).toHaveProperty('error');
+      expect(response.body).toHaveProperty("error");
     });
 
-    it('should reject request with malformed authorization header', async () => {
+    it("should reject request with malformed authorization header", async () => {
       const response = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Authorization', 'InvalidFormat token-here');
+        .get("/v1/auth/me")
+        .set("Authorization", "InvalidFormat token-here");
 
       expect(response.status).toBe(401);
     });
 
-    it('should reject request with missing Bearer prefix', async () => {
+    it("should reject request with missing Bearer prefix", async () => {
       const response = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Authorization', 'some-token-without-bearer-prefix');
+        .get("/v1/auth/me")
+        .set("Authorization", "some-token-without-bearer-prefix");
 
       expect(response.status).toBe(401);
     });
   });
 
-  describe('Authentication Type Detection', () => {
-    it('should correctly identify cookie-based authentication', async () => {
+  describe("Authentication Type Detection", () => {
+    it("should correctly identify cookie-based authentication", async () => {
       const loginResponse = await request(baseUrl)
-        .post('/v1/auth/register')
+        .post("/v1/auth/register")
         .send({
-          email: 'cookiedetect@example.com',
-          password: 'SecurePassword123!',
+          email: "cookiedetect@example.com",
+          password: "SecurePassword123!",
+          name: "Cookie Detect User",
+          birthdate: "1999-07-04",
         });
 
-      const cookies = loginResponse.headers['set-cookie'];
-      const cookieArray = Array.isArray(cookies) ? cookies : cookies ? [cookies] : [];
-      const sessionCookie = cookieArray.find((c: string) => c.includes(SESSION_COOKIE_PREFIX));
+      const cookies = loginResponse.headers["set-cookie"];
+      const cookieArray = Array.isArray(cookies)
+        ? cookies
+        : cookies
+          ? [cookies]
+          : [];
+      const sessionCookie = cookieArray.find((c: string) =>
+        c.includes(SESSION_COOKIE_PREFIX),
+      );
+
+      if (!sessionCookie) {
+        throw new Error("Session cookie not found");
+      }
 
       const response = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Cookie', sessionCookie!);
+        .get("/v1/auth/me")
+        .set("Cookie", sessionCookie);
 
       expect(response.status).toBe(200);
-      expect(response.body.authType).toBe('cookie');
+      expect(response.body.authType).toBe("cookie");
     });
 
-    it('should correctly identify bearer token authentication', async () => {
+    it("should correctly identify bearer token authentication", async () => {
       const registerResponse = await request(baseUrl)
-        .post('/v1/auth/register')
+        .post("/v1/auth/register")
         .send({
-          email: 'bearerdetect@example.com',
-          password: 'SecurePassword123!',
+          email: "bearerdetect@example.com",
+          password: "SecurePassword123!",
+          name: "Bearer Detect User",
+          birthdate: "2000-12-25",
         });
 
       const accessToken = registerResponse.body.accessToken; // JWT token
 
       const response = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Authorization', `Bearer ${accessToken}`);
+        .get("/v1/auth/me")
+        .set("Authorization", `Bearer ${accessToken}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.authType).toBe('bearer-jwt');
+      expect(response.body.authType).toBe("bearer-jwt");
     });
 
-    it('should prioritize bearer token when both cookie and token present', async () => {
+    it("should prioritize bearer token when both cookie and token present", async () => {
       // Register two users
-      const user1 = await request(baseUrl)
-        .post('/v1/auth/register')
-        .send({
-          email: 'user1@example.com',
-          password: 'SecurePassword123!',
-        });
+      const user1 = await request(baseUrl).post("/v1/auth/register").send({
+        email: "user1@example.com",
+        password: "SecurePassword123!",
+        name: "User One",
+        birthdate: "1986-01-10",
+      });
 
-      const user2 = await request(baseUrl)
-        .post('/v1/auth/register')
-        .send({
-          email: 'user2@example.com',
-          password: 'SecurePassword123!',
-        });
+      const user2 = await request(baseUrl).post("/v1/auth/register").send({
+        email: "user2@example.com",
+        password: "SecurePassword123!",
+        name: "User Two",
+        birthdate: "1991-06-20",
+      });
 
-      const user1Cookies = user1.headers['set-cookie'];
-      const user1CookieArray = Array.isArray(user1Cookies) ? user1Cookies : user1Cookies ? [user1Cookies] : [];
-      const sessionCookie = user1CookieArray.find((c: string) => c.includes(SESSION_COOKIE_PREFIX));
+      const user1Cookies = user1.headers["set-cookie"];
+      const user1CookieArray = Array.isArray(user1Cookies)
+        ? user1Cookies
+        : user1Cookies
+          ? [user1Cookies]
+          : [];
+      const sessionCookie = user1CookieArray.find((c: string) =>
+        c.includes(SESSION_COOKIE_PREFIX),
+      );
       const accessToken = user2.body.accessToken; // JWT token
+
+      if (!sessionCookie) {
+        throw new Error("Session cookie not found");
+      }
 
       // Send request with both
       const response = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Cookie', sessionCookie!)
-        .set('Authorization', `Bearer ${accessToken}`);
+        .get("/v1/auth/me")
+        .set("Cookie", sessionCookie)
+        .set("Authorization", `Bearer ${accessToken}`);
 
       expect(response.status).toBe(200);
       // Should use JWT token (user2)
-      expect(response.body.authType).toBe('bearer-jwt');
-      expect(response.body.user.email).toBe('user2@example.com');
+      expect(response.body.authType).toBe("bearer-jwt");
+      expect(response.body.user.email).toBe("user2@example.com");
     });
   });
 
-  describe('User Data Completeness', () => {
-    it('should return all expected user fields', async () => {
+  describe("User Data Completeness", () => {
+    it("should return all expected user fields", async () => {
       const registerResponse = await request(baseUrl)
-        .post('/v1/auth/register')
+        .post("/v1/auth/register")
         .send({
-          email: 'complete@example.com',
-          password: 'SecurePassword123!',
-          name: 'Complete User',
+          email: "complete@example.com",
+          password: "SecurePassword123!",
+          name: "Complete User",
+          birthdate: "1992-02-29",
         });
 
       const accessToken = registerResponse.body.accessToken; // JWT token
 
       const response = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Authorization', `Bearer ${accessToken}`);
+        .get("/v1/auth/me")
+        .set("Authorization", `Bearer ${accessToken}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.user).toHaveProperty('id');
-      expect(response.body.user).toHaveProperty('email');
-      expect(response.body.user).toHaveProperty('name');
-      expect(response.body.user).toHaveProperty('emailVerified');
-      expect(response.body.user).toHaveProperty('createdAt');
-      expect(response.body.user).toHaveProperty('updatedAt');
+      expect(response.body.user).toHaveProperty("id");
+      expect(response.body.user).toHaveProperty("email");
+      expect(response.body.user).toHaveProperty("name");
+      expect(response.body.user).toHaveProperty("emailVerified");
+      expect(response.body.user).toHaveProperty("createdAt");
+      expect(response.body.user).toHaveProperty("updatedAt");
 
       // Should NOT include sensitive fields
-      expect(response.body.user).not.toHaveProperty('password');
-      expect(response.body.user).not.toHaveProperty('passwordHash');
+      expect(response.body.user).not.toHaveProperty("password");
+      expect(response.body.user).not.toHaveProperty("passwordHash");
     });
 
-    it('should not expose sensitive information', async () => {
+    it("should not expose sensitive information", async () => {
       const registerResponse = await request(baseUrl)
-        .post('/v1/auth/register')
+        .post("/v1/auth/register")
         .send({
-          email: 'secure@example.com',
-          password: 'SecurePassword123!',
+          email: "secure@example.com",
+          password: "SecurePassword123!",
+          name: "Secure User",
+          birthdate: "1984-11-08",
         });
 
       const accessToken = registerResponse.body.accessToken; // JWT token
 
       const response = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Authorization', `Bearer ${accessToken}`);
+        .get("/v1/auth/me")
+        .set("Authorization", `Bearer ${accessToken}`);
 
       expect(response.status).toBe(200);
 
       // Verify no sensitive data in response
       const responseStr = JSON.stringify(response.body);
-      expect(responseStr).not.toContain('SecurePassword123!');
-      expect(response.body.user).not.toHaveProperty('password');
-      expect(response.body.user).not.toHaveProperty('passwordHash');
+      expect(responseStr).not.toContain("SecurePassword123!");
+      expect(response.body.user).not.toHaveProperty("password");
+      expect(response.body.user).not.toHaveProperty("passwordHash");
     });
   });
 
-  describe('Session Persistence', () => {
-    it('should maintain session across multiple requests', async () => {
+  describe("Session Persistence", () => {
+    it("should maintain session across multiple requests", async () => {
       const registerResponse = await request(baseUrl)
-        .post('/v1/auth/register')
+        .post("/v1/auth/register")
         .send({
-          email: 'persistent@example.com',
-          password: 'SecurePassword123!',
+          email: "persistent@example.com",
+          password: "SecurePassword123!",
+          name: "Persistent User",
+          birthdate: "1983-07-22",
         });
 
       const accessToken = registerResponse.body.accessToken; // JWT token
@@ -280,151 +321,180 @@ describe('E2E: GET /v1/auth/me', () => {
       // Make multiple requests with the same token
       for (let i = 0; i < 3; i++) {
         const response = await request(baseUrl)
-          .get('/v1/auth/me')
-          .set('Authorization', `Bearer ${accessToken}`);
+          .get("/v1/auth/me")
+          .set("Authorization", `Bearer ${accessToken}`);
 
         expect(response.status).toBe(200);
-        expect(response.body.user.email).toBe('persistent@example.com');
+        expect(response.body.user.email).toBe("persistent@example.com");
       }
     });
   });
 
-  describe('Family Membership Data (T016)', () => {
-    it('should include families array in response', async () => {
+  describe("Family Membership Data (T016)", () => {
+    it("should include families array in response", async () => {
       const registerResponse = await request(baseUrl)
-        .post('/v1/auth/register')
+        .post("/v1/auth/register")
         .send({
-          email: 'familytest@example.com',
-          password: 'SecurePassword123!',
+          email: "familytest@example.com",
+          password: "SecurePassword123!",
+          name: "Family Test User",
+          birthdate: "1982-09-11",
         });
 
-      const accessToken = registerResponse.body.accessToken || registerResponse.body.sessionToken;
+      const accessToken =
+        registerResponse.body.accessToken || registerResponse.body.sessionToken;
 
       const response = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Authorization', `Bearer ${accessToken}`);
+        .get("/v1/auth/me")
+        .set("Authorization", `Bearer ${accessToken}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.user).toHaveProperty('families');
+      expect(response.body.user).toHaveProperty("families");
       expect(Array.isArray(response.body.user.families)).toBe(true);
     });
 
-    it('should return empty families array for new user', async () => {
+    it("should return empty families array for new user", async () => {
       const registerResponse = await request(baseUrl)
-        .post('/v1/auth/register')
+        .post("/v1/auth/register")
         .send({
-          email: 'nofamilies@example.com',
-          password: 'SecurePassword123!',
+          email: "nofamilies@example.com",
+          password: "SecurePassword123!",
+          name: "No Families User",
+          birthdate: "1981-04-03",
         });
 
-      const accessToken = registerResponse.body.accessToken || registerResponse.body.sessionToken;
+      const accessToken =
+        registerResponse.body.accessToken || registerResponse.body.sessionToken;
 
       const response = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Authorization', `Bearer ${accessToken}`);
+        .get("/v1/auth/me")
+        .set("Authorization", `Bearer ${accessToken}`);
 
       expect(response.status).toBe(200);
       expect(response.body.user.families).toEqual([]);
     });
 
-    it('should include family after creating one', async () => {
+    it("should include family after creating one", async () => {
       const registerResponse = await request(baseUrl)
-        .post('/v1/auth/register')
+        .post("/v1/auth/register")
         .send({
-          email: 'withfamily@example.com',
-          password: 'SecurePassword123!',
+          email: "withfamily@example.com",
+          password: "SecurePassword123!",
+          name: "With Family User",
+          birthdate: "1980-10-31",
         });
 
-      const accessToken = registerResponse.body.accessToken || registerResponse.body.sessionToken;
+      const accessToken =
+        registerResponse.body.accessToken || registerResponse.body.sessionToken;
 
       // Create a family
       const createResponse = await request(baseUrl)
-        .post('/v1/families')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .post("/v1/families")
+        .set("Authorization", `Bearer ${accessToken}`)
         .send({
-          name: 'Test Family',
+          name: "Test Family",
         });
 
       expect(createResponse.status).toBe(201);
 
       // Check /me includes the family
       const meResponse = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Authorization', `Bearer ${accessToken}`);
+        .get("/v1/auth/me")
+        .set("Authorization", `Bearer ${accessToken}`);
 
       expect(meResponse.status).toBe(200);
       expect(meResponse.body.user.families).toHaveLength(1);
       expect(meResponse.body.user.families[0]).toMatchObject({
-        name: 'Test Family',
-        role: 'Parent',
+        name: "Test Family",
+        role: "Parent",
       });
-      expect(meResponse.body.user.families[0]).toHaveProperty('familyId');
-      expect(meResponse.body.user.families[0]).toHaveProperty('linkedAt');
+      expect(meResponse.body.user.families[0]).toHaveProperty("familyId");
+      expect(meResponse.body.user.families[0]).toHaveProperty("linkedAt");
     });
 
-    it('should include multiple families after creating them', async () => {
+    it("should include multiple families after creating them", async () => {
       const registerResponse = await request(baseUrl)
-        .post('/v1/auth/register')
+        .post("/v1/auth/register")
         .send({
-          email: 'multifamily@example.com',
-          password: 'SecurePassword123!',
+          email: "multifamily@example.com",
+          password: "SecurePassword123!",
+          name: "Multi Family User",
+          birthdate: "1979-12-16",
         });
 
-      const accessToken = registerResponse.body.accessToken || registerResponse.body.sessionToken;
+      const accessToken =
+        registerResponse.body.accessToken || registerResponse.body.sessionToken;
 
       // Create first family
       await request(baseUrl)
-        .post('/v1/families')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({ name: 'Family One' });
+        .post("/v1/families")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({ name: "Family One" });
 
       // Create second family
       await request(baseUrl)
-        .post('/v1/families')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({ name: 'Family Two' });
+        .post("/v1/families")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({ name: "Family Two" });
 
       // Check /me includes both families
       const meResponse = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Authorization', `Bearer ${accessToken}`);
+        .get("/v1/auth/me")
+        .set("Authorization", `Bearer ${accessToken}`);
 
       expect(meResponse.status).toBe(200);
       expect(meResponse.body.user.families).toHaveLength(2);
 
-      const familyNames = meResponse.body.user.families.map((f: any) => f.name);
-      expect(familyNames).toContain('Family One');
-      expect(familyNames).toContain('Family Two');
+      interface Family {
+        name: string;
+      }
+      const familyNames = meResponse.body.user.families.map(
+        (f: Family) => f.name,
+      );
+      expect(familyNames).toContain("Family One");
+      expect(familyNames).toContain("Family Two");
     });
 
-    it('should include families with cookie-based authentication', async () => {
+    it("should include families with cookie-based authentication", async () => {
       const registerResponse = await request(baseUrl)
-        .post('/v1/auth/register')
+        .post("/v1/auth/register")
         .send({
-          email: 'cookiefamily@example.com',
-          password: 'SecurePassword123!',
+          email: "cookiefamily@example.com",
+          password: "SecurePassword123!",
+          name: "Cookie Family User",
+          birthdate: "1978-08-06",
         });
 
-      const cookies = registerResponse.headers['set-cookie'];
-      const cookieArray = Array.isArray(cookies) ? cookies : cookies ? [cookies] : [];
-      const sessionCookie = cookieArray.find((c: string) => c.includes(SESSION_COOKIE_PREFIX));
-      const accessToken = registerResponse.body.accessToken || registerResponse.body.sessionToken;
+      const cookies = registerResponse.headers["set-cookie"];
+      const cookieArray = Array.isArray(cookies)
+        ? cookies
+        : cookies
+          ? [cookies]
+          : [];
+      const sessionCookie = cookieArray.find((c: string) =>
+        c.includes(SESSION_COOKIE_PREFIX),
+      );
+      const accessToken =
+        registerResponse.body.accessToken || registerResponse.body.sessionToken;
 
       // Create a family
       await request(baseUrl)
-        .post('/v1/families')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({ name: 'Cookie Family' });
+        .post("/v1/families")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({ name: "Cookie Family" });
 
       // Check /me with cookie auth includes the family
+      if (!sessionCookie) {
+        throw new Error("Session cookie not found");
+      }
       const meResponse = await request(baseUrl)
-        .get('/v1/auth/me')
-        .set('Cookie', sessionCookie!);
+        .get("/v1/auth/me")
+        .set("Cookie", sessionCookie);
 
       expect(meResponse.status).toBe(200);
-      expect(meResponse.body.authType).toBe('cookie');
+      expect(meResponse.body.authType).toBe("cookie");
       expect(meResponse.body.user.families).toHaveLength(1);
-      expect(meResponse.body.user.families[0].name).toBe('Cookie Family');
+      expect(meResponse.body.user.families[0].name).toBe("Cookie Family");
     });
   });
 });

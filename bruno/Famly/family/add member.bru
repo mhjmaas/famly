@@ -5,15 +5,21 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/v1/families/68f7e33bad37ac0dd2058d77/members
+  url: {{baseUrl}}/v1/families/:currentFamilyId/members
   body: json
   auth: inherit
+}
+
+params:path {
+  currentFamilyId: {{currentFamilyId}}
 }
 
 body:json {
   {
     "email": "testchild@gmail.com",
     "password": "securePasswordChild1234",
+    "name": "Tim",
+    "birthdate": "2010-02-11",
     "role": "Child"
   }
 }

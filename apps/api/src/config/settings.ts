@@ -1,18 +1,18 @@
-import { getEnv } from './env';
+import { getEnv } from "./env";
 
 class Settings {
   private env = getEnv();
 
   get isDevelopment(): boolean {
-    return this.env.NODE_ENV === 'development';
+    return this.env.NODE_ENV === "development";
   }
 
   get isProduction(): boolean {
-    return this.env.NODE_ENV === 'production';
+    return this.env.NODE_ENV === "production";
   }
 
   get isTest(): boolean {
-    return this.env.NODE_ENV === 'test';
+    return this.env.NODE_ENV === "test";
   }
 
   get port(): number {
