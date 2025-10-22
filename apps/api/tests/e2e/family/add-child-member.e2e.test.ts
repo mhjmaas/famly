@@ -25,6 +25,7 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
           email: `parent-${timestamp}@example.com`,
           password: 'parentpass123',
           name: 'Parent User',
+          birthdate: '1980-01-15',
         })
         .expect(201);
 
@@ -46,6 +47,8 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
         .send({
           email: `child-${timestamp}@example.com`,
           password: 'childpass123',
+          name: 'Child User',
+          birthdate: '2010-05-20',
           role: FamilyRole.Child,
         })
         .expect(201);
@@ -76,6 +79,7 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
           email: `parent-${timestamp}@example.com`,
           password: 'parentpass123',
           name: 'Parent User',
+          birthdate: '1980-01-15',
         })
         .expect(201);
 
@@ -94,6 +98,8 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
         .send({
           email: `child-${timestamp}@example.com`,
           password: 'childpass123',
+          name: 'Child User',
+          birthdate: '2010-05-20',
           role: FamilyRole.Child,
         })
         .expect(201);
@@ -111,6 +117,7 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
           email: `parent-${timestamp}@example.com`,
           password: 'parentpass123',
           name: 'Parent User',
+          birthdate: '1980-01-15',
         })
         .expect(201);
 
@@ -126,6 +133,8 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
         .send({
           email: 'not-an-email',
           password: 'childpass123',
+          name: 'Child User',
+          birthdate: '2010-05-20',
           role: FamilyRole.Child,
         })
         .expect(400);
@@ -139,6 +148,7 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
           email: `parent-${timestamp}@example.com`,
           password: 'parentpass123',
           name: 'Parent User',
+          birthdate: '1980-01-15',
         })
         .expect(201);
 
@@ -154,6 +164,8 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
         .send({
           email: `child-${timestamp}@example.com`,
           password: 'short',
+          name: 'Child User',
+          birthdate: '2010-05-20',
           role: FamilyRole.Child,
         })
         .expect(400);
@@ -167,6 +179,7 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
           email: `parent-${timestamp}@example.com`,
           password: 'parentpass123',
           name: 'Parent User',
+          birthdate: '1980-01-15',
         })
         .expect(201);
 
@@ -182,6 +195,8 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
         .send({
           email: `child-${timestamp}@example.com`,
           password: 'childpass123',
+          name: 'Child User',
+          birthdate: '2010-05-20',
           role: 'InvalidRole',
         })
         .expect(400);
@@ -195,6 +210,7 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
           email: `parent-${timestamp}@example.com`,
           password: 'parentpass123',
           name: 'Parent User',
+          birthdate: '1980-01-15',
         })
         .expect(201);
 
@@ -209,7 +225,7 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
         .set('Authorization', `Bearer ${parentRes.body.accessToken || parentRes.body.sessionToken}`)
         .send({
           email: `child-${timestamp}@example.com`,
-          // Missing password and role
+          // Missing password, role, name, and birthdate
         })
         .expect(400);
     });
@@ -224,6 +240,7 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
           email: `parent-${timestamp}@example.com`,
           password: 'parentpass123',
           name: 'Parent User',
+          birthdate: '1980-01-15',
         })
         .expect(201);
 
@@ -240,6 +257,8 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
         .send({
           email: `child-${timestamp}@example.com`,
           password: 'childpass123',
+          name: 'Child User',
+          birthdate: '2010-05-20',
           role: FamilyRole.Child,
         })
         .expect(201);
@@ -251,6 +270,8 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
         .send({
           email: `child-${timestamp}@example.com`,
           password: 'differentpass',
+          name: 'Child User',
+          birthdate: '2010-05-20',
           role: FamilyRole.Child,
         })
         .expect(409);
@@ -266,6 +287,8 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
         .send({
           email: 'child@example.com',
           password: 'childpass123',
+          name: 'Child User',
+          birthdate: '2010-05-20',
           role: FamilyRole.Child,
         })
         .expect(401);
@@ -279,6 +302,7 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
           email: `parent-${timestamp}@example.com`,
           password: 'parentpass123',
           name: 'Parent User',
+          birthdate: '1980-01-15',
         })
         .expect(201);
 
@@ -288,6 +312,8 @@ describe('POST /v1/families/:familyId/members - Add Child Member', () => {
         .send({
           email: `child-${timestamp}@example.com`,
           password: 'childpass123',
+          name: 'Child User',
+          birthdate: '2010-05-20',
           role: FamilyRole.Child,
         })
         .expect(400);

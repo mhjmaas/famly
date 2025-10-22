@@ -9,6 +9,8 @@ import { FamilyRole } from "../domain/family";
  * Validates:
  * - email: Valid email format, normalized to lowercase
  * - password: Minimum 8 characters (better-auth will enforce additional rules)
+ * - name: Display name, required, max 255 characters
+ * - birthdate: ISO 8601 format (YYYY-MM-DD), required, must be valid date
  * - role: Must be either Parent or Child
  */
 export const addFamilyMemberSchema = z.object({
@@ -25,6 +27,22 @@ export const addFamilyMemberSchema = z.object({
 		.string()
 		.min(1, "Password is required")
 		.min(8, "Password must be at least 8 characters"),
+
+	name: z
+		.string()
+		.min(1, "Name is required")
+		.max(255, "Name must not exceed 255 characters"),
+
+	birthdate: z
+		.string()
+		.refine(
+			(val) => /^\d{4}-\d{2}-\d{2}$/.test(val),
+			"Birthdate must be in ISO 8601 format (YYYY-MM-DD)"
+		)
+		.refine(
+			(val) => !isNaN(new Date(val).getTime()),
+			"Birthdate must be a valid date"
+		),
 
 	role: z
 		.nativeEnum(FamilyRole)

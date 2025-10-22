@@ -2,7 +2,8 @@ import { settings } from '@config/settings';
 import { getDb } from '@infra/mongo/client';
 import { betterAuth as betterAuthInit } from 'better-auth';
 import { mongodbAdapter } from 'better-auth/adapters/mongodb';
-import { bearer, jwt } from 'better-auth/plugins';
+import { bearer, jwt, customSession } from 'better-auth/plugins';
+import { ObjectId } from 'mongodb';
 
 let authInstance: any = null;
 
@@ -49,10 +50,49 @@ function initAuth() {
       minPasswordLength: 8,
     },
 
+    // Extend user schema with custom profile fields
+    user: {
+      additionalFields: {
+        birthdate: {
+          type: 'date' as const,
+          required: true,
+          input: true, // Allow users to provide value during signup
+        },
+      },
+    },
+
     // Enable bearer token plugin for mobile/API clients and JWT for stateless auth
     // Note: JWT tokens are stateless and don't include families claim
     // Families are hydrated in the authenticate middleware for both JWT and session-based auth
     plugins: [
+      customSession(
+        async ({ user, session }) => {
+          // Note: better-auth doesn't automatically include additionalFields in the user object
+          // We need to manually fetch them from MongoDB for all user/session responses
+          try {
+            const db = getDb();
+            const fullUser = await db
+              .collection('user')
+              .findOne({ _id: new ObjectId(user.id) });
+
+            return {
+              user: {
+                ...user,
+                // Include additionalFields from database
+                birthdate: fullUser?.birthdate ?? null,
+              },
+              session,
+            };
+          } catch (error) {
+            // If fetch fails, return user without additionalFields
+            // The client can fetch from /me endpoint if needed
+            return {
+              user,
+              session,
+            };
+          }
+        }
+      ),
       bearer(),
       jwt(),
     ],

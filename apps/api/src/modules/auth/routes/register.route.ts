@@ -3,6 +3,7 @@ import { logger } from '@lib/logger';
 import { fromNodeHeaders } from 'better-auth/node';
 import { NextFunction, Request, Response, Router } from 'express';
 import { getAuth } from '../better-auth';
+import { registerValidator } from '../validators/register.validator';
 
 /**
  * Register route using better-auth's built-in email/password registration.
@@ -10,10 +11,11 @@ import { getAuth } from '../better-auth';
  * Request body:
  * - email: string (required)
  * - password: string (required, min 8 characters)
- * - name: string (optional)
+ * - name: string (required)
+ * - birthdate: string (required, ISO 8601 format YYYY-MM-DD)
  *
  * Response (201):
- * - user: { id, email, name, emailVerified, createdAt, updatedAt }
+ * - user: { id, email, name, birthdate, emailVerified, createdAt, updatedAt }
  * - session: { expiresAt }
  * - accessToken: JWT token (short-lived, stateless, for API requests)
  * - sessionToken: Session token (long-lived, database-backed, for token refresh)
@@ -26,14 +28,23 @@ export function createRegisterRoute(): Router {
 
   router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
     try {
+      // Validate input
+      const validationResult = registerValidator.safeParse(req.body);
+      if (!validationResult.success) {
+        const firstError = validationResult.error.issues[0];
+        throw HttpError.badRequest(firstError.message);
+      }
+
+      const { email, password, name, birthdate } = validationResult.data;
       const auth = getAuth();
 
-      // Use better-auth's built-in signUp method
+      // Use better-auth's built-in signUp method with birthdate
       const result = await auth.api.signUpEmail({
         body: {
-          email: req.body.email,
-          password: req.body.password,
-          name: req.body.name || req.body.email?.split('@')[0],
+          email,
+          password,
+          name,
+          birthdate, // Better-auth will handle the date field automatically
         },
         headers: fromNodeHeaders(req.headers),
         asResponse: true,
@@ -74,6 +85,22 @@ export function createRegisterRoute(): Router {
       // Extract session token from Better Auth response
       const sessionToken = data.token; // Session token (long-lived, database-backed)
 
+      // Get session with additionalFields via customSession plugin
+      let fullUser = data.user;
+      try {
+        const sessionData = await auth.api.getSession({
+          headers: {
+            authorization: `Bearer ${sessionToken}`,
+          },
+        });
+        if (sessionData.user) {
+          fullUser = sessionData.user;
+        }
+      } catch (error) {
+        logger.warn('Failed to fetch full user session with additionalFields:', error);
+        // Continue with basic user data from signUpEmail response
+      }
+
       // Get JWT access token by calling the token endpoint with the session
       let accessToken: string | null = null;
       try {
@@ -101,12 +128,13 @@ export function createRegisterRoute(): Router {
       // Return user data with dual-token strategy
       res.status(201).json({
         user: {
-          id: data.user.id,
-          email: data.user.email,
-          name: data.user.name,
-          emailVerified: data.user.emailVerified,
-          createdAt: data.user.createdAt,
-          updatedAt: data.user.updatedAt,
+          id: fullUser.id,
+          email: fullUser.email,
+          name: fullUser.name,
+          birthdate: fullUser.birthdate,
+          emailVerified: fullUser.emailVerified,
+          createdAt: fullUser.createdAt,
+          updatedAt: fullUser.updatedAt,
           families: [], // New users have no families yet
         },
         session: {

@@ -158,7 +158,8 @@ export class FamilyService {
           body: {
             email: input.email,
             password: input.password,
-            name: input.email.split('@')[0], // Use email prefix as name
+            name: input.name,
+            birthdate: input.birthdate,
           },
         });
 

@@ -18,6 +18,7 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 <!-- OPENSPEC:END -->
 
 # famly Development Guidelines
+Our core guiding principles are found in the `constitution.md` file.
 
 
 ## Active Technologies

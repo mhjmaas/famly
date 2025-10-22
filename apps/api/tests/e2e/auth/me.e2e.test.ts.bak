@@ -25,7 +25,6 @@ describe('E2E: GET /v1/auth/me', () => {
           email: 'cookieuser@example.com',
           password: 'SecurePassword123!',
           name: 'Cookie User',
-          birthdate: '1990-05-12',
         });
 
       const cookies = loginResponse.headers['set-cookie'];
@@ -193,8 +192,6 @@ describe('E2E: GET /v1/auth/me', () => {
         .send({
           email: 'user1@example.com',
           password: 'SecurePassword123!',
-          name: 'User One',
-          birthdate: '1986-01-10',
         });
 
       const user2 = await request(baseUrl)
@@ -202,8 +199,6 @@ describe('E2E: GET /v1/auth/me', () => {
         .send({
           email: 'user2@example.com',
           password: 'SecurePassword123!',
-          name: 'User Two',
-          birthdate: '1991-06-20',
         });
 
       const user1Cookies = user1.headers['set-cookie'];
@@ -232,7 +227,6 @@ describe('E2E: GET /v1/auth/me', () => {
           email: 'complete@example.com',
           password: 'SecurePassword123!',
           name: 'Complete User',
-          birthdate: '1992-02-29',
         });
 
       const accessToken = registerResponse.body.accessToken; // JWT token
@@ -260,8 +254,6 @@ describe('E2E: GET /v1/auth/me', () => {
         .send({
           email: 'secure@example.com',
           password: 'SecurePassword123!',
-          name: 'Secure User',
-          birthdate: '1984-11-08',
         });
 
       const accessToken = registerResponse.body.accessToken; // JWT token
@@ -287,8 +279,6 @@ describe('E2E: GET /v1/auth/me', () => {
         .send({
           email: 'persistent@example.com',
           password: 'SecurePassword123!',
-          name: 'Persistent User',
-          birthdate: '1983-07-22',
         });
 
       const accessToken = registerResponse.body.accessToken; // JWT token
@@ -312,8 +302,6 @@ describe('E2E: GET /v1/auth/me', () => {
         .send({
           email: 'familytest@example.com',
           password: 'SecurePassword123!',
-          name: 'Family Test User',
-          birthdate: '1982-09-11',
         });
 
       const accessToken = registerResponse.body.accessToken || registerResponse.body.sessionToken;
@@ -333,8 +321,6 @@ describe('E2E: GET /v1/auth/me', () => {
         .send({
           email: 'nofamilies@example.com',
           password: 'SecurePassword123!',
-          name: 'No Families User',
-          birthdate: '1981-04-03',
         });
 
       const accessToken = registerResponse.body.accessToken || registerResponse.body.sessionToken;
@@ -353,8 +339,6 @@ describe('E2E: GET /v1/auth/me', () => {
         .send({
           email: 'withfamily@example.com',
           password: 'SecurePassword123!',
-          name: 'With Family User',
-          birthdate: '1980-10-31',
         });
 
       const accessToken = registerResponse.body.accessToken || registerResponse.body.sessionToken;
@@ -390,8 +374,6 @@ describe('E2E: GET /v1/auth/me', () => {
         .send({
           email: 'multifamily@example.com',
           password: 'SecurePassword123!',
-          name: 'Multi Family User',
-          birthdate: '1979-12-16',
         });
 
       const accessToken = registerResponse.body.accessToken || registerResponse.body.sessionToken;
@@ -427,8 +409,6 @@ describe('E2E: GET /v1/auth/me', () => {
         .send({
           email: 'cookiefamily@example.com',
           password: 'SecurePassword123!',
-          name: 'Cookie Family User',
-          birthdate: '1978-08-06',
         });
 
       const cookies = registerResponse.headers['set-cookie'];

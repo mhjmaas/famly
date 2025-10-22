@@ -25,6 +25,7 @@ describe('E2E: POST /v1/auth/register', () => {
           email: 'webuser@example.com',
           password: 'SecurePassword123!',
           name: 'Web User',
+          birthdate: '1990-01-15',
         });
 
       expect(response.status).toBe(201);
@@ -32,6 +33,7 @@ describe('E2E: POST /v1/auth/register', () => {
       expect(response.body.user).toHaveProperty('id');
       expect(response.body.user).toHaveProperty('email', 'webuser@example.com');
       expect(response.body.user).toHaveProperty('name', 'Web User');
+      expect(response.body.user).toHaveProperty('birthdate');
       expect(response.body).toHaveProperty('session');
       expect(response.body.session).toHaveProperty('expiresAt');
 
@@ -51,6 +53,8 @@ describe('E2E: POST /v1/auth/register', () => {
         .send({
           email: 'autosignin@example.com',
           password: 'SecurePassword123!',
+          name: 'Auto Sign In User',
+          birthdate: '1995-05-20',
         });
 
       expect(registerResponse.status).toBe(201);
@@ -77,6 +81,8 @@ describe('E2E: POST /v1/auth/register', () => {
         .send({
           email: 'duplicate@example.com',
           password: 'SecurePassword123!',
+          name: 'First User',
+          birthdate: '1985-03-10',
         });
 
       // Try to register with same email
@@ -85,6 +91,8 @@ describe('E2E: POST /v1/auth/register', () => {
         .send({
           email: 'duplicate@example.com',
           password: 'DifferentPassword456!',
+          name: 'Second User',
+          birthdate: '1990-06-15',
         });
 
       expect(response.status).toBe(409);
@@ -97,6 +105,8 @@ describe('E2E: POST /v1/auth/register', () => {
         .send({
           email: 'weakpass@example.com',
           password: 'weak',
+          name: 'Weak Pass User',
+          birthdate: '1992-08-25',
         });
 
       expect(response.status).toBe(400);
@@ -109,10 +119,55 @@ describe('E2E: POST /v1/auth/register', () => {
         .send({
           email: 'invalid-email',
           password: 'SecurePassword123!',
+          name: 'Invalid Email User',
+          birthdate: '1988-12-01',
         });
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error');
+    });
+
+    it('should reject registration with missing birthdate', async () => {
+      const response = await request(baseUrl)
+        .post('/v1/auth/register')
+        .send({
+          email: 'nobirth@example.com',
+          password: 'SecurePassword123!',
+          name: 'No Birthdate User',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toContain('Birthdate');
+    });
+
+    it('should reject registration with invalid birthdate format', async () => {
+      const response = await request(baseUrl)
+        .post('/v1/auth/register')
+        .send({
+          email: 'invalidbirth@example.com',
+          password: 'SecurePassword123!',
+          name: 'Invalid Birthdate User',
+          birthdate: '01-15-1990', // Wrong format
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toContain('ISO 8601');
+    });
+
+    it('should reject registration with missing name', async () => {
+      const response = await request(baseUrl)
+        .post('/v1/auth/register')
+        .send({
+          email: 'noname@example.com',
+          password: 'SecurePassword123!',
+          birthdate: '1991-04-22',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toContain('Name');
     });
   });
 
@@ -124,11 +179,13 @@ describe('E2E: POST /v1/auth/register', () => {
           email: 'mobile@example.com',
           password: 'SecurePassword123!',
           name: 'Mobile User',
+          birthdate: '1993-07-08',
         });
 
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('user');
       expect(response.body.user.email).toBe('mobile@example.com');
+      expect(response.body.user).toHaveProperty('birthdate');
 
       // Tokens should be in response header and body
       const sessionToken = response.headers['set-auth-token'];
@@ -153,6 +210,8 @@ describe('E2E: POST /v1/auth/register', () => {
         .send({
           email: uniqueEmail,
           password: 'SecurePassword123!',
+          name: 'Bearer User',
+          birthdate: '1996-11-09',
         });
 
       // Use access token (JWT) or session token for API requests
@@ -189,6 +248,8 @@ describe('E2E: POST /v1/auth/register', () => {
         .send({
           email: 'allauth@example.com',
           password: 'SecurePassword123!',
+          name: 'All Auth User',
+          birthdate: '1989-02-14',
         });
 
       expect(registerResponse.status).toBe(201);
@@ -240,6 +301,8 @@ describe('E2E: POST /v1/auth/register', () => {
         .send({
           email: 'UPPERCASE@EXAMPLE.COM',
           password: 'SecurePassword123!',
+          name: 'Uppercase User',
+          birthdate: '1994-09-30',
         });
 
       expect(response.status).toBe(201);
@@ -253,6 +316,8 @@ describe('E2E: POST /v1/auth/register', () => {
         .send({
           email: 'casetest@example.com',
           password: 'SecurePassword123!',
+          name: 'Case Test User',
+          birthdate: '1987-05-17',
         });
 
       // Try with uppercase
@@ -261,6 +326,8 @@ describe('E2E: POST /v1/auth/register', () => {
         .send({
           email: 'CASETEST@EXAMPLE.COM',
           password: 'DifferentPassword456!',
+          name: 'Case Test User 2',
+          birthdate: '1997-10-12',
         });
 
       expect(response.status).toBe(409);

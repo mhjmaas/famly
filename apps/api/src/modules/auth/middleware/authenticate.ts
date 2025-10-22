@@ -14,6 +14,7 @@ export interface AuthenticatedRequest extends Request {
     id: string;
     email: string;
     name: string;
+    birthdate: Date;
     emailVerified: boolean;
     image?: string;
     createdAt: Date;
@@ -95,6 +96,7 @@ export async function authenticate(
           id: payload.id as string,
           email: payload.email as string,
           name: payload.name as string,
+          birthdate: new Date(payload.birthdate as string),
           emailVerified: payload.emailVerified as boolean,
           image: payload.image as string | undefined,
           createdAt: new Date(payload.createdAt as string),

@@ -100,8 +100,33 @@ export function createFamiliesRouter(): Router {
         const familyIds = families.map((family) => new ObjectId(family.familyId));
         const memberships = await membershipRepository.findByFamilyIds(familyIds);
 
+        // Fetch user details for all members to include name and birthdate
+        const { getDb } = await import('@infra/mongo/client');
+        const db = getDb();
+        const usersCollection = db.collection('user');
+
+        const userIds = memberships.map((m) => new ObjectId(m.userId));
+        const users = await usersCollection
+          .find({ _id: { $in: userIds } })
+          .toArray();
+
+        // Create a map of user ID to user data
+        const userMap = new Map(
+          users.map((u) => [
+            u._id.toString(),
+            { name: u.name as string, birthdate: u.birthdate as string | Date },
+          ])
+        );
+
+        // Add user data to memberships for the mapper
+        const membershipsWithUsers = memberships.map((m) => ({
+          ...m,
+          user: userMap.get(m.userId.toString()),
+        }));
+
         const familiesWithMembers: FamiliesWithMembersResponse =
-          buildFamiliesWithMembersResponse(families, memberships);
+          buildFamiliesWithMembersResponse(families, membershipsWithUsers);
+
 
         res.status(200).json(familiesWithMembers);
       } catch (error) {

@@ -25,6 +25,7 @@ describe('E2E: POST /v1/auth/login', () => {
           email: 'logintest@example.com',
           password: 'SecurePassword123!',
           name: 'Login Test',
+          birthdate: '1990-01-15',
         });
 
       // Login with the same credentials
@@ -58,6 +59,8 @@ describe('E2E: POST /v1/auth/login', () => {
         .send({
           email: 'cookieauth@example.com',
           password: 'SecurePassword123!',
+          name: 'Cookie Auth User',
+          birthdate: '1986-08-18',
         });
 
       // Login
@@ -123,6 +126,8 @@ describe('E2E: POST /v1/auth/login', () => {
         .send({
           email: 'caselogin@example.com',
           password: 'SecurePassword123!',
+          name: 'Case Login User',
+          birthdate: '1984-10-05',
         });
 
       // Login with uppercase
@@ -146,6 +151,8 @@ describe('E2E: POST /v1/auth/login', () => {
         .send({
           email: 'mobilelogin@example.com',
           password: 'SecurePassword123!',
+          name: 'Mobile User',
+          birthdate: '1985-03-10',
         });
 
       // Login
@@ -180,6 +187,8 @@ describe('E2E: POST /v1/auth/login', () => {
         .send({
           email: 'bearerlogin@example.com',
           password: 'SecurePassword123!',
+          name: 'Bearer User',
+          birthdate: '1988-07-25',
         });
 
       // Login and get token
@@ -213,6 +222,8 @@ describe('E2E: POST /v1/auth/login', () => {
         .send({
           email: 'multiflow@example.com',
           password: 'SecurePassword123!',
+          name: 'Multiflow User',
+          birthdate: '1987-11-30',
         });
 
       // Login via web (cookie)
@@ -268,6 +279,8 @@ describe('E2E: POST /v1/auth/login', () => {
         .send({
           email: 'remember@example.com',
           password: 'SecurePassword123!',
+          name: 'Remember User',
+          birthdate: '1989-04-14',
         });
 
       // Login with rememberMe
@@ -324,6 +337,8 @@ describe('E2E: POST /v1/auth/login', () => {
         .send({
           email: 'loginfamilies@example.com',
           password: 'SecurePassword123!',
+          name: 'Families User',
+          birthdate: '1981-09-07',
         });
 
       // Login
@@ -346,6 +361,8 @@ describe('E2E: POST /v1/auth/login', () => {
         .send({
           email: 'loginnofamilies@example.com',
           password: 'SecurePassword123!',
+          name: 'No Families User',
+          birthdate: '1983-12-02',
         });
 
       // Login
@@ -367,6 +384,8 @@ describe('E2E: POST /v1/auth/login', () => {
         .send({
           email: 'loginwithfam@example.com',
           password: 'SecurePassword123!',
+          name: 'Family User',
+          birthdate: '1980-01-15',
         });
 
       const accessToken = registerResponse.body.accessToken;
@@ -402,6 +421,8 @@ describe('E2E: POST /v1/auth/login', () => {
         .send({
           email: 'loginmultifam@example.com',
           password: 'SecurePassword123!',
+          name: 'Multi Family User',
+          birthdate: '1982-06-20',
         });
 
       const accessToken = registerResponse.body.accessToken;

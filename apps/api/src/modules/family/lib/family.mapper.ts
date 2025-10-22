@@ -11,6 +11,8 @@ import { ObjectId } from 'mongodb';
 
 export interface FamilyMemberView {
   memberId: string;
+  name: string;
+  birthdate: string | Date; // ISO 8601 date string or Date object
   role: FamilyRole;
   linkedAt: string;
   addedBy?: string;
@@ -114,11 +116,19 @@ export function toAddFamilyMemberResult(
  * Maps membership document to response view used when listing families with members
  *
  * @param membership - FamilyMembership document from MongoDB
+ * @param userName - User's name from the user collection
+ * @param userBirthdate - User's birthdate from the user collection
  * @returns FamilyMemberView DTO
  */
-export function toFamilyMemberView(membership: FamilyMembership): FamilyMemberView {
+export function toFamilyMemberView(
+  membership: FamilyMembership,
+  userName: string,
+  userBirthdate: string | Date
+): FamilyMemberView {
   return {
     memberId: membership.userId.toString(),
+    name: userName,
+    birthdate: typeof userBirthdate === 'string' ? userBirthdate : userBirthdate.toISOString(),
     role: membership.role,
     linkedAt: membership.createdAt.toISOString(),
     ...(membership.addedBy ? { addedBy: membership.addedBy.toString() } : {}),
@@ -127,14 +137,15 @@ export function toFamilyMemberView(membership: FamilyMembership): FamilyMemberVi
 
 /**
  * Combines family membership views with their linked members
+ * Requires user data to be passed with memberships for name and birthdate
  *
  * @param families - Existing family membership views for the authenticated user
- * @param memberships - Membership documents for the family IDs
+ * @param memberships - Membership documents with associated user data
  * @returns Families listed with their members
  */
 export function buildFamiliesWithMembersResponse(
   families: ListFamiliesResponse,
-  memberships: FamilyMembership[]
+  memberships: Array<FamilyMembership & { user?: { name: string; birthdate: string | Date } }>
 ): FamiliesWithMembersResponse {
   const membersByFamily = new Map<string, FamilyMemberView[]>();
 
@@ -142,10 +153,13 @@ export function buildFamiliesWithMembersResponse(
     const familyKey = membership.familyId.toString();
     const memberViews = membersByFamily.get(familyKey);
 
+    const userName = membership.user?.name || '';
+    const userBirthdate = membership.user?.birthdate || '';
+
     if (memberViews) {
-      memberViews.push(toFamilyMemberView(membership));
+      memberViews.push(toFamilyMemberView(membership, userName, userBirthdate));
     } else {
-      membersByFamily.set(familyKey, [toFamilyMemberView(membership)]);
+      membersByFamily.set(familyKey, [toFamilyMemberView(membership, userName, userBirthdate)]);
     }
   }
 

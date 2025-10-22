@@ -23,6 +23,7 @@ describe('DELETE /v1/families/:familyId/members/:memberId - Parent guardrails', 
         email: `parent1-${timestamp}@example.com`,
         password: 'parent1pass123',
         name: 'Parent One',
+        birthdate: '1980-01-15',
       })
       .expect(201);
 
@@ -44,6 +45,8 @@ describe('DELETE /v1/families/:familyId/members/:memberId - Parent guardrails', 
       .send({
         email: parent2Email,
         password: 'parent2pass123',
+        name: 'Parent Two',
+        birthdate: '1982-06-20',
         role: FamilyRole.Parent,
       })
       .expect(201);
@@ -100,6 +103,7 @@ describe('DELETE /v1/families/:familyId/members/:memberId - Parent guardrails', 
         email: `solo-parent-${timestamp}@example.com`,
         password: 'parentpass123',
         name: 'Solo Parent',
+        birthdate: '1980-01-15',
       })
       .expect(201);
 

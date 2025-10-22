@@ -26,6 +26,7 @@ describe('POST /v1/families/:familyId/members - Authorization (Non-Parent)', () 
           email: `parent-${timestamp}@example.com`,
           password: 'parentpass123',
           name: 'Parent User',
+          birthdate: '1980-01-15',
         })
         .expect(201);
 
@@ -47,6 +48,8 @@ describe('POST /v1/families/:familyId/members - Authorization (Non-Parent)', () 
         .send({
           email: `child-${timestamp}@example.com`,
           password: 'childpass123',
+          name: 'Child User',
+          birthdate: '2010-05-20',
           role: FamilyRole.Child,
         })
         .expect(201);
@@ -69,6 +72,8 @@ describe('POST /v1/families/:familyId/members - Authorization (Non-Parent)', () 
         .send({
           email: `newmember-${timestamp}@example.com`,
           password: 'newmemberpass123',
+          name: 'New Member',
+          birthdate: '2008-03-10',
           role: FamilyRole.Child,
         })
         .expect(403);
@@ -83,6 +88,7 @@ describe('POST /v1/families/:familyId/members - Authorization (Non-Parent)', () 
           email: `parent1-${timestamp}@example.com`,
           password: 'parent1pass123',
           name: 'Parent One',
+          birthdate: '1980-01-15',
         })
         .expect(201);
 
@@ -103,6 +109,7 @@ describe('POST /v1/families/:familyId/members - Authorization (Non-Parent)', () 
           email: `parent2-${timestamp}@example.com`,
           password: 'parent2pass123',
           name: 'Parent Two',
+          birthdate: '1982-06-20',
         })
         .expect(201);
 
@@ -115,6 +122,8 @@ describe('POST /v1/families/:familyId/members - Authorization (Non-Parent)', () 
         .send({
           email: `newmember-${timestamp}@example.com`,
           password: 'newmemberpass123',
+          name: 'New Member',
+          birthdate: '2007-08-25',
           role: FamilyRole.Child,
         })
         .expect(403);
@@ -129,6 +138,7 @@ describe('POST /v1/families/:familyId/members - Authorization (Non-Parent)', () 
           email: `parent-${timestamp}@example.com`,
           password: 'parentpass123',
           name: 'Parent User',
+          birthdate: '1980-01-15',
         })
         .expect(201);
 
@@ -149,6 +159,8 @@ describe('POST /v1/families/:familyId/members - Authorization (Non-Parent)', () 
         .send({
           email: `child-${timestamp}@example.com`,
           password: 'childpass123',
+          name: 'Child User',
+          birthdate: '2010-05-20',
           role: FamilyRole.Child,
         })
         .expect(201);
@@ -171,6 +183,8 @@ describe('POST /v1/families/:familyId/members - Authorization (Non-Parent)', () 
         .send({
           email: `newmember-${timestamp}@example.com`,
           password: 'newmemberpass123',
+          name: 'New Member',
+          birthdate: '2008-03-10',
           role: FamilyRole.Child,
         })
         .expect(403);
@@ -188,6 +202,7 @@ describe('POST /v1/families/:familyId/members - Authorization (Non-Parent)', () 
           email: `parent-${timestamp}@example.com`,
           password: 'parentpass123',
           name: 'Parent User',
+          birthdate: '1980-01-15',
         })
         .expect(201);
 
@@ -208,6 +223,8 @@ describe('POST /v1/families/:familyId/members - Authorization (Non-Parent)', () 
         .send({
           email: `child-${timestamp}@example.com`,
           password: 'childpass123',
+          name: 'Child User',
+          birthdate: '2010-05-20',
           role: FamilyRole.Child,
         })
         .expect(201);
@@ -230,6 +247,8 @@ describe('POST /v1/families/:familyId/members - Authorization (Non-Parent)', () 
         .send({
           email: `unique-email-${timestamp}@example.com`,
           password: 'uniquepass123',
+          name: 'Unique User',
+          birthdate: '2006-11-30',
           role: FamilyRole.Child,
         })
         .expect(403);
@@ -241,6 +260,7 @@ describe('POST /v1/families/:familyId/members - Authorization (Non-Parent)', () 
           email: `unique-email-${timestamp}@example.com`,
           password: 'differentpass123',
           name: 'New User',
+          birthdate: '2005-04-12',
         })
         .expect(201); // Should succeed because user wasn't created in previous attempt
 

@@ -26,6 +26,7 @@ describe('DELETE /v1/families/:familyId/members/:memberId - Remove Family Member
         email: `parent-${timestamp}@example.com`,
         password: 'parentpass123',
         name: 'Parent User',
+        birthdate: '1980-01-15',
       })
       .expect(201);
 
@@ -48,6 +49,8 @@ describe('DELETE /v1/families/:familyId/members/:memberId - Remove Family Member
       .send({
         email: childEmail,
         password: 'childpass123',
+        name: 'Child User',
+        birthdate: '2010-05-20',
         role: FamilyRole.Child,
       })
       .expect(201);

@@ -25,6 +25,7 @@ describe('E2E: POST /v1/families', () => {
         email: uniqueEmail,
         password: 'SecurePassword123!',
         name: 'Family User',
+        birthdate: '1980-01-15',
       });
 
     expect(registerResponse.status).toBe(201);

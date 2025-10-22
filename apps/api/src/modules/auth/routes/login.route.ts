@@ -59,6 +59,22 @@ export function createLoginRoute(): Router {
       // Extract session token from Better Auth response
       const sessionToken = data.token; // Session token (long-lived, database-backed)
 
+      // Get session with additionalFields via customSession plugin
+      let fullUser = data.user;
+      try {
+        const sessionData = await auth.api.getSession({
+          headers: {
+            authorization: `Bearer ${sessionToken}`,
+          },
+        });
+        if (sessionData.user) {
+          fullUser = sessionData.user;
+        }
+      } catch (error) {
+        logger.warn('Failed to fetch full user session with additionalFields:', error);
+        // Continue with basic user data from signInEmail response
+      }
+
       // Get JWT access token by calling the token endpoint with the session
       let accessToken: string | null = null;
       try {
@@ -90,7 +106,7 @@ export function createLoginRoute(): Router {
           new FamilyRepository(),
           new FamilyMembershipRepository()
         );
-        const userId = new ObjectId(data.user.id);
+        const userId = new ObjectId(fullUser.id);
         families = await familyService.listFamiliesForUser(userId);
       } catch (error) {
         logger.error('Failed to load families for login response:', error);
@@ -100,12 +116,13 @@ export function createLoginRoute(): Router {
       // Return user data with dual-token strategy
       res.status(200).json({
         user: {
-          id: data.user.id,
-          email: data.user.email,
-          name: data.user.name,
-          emailVerified: data.user.emailVerified,
-          createdAt: data.user.createdAt,
-          updatedAt: data.user.updatedAt,
+          id: fullUser.id,
+          email: fullUser.email,
+          name: fullUser.name,
+          birthdate: fullUser.birthdate,
+          emailVerified: fullUser.emailVerified,
+          createdAt: fullUser.createdAt,
+          updatedAt: fullUser.updatedAt,
           families,
         },
         session: {

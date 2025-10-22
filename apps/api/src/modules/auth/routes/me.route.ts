@@ -11,8 +11,8 @@ import { authenticate, type AuthenticatedRequest } from '../middleware/authentic
  * - Authorization: Bearer <token> (for mobile/API)
  *
  * Response (200):
- * - user: { id, email, name, emailVerified, createdAt, updatedAt }
- * - authType: "cookie" | "bearer"
+ * - user: { id, email, name, birthdate, emailVerified, createdAt, updatedAt, families }
+ * - authType: "cookie" | "bearer-jwt" | "bearer-session"
  *
  * Response (401): Unauthorized (no valid session or token)
  */
@@ -27,6 +27,7 @@ export function createMeRoute(): Router {
           id: req.user!.id,
           email: req.user!.email,
           name: req.user!.name,
+          birthdate: req.user!.birthdate,
           emailVerified: req.user!.emailVerified,
           createdAt: req.user!.createdAt,
           updatedAt: req.user!.updatedAt,
