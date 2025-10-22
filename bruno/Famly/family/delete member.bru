@@ -5,9 +5,14 @@ meta {
 }
 
 delete {
-  url: {{baseUrl}}/v1/families/68f7e33bad37ac0dd2058d77/members/68f7f660f1fa0297d1d4f56a
+  url: {{baseUrl}}/v1/families/:currentFamilyId/members/:memberid
   body: json
   auth: inherit
+}
+
+params:path {
+  currentFamilyId: {{currentFamilyId}}
+  memberid: 
 }
 
 settings {
