@@ -1,0 +1,42 @@
+meta {
+  name: Delete List
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/v1/families/:currentFamilyId/shopping-lists/:listId
+  body: none
+  auth: bearer
+}
+
+params:path {
+  listId: 68f95b4f1db775ab782cedcf
+  currentFamilyId: {{currentFamilyId}}
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  # Delete Shopping List
+  
+  Delete a shopping list and all its items.
+  
+  ## Path Parameters
+  
+  - `familyId`: ID of the family
+  - `listId`: ID of the shopping list
+  
+  ## Response
+  
+  No content returned.
+  
+  ## Status Codes
+  
+  - `204`: Shopping list deleted successfully
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not a family member)
+  - `404`: Shopping list not found
+}

@@ -1,0 +1,59 @@
+meta {
+  name: Add Item
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/v1/families/:currentFamilyId/shopping-lists/:listId/items
+  body: json
+  auth: bearer
+}
+
+params:path {
+  listId: 68f95bdd1db775ab782cedd2
+  currentFamilyId: {{currentFamilyId}}
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Green Eggs"
+  }
+}
+
+docs {
+  # Add Item to List
+  
+  Add a new item to a shopping list.
+  
+  ## Path Parameters
+  
+  - `familyId`: ID of the family
+  - `listId`: ID of the shopping list
+  
+  ## Request Body
+  
+  - `name` (string, required): Name of the item (1-200 characters)
+  
+  ## Response
+  
+  Returns the updated shopping list with the new item added.
+  
+  Each item contains:
+  - `_id`: Unique item identifier
+  - `name`: Item name
+  - `checked`: Boolean (false by default)
+  - `createdAt`: Item creation timestamp
+  
+  ## Status Codes
+  
+  - `201`: Item added successfully
+  - `400`: Validation error
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not a family member)
+  - `404`: Shopping list not found
+}

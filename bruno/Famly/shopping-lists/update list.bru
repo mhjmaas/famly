@@ -1,0 +1,55 @@
+meta {
+  name: Update List
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/v1/families/:currentFamilyId/shopping-lists/:listId
+  body: json
+  auth: bearer
+}
+
+params:path {
+  listId: 68f95b4f1db775ab782cedcf
+  currentFamilyId: {{currentFamilyId}}
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Updated Shopping List",
+    "tags": ["urgent", "fresh"]
+  }
+}
+
+docs {
+  # Update Shopping List
+  
+  Update a shopping list's name and/or tags.
+  
+  ## Path Parameters
+  
+  - `familyId`: ID of the family
+  - `listId`: ID of the shopping list
+  
+  ## Request Body
+  
+  - `name` (string, optional): New name for the shopping list (1-200 characters)
+  - `tags` (array, optional): Updated tags (max 20 tags, each 1-50 characters)
+  
+  ## Response
+  
+  Returns the updated shopping list with all properties.
+  
+  ## Status Codes
+  
+  - `200`: Shopping list updated successfully
+  - `400`: Validation error
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not a family member)
+  - `404`: Shopping list not found
+}

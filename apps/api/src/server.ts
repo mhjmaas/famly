@@ -3,6 +3,7 @@ import { connectMongo, disconnectMongo } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
 import { FamilyRepository } from "@modules/family/repositories/family.repository";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
+import { ShoppingListRepository } from "@modules/shopping-lists";
 import {
   ScheduleRepository,
   startTaskScheduler,
@@ -41,6 +42,12 @@ async function start() {
   const scheduleRepo = new ScheduleRepository();
   await Promise.all([taskRepo.ensureIndexes(), scheduleRepo.ensureIndexes()]);
   logger.info("Task module indexes initialized successfully");
+
+  // Initialize shopping lists module indexes
+  logger.info("Initializing shopping lists module indexes...");
+  const shoppingListRepo = new ShoppingListRepository();
+  await shoppingListRepo.ensureIndexes();
+  logger.info("Shopping lists module indexes initialized successfully");
 
   // Start task scheduler cron job
   logger.info("Starting task scheduler...");

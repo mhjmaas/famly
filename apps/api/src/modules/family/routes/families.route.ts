@@ -1,3 +1,4 @@
+import { createShoppingListsRouter } from "@modules/shopping-lists";
 import { createTasksRouter } from "@modules/tasks";
 import { Router } from "express";
 import { createAddMemberRoute } from "./add-member.route";
@@ -27,6 +28,9 @@ export function createFamiliesRouter(): Router {
   // Mount tasks router for /:familyId/tasks/* paths
   // This must be after other routes to avoid conflicts
   router.use("/:familyId/tasks", createTasksRouter());
+
+  // Mount shopping lists router for /:familyId/shopping-lists/* paths
+  router.use("/:familyId/shopping-lists", createShoppingListsRouter());
 
   return router;
 }

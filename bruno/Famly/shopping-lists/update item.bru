@@ -1,0 +1,57 @@
+meta {
+  name: Update Item
+  type: http
+  seq: 7
+}
+
+patch {
+  url: {{baseUrl}}/v1/families/:currentFamilyId/shopping-lists/:listId/items/:itemid
+  body: json
+  auth: bearer
+}
+
+params:path {
+  itemid: 68f95c171db775ab782cedd3
+  listId: 68f95bdd1db775ab782cedd2
+  currentFamilyId: {{currentFamilyId}}
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Blue eggs",
+    "checked": true
+  }
+}
+
+docs {
+  # Update Item
+  
+  Update an item in a shopping list.
+  
+  ## Path Parameters
+  
+  - `familyId`: ID of the family
+  - `listId`: ID of the shopping list
+  - `itemId`: ID of the item
+  
+  ## Request Body
+  
+  - `name` (string, optional): Updated name for the item (1-200 characters)
+  - `checked` (boolean, optional): Mark item as purchased (true) or not purchased (false)
+  
+  ## Response
+  
+  Returns the updated shopping list with the modified item.
+  
+  ## Status Codes
+  
+  - `200`: Item updated successfully
+  - `400`: Validation error
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not a family member)
+  - `404`: Item or shopping list not found
+}
