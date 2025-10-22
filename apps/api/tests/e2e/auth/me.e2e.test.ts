@@ -39,9 +39,12 @@ describe("E2E: GET /v1/auth/me", () => {
       );
 
       // Access /me endpoint with cookie
+      if (!sessionCookie) {
+        throw new Error("Session cookie not found");
+      }
       const response = await request(baseUrl)
         .get("/v1/auth/me")
-        .set("Cookie", sessionCookie!);
+        .set("Cookie", sessionCookie);
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty("user");
@@ -170,9 +173,13 @@ describe("E2E: GET /v1/auth/me", () => {
         c.includes(SESSION_COOKIE_PREFIX),
       );
 
+      if (!sessionCookie) {
+        throw new Error("Session cookie not found");
+      }
+
       const response = await request(baseUrl)
         .get("/v1/auth/me")
-        .set("Cookie", sessionCookie!);
+        .set("Cookie", sessionCookie);
 
       expect(response.status).toBe(200);
       expect(response.body.authType).toBe("cookie");
@@ -225,10 +232,14 @@ describe("E2E: GET /v1/auth/me", () => {
       );
       const accessToken = user2.body.accessToken; // JWT token
 
+      if (!sessionCookie) {
+        throw new Error("Session cookie not found");
+      }
+
       // Send request with both
       const response = await request(baseUrl)
         .get("/v1/auth/me")
-        .set("Cookie", sessionCookie!)
+        .set("Cookie", sessionCookie)
         .set("Authorization", `Bearer ${accessToken}`);
 
       expect(response.status).toBe(200);
@@ -434,7 +445,12 @@ describe("E2E: GET /v1/auth/me", () => {
       expect(meResponse.status).toBe(200);
       expect(meResponse.body.user.families).toHaveLength(2);
 
-      const familyNames = meResponse.body.user.families.map((f: any) => f.name);
+      interface Family {
+        name: string;
+      }
+      const familyNames = meResponse.body.user.families.map(
+        (f: Family) => f.name,
+      );
       expect(familyNames).toContain("Family One");
       expect(familyNames).toContain("Family Two");
     });
@@ -468,9 +484,12 @@ describe("E2E: GET /v1/auth/me", () => {
         .send({ name: "Cookie Family" });
 
       // Check /me with cookie auth includes the family
+      if (!sessionCookie) {
+        throw new Error("Session cookie not found");
+      }
       const meResponse = await request(baseUrl)
         .get("/v1/auth/me")
-        .set("Cookie", sessionCookie!);
+        .set("Cookie", sessionCookie);
 
       expect(meResponse.status).toBe(200);
       expect(meResponse.body.authType).toBe("cookie");

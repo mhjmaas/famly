@@ -1,5 +1,5 @@
-import { StartedMongoDBContainer } from "@testcontainers/mongodb";
-import { ChildProcess } from "child_process";
+import type { ChildProcess } from "node:child_process";
+import type { StartedMongoDBContainer } from "@testcontainers/mongodb";
 import { closeMongoClient } from "../e2e/helpers/database";
 
 declare global {

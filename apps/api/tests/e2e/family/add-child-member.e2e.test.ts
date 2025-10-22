@@ -1,8 +1,8 @@
-import request from "supertest";
-import { ObjectId } from "mongodb";
-import { getTestApp } from "../helpers/test-app";
-import { cleanDatabase } from "../helpers/database";
 import { FamilyRole } from "@modules/family/domain/family";
+import { ObjectId } from "mongodb";
+import request from "supertest";
+import { cleanDatabase } from "../helpers/database";
+import { getTestApp } from "../helpers/test-app";
 
 describe("POST /v1/families/:familyId/members - Add Child Member", () => {
   let baseUrl: string;

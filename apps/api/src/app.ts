@@ -1,9 +1,9 @@
-import express, { Express } from "express";
+import { errorHandler } from "@middleware/error-handler";
 import cookieParser from "cookie-parser";
-import { createHealthRouter } from "./routes/health";
+import express, { type Express } from "express";
 import { createAuthRouter } from "./modules/auth/routes/auth.router";
 import { createFamiliesRouter } from "./modules/family/routes";
-import { errorHandler } from "@middleware/error-handler";
+import { createHealthRouter } from "./routes/health";
 
 export const createApp = (): Express => {
   const app = express();

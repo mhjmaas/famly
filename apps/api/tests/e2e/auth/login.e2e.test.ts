@@ -1,6 +1,6 @@
 import request from "supertest";
-import { getTestApp } from "../helpers/test-app";
 import { cleanDatabase } from "../helpers/database";
+import { getTestApp } from "../helpers/test-app";
 
 // Better Auth uses this cookie name pattern
 const SESSION_COOKIE_PREFIX = "better-auth.session_token";
@@ -77,7 +77,7 @@ describe("E2E: POST /v1/auth/login", () => {
       // Use cookie to access protected endpoint
       const meResponse = await request(baseUrl)
         .get("/v1/auth/me")
-        .set("Cookie", sessionCookie!);
+        .set("Cookie", sessionCookie ?? "");
 
       expect(meResponse.status).toBe(200);
       expect(meResponse.body.user.email).toBe("cookieauth@example.com");
@@ -234,7 +234,7 @@ describe("E2E: POST /v1/auth/login", () => {
       // All three auth methods should work
       const cookieResponse = await request(baseUrl)
         .get("/v1/auth/me")
-        .set("Cookie", sessionCookie!);
+        .set("Cookie", sessionCookie ?? "");
 
       const jwtResponse = await request(baseUrl)
         .get("/v1/auth/me")
@@ -411,8 +411,11 @@ describe("E2E: POST /v1/auth/login", () => {
       expect(loginResponse.status).toBe(200);
       expect(loginResponse.body.user.families).toHaveLength(2);
 
+      interface Family {
+        name: string;
+      }
       const familyNames = loginResponse.body.user.families.map(
-        (f: any) => f.name,
+        (f: Family) => f.name,
       );
       expect(familyNames).toContain("First Family");
       expect(familyNames).toContain("Second Family");

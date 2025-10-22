@@ -1,14 +1,14 @@
 import { Router } from "express";
-import { createTaskRoute } from "./create-task.route";
-import { createListTasksRoute } from "./list-tasks.route";
-import { createGetTaskRoute } from "./get-task.route";
-import { createUpdateTaskRoute } from "./update-task.route";
-import { createDeleteTaskRoute } from "./delete-task.route";
 import { createScheduleRoute } from "./create-schedule.route";
-import { createListSchedulesRoute } from "./list-schedules.route";
-import { createGetScheduleRoute } from "./get-schedule.route";
-import { createUpdateScheduleRoute } from "./update-schedule.route";
+import { createTaskRoute } from "./create-task.route";
 import { createDeleteScheduleRoute } from "./delete-schedule.route";
+import { createDeleteTaskRoute } from "./delete-task.route";
+import { createGetScheduleRoute } from "./get-schedule.route";
+import { createGetTaskRoute } from "./get-task.route";
+import { createListSchedulesRoute } from "./list-schedules.route";
+import { createListTasksRoute } from "./list-tasks.route";
+import { createUpdateScheduleRoute } from "./update-schedule.route";
+import { createUpdateTaskRoute } from "./update-task.route";
 
 /**
  * Create tasks router for /v1/families/:familyId/tasks

@@ -1,7 +1,7 @@
-import { Collection, ObjectId } from "mongodb";
 import { getDb } from "@infra/mongo/client";
-import { Task, CreateTaskInput, UpdateTaskInput } from "../domain/task";
 import { logger } from "@lib/logger";
+import { type Collection, ObjectId } from "mongodb";
+import type { CreateTaskInput, Task, UpdateTaskInput } from "../domain/task";
 
 export class TaskRepository {
   private collection: Collection<Task>;
@@ -98,7 +98,7 @@ export class TaskRepository {
     dueDateFrom?: Date,
     dueDateTo?: Date,
   ): Promise<Task[]> {
-    const query: any = { familyId };
+    const query: Partial<Task> = { familyId };
 
     if (dueDateFrom || dueDateTo) {
       query.dueDate = {};
@@ -123,7 +123,7 @@ export class TaskRepository {
     taskId: ObjectId,
     input: UpdateTaskInput,
   ): Promise<Task | null> {
-    const updateFields: any = {
+    const updateFields: Partial<Task> = {
       updatedAt: new Date(),
     };
 

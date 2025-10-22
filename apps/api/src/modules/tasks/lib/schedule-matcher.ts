@@ -1,4 +1,4 @@
-import { Schedule } from "../domain/task";
+import type { Schedule } from "../domain/task";
 
 /**
  * Checks if a given day of week is in the schedule's days array

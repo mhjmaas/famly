@@ -1,5 +1,5 @@
-import { createScheduleSchema } from "@/modules/tasks/validators/create-schedule.validator";
 import { ObjectId } from "mongodb";
+import { createScheduleSchema } from "@/modules/tasks/validators/create-schedule.validator";
 
 describe("createScheduleSchema", () => {
   describe("valid schedule creation", () => {

@@ -1,4 +1,4 @@
-import { Schedule } from "@/modules/tasks/domain/task";
+import type { Schedule } from "@/modules/tasks/domain/task";
 import {
   isWithinDateRange,
   matchesDayOfWeek,

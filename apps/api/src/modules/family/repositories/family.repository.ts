@@ -1,7 +1,7 @@
-import { Collection, ObjectId } from "mongodb";
 import { getDb } from "@infra/mongo/client";
-import { Family } from "../domain/family";
 import { logger } from "@lib/logger";
+import { type Collection, ObjectId } from "mongodb";
+import type { Family } from "../domain/family";
 
 export class FamilyRepository {
   private collection: Collection<Family>;

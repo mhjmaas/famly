@@ -1,7 +1,7 @@
-import { Router, Response, NextFunction } from "express";
+import { type NextFunction, type Response, Router } from "express";
 import {
-  authenticate,
   type AuthenticatedRequest,
+  authenticate,
 } from "../middleware/authenticate";
 
 /**
@@ -28,16 +28,20 @@ export function createMeRoute(): Router {
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
       try {
         // User is guaranteed to exist due to authenticate middleware
+        if (!req.user) {
+          return res.status(500).json({ error: "User not found in request" });
+        }
+
         res.status(200).json({
           user: {
-            id: req.user!.id,
-            email: req.user!.email,
-            name: req.user!.name,
-            birthdate: req.user!.birthdate,
-            emailVerified: req.user!.emailVerified,
-            createdAt: req.user!.createdAt,
-            updatedAt: req.user!.updatedAt,
-            families: req.user!.families || [],
+            id: req.user.id,
+            email: req.user.email,
+            name: req.user.name,
+            birthdate: req.user.birthdate,
+            emailVerified: req.user.emailVerified,
+            createdAt: req.user.createdAt,
+            updatedAt: req.user.updatedAt,
+            families: req.user.families || [],
           },
           authType: req.authType,
         });

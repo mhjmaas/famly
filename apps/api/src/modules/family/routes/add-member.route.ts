@@ -7,8 +7,8 @@ import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import { ObjectId } from "mongodb";
 import { FamilyRole } from "../domain/family";
-import { FamilyMembershipRepository } from "../repositories/family-membership.repository";
 import { FamilyRepository } from "../repositories/family.repository";
+import { FamilyMembershipRepository } from "../repositories/family-membership.repository";
 import { FamilyService } from "../services/family.service";
 import { validateAddFamilyMember } from "../validators/add-family-member.validator";
 

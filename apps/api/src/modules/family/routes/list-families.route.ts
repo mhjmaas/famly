@@ -9,8 +9,8 @@ import {
   buildFamiliesWithMembersResponse,
   type FamiliesWithMembersResponse,
 } from "../lib/family.mapper";
-import { FamilyMembershipRepository } from "../repositories/family-membership.repository";
 import { FamilyRepository } from "../repositories/family.repository";
+import { FamilyMembershipRepository } from "../repositories/family-membership.repository";
 import { FamilyService } from "../services/family.service";
 
 /**

@@ -1,13 +1,13 @@
-import { ObjectId } from "mongodb";
-import { ScheduleRepository } from "../repositories/schedule.repository";
-import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
-import {
-  CreateScheduleInput,
-  UpdateScheduleInput,
-  TaskSchedule,
-} from "../domain/task";
-import { logger } from "@lib/logger";
 import { HttpError } from "@lib/http-error";
+import { logger } from "@lib/logger";
+import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
+import type { ObjectId } from "mongodb";
+import type {
+  CreateScheduleInput,
+  TaskSchedule,
+  UpdateScheduleInput,
+} from "../domain/task";
+import type { ScheduleRepository } from "../repositories/schedule.repository";
 
 export class ScheduleService {
   constructor(

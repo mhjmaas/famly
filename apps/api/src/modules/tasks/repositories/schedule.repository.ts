@@ -1,11 +1,11 @@
-import { Collection, ObjectId } from "mongodb";
 import { getDb } from "@infra/mongo/client";
-import {
-  TaskSchedule,
+import { logger } from "@lib/logger";
+import { type Collection, ObjectId } from "mongodb";
+import type {
   CreateScheduleInput,
+  TaskSchedule,
   UpdateScheduleInput,
 } from "../domain/task";
-import { logger } from "@lib/logger";
 
 export class ScheduleRepository {
   private collection: Collection<TaskSchedule>;
@@ -112,7 +112,7 @@ export class ScheduleRepository {
     scheduleId: ObjectId,
     input: UpdateScheduleInput,
   ): Promise<TaskSchedule | null> {
-    const updateFields: any = {
+    const updateFields: Partial<TaskSchedule> = {
       updatedAt: new Date(),
     };
 

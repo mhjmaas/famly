@@ -1,5 +1,5 @@
-import { updateTaskSchema } from "@/modules/tasks/validators/update-task.validator";
 import { ObjectId } from "mongodb";
+import { updateTaskSchema } from "@/modules/tasks/validators/update-task.validator";
 
 describe("updateTaskSchema", () => {
   describe("partial updates", () => {

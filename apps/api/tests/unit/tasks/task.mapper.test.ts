@@ -1,6 +1,6 @@
-import { Task } from "@/modules/tasks/domain/task";
-import { toTaskDTO } from "@/modules/tasks/lib/task.mapper";
 import { ObjectId } from "mongodb";
+import type { Task } from "@/modules/tasks/domain/task";
+import { toTaskDTO } from "@/modules/tasks/lib/task.mapper";
 
 describe("Task Mapper", () => {
   describe("toTaskDTO", () => {

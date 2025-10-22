@@ -1,7 +1,12 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import { fromNodeHeaders } from "better-auth/node";
-import { NextFunction, Request, Response, Router } from "express";
+import {
+  type NextFunction,
+  type Request,
+  type Response,
+  Router,
+} from "express";
 import { getAuth } from "../better-auth";
 import { registerValidator } from "../validators/register.validator";
 

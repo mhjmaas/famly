@@ -1,5 +1,5 @@
-import { addFamilyMemberSchema } from "@modules/family/validators/add-family-member.validator";
 import { FamilyRole } from "@modules/family/domain/family";
+import { addFamilyMemberSchema } from "@modules/family/validators/add-family-member.validator";
 
 describe("addFamilyMemberSchema", () => {
   describe("email validation", () => {
@@ -63,7 +63,7 @@ describe("addFamilyMemberSchema", () => {
     });
 
     it("should reject email exceeding 255 characters", () => {
-      const longEmail = "a".repeat(250) + "@example.com";
+      const longEmail = `${"a".repeat(250)}@example.com`;
       expect(() =>
         addFamilyMemberSchema.parse({
           email: longEmail,

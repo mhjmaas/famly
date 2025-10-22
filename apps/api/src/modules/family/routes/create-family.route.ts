@@ -5,8 +5,8 @@ import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import { ObjectId } from "mongodb";
-import { FamilyMembershipRepository } from "../repositories/family-membership.repository";
 import { FamilyRepository } from "../repositories/family.repository";
+import { FamilyMembershipRepository } from "../repositories/family-membership.repository";
 import { FamilyService } from "../services/family.service";
 import { validateCreateFamily } from "../validators/create-family.validator";
 

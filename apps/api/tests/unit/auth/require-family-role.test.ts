@@ -1,11 +1,11 @@
-import { ObjectId } from "mongodb";
+import { HttpError } from "@lib/http-error";
 import { requireFamilyRole } from "@modules/auth/lib/require-family-role";
 import {
-  FamilyRole,
   type FamilyMembershipView,
+  FamilyRole,
 } from "@modules/family/domain/family";
-import { HttpError } from "@lib/http-error";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
+import { ObjectId } from "mongodb";
 
 describe("requireFamilyRole", () => {
   describe("when user has families in req.user", () => {

@@ -10,25 +10,25 @@ import { isJWT, verifyJWT } from "./jwt-verify";
  * Extended Express Request with authentication context
  */
 export interface AuthenticatedRequest extends Request {
-	user?: {
-		id: string;
-		email: string;
-		name: string;
-		birthdate: Date;
-		emailVerified: boolean;
-		image?: string;
-		createdAt: Date;
-		updatedAt: Date;
-		families?: FamilyMembershipView[];
-	};
-	session?: {
-		id: string;
-		userId: string;
-		expiresAt: Date;
-		ipAddress?: string;
-		userAgent?: string;
-	};
-	authType?: "cookie" | "bearer-jwt" | "bearer-session";
+  user?: {
+    id: string;
+    email: string;
+    name: string;
+    birthdate?: Date;
+    emailVerified: boolean;
+    image?: string;
+    createdAt: Date;
+    updatedAt: Date;
+    families?: FamilyMembershipView[];
+  };
+  session?: {
+    id: string;
+    userId: string;
+    expiresAt: Date;
+    ipAddress?: string;
+    userAgent?: string;
+  };
+  authType?: "cookie" | "bearer-jwt" | "bearer-session";
 }
 
 /**
@@ -39,32 +39,32 @@ export interface AuthenticatedRequest extends Request {
  * @returns Array of family memberships or empty array on error
  */
 async function hydrateFamilies(
-	userId: ObjectId,
+  userId: ObjectId,
 ): Promise<FamilyMembershipView[]> {
-	try {
-		// Dynamic imports required to break circular dependency:
-		// auth/middleware → family/services → family/routes → auth/middleware
-		const { FamilyService } = await import(
-			"@modules/family/services/family.service"
-		);
-		const { FamilyRepository } = await import(
-			"@modules/family/repositories/family.repository"
-		);
-		const { FamilyMembershipRepository } = await import(
-			"@modules/family/repositories/family-membership.repository"
-		);
+  try {
+    // Dynamic imports required to break circular dependency:
+    // auth/middleware → family/services → family/routes → auth/middleware
+    const { FamilyService } = await import(
+      "@modules/family/services/family.service"
+    );
+    const { FamilyRepository } = await import(
+      "@modules/family/repositories/family.repository"
+    );
+    const { FamilyMembershipRepository } = await import(
+      "@modules/family/repositories/family-membership.repository"
+    );
 
-		const familyService = new FamilyService(
-			new FamilyRepository(),
-			new FamilyMembershipRepository(),
-		);
+    const familyService = new FamilyService(
+      new FamilyRepository(),
+      new FamilyMembershipRepository(),
+    );
 
-		return await familyService.listFamiliesForUser(userId);
-	} catch (_error) {
-		// Gracefully handle family hydration failure
-		// Don't fail authentication if family lookup fails
-		return [];
-	}
+    return await familyService.listFamiliesForUser(userId);
+  } catch (_error) {
+    // Gracefully handle family hydration failure
+    // Don't fail authentication if family lookup fails
+    return [];
+  }
 }
 
 /**
@@ -82,99 +82,118 @@ async function hydrateFamilies(
  * @throws {HttpError} 401 if no valid session or bearer token found
  */
 export async function authenticate(
-	req: AuthenticatedRequest,
-	_res: Response,
-	next: NextFunction,
+  req: AuthenticatedRequest,
+  _res: Response,
+  next: NextFunction,
 ): Promise<void> {
-	try {
-		const auth = getAuth();
-		const authHeader = req.headers.authorization;
-		const hasBearerToken = authHeader?.startsWith("Bearer ");
+  try {
+    const auth = getAuth();
+    const authHeader = req.headers.authorization;
+    const hasBearerToken = authHeader?.startsWith("Bearer ");
 
-		// Extract bearer token if present
-		const bearerToken = hasBearerToken ? authHeader?.substring(7) : null;
+    // Extract bearer token if present
+    const bearerToken = hasBearerToken ? authHeader?.substring(7) : null;
 
-		// Strategy 1: JWT Token (stateless verification using JWKS)
-		if (bearerToken && isJWT(bearerToken)) {
-			try {
-				const payload = await verifyJWT(bearerToken);
+    // Strategy 1: JWT Token (stateless verification using JWKS)
+    if (bearerToken && isJWT(bearerToken)) {
+      try {
+        const payload = await verifyJWT(bearerToken);
 
-				// JWT payload contains user data (no DB lookup needed!)
-				req.user = {
-					id: payload.id as string,
-					email: payload.email as string,
-					name: payload.name as string,
-					birthdate: new Date(payload.birthdate as string),
-					emailVerified: payload.emailVerified as boolean,
-					image: payload.image as string | undefined,
-					createdAt: new Date(payload.createdAt as string),
-					updatedAt: new Date(payload.updatedAt as string),
-				};
+        // JWT payload contains user data (no DB lookup needed!)
+        req.user = {
+          id: payload.id as string,
+          email: payload.email as string,
+          name: payload.name as string,
+          birthdate: new Date(payload.birthdate as string),
+          emailVerified: payload.emailVerified as boolean,
+          image: payload.image as string | undefined,
+          createdAt: new Date(payload.createdAt as string),
+          updatedAt: new Date(payload.updatedAt as string),
+        };
 
-				// JWT doesn't have session info (it's stateless)
-				req.session = {
-					id: payload.sub as string, // JWT subject is typically the session/user ID
-					userId: payload.id as string,
-					expiresAt: new Date((payload.exp as number) * 1000), // JWT exp is in seconds
-					ipAddress: undefined,
-					userAgent: undefined,
-				};
+        // JWT doesn't have session info (it's stateless)
+        req.session = {
+          id: payload.sub as string, // JWT subject is typically the session/user ID
+          userId: payload.id as string,
+          expiresAt: new Date((payload.exp as number) * 1000), // JWT exp is in seconds
+          ipAddress: undefined,
+          userAgent: undefined,
+        };
 
-				req.authType = "bearer-jwt";
+        req.authType = "bearer-jwt";
 
-				// Hydrate families for JWT auth (requires DB lookup)
-				if (req.user) {
-					const userId = new ObjectId(req.user.id);
-					req.user.families = await hydrateFamilies(userId);
-				}
+        // Hydrate families for JWT auth (requires DB lookup)
+        if (req.user) {
+          const userId = new ObjectId(req.user.id);
+          req.user.families = await hydrateFamilies(userId);
+        }
 
-				return next();
-			} catch (_error) {
-				throw HttpError.unauthorized("Invalid or expired JWT token");
-			}
-		}
+        return next();
+      } catch (_error) {
+        throw HttpError.unauthorized("Invalid or expired JWT token");
+      }
+    }
 
-		// Strategy 2 & 3: Session token (bearer or cookie) - requires database lookup
-		let headers = fromNodeHeaders(req.headers);
-		if (hasBearerToken && !isJWT(bearerToken!)) {
-			// Session token in bearer header - remove cookie to force bearer auth
-			const headersWithoutCookie: Record<string, string> = {};
-			for (const [key, value] of Object.entries(req.headers)) {
-				if (key.toLowerCase() !== "cookie" && typeof value === "string") {
-					headersWithoutCookie[key] = value;
-				}
-			}
-			headers = new Headers(headersWithoutCookie);
-		}
+    // Strategy 2 & 3: Session token (bearer or cookie) - requires database lookup
+    let headers = fromNodeHeaders(req.headers);
+    if (hasBearerToken && bearerToken && !isJWT(bearerToken)) {
+      // Session token in bearer header - remove cookie to force bearer auth
+      const headersWithoutCookie: Record<string, string> = {};
+      for (const [key, value] of Object.entries(req.headers)) {
+        if (key.toLowerCase() !== "cookie" && typeof value === "string") {
+          headersWithoutCookie[key] = value;
+        }
+      }
+      headers = new Headers(headersWithoutCookie);
+    }
 
-		// Validate session using better-auth (database lookup)
-		const sessionData = await auth.api.getSession({
-			headers,
-		});
+    // Validate session using better-auth (database lookup)
+    const sessionData = await auth.api.getSession({
+      headers,
+    });
 
-		if (!sessionData) {
-			throw HttpError.unauthorized("No valid session or bearer token found");
-		}
+    if (!sessionData) {
+      throw HttpError.unauthorized("No valid session or bearer token found");
+    }
 
-		// Set authentication type
-		req.authType = hasBearerToken ? "bearer-session" : "cookie";
+    // Set authentication type
+    req.authType = hasBearerToken ? "bearer-session" : "cookie";
 
-		// Attach user and session to request
-		req.user = sessionData.user;
-		req.session = sessionData.session;
+    // Attach user and session to request
+    req.user = {
+      id: sessionData.user.id,
+      email: sessionData.user.email,
+      name: sessionData.user.name,
+      birthdate: sessionData.user.birthdate
+        ? new Date(sessionData.user.birthdate)
+        : undefined,
+      emailVerified: sessionData.user.emailVerified,
+      image: sessionData.user.image ?? undefined,
+      createdAt: new Date(sessionData.user.createdAt),
+      updatedAt: new Date(sessionData.user.updatedAt),
+      families: req.user?.families,
+    };
 
-		// Hydrate families for session-based auth
-		if (req.user) {
-			const userId = new ObjectId(req.user.id);
-			req.user.families = await hydrateFamilies(userId);
-		}
+    req.session = {
+      id: sessionData.session.id,
+      userId: sessionData.session.userId,
+      expiresAt: new Date(sessionData.session.expiresAt),
+      ipAddress: sessionData.session.ipAddress ?? undefined,
+      userAgent: sessionData.session.userAgent ?? undefined,
+    };
 
-		next();
-	} catch (error) {
-		if (error instanceof HttpError) {
-			next(error);
-		} else {
-			next(HttpError.unauthorized("Session validation failed"));
-		}
-	}
+    // Hydrate families for session-based auth
+    if (req.user) {
+      const userId = new ObjectId(req.user.id);
+      req.user.families = await hydrateFamilies(userId);
+    }
+
+    next();
+  } catch (error) {
+    if (error instanceof HttpError) {
+      next(error);
+    } else {
+      next(HttpError.unauthorized("Session validation failed"));
+    }
+  }
 }

@@ -1,9 +1,8 @@
-import request from "supertest";
+import { FamilyRole } from "@modules/family/domain/family";
 import { ObjectId } from "mongodb";
-
+import request from "supertest";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { FamilyRole } from "@modules/family/domain/family";
 
 describe("DELETE /v1/families/:familyId/members/:memberId - Remove Family Member", () => {
   let baseUrl: string;

@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import type { ObjectId } from "mongodb";
 
 /**
  * Task assignment discriminated union
@@ -28,11 +28,11 @@ export interface Task {
 
 // Re-export schedule types for backward compatibility
 export type {
+  CreateScheduleInput,
   Schedule,
   TaskSchedule,
-  CreateScheduleInput,
-  UpdateScheduleInput,
   TaskScheduleDTO,
+  UpdateScheduleInput,
 } from "./task-schedule";
 
 /**

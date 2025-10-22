@@ -1,5 +1,6 @@
-import { jwtVerify, createRemoteJWKSet, JWTVerifyResult } from "jose";
 import { settings } from "@config/settings";
+import type { JWTVerifyResult } from "jose";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 
 /**
  * JWT verification using JWKS (stateless, no database lookup)

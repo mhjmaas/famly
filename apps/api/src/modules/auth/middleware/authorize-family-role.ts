@@ -1,9 +1,9 @@
-import type { Request, Response, NextFunction } from "express";
+import { HttpError } from "@lib/http-error";
+import type { FamilyRole } from "@modules/family/domain/family";
+import type { NextFunction, Request, Response } from "express";
 import { ObjectId } from "mongodb";
 import { requireFamilyRole } from "../lib/require-family-role";
-import { FamilyRole } from "@modules/family/domain/family";
 import type { AuthenticatedRequest } from "./authenticate";
-import { HttpError } from "@lib/http-error";
 
 /**
  * Options for family role authorization middleware
@@ -51,7 +51,7 @@ export function authorizeFamilyRole(
 
   return async (
     req: Request,
-    res: Response,
+    _res: Response,
     next: NextFunction,
   ): Promise<void> => {
     try {

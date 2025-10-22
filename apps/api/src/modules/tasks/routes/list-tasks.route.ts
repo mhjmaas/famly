@@ -51,14 +51,14 @@ export function createListTasksRoute(): Router {
 
         if (req.query.dueDateFrom) {
           dueDateFrom = new Date(req.query.dueDateFrom as string);
-          if (isNaN(dueDateFrom.getTime())) {
+          if (Number.isNaN(dueDateFrom.getTime())) {
             throw HttpError.badRequest("Invalid dueDateFrom format");
           }
         }
 
         if (req.query.dueDateTo) {
           dueDateTo = new Date(req.query.dueDateTo as string);
-          if (isNaN(dueDateTo.getTime())) {
+          if (Number.isNaN(dueDateTo.getTime())) {
             throw HttpError.badRequest("Invalid dueDateTo format");
           }
         }

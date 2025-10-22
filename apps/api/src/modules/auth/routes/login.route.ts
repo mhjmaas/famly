@@ -1,10 +1,16 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
-import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
+import type { ListFamiliesResponse } from "@modules/family/domain/family";
 import { FamilyRepository } from "@modules/family/repositories/family.repository";
+import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import { FamilyService } from "@modules/family/services/family.service";
 import { fromNodeHeaders } from "better-auth/node";
-import { NextFunction, Request, Response, Router } from "express";
+import {
+  type NextFunction,
+  type Request,
+  type Response,
+  Router,
+} from "express";
 import { ObjectId } from "mongodb";
 import { getAuth } from "../better-auth";
 
@@ -52,7 +58,21 @@ export function createLoginRoute(): Router {
         }
 
         // Parse the response body
-        const data = await result.json();
+        const data: {
+          user?: {
+            id: string;
+            email: string;
+            name: string;
+            birthdate?: string | Date;
+            emailVerified: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+          };
+          token?: string;
+          session?: {
+            expiresAt?: string;
+          };
+        } = await result.json();
 
         if (!data.user) {
           throw HttpError.unauthorized("Invalid email or password");
@@ -108,7 +128,7 @@ export function createLoginRoute(): Router {
         }
 
         // Hydrate families for login response
-        let families: any[] = [];
+        let families: ListFamiliesResponse = [];
         try {
           const familyService = new FamilyService(
             new FamilyRepository(),
@@ -146,7 +166,7 @@ export function createLoginRoute(): Router {
       } catch (error) {
         // Handle better-auth errors
         if (error && typeof error === "object" && "status" in error) {
-          const authError = error as any;
+          const authError = error as unknown;
           if (
             authError.status === 401 ||
             authError.message?.includes("Invalid")

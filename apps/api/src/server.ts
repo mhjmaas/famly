@@ -1,14 +1,14 @@
 import "dotenv/config";
-import { createApp } from "./app";
 import { connectMongo, disconnectMongo } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
 import { FamilyRepository } from "@modules/family/repositories/family.repository";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import {
-  TaskRepository,
   ScheduleRepository,
   startTaskScheduler,
+  TaskRepository,
 } from "@modules/tasks";
+import { createApp } from "./app";
 
 const DEFAULT_PORT = 4000;
 const port = Number(process.env.PORT ?? DEFAULT_PORT);

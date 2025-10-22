@@ -1,6 +1,6 @@
-import { z } from "zod";
-import { Request, Response, NextFunction } from "express";
 import { HttpError } from "@lib/http-error";
+import type { NextFunction, Request, Response } from "express";
+import { z } from "zod";
 
 /**
  * Zod schema for create family payload validation

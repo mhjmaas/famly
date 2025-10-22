@@ -137,11 +137,19 @@ describe("E2E: GET /v1/families", () => {
       expect(listResponse.body[2].name).toBe("First Family");
 
       // All should be Parent role with member details including name and birthdate
-      listResponse.body.forEach((family: any) => {
+      interface FamilyMember {
+        name: string;
+        birthdate: string;
+      }
+      interface Family {
+        role: string;
+        members: FamilyMember[];
+      }
+      listResponse.body.forEach((family: Family) => {
         expect(family.role).toBe("Parent");
         expect(Array.isArray(family.members)).toBe(true);
         expect(family.members.length).toBeGreaterThan(0);
-        family.members.forEach((member: any) => {
+        family.members.forEach((member: FamilyMember) => {
           expect(member).toHaveProperty("name");
           expect(member).toHaveProperty("birthdate");
         });
@@ -260,7 +268,14 @@ describe("E2E: GET /v1/families", () => {
       expect(family.members).toHaveLength(3);
 
       // Verify all members have required fields including name and birthdate
-      family.members.forEach((member: any) => {
+      interface FamilyDetailMember {
+        memberId: string;
+        role: string;
+        linkedAt: string;
+        name: string;
+        birthdate: string;
+      }
+      family.members.forEach((member: FamilyDetailMember) => {
         expect(member).toMatchObject({
           memberId: expect.any(String),
           role: expect.stringMatching(/^(Parent|Child)$/),
@@ -272,13 +287,13 @@ describe("E2E: GET /v1/families", () => {
 
       // Verify specific member details
       const parentMember = family.members.find(
-        (m: any) => m.memberId === parentId,
+        (m: FamilyDetailMember) => m.memberId === parentId,
       );
       const childMember = family.members.find(
-        (m: any) => m.memberId === childId,
+        (m: FamilyDetailMember) => m.memberId === childId,
       );
       const coParentMember = family.members.find(
-        (m: any) => m.memberId === coParentId,
+        (m: FamilyDetailMember) => m.memberId === coParentId,
       );
 
       expect(parentMember).toBeDefined();
@@ -300,7 +315,7 @@ describe("E2E: GET /v1/families", () => {
       expect(coParentMember.addedBy).toBe(parentId);
 
       // Verify ISO date format for linkedAt
-      family.members.forEach((member: any) => {
+      family.members.forEach((member: FamilyDetailMember) => {
         expect(new Date(member.linkedAt).toISOString()).toBe(member.linkedAt);
       });
     });

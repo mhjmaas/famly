@@ -1,14 +1,12 @@
-import { z } from "zod";
-import { ObjectId } from "mongodb";
-import { Request, Response, NextFunction } from "express";
 import { HttpError } from "@lib/http-error";
+import type { NextFunction, Request, Response } from "express";
+import { ObjectId } from "mongodb";
+import { z } from "zod";
 
 // Custom ObjectId validator
-const objectIdSchema = z
-  .string()
-  .refine((val) => ObjectId.isValid(val), {
-    message: "Invalid ObjectId format",
-  });
+const objectIdSchema = z.string().refine((val) => ObjectId.isValid(val), {
+  message: "Invalid ObjectId format",
+});
 
 // Task assignment schema - discriminated union
 const taskAssignmentSchema = z.discriminatedUnion("type", [

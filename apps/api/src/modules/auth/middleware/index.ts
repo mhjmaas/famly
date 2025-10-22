@@ -1,6 +1,6 @@
-export { authenticate, type AuthenticatedRequest } from "./authenticate";
-export { verifyJWT, isJWT } from "./jwt-verify";
+export { type AuthenticatedRequest, authenticate } from "./authenticate";
 export {
-  authorizeFamilyRole,
   type AuthorizeFamilyRoleOptions,
+  authorizeFamilyRole,
 } from "./authorize-family-role";
+export { isJWT, verifyJWT } from "./jwt-verify";

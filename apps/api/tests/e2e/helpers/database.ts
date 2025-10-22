@@ -51,7 +51,7 @@ export async function clearAuthCaches(): Promise<void> {
       "@modules/auth/middleware/jwt-verify"
     );
     clearJWKSCache();
-  } catch (error) {
+  } catch (_error) {
     // Ignore if module not available
   }
 
@@ -59,7 +59,7 @@ export async function clearAuthCaches(): Promise<void> {
   try {
     const { resetAuth } = await import("@modules/auth/better-auth");
     resetAuth();
-  } catch (error) {
+  } catch (_error) {
     // Ignore if module not available
   }
 }

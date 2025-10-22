@@ -1,7 +1,7 @@
+import { FamilyRole } from "@modules/family/domain/family";
 import request from "supertest";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { FamilyRole } from "@modules/family/domain/family";
 
 describe("DELETE /v1/families/:familyId/members/:memberId - Parent guardrails", () => {
   let baseUrl: string;

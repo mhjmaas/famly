@@ -1,8 +1,8 @@
+import { type ChildProcess, spawn } from "node:child_process";
 import {
   MongoDBContainer,
-  StartedMongoDBContainer,
+  type StartedMongoDBContainer,
 } from "@testcontainers/mongodb";
-import { ChildProcess, spawn } from "child_process";
 import { MongoClient } from "mongodb";
 
 // Set minimal env vars before any imports
@@ -81,8 +81,8 @@ export async function setupE2E(): Promise<string> {
     const timeout = setTimeout(() => {
       logger.debug("Server output:");
       logger.debug(allOutput.join(""));
-      reject(new Error("Server failed to start within 15 seconds"));
-    }, 15000);
+      reject(new Error("Server failed to start within 5 seconds"));
+    }, 5000);
 
     let resolved = false;
 

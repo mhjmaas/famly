@@ -1,11 +1,11 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
-import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
-import { ObjectId } from "mongodb";
-import { CreateTaskInput, Task, UpdateTaskInput } from "../domain/task";
-import { TaskRepository } from "../repositories/task.repository";
 import { requireFamilyRole } from "@modules/auth/lib/require-family-role";
 import { FamilyRole } from "@modules/family/domain/family";
+import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
+import type { ObjectId } from "mongodb";
+import type { CreateTaskInput, Task, UpdateTaskInput } from "../domain/task";
+import type { TaskRepository } from "../repositories/task.repository";
 
 export class TaskService {
   constructor(

@@ -1,8 +1,8 @@
+import { type ChildProcess, spawn } from "node:child_process";
 import {
   MongoDBContainer,
-  StartedMongoDBContainer,
+  type StartedMongoDBContainer,
 } from "@testcontainers/mongodb";
-import { ChildProcess, spawn } from "child_process";
 
 declare global {
   var __MONGO_URI__: string;

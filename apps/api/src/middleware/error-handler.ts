@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from "express";
 import { isHttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import type { NextFunction, Request, Response } from "express";
 
 export interface ErrorResponse {
   error: string;

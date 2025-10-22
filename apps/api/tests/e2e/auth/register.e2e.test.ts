@@ -69,9 +69,12 @@ describe("E2E: POST /v1/auth/register", () => {
       );
 
       // Use the session cookie to access protected endpoint
+      if (!sessionCookie) {
+        throw new Error("Session cookie not found");
+      }
       const meResponse = await request(baseUrl)
         .get("/v1/auth/me")
-        .set("Cookie", sessionCookie!);
+        .set("Cookie", sessionCookie);
 
       expect(meResponse.status).toBe(200);
       expect(meResponse.body.user.email).toBe("autosignin@example.com");
@@ -262,9 +265,12 @@ describe("E2E: POST /v1/auth/register", () => {
       expect(sessionToken).toBeDefined();
 
       // Test 1: Cookie-based authentication
+      if (!sessionCookie) {
+        throw new Error("Session cookie not found");
+      }
       const cookieResponse = await request(baseUrl)
         .get("/v1/auth/me")
-        .set("Cookie", sessionCookie!);
+        .set("Cookie", sessionCookie);
 
       expect(cookieResponse.status).toBe(200);
       expect(cookieResponse.body.user.email).toBe("allauth@example.com");

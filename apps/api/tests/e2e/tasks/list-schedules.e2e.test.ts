@@ -92,7 +92,21 @@ describe("E2E: GET /v1/families/:familyId/tasks/schedules", () => {
       expect(response.body).toHaveLength(2);
 
       // Verify schedule structure
-      response.body.forEach((schedule: any) => {
+      interface Schedule {
+        _id: string;
+        familyId: string;
+        name: string;
+        assignment: string;
+        schedule: {
+          daysOfWeek: string[];
+          weeklyInterval: number;
+          startDate: string;
+        };
+        createdBy: string;
+        createdAt: string;
+        updatedAt: string;
+      }
+      response.body.forEach((schedule: Schedule) => {
         expect(schedule).toHaveProperty("_id");
         expect(schedule).toHaveProperty("familyId", familyId);
         expect(schedule).toHaveProperty("name");
@@ -107,7 +121,7 @@ describe("E2E: GET /v1/families/:familyId/tasks/schedules", () => {
       });
 
       // Verify both schedules are present
-      const names = response.body.map((s: any) => s.name);
+      const names = response.body.map((s: Schedule) => s.name);
       expect(names).toContain("Weekly Cleaning");
       expect(names).toContain("Bi-weekly Lawn");
     });

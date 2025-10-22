@@ -1,8 +1,8 @@
-import { CronJob } from "cron";
-import { TaskGeneratorService } from "../services/task-generator.service";
-import { TaskRepository } from "../repositories/task.repository";
-import { ScheduleRepository } from "../repositories/schedule.repository";
 import { logger } from "@lib/logger";
+import { CronJob } from "cron";
+import { ScheduleRepository } from "../repositories/schedule.repository";
+import { TaskRepository } from "../repositories/task.repository";
+import { TaskGeneratorService } from "../services/task-generator.service";
 
 let cronJob: CronJob | null = null;
 

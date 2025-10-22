@@ -2,10 +2,10 @@ import { settings } from "@config/settings";
 import { getDb } from "@infra/mongo/client";
 import { betterAuth as betterAuthInit } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import { bearer, jwt, customSession } from "better-auth/plugins";
+import { bearer, customSession, jwt } from "better-auth/plugins";
 import { ObjectId } from "mongodb";
 
-let authInstance: any = null;
+let authInstance: ReturnType<typeof betterAuthInit> | null = null;
 
 /**
  * Initialize Better Auth with dual-token authentication strategy.
@@ -82,7 +82,7 @@ function initAuth() {
             },
             session,
           };
-        } catch (error) {
+        } catch (_error) {
           // If fetch fails, return user without additionalFields
           // The client can fetch from /me endpoint if needed
           return {

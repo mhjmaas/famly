@@ -1,6 +1,6 @@
-import { TaskSchedule } from "@/modules/tasks/domain/task-schedule";
-import { toTaskScheduleDTO } from "@/modules/tasks/lib/task-schedule.mapper";
 import { ObjectId } from "mongodb";
+import type { TaskSchedule } from "@/modules/tasks/domain/task-schedule";
+import { toTaskScheduleDTO } from "@/modules/tasks/lib/task-schedule.mapper";
 
 describe("Task Schedule Mapper", () => {
   describe("toTaskScheduleDTO", () => {

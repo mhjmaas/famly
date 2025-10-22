@@ -93,13 +93,22 @@ describe("E2E: GET /v1/families/:familyId/tasks", () => {
       expect(response.body).toHaveLength(3);
 
       // Verify all tasks are present (ordered by createdAt desc)
-      const taskNames = response.body.map((t: any) => t.name);
+      interface Task {
+        _id: string;
+        familyId: string;
+        name: string;
+        assignment: string;
+        createdBy: string;
+        createdAt: string;
+        updatedAt: string;
+      }
+      const taskNames = response.body.map((t: Task) => t.name);
       expect(taskNames).toContain("Task 1");
       expect(taskNames).toContain("Task 2");
       expect(taskNames).toContain("Task 3");
 
       // Verify task structure
-      response.body.forEach((task: any) => {
+      response.body.forEach((task: Task) => {
         expect(task).toHaveProperty("_id");
         expect(task).toHaveProperty("familyId", familyId);
         expect(task).toHaveProperty("name");

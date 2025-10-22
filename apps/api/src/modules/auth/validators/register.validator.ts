@@ -23,7 +23,7 @@ export const registerValidator = z.object({
       "Birthdate must be in ISO 8601 format (YYYY-MM-DD)",
     )
     .refine(
-      (val) => !isNaN(new Date(val).getTime()),
+      (val) => !Number.isNaN(new Date(val).getTime()),
       "Birthdate must be a valid date",
     ),
 });

@@ -1,7 +1,7 @@
-import { TaskRepository } from "../repositories/task.repository";
-import { ScheduleRepository } from "../repositories/schedule.repository";
-import { shouldGenerateForDate } from "../lib/schedule-matcher";
 import { logger } from "@lib/logger";
+import { shouldGenerateForDate } from "../lib/schedule-matcher";
+import type { ScheduleRepository } from "../repositories/schedule.repository";
+import type { TaskRepository } from "../repositories/task.repository";
 
 export class TaskGeneratorService {
   constructor(
