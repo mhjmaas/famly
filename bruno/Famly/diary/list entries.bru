@@ -1,0 +1,50 @@
+meta {
+  name: List Entries
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/v1/diary
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+query {
+  startDate: 2025-01-01
+  endDate: 2025-12-31
+}
+
+docs {
+  # List Diary Entries
+
+  Get all personal diary entries for the authenticated user, with optional date range filtering.
+
+  ## Query Parameters
+
+  - `startDate` (string, optional): Start date in YYYY-MM-DD format (inclusive)
+  - `endDate` (string, optional): End date in YYYY-MM-DD format (inclusive)
+
+  If neither startDate nor endDate is provided, all entries are returned.
+
+  ## Response
+
+  Returns an array of diary entries, sorted by date (newest first).
+
+  Each diary entry contains:
+  - `_id`: Unique identifier
+  - `userId`: ID of the user
+  - `date`: Entry date (YYYY-MM-DD)
+  - `entry`: Entry text
+  - `createdAt`: Creation timestamp
+  - `updatedAt`: Last update timestamp
+
+  ## Status Codes
+
+  - `200`: Diary entries retrieved successfully
+  - `401`: Unauthorized (missing or invalid token)
+}

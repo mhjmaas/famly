@@ -1,0 +1,45 @@
+meta {
+  name: Delete Entry
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/v1/diary/:entryId
+  body: none
+  auth: bearer
+}
+
+params:path {
+  entryId: {{currentEntryId}}
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  # Delete Diary Entry
+
+  Delete a specific diary entry.
+
+  ## Path Parameters
+
+  - `entryId`: ID of the diary entry (uses `currentEntryId` from create entry)
+
+  ## Response
+
+  No content returned.
+
+  ## Status Codes
+
+  - `204`: Diary entry deleted successfully
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not the entry owner)
+  - `404`: Diary entry not found
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

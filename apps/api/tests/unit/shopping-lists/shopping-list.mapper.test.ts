@@ -1,12 +1,12 @@
 import { ObjectId } from "mongodb";
-import {
-  toShoppingListDTO,
-  toShoppingListItemDTO,
-} from "../../../src/modules/shopping-lists/lib/shopping-list.mapper";
 import type {
   ShoppingList,
   ShoppingListItem,
 } from "../../../src/modules/shopping-lists/domain/shopping-list";
+import {
+  toShoppingListDTO,
+  toShoppingListItemDTO,
+} from "../../../src/modules/shopping-lists/lib/shopping-list.mapper";
 
 describe("Shopping List Mapper", () => {
   describe("toShoppingListItemDTO", () => {

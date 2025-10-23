@@ -1,0 +1,52 @@
+meta {
+  name: Get Entry
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/v1/diary/:entryId
+  body: none
+  auth: bearer
+}
+
+params:path {
+  entryId: {{currentEntryId}}
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  # Get Diary Entry
+
+  Retrieve a specific diary entry by ID.
+
+  ## Path Parameters
+
+  - `entryId`: ID of the diary entry (uses `currentEntryId` from create entry)
+
+  ## Response
+
+  Returns the diary entry with the following properties:
+  - `_id`: Unique identifier
+  - `date`: Entry date (YYYY-MM-DD)
+  - `entry`: Entry text
+  - `isPersonal`: Boolean flag
+  - `createdBy`: ID of the user
+  - `createdAt`: Creation timestamp
+  - `updatedAt`: Last update timestamp
+
+  ## Status Codes
+
+  - `200`: Diary entry retrieved successfully
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not the entry owner)
+  - `404`: Diary entry not found
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

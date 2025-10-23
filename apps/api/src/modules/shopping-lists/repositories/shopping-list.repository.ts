@@ -85,13 +85,8 @@ export class ShoppingListRepository {
   /**
    * Find all shopping lists for a family
    */
-  async findShoppingListsByFamily(
-    familyId: ObjectId,
-  ): Promise<ShoppingList[]> {
-    return this.collection
-      .find({ familyId })
-      .sort({ createdAt: -1 })
-      .toArray();
+  async findShoppingListsByFamily(familyId: ObjectId): Promise<ShoppingList[]> {
+    return this.collection.find({ familyId }).sort({ createdAt: -1 }).toArray();
   }
 
   /**

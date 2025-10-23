@@ -126,9 +126,8 @@ export class ShoppingListService {
       });
 
       // Fetch the shopping list
-      const list = await this.shoppingListRepository.findShoppingListById(
-        listId,
-      );
+      const list =
+        await this.shoppingListRepository.findShoppingListById(listId);
 
       if (!list) {
         throw HttpError.notFound("Shopping list not found");
@@ -178,9 +177,8 @@ export class ShoppingListService {
       });
 
       // Verify shopping list exists and belongs to family
-      const existingList = await this.shoppingListRepository.findShoppingListById(
-        listId,
-      );
+      const existingList =
+        await this.shoppingListRepository.findShoppingListById(listId);
       if (!existingList) {
         throw HttpError.notFound("Shopping list not found");
       }
@@ -192,8 +190,10 @@ export class ShoppingListService {
       }
 
       // Update the shopping list
-      const updatedList =
-        await this.shoppingListRepository.updateShoppingList(listId, input);
+      const updatedList = await this.shoppingListRepository.updateShoppingList(
+        listId,
+        input,
+      );
 
       if (!updatedList) {
         throw HttpError.notFound("Shopping list not found");
@@ -241,9 +241,8 @@ export class ShoppingListService {
       });
 
       // Verify shopping list exists and belongs to family
-      const existingList = await this.shoppingListRepository.findShoppingListById(
-        listId,
-      );
+      const existingList =
+        await this.shoppingListRepository.findShoppingListById(listId);
       if (!existingList) {
         throw HttpError.notFound("Shopping list not found");
       }
@@ -303,9 +302,8 @@ export class ShoppingListService {
       });
 
       // Verify shopping list exists and belongs to family
-      const existingList = await this.shoppingListRepository.findShoppingListById(
-        listId,
-      );
+      const existingList =
+        await this.shoppingListRepository.findShoppingListById(listId);
       if (!existingList) {
         throw HttpError.notFound("Shopping list not found");
       }
@@ -371,9 +369,8 @@ export class ShoppingListService {
       });
 
       // Verify shopping list exists and belongs to family
-      const existingList = await this.shoppingListRepository.findShoppingListById(
-        listId,
-      );
+      const existingList =
+        await this.shoppingListRepository.findShoppingListById(listId);
       if (!existingList) {
         throw HttpError.notFound("Shopping list not found");
       }
@@ -450,9 +447,8 @@ export class ShoppingListService {
       });
 
       // Verify shopping list exists and belongs to family
-      const existingList = await this.shoppingListRepository.findShoppingListById(
-        listId,
-      );
+      const existingList =
+        await this.shoppingListRepository.findShoppingListById(listId);
       if (!existingList) {
         throw HttpError.notFound("Shopping list not found");
       }

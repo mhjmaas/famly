@@ -23,7 +23,9 @@ describe("addItemSchema", () => {
     });
 
     it("should handle names with special characters", () => {
-      const result = addItemSchema.parse({ name: "Extra Virgin Olive Oil (500mL)" });
+      const result = addItemSchema.parse({
+        name: "Extra Virgin Olive Oil (500mL)",
+      });
       expect(result.name).toBe("Extra Virgin Olive Oil (500mL)");
     });
 

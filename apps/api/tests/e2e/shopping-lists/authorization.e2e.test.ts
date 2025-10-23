@@ -76,7 +76,8 @@ describe("E2E: Shopping Lists Authorization", () => {
       });
 
     childToken =
-      childLoginResponse.body.accessToken || childLoginResponse.body.sessionToken;
+      childLoginResponse.body.accessToken ||
+      childLoginResponse.body.sessionToken;
   });
 
   describe("Parent Authorization", () => {
@@ -302,8 +303,7 @@ describe("E2E: Shopping Lists Authorization", () => {
         });
 
       outsiderToken =
-        registerResponse.body.accessToken ||
-        registerResponse.body.sessionToken;
+        registerResponse.body.accessToken || registerResponse.body.sessionToken;
     });
 
     it("non-family member cannot create shopping lists", async () => {

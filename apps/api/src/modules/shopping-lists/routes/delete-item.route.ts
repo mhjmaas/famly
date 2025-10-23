@@ -58,12 +58,7 @@ export function deleteItemRoute(): Router {
           throw HttpError.notFound("Item not found");
         }
 
-        await shoppingListService.deleteItem(
-          familyId,
-          listId,
-          itemId,
-          userId,
-        );
+        await shoppingListService.deleteItem(familyId, listId, itemId, userId);
 
         res.status(204).send();
       } catch (error) {

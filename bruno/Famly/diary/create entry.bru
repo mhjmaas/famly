@@ -1,0 +1,70 @@
+meta {
+  name: Create Entry
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/diary
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "date": "2025-10-23",
+    "entry": "Today was a great day"
+  }
+}
+
+script:post-response {
+  try {
+    const body = res.body;
+    if (body?._id) {
+      bru.setEnvVar('currentEntryId', body._id);
+    }
+  } catch (error) {
+    console.log('Failed to save entry ID: ' + error?.message);
+  }
+}
+
+docs {
+  # Create Diary Entry
+
+  Create a new personal diary entry.
+
+  ## Request Body
+
+  - `date` (string, required): Entry date in YYYY-MM-DD format
+  - `entry` (string, required): Diary entry text (1-10000 characters)
+
+  ## Response
+
+  Returns the created diary entry with the following properties:
+  - `_id`: Unique identifier
+  - `date`: Entry date (YYYY-MM-DD)
+  - `entry`: Entry text
+  - `isPersonal`: Boolean flag (always true for personal entries)
+  - `createdBy`: ID of the user who created it
+  - `createdAt`: Creation timestamp
+  - `updatedAt`: Last update timestamp
+
+  ## Status Codes
+
+  - `201`: Diary entry created successfully
+  - `400`: Validation error
+  - `401`: Unauthorized (missing or invalid token)
+
+  ## Note
+
+  The created entry ID is automatically saved to `currentEntryId` environment variable for use in subsequent requests (Get, Update, Delete).
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

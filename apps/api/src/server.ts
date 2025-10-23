@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { connectMongo, disconnectMongo } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
+import { DiaryRepository } from "@modules/diary";
 import { FamilyRepository } from "@modules/family/repositories/family.repository";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import { ShoppingListRepository } from "@modules/shopping-lists";
@@ -48,6 +49,12 @@ async function start() {
   const shoppingListRepo = new ShoppingListRepository();
   await shoppingListRepo.ensureIndexes();
   logger.info("Shopping lists module indexes initialized successfully");
+
+  // Initialize diary module indexes
+  logger.info("Initializing diary module indexes...");
+  const diaryRepo = new DiaryRepository();
+  await diaryRepo.ensureIndexes();
+  logger.info("Diary module indexes initialized successfully");
 
   // Start task scheduler cron job
   logger.info("Starting task scheduler...");

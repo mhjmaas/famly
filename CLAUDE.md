@@ -309,6 +309,12 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
+│   │   └── add-personal-diary-entries
+│   │       ├── proposal.md
+│   │       ├── specs
+│   │       │   └── diary
+│   │       │       └── spec.md
+│   │       └── tasks.md
 │   ├── project.md
 │   └── specs
 │       ├── auth
@@ -327,7 +333,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-76 directories, 211 files
+79 directories, 214 files
 ```
 <!-- TREE END -->
 

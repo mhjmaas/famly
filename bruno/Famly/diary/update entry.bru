@@ -1,0 +1,60 @@
+meta {
+  name: Update Entry
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/v1/diary/:entryId
+  body: json
+  auth: bearer
+}
+
+params:path {
+  entryId: {{currentEntryId}}
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "date": "2025-10-23",
+    "entry": "Updated entry text"
+  }
+}
+
+docs {
+  # Update Diary Entry
+
+  Update a diary entry's date and/or text.
+
+  ## Path Parameters
+
+  - `entryId`: ID of the diary entry (uses `currentEntryId` from create entry)
+
+  ## Request Body
+
+  - `date` (string, optional): New entry date in YYYY-MM-DD format
+  - `entry` (string, optional): Updated entry text (1-10000 characters)
+
+  At least one field must be provided.
+
+  ## Response
+
+  Returns the updated diary entry with all properties.
+
+  ## Status Codes
+
+  - `200`: Diary entry updated successfully
+  - `400`: Validation error
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not the entry owner)
+  - `404`: Diary entry not found
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

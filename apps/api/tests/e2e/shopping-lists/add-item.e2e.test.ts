@@ -183,9 +183,7 @@ describe("E2E: POST /v1/families/:familyId/shopping-lists/:listId/items", () => 
     it("should return 404 for non-existent list", async () => {
       const fakeListId = "507f1f77bcf86cd799439999";
       const response = await request(baseUrl)
-        .post(
-          `/v1/families/${familyId}/shopping-lists/${fakeListId}/items`,
-        )
+        .post(`/v1/families/${familyId}/shopping-lists/${fakeListId}/items`)
         .set("Authorization", `Bearer ${authToken}`)
         .send({
           name: "Item",

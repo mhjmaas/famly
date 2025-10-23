@@ -2,6 +2,7 @@ import { errorHandler } from "@middleware/error-handler";
 import cookieParser from "cookie-parser";
 import express, { type Express } from "express";
 import { createAuthRouter } from "./modules/auth/routes/auth.router";
+import { createDiaryRouter } from "./modules/diary";
 import { createFamiliesRouter } from "./modules/family/routes";
 import { createHealthRouter } from "./routes/health";
 
@@ -22,6 +23,9 @@ export const createApp = (): Express => {
 
   // Auth routes (Better Auth manages its own indexes)
   app.use("/v1/auth", createAuthRouter());
+
+  // Diary routes (requires authentication)
+  app.use("/v1/diary", createDiaryRouter());
 
   // Family routes (requires authentication)
   // Note: Tasks routes are mounted within the families router at /:familyId/tasks
