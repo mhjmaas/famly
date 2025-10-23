@@ -6,7 +6,7 @@ Famly provides a family management platform that centralizes household organizat
 ## Tech Stack
 - Monorepo managed with `pnpm` workspaces
 - API: Node.js 20, TypeScript 5.6, Express 4, Zod, MongoDB Node Driver, Better Auth (bearer + JWT plugins), Winston
-- Web: Next.js 15 (React 19), Tailwind CSS 4, Biome for linting/formatting
+- Web: Next.js 16 (React 19), Tailwind CSS 4, Biome for linting/formatting
 - Tooling: Jest + ts-jest, Testcontainers, Supertest, Docker Compose for local infra
 
 ## Project Conventions
