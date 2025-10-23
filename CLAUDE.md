@@ -46,6 +46,7 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── apps
 │   ├── api
 │   │   ├── README.md
+│   │   ├── biome.json
 │   │   ├── docker
 │   │   │   └── Dockerfile
 │   │   ├── jest.config.e2e.js
@@ -94,27 +95,67 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   │   ├── family-membership.repository.ts
 │   │   │   │   │   │   └── family.repository.ts
 │   │   │   │   │   ├── routes
+│   │   │   │   │   │   ├── add-member.route.ts
+│   │   │   │   │   │   ├── create-family.route.ts
 │   │   │   │   │   │   ├── families.route.ts
-│   │   │   │   │   │   └── index.ts
+│   │   │   │   │   │   ├── index.ts
+│   │   │   │   │   │   ├── list-families.route.ts
+│   │   │   │   │   │   └── remove-member.route.ts
 │   │   │   │   │   ├── services
 │   │   │   │   │   │   └── family.service.ts
 │   │   │   │   │   └── validators
 │   │   │   │   │       ├── add-family-member.validator.ts
 │   │   │   │   │       └── create-family.validator.ts
+│   │   │   │   ├── shopping-lists
+│   │   │   │   │   ├── domain
+│   │   │   │   │   │   └── shopping-list.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── lib
+│   │   │   │   │   │   └── shopping-list.mapper.ts
+│   │   │   │   │   ├── repositories
+│   │   │   │   │   │   └── shopping-list.repository.ts
+│   │   │   │   │   ├── routes
+│   │   │   │   │   │   ├── add-item.route.ts
+│   │   │   │   │   │   ├── create-list.route.ts
+│   │   │   │   │   │   ├── delete-item.route.ts
+│   │   │   │   │   │   ├── delete-list.route.ts
+│   │   │   │   │   │   ├── get-list.route.ts
+│   │   │   │   │   │   ├── list-lists.route.ts
+│   │   │   │   │   │   ├── shopping-lists.router.ts
+│   │   │   │   │   │   ├── update-item.route.ts
+│   │   │   │   │   │   └── update-list.route.ts
+│   │   │   │   │   ├── services
+│   │   │   │   │   │   └── shopping-list.service.ts
+│   │   │   │   │   └── validators
+│   │   │   │   │       ├── add-item.validator.ts
+│   │   │   │   │       ├── create-list.validator.ts
+│   │   │   │   │       ├── update-item.validator.ts
+│   │   │   │   │       └── update-list.validator.ts
 │   │   │   │   └── tasks
 │   │   │   │       ├── domain
+│   │   │   │       │   ├── task-schedule.ts
 │   │   │   │       │   └── task.ts
 │   │   │   │       ├── index.ts
 │   │   │   │       ├── lib
 │   │   │   │       │   ├── schedule-matcher.ts
+│   │   │   │       │   ├── task-schedule.mapper.ts
 │   │   │   │       │   ├── task-scheduler.ts
 │   │   │   │       │   └── task.mapper.ts
 │   │   │   │       ├── repositories
 │   │   │   │       │   ├── schedule.repository.ts
 │   │   │   │       │   └── task.repository.ts
 │   │   │   │       ├── routes
+│   │   │   │       │   ├── create-schedule.route.ts
 │   │   │   │       │   ├── create-task.route.ts
-│   │   │   │       │   └── tasks.router.ts
+│   │   │   │       │   ├── delete-schedule.route.ts
+│   │   │   │       │   ├── delete-task.route.ts
+│   │   │   │       │   ├── get-schedule.route.ts
+│   │   │   │       │   ├── get-task.route.ts
+│   │   │   │       │   ├── list-schedules.route.ts
+│   │   │   │       │   ├── list-tasks.route.ts
+│   │   │   │       │   ├── tasks.router.ts
+│   │   │   │       │   ├── update-schedule.route.ts
+│   │   │   │       │   └── update-task.route.ts
 │   │   │   │       ├── services
 │   │   │   │       │   ├── schedule.service.ts
 │   │   │   │       │   ├── task-generator.service.ts
@@ -132,10 +173,8 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   ├── auth
 │   │   │   │   │   ├── login.e2e.test.ts
 │   │   │   │   │   ├── me.e2e.test.ts
-│   │   │   │   │   ├── me.e2e.test.ts.bak
 │   │   │   │   │   └── register.e2e.test.ts
 │   │   │   │   ├── family
-│   │   │   │   │   ├── README.md
 │   │   │   │   │   ├── add-child-member.e2e.test.ts
 │   │   │   │   │   ├── add-member-authorization.e2e.test.ts
 │   │   │   │   │   ├── add-parent-member.e2e.test.ts
@@ -150,8 +189,27 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   └── test-app.ts
 │   │   │   │   ├── setup
 │   │   │   │   │   └── testcontainers-setup.ts
+│   │   │   │   ├── shopping-lists
+│   │   │   │   │   ├── add-item.e2e.test.ts
+│   │   │   │   │   ├── authorization.e2e.test.ts
+│   │   │   │   │   ├── create-list.e2e.test.ts
+│   │   │   │   │   ├── delete-item.e2e.test.ts
+│   │   │   │   │   ├── delete-list.e2e.test.ts
+│   │   │   │   │   ├── get-list.e2e.test.ts
+│   │   │   │   │   ├── list-lists.e2e.test.ts
+│   │   │   │   │   ├── update-item.e2e.test.ts
+│   │   │   │   │   └── update-list.e2e.test.ts
 │   │   │   │   └── tasks
-│   │   │   │       └── create-task.e2e.test.ts
+│   │   │   │       ├── create-schedule.e2e.test.ts
+│   │   │   │       ├── create-task.e2e.test.ts
+│   │   │   │       ├── delete-schedule.e2e.test.ts
+│   │   │   │       ├── delete-task.e2e.test.ts
+│   │   │   │       ├── get-schedule.e2e.test.ts
+│   │   │   │       ├── get-task.e2e.test.ts
+│   │   │   │       ├── list-schedules.e2e.test.ts
+│   │   │   │       ├── list-tasks.e2e.test.ts
+│   │   │   │       ├── update-schedule.e2e.test.ts
+│   │   │   │       └── update-task.e2e.test.ts
 │   │   │   ├── setup
 │   │   │   │   ├── global-setup.ts
 │   │   │   │   ├── global-teardown.ts
@@ -166,10 +224,17 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │       │   └── create-family.validator.test.ts
 │   │   │       ├── lib
 │   │   │       │   └── http-error.test.ts
+│   │   │       ├── shopping-lists
+│   │   │       │   ├── add-item.validator.test.ts
+│   │   │       │   ├── create-list.validator.test.ts
+│   │   │       │   ├── shopping-list.mapper.test.ts
+│   │   │       │   ├── update-item.validator.test.ts
+│   │   │       │   └── update-list.validator.test.ts
 │   │   │       └── tasks
 │   │   │           ├── create-schedule.validator.test.ts
 │   │   │           ├── create-task.validator.test.ts
 │   │   │           ├── schedule-matcher.test.ts
+│   │   │           ├── task-schedule.mapper.test.ts
 │   │   │           ├── task.mapper.test.ts
 │   │   │           ├── update-schedule.validator.test.ts
 │   │   │           └── update-task.validator.test.ts
@@ -206,12 +271,34 @@ Our core guiding principles are found in the `constitution.md` file.
 │       ├── bruno.json
 │       ├── environments
 │       │   └── local.bru
-│       └── family
-│           ├── add member.bru
-│           ├── create.bru
-│           ├── delete member.bru
+│       ├── family
+│       │   ├── add member.bru
+│       │   ├── create.bru
+│       │   ├── delete member.bru
+│       │   ├── folder.bru
+│       │   └── get all.bru
+│       ├── shopping-lists
+│       │   ├── add item.bru
+│       │   ├── create list.bru
+│       │   ├── delete item.bru
+│       │   ├── delete list.bru
+│       │   ├── folder.bru
+│       │   ├── get list.bru
+│       │   ├── list lists.bru
+│       │   ├── update item.bru
+│       │   └── update list.bru
+│       └── tasks
+│           ├── complete-task.bru
+│           ├── create-schedule.bru
+│           ├── create-task.bru
+│           ├── delete-schedule.bru
+│           ├── delete-task.bru
 │           ├── folder.bru
-│           └── get all.bru
+│           ├── get-task.bru
+│           ├── list-schedules.bru
+│           ├── list-tasks.bru
+│           ├── update-schedule.bru
+│           └── update-task.bru
 ├── constitution.md
 ├── docker
 │   ├── compose.dev.yml
@@ -219,18 +306,15 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   └── add-family-task-management
-│   │       ├── design.md
-│   │       ├── proposal.md
-│   │       ├── specs
-│   │       │   └── tasks
-│   │       │       └── spec.md
-│   │       └── tasks.md
 │   ├── project.md
 │   └── specs
 │       ├── auth
 │       │   └── spec.md
-│       └── family
+│       ├── family
+│       │   └── spec.md
+│       ├── shopping-lists
+│       │   └── spec.md
+│       └── tasks
 │           └── spec.md
 ├── package.json
 ├── packages
@@ -240,7 +324,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-66 directories, 134 files
+76 directories, 208 files
 ```
 <!-- TREE END -->
 
