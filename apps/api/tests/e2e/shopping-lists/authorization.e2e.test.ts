@@ -1,13 +1,13 @@
 import request from "supertest";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
+import { registerTestUser, setupFamilyWithMembers } from "../helpers/auth-setup";
 
 describe("E2E: Shopping Lists Authorization", () => {
   let baseUrl: string;
   let authToken: string;
   let familyId: string;
   let listId: string;
-  let childEmail: string;
   let childToken: string;
   let testCounter = 0;
 
@@ -19,30 +19,11 @@ describe("E2E: Shopping Lists Authorization", () => {
     await cleanDatabase();
 
     testCounter++;
-    const uniqueEmail = `authuser${testCounter}@example.com`;
+    const setup = await setupFamilyWithMembers(baseUrl, testCounter);
 
-    // Register parent user
-    const registerResponse = await request(baseUrl)
-      .post("/v1/auth/register")
-      .send({
-        email: uniqueEmail,
-        password: "SecurePassword123!",
-        name: "Auth User",
-        birthdate: "1980-01-15",
-      });
-
-    authToken =
-      registerResponse.body.accessToken || registerResponse.body.sessionToken;
-
-    // Create family
-    const familyResponse = await request(baseUrl)
-      .post("/v1/families")
-      .set("Authorization", `Bearer ${authToken}`)
-      .send({
-        name: "Test Family",
-      });
-
-    familyId = familyResponse.body.familyId;
+    authToken = setup.parentToken;
+    familyId = setup.familyId;
+    childToken = setup.childToken;
 
     // Create shopping list
     const listResponse = await request(baseUrl)
@@ -53,31 +34,6 @@ describe("E2E: Shopping Lists Authorization", () => {
       });
 
     listId = listResponse.body._id;
-
-    // Add child to family (this also registers the child user)
-    childEmail = `child${testCounter}@example.com`;
-    await request(baseUrl)
-      .post(`/v1/families/${familyId}/members`)
-      .set("Authorization", `Bearer ${authToken}`)
-      .send({
-        email: childEmail,
-        password: "ChildPassword123!",
-        name: "Child User",
-        birthdate: "2010-01-15",
-        role: "Child",
-      });
-
-    // Login as child to get a token (since add-member doesn't return one)
-    const childLoginResponse = await request(baseUrl)
-      .post("/v1/auth/login")
-      .send({
-        email: childEmail,
-        password: "ChildPassword123!",
-      });
-
-    childToken =
-      childLoginResponse.body.accessToken ||
-      childLoginResponse.body.sessionToken;
   });
 
   describe("Parent Authorization", () => {
@@ -291,19 +247,12 @@ describe("E2E: Shopping Lists Authorization", () => {
 
     beforeEach(async () => {
       testCounter++;
-      const outsiderEmail = `outsider${testCounter}@example.com`;
+      const outsider = await registerTestUser(baseUrl, testCounter, "outsider", {
+        name: "Outsider User",
+        birthdate: "1985-05-20",
+      });
 
-      const registerResponse = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: outsiderEmail,
-          password: "SecurePassword123!",
-          name: "Outsider User",
-          birthdate: "1985-05-20",
-        });
-
-      outsiderToken =
-        registerResponse.body.accessToken || registerResponse.body.sessionToken;
+      outsiderToken = outsider.token;
     });
 
     it("non-family member cannot create shopping lists", async () => {

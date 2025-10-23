@@ -2,11 +2,12 @@ import { ObjectId } from "mongodb";
 import request from "supertest";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
+import { registerTestUser } from "../helpers/auth-setup";
 
 describe("E2E: DELETE /v1/diary/:entryId - Delete Entry", () => {
   let baseUrl: string;
   let authToken: string;
-  let _testCounter = 0;
+  let testCounter = 0;
 
   beforeAll(() => {
     baseUrl = getTestApp();
@@ -15,23 +16,13 @@ describe("E2E: DELETE /v1/diary/:entryId - Delete Entry", () => {
   beforeEach(async () => {
     await cleanDatabase();
 
-    _testCounter++;
-    const uniqueEmail = `deleteuser${_testCounter}@example.com`;
+    testCounter++;
+    const user = await registerTestUser(baseUrl, testCounter, "deleteuser", {
+      name: "Delete User",
+      birthdate: "1984-11-30",
+    });
 
-    // Register and login a test user
-    const registerResponse = await request(baseUrl)
-      .post("/v1/auth/register")
-      .send({
-        email: uniqueEmail,
-        password: "SecurePassword123!",
-        name: "Delete User",
-        birthdate: "1984-11-30",
-      });
-
-    expect(registerResponse.status).toBe(201);
-    authToken =
-      registerResponse.body.accessToken || registerResponse.body.sessionToken;
-    expect(authToken).toBeDefined();
+    authToken = user.token;
   });
 
   describe("Success Cases", () => {
@@ -288,20 +279,12 @@ describe("E2E: DELETE /v1/diary/:entryId - Delete Entry", () => {
       const entryId = createResponse.body._id;
 
       // Register and authenticate as second user
-      _testCounter++;
-      const user2Email = `deleteuser${_testCounter}@example.com`;
-      const user2RegisterResponse = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: user2Email,
-          password: "SecurePassword123!",
-          name: "Second User",
-          birthdate: "1991-03-15",
-        });
-
-      const user2Token =
-        user2RegisterResponse.body.accessToken ||
-        user2RegisterResponse.body.sessionToken;
+      testCounter++;
+      const user2 = await registerTestUser(baseUrl, testCounter, "deleteuser", {
+        name: "Second User",
+        birthdate: "1991-03-15",
+      });
+      const user2Token = user2.token;
 
       // Try to delete as second user
       const deleteResponse = await request(baseUrl)
@@ -360,20 +343,12 @@ describe("E2E: DELETE /v1/diary/:entryId - Delete Entry", () => {
       const entryId = createResponse.body._id;
 
       // Register second user
-      _testCounter++;
-      const user2Email = `deleteuser${_testCounter}@example.com`;
-      const user2RegisterResponse = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: user2Email,
-          password: "SecurePassword123!",
-          name: "Other User",
-          birthdate: "1995-07-20",
-        });
-
-      const user2Token =
-        user2RegisterResponse.body.accessToken ||
-        user2RegisterResponse.body.sessionToken;
+      testCounter++;
+      const user2 = await registerTestUser(baseUrl, testCounter, "deleteuser", {
+        name: "Other User",
+        birthdate: "1995-07-20",
+      });
+      const user2Token = user2.token;
 
       // User 2 cannot delete user 1's entry
       const deleteResponse = await request(baseUrl)
@@ -435,20 +410,12 @@ describe("E2E: DELETE /v1/diary/:entryId - Delete Entry", () => {
         });
 
       // User 2 creates an entry
-      _testCounter++;
-      const user2Email = `deleteuser${_testCounter}@example.com`;
-      const user2RegisterResponse = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: user2Email,
-          password: "SecurePassword123!",
-          name: "User 2",
-          birthdate: "1993-09-12",
-        });
-
-      const user2Token =
-        user2RegisterResponse.body.accessToken ||
-        user2RegisterResponse.body.sessionToken;
+      testCounter++;
+      const user2 = await registerTestUser(baseUrl, testCounter, "deleteuser", {
+        name: "User 2",
+        birthdate: "1993-09-12",
+      });
+      const user2Token = user2.token;
 
       const user2EntryResponse = await request(baseUrl)
         .post("/v1/diary")

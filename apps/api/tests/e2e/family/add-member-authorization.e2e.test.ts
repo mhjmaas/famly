@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import request from "supertest";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
+import { registerTestUser, setupTestFamily, addChildMember } from "../helpers/auth-setup";
 
 describe("POST /v1/families/:familyId/members - Authorization (Non-Parent)", () => {
   let baseUrl: string;
@@ -17,61 +18,23 @@ describe("POST /v1/families/:familyId/members - Authorization (Non-Parent)", () 
 
   describe("non-parent authorization rejection", () => {
     it("should reject request from child member with 403 Forbidden", async () => {
-      const timestamp = Date.now();
-      // 1. Register parent
-      const parentRes = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: `parent-${timestamp}@example.com`,
-          password: "parentpass123",
-          name: "Parent User",
-          birthdate: "1980-01-15",
-        })
-        .expect(201);
+      let testCounter = 0;
+      testCounter++;
 
-      const parentToken =
-        parentRes.body.accessToken || parentRes.body.sessionToken;
+      // 1. Setup family with parent and child
+      const setup = await setupTestFamily(baseUrl, testCounter);
+      const { familyId, parentToken } = setup;
 
-      // 2. Create family
-      const familyRes = await request(baseUrl)
-        .post("/v1/families")
-        .set("Authorization", `Bearer ${parentToken}`)
-        .send({ name: "Test Family" })
-        .expect(201);
+      // 2. Add a child member
+      const child = await addChildMember(baseUrl, familyId, parentToken, testCounter);
+      const childToken = child.childToken;
 
-      const familyId = familyRes.body.familyId;
-
-      // 3. Add a child member to the family
-      await request(baseUrl)
-        .post(`/v1/families/${familyId}/members`)
-        .set("Authorization", `Bearer ${parentToken}`)
-        .send({
-          email: `child-${timestamp}@example.com`,
-          password: "childpass123",
-          name: "Child User",
-          birthdate: "2010-05-20",
-          role: FamilyRole.Child,
-        })
-        .expect(201);
-
-      // 4. Get JWT token for the child (by making them login after parent creates account)
-      const childLoginRes = await request(baseUrl)
-        .post("/v1/auth/login")
-        .send({
-          email: `child-${timestamp}@example.com`,
-          password: "childpass123",
-        })
-        .expect(200);
-
-      const childToken =
-        childLoginRes.body.accessToken || childLoginRes.body.sessionToken;
-
-      // 5. Try to add a new member as a child - should get 403
+      // 3. Try to add a new member as a child - should get 403
       await request(baseUrl)
         .post(`/v1/families/${familyId}/members`)
         .set("Authorization", `Bearer ${childToken}`)
         .send({
-          email: `newmember-${timestamp}@example.com`,
+          email: `newmember-${testCounter}@example.com`,
           password: "newmemberpass123",
           name: "New Member",
           birthdate: "2008-03-10",
@@ -81,49 +44,26 @@ describe("POST /v1/families/:familyId/members - Authorization (Non-Parent)", () 
     });
 
     it("should reject request from user not in family with 403 Forbidden", async () => {
-      const timestamp = Date.now();
-      // 1. Register parent1 and create family
-      const parent1Res = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: `parent1-${timestamp}@example.com`,
-          password: "parent1pass123",
-          name: "Parent One",
-          birthdate: "1980-01-15",
-        })
-        .expect(201);
-
-      const parent1Token =
-        parent1Res.body.accessToken || parent1Res.body.sessionToken;
-
-      const familyRes = await request(baseUrl)
-        .post("/v1/families")
-        .set("Authorization", `Bearer ${parent1Token}`)
-        .send({ name: "Family One" })
-        .expect(201);
-
-      const familyId = familyRes.body.familyId;
+      let testCounter = 0;
+      // 1. Setup family1 with parent1
+      testCounter++;
+      const family1 = await setupTestFamily(baseUrl, testCounter, {
+        userName: "Parent One",
+        familyName: "Family One",
+      });
 
       // 2. Register parent2 (not in family1)
-      const parent2Res = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: `parent2-${timestamp}@example.com`,
-          password: "parent2pass123",
-          name: "Parent Two",
-          birthdate: "1982-06-20",
-        })
-        .expect(201);
-
-      const parent2Token =
-        parent2Res.body.accessToken || parent2Res.body.sessionToken;
+      testCounter++;
+      const parent2 = await registerTestUser(baseUrl, testCounter, "parent", {
+        name: "Parent Two",
+      });
 
       // 3. Try to add member to family1 as parent2 (not in family1) - should get 403
       await request(baseUrl)
-        .post(`/v1/families/${familyId}/members`)
-        .set("Authorization", `Bearer ${parent2Token}`)
+        .post(`/v1/families/${family1.familyId}/members`)
+        .set("Authorization", `Bearer ${parent2.token}`)
         .send({
-          email: `newmember-${timestamp}@example.com`,
+          email: `newmember-${testCounter}@example.com`,
           password: "newmemberpass123",
           name: "New Member",
           birthdate: "2007-08-25",
@@ -133,60 +73,23 @@ describe("POST /v1/families/:familyId/members - Authorization (Non-Parent)", () 
     });
 
     it("should return 403 with clear error message for authorization failure", async () => {
-      const timestamp = Date.now();
-      // 1. Register parent and create family
-      const parentRes = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: `parent-${timestamp}@example.com`,
-          password: "parentpass123",
-          name: "Parent User",
-          birthdate: "1980-01-15",
-        })
-        .expect(201);
+      let testCounter = 0;
+      testCounter++;
 
-      const parentToken =
-        parentRes.body.accessToken || parentRes.body.sessionToken;
+      // 1. Setup family with parent and child
+      const setup = await setupTestFamily(baseUrl, testCounter);
+      const { familyId, parentToken } = setup;
 
-      const familyRes = await request(baseUrl)
-        .post("/v1/families")
-        .set("Authorization", `Bearer ${parentToken}`)
-        .send({ name: "Test Family" })
-        .expect(201);
+      // 2. Add a child member
+      const child = await addChildMember(baseUrl, familyId, parentToken, testCounter);
+      const childToken = child.childToken;
 
-      const familyId = familyRes.body.familyId;
-
-      // 2. Add a child
-      await request(baseUrl)
-        .post(`/v1/families/${familyId}/members`)
-        .set("Authorization", `Bearer ${parentToken}`)
-        .send({
-          email: `child-${timestamp}@example.com`,
-          password: "childpass123",
-          name: "Child User",
-          birthdate: "2010-05-20",
-          role: FamilyRole.Child,
-        })
-        .expect(201);
-
-      // 3. Login as child and try to add member
-      const childLoginRes = await request(baseUrl)
-        .post("/v1/auth/login")
-        .send({
-          email: `child-${timestamp}@example.com`,
-          password: "childpass123",
-        })
-        .expect(200);
-
-      const childToken =
-        childLoginRes.body.accessToken || childLoginRes.body.sessionToken;
-
-      // 4. Verify 403 response structure
+      // 3. Verify 403 response structure
       const forbiddenRes = await request(baseUrl)
         .post(`/v1/families/${familyId}/members`)
         .set("Authorization", `Bearer ${childToken}`)
         .send({
-          email: `newmember-${timestamp}@example.com`,
+          email: `newmember-${testCounter}@example.com`,
           password: "newmemberpass123",
           name: "New Member",
           birthdate: "2008-03-10",
@@ -199,60 +102,23 @@ describe("POST /v1/families/:familyId/members - Authorization (Non-Parent)", () 
     });
 
     it("should not create any side effects when authorization fails", async () => {
-      const timestamp = Date.now();
-      // 1. Setup parent and family
-      const parentRes = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: `parent-${timestamp}@example.com`,
-          password: "parentpass123",
-          name: "Parent User",
-          birthdate: "1980-01-15",
-        })
-        .expect(201);
+      let testCounter = 0;
+      testCounter++;
 
-      const parentToken =
-        parentRes.body.accessToken || parentRes.body.sessionToken;
+      // 1. Setup family with parent and child
+      const setup = await setupTestFamily(baseUrl, testCounter);
+      const { familyId, parentToken } = setup;
 
-      const familyRes = await request(baseUrl)
-        .post("/v1/families")
-        .set("Authorization", `Bearer ${parentToken}`)
-        .send({ name: "Test Family" })
-        .expect(201);
+      // 2. Add a child member
+      const child = await addChildMember(baseUrl, familyId, parentToken, testCounter);
+      const childToken = child.childToken;
 
-      const familyId = familyRes.body.familyId;
-
-      // 2. Add child
-      await request(baseUrl)
-        .post(`/v1/families/${familyId}/members`)
-        .set("Authorization", `Bearer ${parentToken}`)
-        .send({
-          email: `child-${timestamp}@example.com`,
-          password: "childpass123",
-          name: "Child User",
-          birthdate: "2010-05-20",
-          role: FamilyRole.Child,
-        })
-        .expect(201);
-
-      // 3. Login as child
-      const childLoginRes = await request(baseUrl)
-        .post("/v1/auth/login")
-        .send({
-          email: `child-${timestamp}@example.com`,
-          password: "childpass123",
-        })
-        .expect(200);
-
-      const childToken =
-        childLoginRes.body.accessToken || childLoginRes.body.sessionToken;
-
-      // 4. Try to add member with email that would be unique - should fail
+      // 3. Try to add member with email that would be unique - should fail
       await request(baseUrl)
         .post(`/v1/families/${familyId}/members`)
         .set("Authorization", `Bearer ${childToken}`)
         .send({
-          email: `unique-email-${timestamp}@example.com`,
+          email: `unique-email-${testCounter}@example.com`,
           password: "uniquepass123",
           name: "Unique User",
           birthdate: "2006-11-30",
@@ -260,11 +126,11 @@ describe("POST /v1/families/:familyId/members - Authorization (Non-Parent)", () 
         })
         .expect(403);
 
-      // 5. Verify the email wasn't created (attempt to register with same email should succeed)
+      // 4. Verify the email wasn't created (attempt to register with same email should succeed)
       const signupRes = await request(baseUrl)
         .post("/v1/auth/register")
         .send({
-          email: `unique-email-${timestamp}@example.com`,
+          email: `unique-email-${testCounter}@example.com`,
           password: "differentpass123",
           name: "New User",
           birthdate: "2005-04-12",

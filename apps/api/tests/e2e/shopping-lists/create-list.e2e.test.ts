@@ -1,6 +1,7 @@
 import request from "supertest";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
+import { setupTestFamily, registerTestUser } from "../helpers/auth-setup";
 
 describe("E2E: POST /v1/families/:familyId/shopping-lists", () => {
   let baseUrl: string;
@@ -16,33 +17,14 @@ describe("E2E: POST /v1/families/:familyId/shopping-lists", () => {
     await cleanDatabase();
 
     testCounter++;
-    const uniqueEmail = `shoppinguser${testCounter}@example.com`;
+    const setup = await setupTestFamily(baseUrl, testCounter, {
+      userName: "Shopping User",
+      familyName: "Test Family",
+      prefix: "shoppinguser"
+    });
 
-    // Register and login a test user
-    const registerResponse = await request(baseUrl)
-      .post("/v1/auth/register")
-      .send({
-        email: uniqueEmail,
-        password: "SecurePassword123!",
-        name: "Shopping User",
-        birthdate: "1980-01-15",
-      });
-
-    expect(registerResponse.status).toBe(201);
-    authToken =
-      registerResponse.body.accessToken || registerResponse.body.sessionToken;
-    expect(authToken).toBeDefined();
-
-    // Create a family
-    const familyResponse = await request(baseUrl)
-      .post("/v1/families")
-      .set("Authorization", `Bearer ${authToken}`)
-      .send({
-        name: "Test Family",
-      });
-
-    expect(familyResponse.status).toBe(201);
-    familyId = familyResponse.body.familyId;
+    authToken = setup.token;
+    familyId = setup.familyId;
   });
 
   describe("Success Cases", () => {
@@ -200,19 +182,9 @@ describe("E2E: POST /v1/families/:familyId/shopping-lists", () => {
     it("should reject request from non-family member", async () => {
       // Create another user not in the family
       testCounter++;
-      const otherEmail = `other${testCounter}@example.com`;
-      const otherRegisterResponse = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: otherEmail,
-          password: "SecurePassword123!",
-          name: "Other User",
-          birthdate: "1985-05-20",
-        });
-
-      const otherToken =
-        otherRegisterResponse.body.accessToken ||
-        otherRegisterResponse.body.sessionToken;
+      const { token: otherToken } = await registerTestUser(baseUrl, testCounter, "other", {
+        name: "Other User"
+      });
 
       const response = await request(baseUrl)
         .post(`/v1/families/${familyId}/shopping-lists`)

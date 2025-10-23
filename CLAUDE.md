@@ -87,6 +87,24 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   └── validators
 │   │   │   │   │       ├── login.validator.ts
 │   │   │   │   │       └── register.validator.ts
+│   │   │   │   ├── diary
+│   │   │   │   │   ├── domain
+│   │   │   │   │   │   └── diary-entry.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── lib
+│   │   │   │   │   │   └── diary-entry.mapper.ts
+│   │   │   │   │   ├── repositories
+│   │   │   │   │   │   └── diary.repository.ts
+│   │   │   │   │   ├── routes
+│   │   │   │   │   │   ├── create-entry.route.ts
+│   │   │   │   │   │   ├── delete-entry.route.ts
+│   │   │   │   │   │   ├── diary.router.ts
+│   │   │   │   │   │   ├── get-entry.route.ts
+│   │   │   │   │   │   ├── list-entries.route.ts
+│   │   │   │   │   │   └── update-entry.route.ts
+│   │   │   │   │   └── validators
+│   │   │   │   │       ├── create-entry.validator.ts
+│   │   │   │   │       └── update-entry.validator.ts
 │   │   │   │   ├── family
 │   │   │   │   │   ├── domain
 │   │   │   │   │   │   └── family.ts
@@ -176,6 +194,13 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   ├── login.e2e.test.ts
 │   │   │   │   │   ├── me.e2e.test.ts
 │   │   │   │   │   └── register.e2e.test.ts
+│   │   │   │   ├── diary
+│   │   │   │   │   ├── authorization.e2e.test.ts
+│   │   │   │   │   ├── create-entry.e2e.test.ts
+│   │   │   │   │   ├── delete-entry.e2e.test.ts
+│   │   │   │   │   ├── get-entry.e2e.test.ts
+│   │   │   │   │   ├── list-entries.e2e.test.ts
+│   │   │   │   │   └── update-entry.e2e.test.ts
 │   │   │   │   ├── family
 │   │   │   │   │   ├── add-child-member.e2e.test.ts
 │   │   │   │   │   ├── add-member-authorization.e2e.test.ts
@@ -221,6 +246,10 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │       ├── auth
 │   │   │       │   ├── require-creator-ownership.test.ts
 │   │   │       │   └── require-family-role.test.ts
+│   │   │       ├── diary
+│   │   │       │   ├── create-entry.validator.test.ts
+│   │   │       │   ├── diary-entry.mapper.test.ts
+│   │   │       │   └── update-entry.validator.test.ts
 │   │   │       ├── family
 │   │   │       │   ├── README.md
 │   │   │       │   ├── add-family-member.validator.test.ts
@@ -272,6 +301,13 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   ├── refresh.bru
 │       │   └── signup.bru
 │       ├── bruno.json
+│       ├── diary
+│       │   ├── create entry.bru
+│       │   ├── delete entry.bru
+│       │   ├── folder.bru
+│       │   ├── get entry.bru
+│       │   ├── list entries.bru
+│       │   └── update entry.bru
 │       ├── environments
 │       │   └── local.bru
 │       ├── family
@@ -309,15 +345,11 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   └── add-personal-diary-entries
-│   │       ├── proposal.md
-│   │       ├── specs
-│   │       │   └── diary
-│   │       │       └── spec.md
-│   │       └── tasks.md
 │   ├── project.md
 │   └── specs
 │       ├── auth
+│       │   └── spec.md
+│       ├── diary
 │       │   └── spec.md
 │       ├── family
 │       │   └── spec.md
@@ -333,7 +365,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-79 directories, 214 files
+86 directories, 239 files
 ```
 <!-- TREE END -->
 

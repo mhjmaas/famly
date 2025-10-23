@@ -1,11 +1,13 @@
 import request from "supertest";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
+import { registerTestUser } from "../helpers/auth-setup";
 
 describe("E2E: POST /v1/diary - Create Entry", () => {
   let baseUrl: string;
   let authToken: string;
-  let _testCounter = 0;
+  let userId: string;
+  let testCounter = 0;
 
   beforeAll(() => {
     baseUrl = getTestApp();
@@ -14,23 +16,14 @@ describe("E2E: POST /v1/diary - Create Entry", () => {
   beforeEach(async () => {
     await cleanDatabase();
 
-    _testCounter++;
-    const uniqueEmail = `diaryuser${_testCounter}@example.com`;
+    testCounter++;
+    const user = await registerTestUser(baseUrl, testCounter, "diaryuser", {
+      name: "Diary User",
+      birthdate: "1990-05-15",
+    });
 
-    // Register and login a test user
-    const registerResponse = await request(baseUrl)
-      .post("/v1/auth/register")
-      .send({
-        email: uniqueEmail,
-        password: "SecurePassword123!",
-        name: "Diary User",
-        birthdate: "1990-05-15",
-      });
-
-    expect(registerResponse.status).toBe(201);
-    authToken =
-      registerResponse.body.accessToken || registerResponse.body.sessionToken;
-    expect(authToken).toBeDefined();
+    authToken = user.token;
+    userId = user.userId;
   });
 
   describe("Success Cases", () => {
@@ -70,16 +63,6 @@ describe("E2E: POST /v1/diary - Create Entry", () => {
     });
 
     it("should set createdBy to authenticated user ID", async () => {
-      // First get the user ID from login response
-      const loginResponse = await request(baseUrl)
-        .post("/v1/auth/login")
-        .send({
-          email: `diaryuser${_testCounter}@example.com`,
-          password: "SecurePassword123!",
-        });
-
-      const userIdFromLogin = loginResponse.body.user.id;
-
       const response = await request(baseUrl)
         .post("/v1/diary")
         .set("Authorization", `Bearer ${authToken}`)
@@ -89,7 +72,7 @@ describe("E2E: POST /v1/diary - Create Entry", () => {
         });
 
       expect(response.status).toBe(201);
-      expect(response.body.createdBy).toBe(userIdFromLogin);
+      expect(response.body.createdBy).toBe(userId);
     });
 
     it("should have valid timestamps for createdAt and updatedAt", async () => {

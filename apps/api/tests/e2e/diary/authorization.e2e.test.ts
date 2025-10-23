@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import request from "supertest";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
+import { setupTestUsers } from "../helpers/auth-setup";
 
 describe("E2E: /v1/diary - Authorization", () => {
   let baseUrl: string;
@@ -18,40 +19,14 @@ describe("E2E: /v1/diary - Authorization", () => {
   beforeEach(async () => {
     await cleanDatabase();
 
-    // Register and authenticate User 1
     testCounter++;
-    const user1Email = `authuser1-${testCounter}@example.com`;
-    const user1RegisterResponse = await request(baseUrl)
-      .post("/v1/auth/register")
-      .send({
-        email: user1Email,
-        password: "SecurePassword123!",
-        name: "Auth User 1",
-        birthdate: "1985-01-01",
-      });
+    const users = await setupTestUsers(baseUrl, 2, `authuser${testCounter}`);
 
-    expect(user1RegisterResponse.status).toBe(201);
-    user1Token =
-      user1RegisterResponse.body.accessToken ||
-      user1RegisterResponse.body.sessionToken;
-    user1Id = user1RegisterResponse.body.user.id;
+    user1Token = users[0].token;
+    user1Id = users[0].userId;
 
-    // Register and authenticate User 2
-    const user2Email = `authuser2-${testCounter}@example.com`;
-    const user2RegisterResponse = await request(baseUrl)
-      .post("/v1/auth/register")
-      .send({
-        email: user2Email,
-        password: "SecurePassword123!",
-        name: "Auth User 2",
-        birthdate: "1990-05-15",
-      });
-
-    expect(user2RegisterResponse.status).toBe(201);
-    user2Token =
-      user2RegisterResponse.body.accessToken ||
-      user2RegisterResponse.body.sessionToken;
-    user2Id = user2RegisterResponse.body.user.id;
+    user2Token = users[1].token;
+    user2Id = users[1].userId;
   });
 
   describe("Creator Ownership Authorization", () => {

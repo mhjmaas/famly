@@ -1,6 +1,7 @@
 import request from "supertest";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
+import { setupTestFamily } from "../helpers/auth-setup";
 
 describe("E2E: DELETE /v1/families/:familyId/shopping-lists/:listId/items/:itemId", () => {
   let baseUrl: string;
@@ -18,28 +19,14 @@ describe("E2E: DELETE /v1/families/:familyId/shopping-lists/:listId/items/:itemI
     await cleanDatabase();
 
     testCounter++;
-    const uniqueEmail = `deleteitemuser${testCounter}@example.com`;
+    const setup = await setupTestFamily(baseUrl, testCounter, {
+      userName: "Delete Item User",
+      familyName: "Test Family",
+      prefix: "deleteitemuser"
+    });
 
-    const registerResponse = await request(baseUrl)
-      .post("/v1/auth/register")
-      .send({
-        email: uniqueEmail,
-        password: "SecurePassword123!",
-        name: "Delete Item User",
-        birthdate: "1980-01-15",
-      });
-
-    authToken =
-      registerResponse.body.accessToken || registerResponse.body.sessionToken;
-
-    const familyResponse = await request(baseUrl)
-      .post("/v1/families")
-      .set("Authorization", `Bearer ${authToken}`)
-      .send({
-        name: "Test Family",
-      });
-
-    familyId = familyResponse.body.familyId;
+    authToken = setup.token;
+    familyId = setup.familyId;
 
     // Create a test shopping list
     const listResponse = await request(baseUrl)

@@ -2,11 +2,12 @@ import { ObjectId } from "mongodb";
 import request from "supertest";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
+import { registerTestUser } from "../helpers/auth-setup";
 
 describe("E2E: GET /v1/diary/:entryId - Get Entry", () => {
   let baseUrl: string;
   let authToken: string;
-  let _testCounter = 0;
+  let testCounter = 0;
 
   beforeAll(() => {
     baseUrl = getTestApp();
@@ -15,23 +16,13 @@ describe("E2E: GET /v1/diary/:entryId - Get Entry", () => {
   beforeEach(async () => {
     await cleanDatabase();
 
-    _testCounter++;
-    const uniqueEmail = `getuser${_testCounter}@example.com`;
+    testCounter++;
+    const user = await registerTestUser(baseUrl, testCounter, "getuser", {
+      name: "Get User",
+      birthdate: "1987-08-10",
+    });
 
-    // Register and login a test user
-    const registerResponse = await request(baseUrl)
-      .post("/v1/auth/register")
-      .send({
-        email: uniqueEmail,
-        password: "SecurePassword123!",
-        name: "Get User",
-        birthdate: "1987-08-10",
-      });
-
-    expect(registerResponse.status).toBe(201);
-    authToken =
-      registerResponse.body.accessToken || registerResponse.body.sessionToken;
-    expect(authToken).toBeDefined();
+    authToken = user.token;
   });
 
   describe("Success Cases", () => {
@@ -181,20 +172,12 @@ describe("E2E: GET /v1/diary/:entryId - Get Entry", () => {
       const entryId = createResponse.body._id;
 
       // Register and authenticate as second user
-      _testCounter++;
-      const user2Email = `getuser${_testCounter}@example.com`;
-      const user2RegisterResponse = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: user2Email,
-          password: "SecurePassword123!",
-          name: "Second User",
-          birthdate: "1990-12-05",
-        });
-
-      const user2Token =
-        user2RegisterResponse.body.accessToken ||
-        user2RegisterResponse.body.sessionToken;
+      testCounter++;
+      const user2 = await registerTestUser(baseUrl, testCounter, "getuser", {
+        name: "Second User",
+        birthdate: "1990-12-05",
+      });
+      const user2Token = user2.token;
 
       // Try to retrieve as second user
       const getResponse = await request(baseUrl)

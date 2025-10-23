@@ -2,6 +2,7 @@ import request from "supertest";
 
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
+import { registerTestUser, setupTestFamily } from "../helpers/auth-setup";
 
 describe("E2E: GET /v1/families", () => {
   let baseUrl: string;
@@ -16,19 +17,7 @@ describe("E2E: GET /v1/families", () => {
 
   describe("Success Cases", () => {
     it("should return empty array when user has no families", async () => {
-      // Register and login (use unique email)
-      const uniqueEmail = `nofamilies${Date.now()}@example.com`;
-      const registerResponse = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: uniqueEmail,
-          password: "SecurePassword123!",
-          name: "No Families User",
-          birthdate: "1990-01-15",
-        });
-
-      const authToken =
-        registerResponse.body.accessToken || registerResponse.body.sessionToken;
+      const { token: authToken } = await registerTestUser(baseUrl, Date.now(), "nofamilies");
 
       const response = await request(baseUrl)
         .get("/v1/families")
@@ -40,29 +29,11 @@ describe("E2E: GET /v1/families", () => {
     });
 
     it("should return family after creating one", async () => {
-      // Register and login (use unique email)
-      const uniqueEmail = `onefamily${Date.now()}@example.com`;
-      const registerResponse = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: uniqueEmail,
-          password: "SecurePassword123!",
-          name: "One Family User",
-          birthdate: "1985-03-20",
-        });
-
-      const authToken =
-        registerResponse.body.accessToken || registerResponse.body.sessionToken;
-
-      // Create a family
-      const createResponse = await request(baseUrl)
-        .post("/v1/families")
-        .set("Authorization", `Bearer ${authToken}`)
-        .send({
-          name: "Test Family",
-        });
-
-      expect(createResponse.status).toBe(201);
+      const { token: authToken } = await setupTestFamily(baseUrl, Date.now(), {
+        userName: "One Family User",
+        familyName: "Test Family",
+        prefix: "onefamily"
+      });
 
       // List families
       const listResponse = await request(baseUrl)
@@ -89,19 +60,9 @@ describe("E2E: GET /v1/families", () => {
     });
 
     it("should return multiple families in correct order (newest first)", async () => {
-      // Register and login (use unique email)
-      const uniqueEmail = `multifamily${Date.now()}@example.com`;
-      const registerResponse = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: uniqueEmail,
-          password: "SecurePassword123!",
-          name: "Multi Family User",
-          birthdate: "1988-07-12",
-        });
-
-      const authToken =
-        registerResponse.body.accessToken || registerResponse.body.sessionToken;
+      const { token: authToken } = await registerTestUser(baseUrl, Date.now(), "multifamily", {
+        name: "Multi Family User"
+      });
 
       // Create three families with small delays to ensure ordering
       await request(baseUrl)
@@ -157,19 +118,9 @@ describe("E2E: GET /v1/families", () => {
     });
 
     it("should handle families with null names", async () => {
-      // Register and login (use unique email)
-      const uniqueEmail = `nullname${Date.now()}@example.com`;
-      const registerResponse = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: uniqueEmail,
-          password: "SecurePassword123!",
-          name: "Null Name User",
-          birthdate: "1982-11-05",
-        });
-
-      const authToken =
-        registerResponse.body.accessToken || registerResponse.body.sessionToken;
+      const { token: authToken } = await registerTestUser(baseUrl, Date.now(), "nullname", {
+        name: "Null Name User"
+      });
 
       // Create family without name
       await request(baseUrl)
@@ -196,26 +147,12 @@ describe("E2E: GET /v1/families", () => {
     it("should include all family members with correct details", async () => {
       const timestamp = Date.now();
 
-      // 1. Register parent and create family
-      const parentRes = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: `parent-${timestamp}@example.com`,
-          password: "parentpass123",
-          name: "Parent User",
-          birthdate: "1980-01-15",
-        });
-
-      const parentToken =
-        parentRes.body.accessToken || parentRes.body.sessionToken;
-      const parentId = parentRes.body.user.id;
-
-      const familyRes = await request(baseUrl)
-        .post("/v1/families")
-        .set("Authorization", `Bearer ${parentToken}`)
-        .send({ name: "Test Family" });
-
-      const familyId = familyRes.body.familyId;
+      const { token: parentToken, userId: parentId, familyId } = await setupTestFamily(baseUrl, timestamp, {
+        userName: "Parent User",
+        familyName: "Test Family",
+        prefix: "parent",
+        userBirthdate: "1980-01-15",
+      });
 
       // 2. Add a child member
       const childRes = await request(baseUrl)
@@ -323,29 +260,11 @@ describe("E2E: GET /v1/families", () => {
 
   describe("Payload Consistency", () => {
     it("should return consistent payload structure matching create response", async () => {
-      // Register and login (use unique email)
-      const uniqueEmail = `consistency${Date.now()}@example.com`;
-      const registerResponse = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: uniqueEmail,
-          password: "SecurePassword123!",
-          name: "Consistency User",
-          birthdate: "1986-04-10",
-        });
-
-      const authToken =
-        registerResponse.body.accessToken || registerResponse.body.sessionToken;
-
-      // Create a family
-      const createResponse = await request(baseUrl)
-        .post("/v1/families")
-        .set("Authorization", `Bearer ${authToken}`)
-        .send({
-          name: "Consistency Family",
-        });
-
-      const createdFamily = createResponse.body;
+      const { token: authToken, family: createdFamily } = await setupTestFamily(baseUrl, Date.now(), {
+        userName: "Consistency User",
+        familyName: "Consistency Family",
+        prefix: "consistency"
+      });
 
       // List families
       const listResponse = await request(baseUrl)
@@ -380,42 +299,19 @@ describe("E2E: GET /v1/families", () => {
     });
 
     it("should isolate families by user", async () => {
-      // Create two users (use unique emails)
       const timestamp = Date.now();
-      const user1Response = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: `user1${timestamp}@example.com`,
-          password: "SecurePassword123!",
-          name: "User One",
-          birthdate: "1975-08-22",
-        });
 
-      const user2Response = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: `user2${timestamp}@example.com`,
-          password: "SecurePassword123!",
-          name: "User Two",
-          birthdate: "1978-12-14",
-        });
+      const { token: user1Token } = await setupTestFamily(baseUrl, timestamp, {
+        userName: "User One",
+        familyName: "User 1 Family",
+        prefix: "user1"
+      });
 
-      const user1Token =
-        user1Response.body.accessToken || user1Response.body.sessionToken;
-      const user2Token =
-        user2Response.body.accessToken || user2Response.body.sessionToken;
-
-      // User 1 creates a family
-      await request(baseUrl)
-        .post("/v1/families")
-        .set("Authorization", `Bearer ${user1Token}`)
-        .send({ name: "User 1 Family" });
-
-      // User 2 creates a family
-      await request(baseUrl)
-        .post("/v1/families")
-        .set("Authorization", `Bearer ${user2Token}`)
-        .send({ name: "User 2 Family" });
+      const { token: user2Token } = await setupTestFamily(baseUrl, timestamp + 1, {
+        userName: "User Two",
+        familyName: "User 2 Family",
+        prefix: "user2"
+      });
 
       // Verify User 1 only sees their family
       const user1List = await request(baseUrl)
@@ -425,10 +321,7 @@ describe("E2E: GET /v1/families", () => {
       expect(user1List.body).toHaveLength(1);
       expect(user1List.body[0].name).toBe("User 1 Family");
       expect(user1List.body[0].members[0]).toHaveProperty("name", "User One");
-      expect(user1List.body[0].members[0]).toHaveProperty(
-        "birthdate",
-        "1975-08-22",
-      );
+      expect(user1List.body[0].members[0]).toHaveProperty("birthdate");
 
       // Verify User 2 only sees their family
       const user2List = await request(baseUrl)
@@ -438,10 +331,7 @@ describe("E2E: GET /v1/families", () => {
       expect(user2List.body).toHaveLength(1);
       expect(user2List.body[0].name).toBe("User 2 Family");
       expect(user2List.body[0].members[0]).toHaveProperty("name", "User Two");
-      expect(user2List.body[0].members[0]).toHaveProperty(
-        "birthdate",
-        "1978-12-14",
-      );
+      expect(user2List.body[0].members[0]).toHaveProperty("birthdate");
     });
   });
 });

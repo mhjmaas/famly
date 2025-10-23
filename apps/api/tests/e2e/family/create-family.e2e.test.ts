@@ -1,6 +1,7 @@
 import request from "supertest";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
+import { registerTestUser } from "../helpers/auth-setup";
 
 describe("E2E: POST /v1/families", () => {
   let baseUrl: string;
@@ -14,24 +15,13 @@ describe("E2E: POST /v1/families", () => {
   beforeEach(async () => {
     await cleanDatabase();
 
-    // Use unique email for each test to avoid conflicts
     testCounter++;
-    const uniqueEmail = `familyuser${testCounter}@example.com`;
+    const user = await registerTestUser(baseUrl, testCounter, "familyuser", {
+      name: "Family User",
+      birthdate: "1980-01-15",
+    });
 
-    // Register and login a test user to get auth token
-    const registerResponse = await request(baseUrl)
-      .post("/v1/auth/register")
-      .send({
-        email: uniqueEmail,
-        password: "SecurePassword123!",
-        name: "Family User",
-        birthdate: "1980-01-15",
-      });
-
-    expect(registerResponse.status).toBe(201);
-    authToken =
-      registerResponse.body.accessToken || registerResponse.body.sessionToken;
-    expect(authToken).toBeDefined();
+    authToken = user.token;
   });
 
   describe("Success Cases", () => {

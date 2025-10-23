@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import request from "supertest";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
+import { setupTestFamily, loginTestUser } from "../helpers/auth-setup";
 
 describe("DELETE /v1/families/:familyId/members/:memberId - Remove Family Member", () => {
   let baseUrl: string;
@@ -18,28 +19,11 @@ describe("DELETE /v1/families/:familyId/members/:memberId - Remove Family Member
   it("allows a parent to remove a child and updates roster access immediately", async () => {
     const timestamp = Date.now();
 
-    // 1. Register parent and create a family
-    const parentRes = await request(baseUrl)
-      .post("/v1/auth/register")
-      .send({
-        email: `parent-${timestamp}@example.com`,
-        password: "parentpass123",
-        name: "Parent User",
-        birthdate: "1980-01-15",
-      })
-      .expect(201);
-
-    const parentToken =
-      parentRes.body.accessToken || parentRes.body.sessionToken;
-    const parentId = parentRes.body.user.id;
-
-    const familyRes = await request(baseUrl)
-      .post("/v1/families")
-      .set("Authorization", `Bearer ${parentToken}`)
-      .send({ name: "Test Family" })
-      .expect(201);
-
-    const familyId = familyRes.body.familyId;
+    const { token: parentToken, userId: parentId, familyId } = await setupTestFamily(baseUrl, timestamp, {
+      userName: "Parent User",
+      familyName: "Test Family",
+      prefix: "parent"
+    });
 
     // 2. Add a child member so the parent can remove them
     const childEmail = `child-${timestamp}@example.com`;
@@ -60,16 +44,7 @@ describe("DELETE /v1/families/:familyId/members/:memberId - Remove Family Member
     expect(addChildRes.body.addedBy).toBe(parentId);
 
     // 3. Child logs in to obtain credentials prior to removal
-    const childLoginRes = await request(baseUrl)
-      .post("/v1/auth/login")
-      .send({
-        email: childEmail,
-        password: "childpass123",
-      })
-      .expect(200);
-
-    const childToken =
-      childLoginRes.body.accessToken || childLoginRes.body.sessionToken;
+    const { token: childToken } = await loginTestUser(baseUrl, childEmail, "childpass123");
 
     // 4. Parent removes the child member
     await request(baseUrl)

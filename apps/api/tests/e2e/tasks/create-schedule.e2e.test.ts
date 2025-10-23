@@ -2,6 +2,7 @@ import { ObjectId } from "mongodb";
 import request from "supertest";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
+import { setupTestFamily } from "../helpers/auth-setup";
 
 describe("E2E: POST /v1/families/:familyId/tasks/schedules", () => {
   let baseUrl: string;
@@ -17,30 +18,14 @@ describe("E2E: POST /v1/families/:familyId/tasks/schedules", () => {
     await cleanDatabase();
 
     testCounter++;
-    const uniqueEmail = `scheduleuser${testCounter}@example.com`;
+    const setup = await setupTestFamily(baseUrl, testCounter, {
+      userName: "Schedule User",
+      familyName: "Test Family",
+      prefix: "scheduleuser"
+    });
 
-    // Register and login a test user
-    const registerResponse = await request(baseUrl)
-      .post("/v1/auth/register")
-      .send({
-        email: uniqueEmail,
-        password: "SecurePassword123!",
-        name: "Schedule User",
-        birthdate: "1990-01-15",
-      });
-
-    expect(registerResponse.status).toBe(201);
-    authToken =
-      registerResponse.body.accessToken || registerResponse.body.sessionToken;
-
-    // Create a family
-    const familyResponse = await request(baseUrl)
-      .post("/v1/families")
-      .set("Authorization", `Bearer ${authToken}`)
-      .send({ name: "Test Family" });
-
-    expect(familyResponse.status).toBe(201);
-    familyId = familyResponse.body.familyId;
+    authToken = setup.token;
+    familyId = setup.familyId;
   });
 
   describe("Success Cases", () => {

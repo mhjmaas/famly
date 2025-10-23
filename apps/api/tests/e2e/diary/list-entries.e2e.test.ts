@@ -1,11 +1,12 @@
 import request from "supertest";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
+import { registerTestUser } from "../helpers/auth-setup";
 
 describe("E2E: GET /v1/diary - List Entries", () => {
   let baseUrl: string;
   let authToken: string;
-  let _testCounter = 0;
+  let testCounter = 0;
 
   beforeAll(() => {
     baseUrl = getTestApp();
@@ -14,23 +15,13 @@ describe("E2E: GET /v1/diary - List Entries", () => {
   beforeEach(async () => {
     await cleanDatabase();
 
-    _testCounter++;
-    const uniqueEmail = `listuser${_testCounter}@example.com`;
+    testCounter++;
+    const user = await registerTestUser(baseUrl, testCounter, "listuser", {
+      name: "List User",
+      birthdate: "1988-03-20",
+    });
 
-    // Register and login a test user
-    const registerResponse = await request(baseUrl)
-      .post("/v1/auth/register")
-      .send({
-        email: uniqueEmail,
-        password: "SecurePassword123!",
-        name: "List User",
-        birthdate: "1988-03-20",
-      });
-
-    expect(registerResponse.status).toBe(201);
-    authToken =
-      registerResponse.body.accessToken || registerResponse.body.sessionToken;
-    expect(authToken).toBeDefined();
+    authToken = user.token;
   });
 
   describe("Success Cases", () => {
@@ -267,20 +258,12 @@ describe("E2E: GET /v1/diary - List Entries", () => {
         });
 
       // Register and create entry as second user
-      _testCounter++;
-      const user2Email = `listuser${_testCounter}@example.com`;
-      const user2RegisterResponse = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: user2Email,
-          password: "SecurePassword123!",
-          name: "Second User",
-          birthdate: "1992-07-15",
-        });
-
-      const user2Token =
-        user2RegisterResponse.body.accessToken ||
-        user2RegisterResponse.body.sessionToken;
+      testCounter++;
+      const user2 = await registerTestUser(baseUrl, testCounter, "listuser", {
+        name: "Second User",
+        birthdate: "1992-07-15",
+      });
+      const user2Token = user2.token;
 
       await request(baseUrl)
         .post("/v1/diary")
@@ -320,20 +303,12 @@ describe("E2E: GET /v1/diary - List Entries", () => {
         });
 
       // Register second user and create entry
-      _testCounter++;
-      const user2Email = `listuser${_testCounter}@example.com`;
-      const user2RegisterResponse = await request(baseUrl)
-        .post("/v1/auth/register")
-        .send({
-          email: user2Email,
-          password: "SecurePassword123!",
-          name: "Second User",
-          birthdate: "1995-11-25",
-        });
-
-      const user2Token =
-        user2RegisterResponse.body.accessToken ||
-        user2RegisterResponse.body.sessionToken;
+      testCounter++;
+      const user2 = await registerTestUser(baseUrl, testCounter, "listuser", {
+        name: "Second User",
+        birthdate: "1995-11-25",
+      });
+      const user2Token = user2.token;
 
       await request(baseUrl)
         .post("/v1/diary")
