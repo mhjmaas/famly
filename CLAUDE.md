@@ -70,9 +70,11 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   ├── auth
 │   │   │   │   │   ├── better-auth.ts
 │   │   │   │   │   ├── lib
+│   │   │   │   │   │   ├── require-creator-ownership.ts
 │   │   │   │   │   │   └── require-family-role.ts
 │   │   │   │   │   ├── middleware
 │   │   │   │   │   │   ├── authenticate.ts
+│   │   │   │   │   │   ├── authorize-creator-ownership.ts
 │   │   │   │   │   │   ├── authorize-family-role.ts
 │   │   │   │   │   │   ├── index.ts
 │   │   │   │   │   │   └── jwt-verify.ts
@@ -217,6 +219,7 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   ├── tsconfig.json
 │   │   │   └── unit
 │   │   │       ├── auth
+│   │   │       │   ├── require-creator-ownership.test.ts
 │   │   │       │   └── require-family-role.test.ts
 │   │   │       ├── family
 │   │   │       │   ├── README.md
@@ -324,7 +327,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-76 directories, 208 files
+76 directories, 211 files
 ```
 <!-- TREE END -->
 
