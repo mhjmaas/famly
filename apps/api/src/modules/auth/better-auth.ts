@@ -1,5 +1,6 @@
 import { settings } from "@config/settings";
 import { getDb } from "@infra/mongo/client";
+import bcrypt from "bcrypt";
 import { betterAuth as betterAuthInit } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { bearer, customSession, jwt } from "better-auth/plugins";
@@ -48,6 +49,19 @@ function initAuth() {
       autoSignIn: true,
       // Minimum password length
       minPasswordLength: 8,
+      // Custom password hashing with environment-specific bcrypt rounds
+      password: {
+        hash: async (password: string) => {
+          // Use 4 rounds during testing for speed, 10 rounds in production for security
+          // Testing: 1 rounds = ~8ms (fast e2e tests)
+          // Production: 10 rounds = ~1024ms (secure but slower)
+          const rounds = settings.isTest ? 1 : 10;
+          return await bcrypt.hash(password, rounds);
+        },
+        verify: async ({ hash, password }: { hash: string; password: string }) => {
+          return await bcrypt.compare(password, hash);
+        },
+      },
     },
 
     // Extend user schema with custom profile fields
