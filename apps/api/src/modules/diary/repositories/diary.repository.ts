@@ -20,16 +20,28 @@ export class DiaryRepository {
    */
   async ensureIndexes(): Promise<void> {
     try {
-      // Index for finding entries by creator
+      // Index for finding entries by creator (personal diary)
       await this.collection.createIndex(
         { createdBy: 1, date: -1 },
         { name: "idx_creator_date" },
       );
 
-      // Index for date range queries
+      // Index for date range queries (personal diary)
       await this.collection.createIndex(
         { createdBy: 1, date: 1 },
         { name: "idx_creator_daterange" },
+      );
+
+      // Index for finding family entries
+      await this.collection.createIndex(
+        { familyId: 1, isPersonal: 1, date: -1 },
+        { name: "idx_family_date" },
+      );
+
+      // Index for family date range queries
+      await this.collection.createIndex(
+        { familyId: 1, isPersonal: 1, date: 1 },
+        { name: "idx_family_daterange" },
       );
 
       logger.info("Diary entry indexes created successfully");
@@ -138,5 +150,66 @@ export class DiaryRepository {
   async deleteEntry(entryId: ObjectId): Promise<boolean> {
     const result = await this.collection.deleteOne({ _id: entryId });
     return result.deletedCount > 0;
+  }
+
+  /**
+   * Create a new family diary entry
+   */
+  async createFamilyEntry(
+    userId: ObjectId,
+    familyId: ObjectId,
+    input: CreateDiaryEntryInput,
+  ): Promise<DiaryEntry> {
+    const now = new Date();
+
+    const entry: DiaryEntry = {
+      _id: new ObjectId(),
+      date: input.date,
+      entry: input.entry,
+      isPersonal: false, // Always false for entries created via family diary endpoint
+      createdBy: userId,
+      familyId, // Set familyId for family entries
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    await this.collection.insertOne(entry);
+
+    return entry;
+  }
+
+  /**
+   * Find all diary entries for a specific family, sorted by date descending
+   */
+  async findByFamilyId(familyId: ObjectId): Promise<DiaryEntry[]> {
+    return this.collection
+      .find({ familyId, isPersonal: false })
+      .sort({ date: -1 })
+      .toArray();
+  }
+
+  /**
+   * Find family diary entries within an optional date range
+   * Both startDate and endDate are optional
+   */
+  async findFamilyEntriesInDateRange(
+    familyId: ObjectId,
+    startDate?: string, // Format: YYYY-MM-DD
+    endDate?: string, // Format: YYYY-MM-DD
+  ): Promise<DiaryEntry[]> {
+    // biome-ignore lint/suspicious/noExplicitAny: MongoDB query builder requires any
+    const query: any = { familyId, isPersonal: false };
+
+    if (startDate || endDate) {
+      query.date = {};
+      if (startDate) {
+        query.date.$gte = startDate;
+      }
+      if (endDate) {
+        query.date.$lte = endDate;
+      }
+    }
+
+    return this.collection.find(query).sort({ date: -1 }).toArray();
   }
 }

@@ -1,14 +1,15 @@
 import type { ObjectId } from "mongodb";
 
 /**
- * DiaryEntry entity - represents a personal diary entry
+ * DiaryEntry entity - represents a personal or family diary entry
  */
 export interface DiaryEntry {
   _id: ObjectId;
   date: string; // Format: YYYY-MM-DD
   entry: string; // Journal text content
-  isPersonal: boolean; // Always true for personal entries; future family entries may have false
+  isPersonal: boolean; // true for personal entries (/v1/diary), false for family entries (/v1/families/{familyId}/diary)
   createdBy: ObjectId; // User who created the entry
+  familyId?: ObjectId; // Family ID for family entries (only present when isPersonal is false)
   createdAt: Date;
   updatedAt: Date;
 }

@@ -1,0 +1,68 @@
+meta {
+  name: Create Entry
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/diary
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "date": "2025-10-23",
+    "entry": "Today was a great family day"
+  }
+}
+
+script:post-response {
+  try {
+    const body = res.body;
+    if (body?._id) {
+      bru.setEnvVar('currentFamilyEntryId', body._id);
+    }
+  } catch (error) {
+    console.log('Failed to save entry ID: ' + error?.message);
+  }
+}
+
+docs {
+  # Create Family Diary Entry
+
+  Create a new family diary entry.
+
+  ## Request Body
+
+  - `date` (string, required): Entry date in YYYY-MM-DD format
+  - `entry` (string, required): Diary entry text (1-10000 characters)
+
+  ## Response
+
+  Returns the created family diary entry with the following properties:
+  - `_id`: Unique identifier
+  - `date`: Entry date (YYYY-MM-DD)
+  - `entry`: Entry text
+  - `isPersonal`: Boolean flag (always false for family entries)
+  - `familyId`: ID of the family
+  - `createdBy`: ID of the user who created it
+  - `createdAt`: Creation timestamp
+  - `updatedAt`: Last update timestamp
+
+  ## Status Codes
+
+  - `201`: Diary entry created successfully
+  - `400`: Validation error
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not a member of the family)
+
+  ## Note
+
+  The created entry ID is automatically saved to `currentFamilyEntryId` environment variable for use in subsequent requests (Get, Update, Delete).
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

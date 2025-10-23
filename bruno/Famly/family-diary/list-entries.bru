@@ -1,0 +1,53 @@
+meta {
+  name: List Entries
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/diary
+  body: none
+  auth: inherit
+}
+
+query {
+  startDate: 2025-01-01
+  endDate: 2025-12-31
+}
+
+docs {
+  # List Family Diary Entries
+
+  Get all diary entries for a family, with optional date range filtering.
+
+  ## Query Parameters
+
+  - `startDate` (string, optional): Start date in YYYY-MM-DD format (inclusive)
+  - `endDate` (string, optional): End date in YYYY-MM-DD format (inclusive)
+
+  If neither startDate nor endDate is provided, all entries are returned.
+
+  ## Response
+
+  Returns an array of family diary entries, sorted by date (newest first).
+
+  Each diary entry contains:
+  - `_id`: Unique identifier
+  - `familyId`: ID of the family
+  - `date`: Entry date (YYYY-MM-DD)
+  - `entry`: Entry text
+  - `createdBy`: ID of the user who created it
+  - `createdAt`: Creation timestamp
+  - `updatedAt`: Last update timestamp
+
+  ## Status Codes
+
+  - `200`: Diary entries retrieved successfully
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not a member of the family)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

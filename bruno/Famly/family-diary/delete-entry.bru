@@ -1,0 +1,45 @@
+meta {
+  name: Delete Entry
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/diary/{{currentFamilyEntryId}}
+  body: none
+  auth: inherit
+}
+
+docs {
+  # Delete Family Diary Entry
+
+  Delete a family diary entry.
+
+  ## Path Parameters
+
+  - `familyId` (string, required): ID of the family
+  - `entryId` (string, required): ID of the diary entry
+
+  ## Response
+
+  Returns the deleted diary entry with the following properties:
+  - `_id`: Unique identifier
+  - `familyId`: ID of the family
+  - `date`: Entry date (YYYY-MM-DD)
+  - `entry`: Entry text
+  - `createdBy`: ID of the user who created it
+  - `createdAt`: Creation timestamp
+  - `updatedAt`: Last update timestamp
+
+  ## Status Codes
+
+  - `200`: Diary entry deleted successfully
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not a member of the family)
+  - `404`: Diary entry not found
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

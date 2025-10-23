@@ -6,3 +6,4 @@ export type {
 } from "./domain/diary-entry";
 export { DiaryRepository } from "./repositories/diary.repository";
 export { createDiaryRouter } from "./routes/diary.router";
+export { createFamilyDiaryRouter } from "./routes/family-diary.router";

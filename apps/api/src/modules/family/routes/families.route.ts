@@ -1,3 +1,4 @@
+import { createFamilyDiaryRouter } from "@modules/diary";
 import { createShoppingListsRouter } from "@modules/shopping-lists";
 import { createTasksRouter } from "@modules/tasks";
 import { Router } from "express";
@@ -14,6 +15,7 @@ import { createRemoveMemberRoute } from "./remove-member.route";
  * - GET /v1/families - List families for authenticated user
  * - POST /v1/families/:familyId/members - Add a member to a family
  * - DELETE /v1/families/:familyId/members/:memberId - Remove a member from a family
+ * - GET/POST /v1/families/:familyId/diary/* - Family diary endpoints (mounted via createFamilyDiaryRouter)
  * - GET/POST /v1/families/:familyId/tasks/* - Tasks endpoints (mounted via createTasksRouter)
  */
 export function createFamiliesRouter(): Router {
@@ -24,6 +26,9 @@ export function createFamiliesRouter(): Router {
   router.use(createListFamiliesRoute());
   router.use(createAddMemberRoute());
   router.use(createRemoveMemberRoute());
+
+  // Mount family diary router for /:familyId/diary/* paths
+  router.use("/:familyId/diary", createFamilyDiaryRouter());
 
   // Mount tasks router for /:familyId/tasks/* paths
   // This must be after other routes to avoid conflicts

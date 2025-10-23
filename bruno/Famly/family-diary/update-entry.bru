@@ -1,0 +1,60 @@
+meta {
+  name: Update Entry
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/diary/{{currentFamilyEntryId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "date": "2025-10-23",
+    "entry": "Updated family diary entry with new content"
+  }
+}
+
+docs {
+  # Update Family Diary Entry
+
+  Update an existing family diary entry.
+
+  ## Path Parameters
+
+  - `familyId` (string, required): ID of the family
+  - `entryId` (string, required): ID of the diary entry
+
+  ## Request Body
+
+  - `date` (string, optional): Entry date in YYYY-MM-DD format
+  - `entry` (string, optional): Diary entry text (1-10000 characters)
+
+  At least one field must be provided.
+
+  ## Response
+
+  Returns the updated family diary entry with the following properties:
+  - `_id`: Unique identifier
+  - `familyId`: ID of the family
+  - `date`: Entry date (YYYY-MM-DD)
+  - `entry`: Entry text
+  - `createdBy`: ID of the user who created it
+  - `createdAt`: Creation timestamp
+  - `updatedAt`: Last update timestamp
+
+  ## Status Codes
+
+  - `200`: Diary entry updated successfully
+  - `400`: Validation error
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not a member of the family)
+  - `404`: Diary entry not found
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

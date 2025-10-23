@@ -99,6 +99,13 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   │   ├── create-entry.route.ts
 │   │   │   │   │   │   ├── delete-entry.route.ts
 │   │   │   │   │   │   ├── diary.router.ts
+│   │   │   │   │   │   ├── family
+│   │   │   │   │   │   │   ├── create-entry.route.ts
+│   │   │   │   │   │   │   ├── delete-entry.route.ts
+│   │   │   │   │   │   │   ├── get-entry.route.ts
+│   │   │   │   │   │   │   ├── list-entries.route.ts
+│   │   │   │   │   │   │   └── update-entry.route.ts
+│   │   │   │   │   │   ├── family-diary.router.ts
 │   │   │   │   │   │   ├── get-entry.route.ts
 │   │   │   │   │   │   ├── list-entries.route.ts
 │   │   │   │   │   │   └── update-entry.route.ts
@@ -198,6 +205,13 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   ├── authorization.e2e.test.ts
 │   │   │   │   │   ├── create-entry.e2e.test.ts
 │   │   │   │   │   ├── delete-entry.e2e.test.ts
+│   │   │   │   │   ├── family
+│   │   │   │   │   │   ├── authorization.e2e.test.ts
+│   │   │   │   │   │   ├── create-entry.e2e.test.ts
+│   │   │   │   │   │   ├── delete-entry.e2e.test.ts
+│   │   │   │   │   │   ├── get-entry.e2e.test.ts
+│   │   │   │   │   │   ├── list-entries.e2e.test.ts
+│   │   │   │   │   │   └── update-entry.e2e.test.ts
 │   │   │   │   │   ├── get-entry.e2e.test.ts
 │   │   │   │   │   ├── list-entries.e2e.test.ts
 │   │   │   │   │   └── update-entry.e2e.test.ts
@@ -212,8 +226,15 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   └── remove-parent-guard.e2e.test.ts
 │   │   │   │   ├── health.e2e.test.ts
 │   │   │   │   ├── helpers
+│   │   │   │   │   ├── auth-setup.ts
+│   │   │   │   │   ├── authorization-matrix.ts
 │   │   │   │   │   ├── database.ts
-│   │   │   │   │   └── test-app.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── request-assertions.ts
+│   │   │   │   │   ├── test-app.ts
+│   │   │   │   │   ├── test-data-factory.ts
+│   │   │   │   │   ├── test-scenarios.ts
+│   │   │   │   │   └── token-manager.ts
 │   │   │   │   ├── setup
 │   │   │   │   │   └── testcontainers-setup.ts
 │   │   │   │   ├── shopping-lists
@@ -345,6 +366,12 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
+│   │   └── add-family-diary-entries
+│   │       ├── proposal.md
+│   │       ├── specs
+│   │       │   └── diary
+│   │       │       └── spec.md
+│   │       └── tasks.md
 │   ├── project.md
 │   └── specs
 │       ├── auth
@@ -365,7 +392,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-86 directories, 239 files
+91 directories, 261 files
 ```
 <!-- TREE END -->
 
