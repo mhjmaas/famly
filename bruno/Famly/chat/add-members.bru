@@ -1,0 +1,26 @@
+meta {
+  name: Add Members
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/v1/chats/{{currentChatId}}/members
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "userIds": ["{{otherUserId}}"]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Update Read Cursor
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/v1/chats/{{currentChatId}}/read-cursor
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "messageId": "{{currentMessageId}}"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

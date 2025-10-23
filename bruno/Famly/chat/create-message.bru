@@ -1,0 +1,39 @@
+meta {
+  name: Create Message
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/v1/messages
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "chatId": "{{currentChatId}}",
+    "body": "Hello from Bruno!"
+  }
+}
+
+script:post-response {
+  try {
+    const body = res.body;
+    if (body?._id) {
+      bru.setEnvVar('currentMessageId', body._id);
+      console.log('Message ID saved: ' + body._id);
+    }
+  } catch (error) {
+    console.log('Failed to save message ID: ' + error?.message);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

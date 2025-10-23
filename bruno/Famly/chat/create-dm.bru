@@ -1,0 +1,39 @@
+meta {
+  name: Create DM
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/chats
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "type": "dm",
+    "memberIds": ["{{otherUserId}}"]
+  }
+}
+
+script:post-response {
+  try {
+    const body = res.body;
+    if (body?._id) {
+      bru.setEnvVar('currentChatId', body._id);
+      console.log('Chat ID saved: ' + body._id);
+    }
+  } catch (error) {
+    console.log('Failed to save chat ID: ' + error?.message);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
