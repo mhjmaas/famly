@@ -337,6 +337,13 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   ├── delete member.bru
 │       │   ├── folder.bru
 │       │   └── get all.bru
+│       ├── family-diary
+│       │   ├── create-entry.bru
+│       │   ├── delete-entry.bru
+│       │   ├── folder.bru
+│       │   ├── get-entry.bru
+│       │   ├── list-entries.bru
+│       │   └── update-entry.bru
 │       ├── shopping-lists
 │       │   ├── add item.bru
 │       │   ├── create list.bru
@@ -366,12 +373,6 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   └── add-family-diary-entries
-│   │       ├── proposal.md
-│   │       ├── specs
-│   │       │   └── diary
-│   │       │       └── spec.md
-│   │       └── tasks.md
 │   ├── project.md
 │   └── specs
 │       ├── auth
@@ -392,7 +393,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-91 directories, 261 files
+89 directories, 264 files
 ```
 <!-- TREE END -->
 

@@ -9,7 +9,7 @@ tree . -I "node_modules" -I "dist" -I "test-results" -I "playwright-report" --ma
 
 # Process the AGENTS.md file
 awk '
-/<!-- MANUAL ADDITIONS START -->/ {
+/<!-- TREE START -->/ {
     print $0
     print "```"
     while ((getline line < "'$tree_temp'") > 0) {
@@ -18,6 +18,11 @@ awk '
     close("'$tree_temp'")
     print "```"
     skip = 1
+    next
+}
+/<!-- TREE END -->/ {
+    print $0
+    skip = 0
     next
 }
 !skip { print }
