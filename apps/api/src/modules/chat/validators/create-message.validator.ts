@@ -1,6 +1,5 @@
 import { HttpError } from "@lib/http-error";
 import type { NextFunction, Response } from "express";
-import { ObjectId } from "mongodb";
 import { z } from "zod";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 
@@ -8,7 +7,6 @@ import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate
  * Input DTO for creating a message
  */
 export interface CreateMessageInput {
-  chatId: string; // Chat ID in string format from API
   clientId?: string; // Optional client-supplied ID for idempotency
   body: string; // Message body, 1-8000 chars
 }
@@ -17,13 +15,6 @@ export interface CreateMessageInput {
  * Zod schema for message creation validation
  */
 const createMessageSchema = z.object({
-  chatId: z
-    .string()
-    .min(1, "Chat ID is required")
-    .refine(
-      (val) => ObjectId.isValid(val),
-      "Chat ID must be a valid ObjectId"
-    ),
   clientId: z.string().optional(),
   body: z
     .string()

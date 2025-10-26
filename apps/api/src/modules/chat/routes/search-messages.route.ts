@@ -11,7 +11,7 @@ import { MessageService } from "../services/message.service";
 import { validateSearchMessages } from "../validators/search-messages.validator";
 
 /**
- * GET /v1/search/messages - Search messages across user's chats
+ * GET /v1/chats/search/messages - Search messages across user's chats
  *
  * Requires authentication
  *
@@ -37,7 +37,7 @@ export function searchMessagesRoute(): Router {
   );
 
   router.get(
-    "/messages",
+    "/search/messages",
     authenticate,
     validateSearchMessages,
     async (

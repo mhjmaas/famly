@@ -16,3 +16,13 @@ export * from "./test-scenarios";
 // Database
 export { cleanDatabase, clearAuthCaches, dropDatabase, closeMongoClient } from "./database";
 export { getTestApp } from "./test-app";
+
+// Socket.IO Client Helpers
+export {
+  connectSocketClient,
+  disconnectSocketClient,
+  waitForEvent,
+  emitWithAck,
+  waitForMultipleEvents,
+  waitForEventOrNull,
+} from "./socket-client";

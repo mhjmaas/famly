@@ -46,7 +46,7 @@ export async function verifyMembership(
     const membershipRepository = new MembershipRepository();
     const membership = await membershipRepository.findByUserAndChat(
       userObjectId,
-      chatObjectId
+      chatObjectId,
     );
 
     if (!membership) {

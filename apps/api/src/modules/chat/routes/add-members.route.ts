@@ -5,7 +5,7 @@ import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import { ObjectId } from "mongodb";
 import { toChatDTO } from "../lib/chat.mapper";
-import { requireAdmin, verifyMembership } from "../middleware";
+import { verifyMembership } from "../middleware";
 import { ChatRepository } from "../repositories/chat.repository";
 import { MembershipRepository } from "../repositories/membership.repository";
 import { MembershipService } from "../services/membership.service";

@@ -3,7 +3,7 @@ import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
 import { registerTestUser } from "../helpers/auth-setup";
 
-describe("E2E: POST /v1/messages - Create Message", () => {
+describe("E2E: POST /v1/chats/:chatId/messages - Create Message", () => {
   let baseUrl: string;
   let testCounter = 0;
 
@@ -34,10 +34,9 @@ describe("E2E: POST /v1/messages - Create Message", () => {
 
       // Create message with clientId
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           clientId: "msg-001",
           body: "Hello from user1",
         });
@@ -69,10 +68,9 @@ describe("E2E: POST /v1/messages - Create Message", () => {
 
       // Create first message with clientId
       const firstRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           clientId: "idempotent-123",
           body: "First attempt",
         });
@@ -82,10 +80,9 @@ describe("E2E: POST /v1/messages - Create Message", () => {
 
       // Send same message again (idempotent)
       const secondRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           clientId: "idempotent-123",
           body: "First attempt",
         });
@@ -112,10 +109,9 @@ describe("E2E: POST /v1/messages - Create Message", () => {
 
       // Create message without clientId
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "No client ID",
         });
 
@@ -147,10 +143,9 @@ describe("E2E: POST /v1/messages - Create Message", () => {
 
       // Create message
       await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Test message",
         });
 
@@ -180,10 +175,9 @@ describe("E2E: POST /v1/messages - Create Message", () => {
 
       // Create first message
       const msg1Res = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "First message",
         });
 
@@ -209,10 +203,9 @@ describe("E2E: POST /v1/messages - Create Message", () => {
 
       // Create message with emoji
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Hello 👋 world 🌍 family 👨‍👩‍👧‍👦",
         });
 
@@ -239,10 +232,9 @@ describe("E2E: POST /v1/messages - Create Message", () => {
 
       // Try to create message exceeding max length
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "a".repeat(8001),
         });
 
@@ -267,10 +259,9 @@ describe("E2E: POST /v1/messages - Create Message", () => {
 
       // Try to create message with empty body
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "",
         });
 
@@ -281,27 +272,28 @@ describe("E2E: POST /v1/messages - Create Message", () => {
       const user1 = await registerTestUser(baseUrl, testCounter++, "msg");
 
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/not-an-object-id/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId: "not-an-object-id",
           body: "Test",
         });
 
       expect(msgRes.status).toBe(400);
     });
 
-    it("should reject missing chatId with 400", async () => {
+    it("should reject non-existent chatId with 403 or 404", async () => {
       const user1 = await registerTestUser(baseUrl, testCounter++, "msg");
+      const fakeUser = await registerTestUser(baseUrl, testCounter++, "fake");
+      const fakeChatId = fakeUser.userId; // Use a valid ObjectId that doesn't exist as a chat
 
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${fakeChatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
           body: "Test",
         });
 
-      expect(msgRes.status).toBe(400);
+      expect([403, 404]).toContain(msgRes.status);
     });
 
     it("should reject missing body with 400", async () => {
@@ -320,10 +312,9 @@ describe("E2E: POST /v1/messages - Create Message", () => {
       const chatId = chatRes.body._id;
 
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
         });
 
       expect(msgRes.status).toBe(400);
@@ -348,9 +339,8 @@ describe("E2E: POST /v1/messages - Create Message", () => {
 
       // Try to create message without auth
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .send({
-          chatId,
           body: "Unauthenticated message",
         });
 
@@ -375,10 +365,9 @@ describe("E2E: POST /v1/messages - Create Message", () => {
 
       // User3 (non-member) tries to create message
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user3.token}`)
         .send({
-          chatId,
           body: "I am not a member",
         });
 
@@ -406,10 +395,9 @@ describe("E2E: POST /v1/messages - Create Message", () => {
 
       // User2 creates message in group
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user2.token}`)
         .send({
-          chatId,
           body: "Message from user2",
         });
 
@@ -436,10 +424,9 @@ describe("E2E: POST /v1/messages - Create Message", () => {
 
       // Create message
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Group message",
         });
 

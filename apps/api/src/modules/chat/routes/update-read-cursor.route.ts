@@ -13,7 +13,7 @@ import { verifyMembership } from "../middleware/verify-membership";
 import type { UpdateReadCursorInput } from "../validators/update-read-cursor.validator";
 
 /**
- * POST /v1/chats/:chatId/read-cursor - Update read cursor for a chat
+ * PUT /v1/chats/:chatId/read-cursor - Update read cursor for a chat
  *
  * Requires authentication and chat membership
  *
@@ -37,7 +37,7 @@ export function updateReadCursorRoute(): Router {
     messageRepository,
   );
 
-  router.post(
+  router.put(
     "/:chatId/read-cursor",
     authenticate,
     validateUpdateReadCursor,

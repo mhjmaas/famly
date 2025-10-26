@@ -3,10 +3,12 @@ import { logger } from "@lib/logger";
 import { type ObjectId } from "mongodb";
 import type { Chat } from "../domain/chat";
 import type { MembershipDTO } from "../domain/membership";
+import { toChatDTO } from "../lib/chat.mapper";
 import { toMembershipDTO } from "../lib/membership.mapper";
 import type { ChatRepository } from "../repositories/chat.repository";
 import type { MembershipRepository } from "../repositories/membership.repository";
 import type { MessageRepository } from "../repositories/message.repository";
+import { emitChatUpdate } from "../realtime/events/chat-events";
 
 export class MembershipService {
   constructor(
@@ -93,6 +95,11 @@ export class MembershipService {
           addedBy: addedBy.toString(),
         });
 
+        // Emit Socket.IO event to OLD members only (before addition)
+        // Send the updated chat (with new members) but only to old members
+        const oldMemberIds = chat.memberIds.map((id) => id.toString());
+        emitChatUpdate(toChatDTO(updatedChat), oldMemberIds);
+
         return updatedChat;
       }
 
@@ -173,6 +180,11 @@ export class MembershipService {
         removedBy: removedBy.toString(),
       });
 
+      // Emit Socket.IO event to OLD members (including the removed one)
+      // Send the updated chat (without removed member) to all old members
+      const oldMemberIds = chat.memberIds.map((id) => id.toString());
+      emitChatUpdate(toChatDTO(updatedChat), oldMemberIds);
+
       return updatedChat;
     } catch (error) {
       logger.error("Failed to remove member from chat", {
@@ -214,7 +226,16 @@ export class MembershipService {
         messageId: messageId.toString(),
       });
 
-      // Verify message exists and belongs to this chat
+      // Check membership FIRST (authorization before resource validation)
+      const membership = await this.membershipRepository.findByUserAndChat(
+        userId,
+        chatId,
+      );
+      if (!membership) {
+        throw HttpError.forbidden("You are not a member of this chat");
+      }
+
+      // Then verify message exists and belongs to this chat
       const message = await this.messageRepository.findById(messageId);
       if (!message) {
         throw HttpError.notFound("Message not found");
@@ -224,17 +245,12 @@ export class MembershipService {
         throw HttpError.badRequest("Message does not belong to this chat");
       }
 
-      // Get user's membership
-      const membership = await this.membershipRepository.findByUserAndChat(
-        userId,
-        chatId,
-      );
-      if (!membership) {
-        throw HttpError.forbidden("You are not a member of this chat");
-      }
-
       // Only update if new message is newer than current lastReadMessageId
-      if (!membership.lastReadMessageId || messageId > membership.lastReadMessageId) {
+      // ObjectIds can be compared as hex strings for chronological ordering
+      const shouldUpdate = !membership.lastReadMessageId || 
+        messageId.toString() > membership.lastReadMessageId.toString();
+      
+      if (shouldUpdate) {
         const updated = await this.membershipRepository.updateReadCursor(
           membership._id,
           messageId,

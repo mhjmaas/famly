@@ -12,12 +12,11 @@ import { MessageRepository } from "../repositories/message.repository";
 import { MessageService } from "../services/message.service";
 
 /**
- * POST /v1/messages - Create a new message with idempotency support
+ * POST /v1/chats/:chatId/messages - Create a new message with idempotency support
  *
  * Requires authentication
  *
  * Request body:
- * - chatId: string (required, valid ObjectId)
  * - clientId: string (optional, for idempotency)
  * - body: string (required, 1-8000 chars)
  *
@@ -29,7 +28,7 @@ import { MessageService } from "../services/message.service";
  * Response (403): Not a member of this chat
  */
 export function createMessageRoute(): Router {
-  const router = Router();
+  const router = Router({ mergeParams: true });
   const messageRepository = new MessageRepository();
   const membershipRepository = new MembershipRepository();
   const chatRepository = new ChatRepository();
@@ -40,7 +39,7 @@ export function createMessageRoute(): Router {
   );
 
   router.post(
-    "/messages",
+    "/:chatId/messages",
     authenticate,
     validateCreateMessage,
     async (
@@ -53,9 +52,20 @@ export function createMessageRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
+        const { chatId: chatIdParam } = req.params;
+
+        // Validate chatId format
+        if (!/^[0-9a-fA-F]{24}$/.test(chatIdParam)) {
+          throw HttpError.badRequest("Invalid chat ID format - must be a valid ObjectId");
+        }
+
+        if (!ObjectId.isValid(chatIdParam)) {
+          throw HttpError.badRequest("Invalid chat ID format - must be a valid ObjectId");
+        }
+
         const input: CreateMessageInput = (req as any).validatedBody;
         const senderId = new ObjectId(req.user.id);
-        const chatId = new ObjectId(input.chatId);
+        const chatId = new ObjectId(chatIdParam);
 
         // Verify user is a member of the chat
         const membership = await membershipRepository.findByUserAndChat(

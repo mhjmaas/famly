@@ -4,6 +4,7 @@ import { logger } from "@lib/logger";
 import { ChatRepository } from "@modules/chat/repositories/chat.repository";
 import { MessageRepository } from "@modules/chat/repositories/message.repository";
 import { MembershipRepository } from "@modules/chat/repositories/membership.repository";
+import { createSocketServer } from "@modules/chat/realtime/socket-server";
 import { DiaryRepository } from "@modules/diary";
 import { FamilyRepository } from "@modules/family/repositories/family.repository";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
@@ -83,6 +84,11 @@ async function start() {
   const server = app.listen(port, () => {
     logger.info(`Famly API listening on port ${port}`);
   });
+
+  // Initialize Socket.IO
+  logger.info("Initializing Socket.IO server...");
+  createSocketServer(server);
+  logger.info("Socket.IO server initialized successfully");
 
   // Graceful shutdown handler
   const shutdown = async (signal: string) => {

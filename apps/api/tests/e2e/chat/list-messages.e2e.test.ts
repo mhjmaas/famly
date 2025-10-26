@@ -34,18 +34,16 @@ describe("E2E: GET /v1/chats/:chatId/messages - List Messages", () => {
 
       // Create multiple messages
       await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Message 1",
         });
 
       await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user2.token}`)
         .send({
-          chatId,
           body: "Message 2",
         });
 
@@ -120,7 +118,7 @@ describe("E2E: GET /v1/chats/:chatId/messages - List Messages", () => {
       // Create 5 messages
       for (let i = 0; i < 5; i++) {
         await request(baseUrl)
-          .post("/v1/messages")
+          .post(`/v1/chats/${chatId}/messages`)
           .set("Authorization", `Bearer ${user1.token}`)
           .send({
             chatId,
@@ -175,7 +173,7 @@ describe("E2E: GET /v1/chats/:chatId/messages - List Messages", () => {
       // Create 30 messages (less than default 50)
       for (let i = 0; i < 30; i++) {
         await request(baseUrl)
-          .post("/v1/messages")
+          .post(`/v1/chats/${chatId}/messages`)
           .set("Authorization", `Bearer ${user1.token}`)
           .send({
             chatId,
@@ -256,10 +254,9 @@ describe("E2E: GET /v1/chats/:chatId/messages - List Messages", () => {
 
       // Create message
       await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Only message",
         });
 
@@ -361,10 +358,9 @@ describe("E2E: GET /v1/chats/:chatId/messages - List Messages", () => {
 
       // Create message with clientId
       const createRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           clientId: "test-123",
           body: "Test message",
         });

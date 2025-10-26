@@ -3,7 +3,7 @@ import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
 import { registerTestUser } from "../helpers/auth-setup";
 
-describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
+describe("E2E: PUT /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
   let baseUrl: string;
   let testCounter = 0;
 
@@ -34,32 +34,29 @@ describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
 
       // Create 3 messages
       await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Message 1",
         });
 
       const msg2Res = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Message 2",
         });
 
       await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Message 3",
         });
 
       // Mark message 2 as read
       const cursorRes = await request(baseUrl)
-        .post(`/v1/chats/${chatId}/read-cursor`)
+        .put(`/v1/chats/${chatId}/read-cursor`)
         .set("Authorization", `Bearer ${user2.token}`)
         .send({
           messageId: msg2Res.body._id,
@@ -93,24 +90,22 @@ describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
       // Create 3 messages
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const msg1Res = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Message 1",
         });
 
       const msg2Res = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Message 2",
         });
 
       // Update to msg2
       const cursorRes1 = await request(baseUrl)
-        .post(`/v1/chats/${chatId}/read-cursor`)
+        .put(`/v1/chats/${chatId}/read-cursor`)
         .set("Authorization", `Bearer ${user2.token}`)
         .send({
           messageId: msg2Res.body._id,
@@ -120,7 +115,7 @@ describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
 
       // Try to update to msg1 (older)
       const cursorRes2 = await request(baseUrl)
-        .post(`/v1/chats/${chatId}/read-cursor`)
+        .put(`/v1/chats/${chatId}/read-cursor`)
         .set("Authorization", `Bearer ${user2.token}`)
         .send({
           messageId: msg1Res.body._id,
@@ -148,16 +143,15 @@ describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
 
       // Create message
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "First message",
         });
 
       // Mark as read (user2 starts with no lastReadMessageId)
       const cursorRes = await request(baseUrl)
-        .post(`/v1/chats/${chatId}/read-cursor`)
+        .put(`/v1/chats/${chatId}/read-cursor`)
         .set("Authorization", `Bearer ${user2.token}`)
         .send({
           messageId: msgRes.body._id,
@@ -185,16 +179,15 @@ describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
 
       // Create message
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Group message",
         });
 
       // Update read cursor
       const cursorRes = await request(baseUrl)
-        .post(`/v1/chats/${chatId}/read-cursor`)
+        .put(`/v1/chats/${chatId}/read-cursor`)
         .set("Authorization", `Bearer ${user2.token}`)
         .send({
           messageId: msgRes.body._id,
@@ -222,32 +215,29 @@ describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
       // Create 3 messages
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const msg1Res = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Message 1",
         });
 
       const msg2Res = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Message 2",
         });
 
       const msg3Res = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Message 3",
         });
 
       // Update to msg1
       await request(baseUrl)
-        .post(`/v1/chats/${chatId}/read-cursor`)
+        .put(`/v1/chats/${chatId}/read-cursor`)
         .set("Authorization", `Bearer ${user2.token}`)
         .send({
           messageId: msg1Res.body._id,
@@ -255,7 +245,7 @@ describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
 
       // Update to msg2
       await request(baseUrl)
-        .post(`/v1/chats/${chatId}/read-cursor`)
+        .put(`/v1/chats/${chatId}/read-cursor`)
         .set("Authorization", `Bearer ${user2.token}`)
         .send({
           messageId: msg2Res.body._id,
@@ -263,7 +253,7 @@ describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
 
       // Update to msg3
       const finalRes = await request(baseUrl)
-        .post(`/v1/chats/${chatId}/read-cursor`)
+        .put(`/v1/chats/${chatId}/read-cursor`)
         .set("Authorization", `Bearer ${user2.token}`)
         .send({
           messageId: msg3Res.body._id,
@@ -291,7 +281,7 @@ describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
       const chatId = chatRes.body._id;
 
       const cursorRes = await request(baseUrl)
-        .post(`/v1/chats/${chatId}/read-cursor`)
+        .put(`/v1/chats/${chatId}/read-cursor`)
         .set("Authorization", `Bearer ${user2.token}`)
         .send({
           messageId: "not-an-object-id",
@@ -316,7 +306,7 @@ describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
       const chatId = chatRes.body._id;
 
       const cursorRes = await request(baseUrl)
-        .post(`/v1/chats/${chatId}/read-cursor`)
+        .put(`/v1/chats/${chatId}/read-cursor`)
         .set("Authorization", `Bearer ${user2.token}`)
         .send({});
 
@@ -344,7 +334,7 @@ describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
       ).userId; // Use a valid ObjectId format
 
       const cursorRes = await request(baseUrl)
-        .post(`/v1/chats/${chatId}/read-cursor`)
+        .put(`/v1/chats/${chatId}/read-cursor`)
         .set("Authorization", `Bearer ${user2.token}`)
         .send({
           messageId: fakeMessageId,
@@ -378,16 +368,15 @@ describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
 
       // Create message in chat1
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chat1Res.body._id}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId: chat1Res.body._id,
           body: "Message in chat1",
         });
 
       // Try to set chat1's message as read in chat2
       const cursorRes = await request(baseUrl)
-        .post(`/v1/chats/${chat2Res.body._id}/read-cursor`)
+        .put(`/v1/chats/${chat2Res.body._id}/read-cursor`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
           messageId: msgRes.body._id,
@@ -415,16 +404,15 @@ describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
 
       // Create message
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Test message",
         });
 
       // Try without auth
       const cursorRes = await request(baseUrl)
-        .post(`/v1/chats/${chatId}/read-cursor`)
+        .put(`/v1/chats/${chatId}/read-cursor`)
         .send({
           messageId: msgRes.body._id,
         });
@@ -450,16 +438,15 @@ describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
 
       // Create message
       const msgRes = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Test message",
         });
 
       // User3 (non-member) tries to update read cursor
       const cursorRes = await request(baseUrl)
-        .post(`/v1/chats/${chatId}/read-cursor`)
+        .put(`/v1/chats/${chatId}/read-cursor`)
         .set("Authorization", `Bearer ${user3.token}`)
         .send({
           messageId: msgRes.body._id,
@@ -488,26 +475,23 @@ describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
       // Create 3 messages
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const msg1Res = await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Message 1",
         });
 
       await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Message 2",
         });
 
       await request(baseUrl)
-        .post("/v1/messages")
+        .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          chatId,
           body: "Message 3",
         });
 
@@ -521,7 +505,7 @@ describe("E2E: POST /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
 
       // Mark message 1 as read
       await request(baseUrl)
-        .post(`/v1/chats/${chatId}/read-cursor`)
+        .put(`/v1/chats/${chatId}/read-cursor`)
         .set("Authorization", `Bearer ${user2.token}`)
         .send({
           messageId: msg1Res.body._id,

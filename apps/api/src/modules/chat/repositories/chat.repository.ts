@@ -1,6 +1,6 @@
 import { getDb } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 import { type Collection, ObjectId } from "mongodb";
 import type { Chat } from "../domain/chat";
 
