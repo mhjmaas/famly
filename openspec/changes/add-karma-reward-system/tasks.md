@@ -337,54 +337,130 @@
   - Verify karma totals match event sums in database
   - Test authorization boundaries (non-members, children granting karma)
 
-## 12. Documentation and Cleanup
+## 12. Bruno API Collection Updates
 
-- [ ] 12.1 Add API documentation comments
+- [ ] 12.1 Create karma folder and requests
+  - Create `bruno/Famly/karma/folder.bru`:
+    - Set meta name: `karma`
+    - Set type: `folder`
+    - Add description: `Karma reward system API endpoints`
+  - Create `bruno/Famly/karma/get-balance.bru`:
+    - Type: GET
+    - URL: `{{baseUrl}}/v1/families/{{currentFamilyId}}/karma/balance`
+    - Auth: inherit
+    - Add post-response script to log karma total
+  - Create `bruno/Famly/karma/get-history.bru`:
+    - Type: GET
+    - URL: `{{baseUrl}}/v1/families/{{currentFamilyId}}/karma/history`
+    - Auth: inherit
+    - Add query params: `limit` (optional), `cursor` (optional)
+    - Add post-response script to display pagination info
+  - Create `bruno/Famly/karma/grant-karma.bru`:
+    - Type: POST
+    - URL: `{{baseUrl}}/v1/families/{{currentFamilyId}}/karma/grant`
+    - Auth: inherit
+    - Body (JSON):
+      ```json
+      {
+        "userId": "{{childUserId}}",
+        "amount": 25,
+        "description": "Great job helping with chores!"
+      }
+      ```
+    - Add post-response script to save eventId if needed
+
+- [ ] 12.2 Update task requests with karma metadata examples
+  - Edit `bruno/Famly/tasks/create-task.bru`:
+    - Add example with karma metadata in body:
+      ```json
+      {
+        "name": "Wash dishes",
+        "description": "Clean all dishes in the sink",
+        "dueDate": "2025-01-15T18:00:00Z",
+        "assignment": { "type": "unassigned" },
+        "metadata": { "karma": 10 }
+      }
+      ```
+  - Edit `bruno/Famly/tasks/create-schedule.bru`:
+    - Add example with karma metadata:
+      ```json
+      {
+        "name": "Weekly room cleanup",
+        "schedule": {
+          "daysOfWeek": [6],
+          "weeklyInterval": 1,
+          "startDate": "2025-01-01"
+        },
+        "timeOfDay": "10:00",
+        "assignment": { "type": "unassigned" },
+        "metadata": { "karma": 5 }
+      }
+      ```
+  - Create `bruno/Famly/tasks/create-task-with-karma.bru` (optional dedicated example):
+    - Duplicate create-task.bru
+    - Rename to `create task with karma`
+    - Focus body on karma example
+
+- [ ] 12.3 Add environment variables for testing
+  - Edit `bruno/Famly/environments/local.bru` (if needed):
+    - Ensure `currentFamilyId` exists
+    - Consider adding `childUserId` variable for karma grant testing
+    - Consider adding `parentUserId` variable for role-based tests
+
+## 13. Documentation and Cleanup
+
+- [ ] 13.1 Add API documentation comments
   - Document all public methods in `KarmaService`
   - Document all route handlers with JSDoc comments
   - Document domain interfaces with field descriptions
 
-- [ ] 12.2 Update module README (if applicable)
+- [ ] 13.2 Update module README (if applicable)
   - Create `apps/api/src/modules/karma/README.md` with:
     - Module overview
     - API endpoints documentation
     - Database schema
     - Integration points (task completion)
 
-- [ ] 12.3 Run linter
+- [ ] 13.3 Run linter
   - Execute: `pnpm -C apps/api run lint`
   - Fix any linting errors
   - Ensure code style consistency
 
-- [ ] 12.4 Run formatter
+- [ ] 13.4 Run formatter
   - Execute: `pnpm -C apps/api run format` (if available)
   - Ensure all code is properly formatted
 
-## 13. Verification and Sign-off
+## 14. Verification and Sign-off
 
-- [ ] 13.1 Verify all requirements met
+- [ ] 14.1 Verify all requirements met
   - Review spec deltas in `openspec/changes/add-karma-reward-system/specs/`
   - Confirm all scenarios are covered by tests
   - Confirm all API endpoints implemented and working
 
-- [ ] 13.2 Verify constitution compliance
+- [ ] 14.2 Verify constitution compliance
   - Confirm SOLID principles followed (SRP, DIP, OCP)
   - Confirm DRY (no duplicate logic)
   - Confirm KISS (simple, straightforward implementation)
   - Confirm TDD (tests written first, all green)
 
-- [ ] 13.3 Performance check
+- [ ] 14.3 Performance check
   - Verify karma balance queries are fast (indexed lookups)
   - Verify karma history pagination is efficient
   - Verify task completion flow is not slowed by karma logic
 
-- [ ] 13.4 Security review
+- [ ] 14.4 Security review
   - Verify all endpoints require authentication
   - Verify family membership checks on all operations
   - Verify parent-only authorization on manual grants
   - Verify no karma manipulation exploits (e.g., self-granting)
 
-- [ ] 13.5 Final full test run
+- [ ] 14.5 Verify Bruno collections work
+  - Test all karma endpoints using Bruno requests
+  - Test task creation with karma metadata
+  - Verify environment variables are properly configured
+  - Confirm all requests return expected responses
+
+- [ ] 14.6 Final full test run
   - Execute: `pnpm test` (all tests)
   - Confirm 100% test pass rate
   - Confirm no regressions in existing functionality
