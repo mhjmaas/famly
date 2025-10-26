@@ -2,6 +2,9 @@ import { errorHandler } from "@middleware/error-handler";
 import cookieParser from "cookie-parser";
 import express, { type Express } from "express";
 import { createAuthRouter } from "./modules/auth/routes/auth.router";
+import { createChatRouter } from "./modules/chat";
+import { createMessageRoute } from "./modules/chat/routes/create-message.route";
+import { searchMessagesRoute } from "./modules/chat/routes/search-messages.route";
 import { createDiaryRouter } from "./modules/diary";
 import { createFamiliesRouter } from "./modules/family/routes";
 import { createHealthRouter } from "./routes/health";
@@ -30,6 +33,13 @@ export const createApp = (): Express => {
   // Family routes (requires authentication)
   // Note: Tasks routes are mounted within the families router at /:familyId/tasks
   app.use("/v1/families", createFamiliesRouter());
+
+  // Chat routes (requires authentication)
+  app.use("/v1/chats", createChatRouter());
+
+  // Message routes (requires authentication) - mounted at /v1/messages and /v1/search
+  app.use("/v1", createMessageRoute());
+  app.use("/v1/search", searchMessagesRoute());
 
   // Error handling middleware (last)
   app.use(errorHandler);
