@@ -24,6 +24,18 @@ body:json {
   }
 }
 
+script:post-response {
+  try {
+    const body = res.body;
+    if (body?.memberId) {
+      bru.setEnvVar('otherUserId', body.memberId);
+      console.log('Member ID saved as otherUserId: ' + body.memberId);
+    }
+  } catch (error) {
+    console.log('Failed to save member ID: ' + error?.message);
+  }
+}
+
 settings {
   encodeUrl: true
   timeout: 0

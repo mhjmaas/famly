@@ -1,6 +1,10 @@
 import "dotenv/config";
 import { connectMongo, disconnectMongo } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
+import { ChatRepository } from "@modules/chat/repositories/chat.repository";
+import { MessageRepository } from "@modules/chat/repositories/message.repository";
+import { MembershipRepository } from "@modules/chat/repositories/membership.repository";
+import { createSocketServer } from "@modules/chat/realtime/socket-server";
 import { DiaryRepository } from "@modules/diary";
 import { FamilyRepository } from "@modules/family/repositories/family.repository";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
@@ -27,13 +31,25 @@ async function start() {
   await connectMongo();
   logger.info("MongoDB connected successfully");
 
+  // Initialize chat module indexes
+  logger.info("Initializing chat module indexes...");
+  const chatRepo = new ChatRepository();
+  const messageRepo = new MessageRepository();
+  const chatMembershipRepo = new MembershipRepository();
+  await Promise.all([
+    chatRepo.ensureIndexes(),
+    messageRepo.ensureIndexes(),
+    chatMembershipRepo.ensureIndexes(),
+  ]);
+  logger.info("Chat module indexes initialized successfully");
+
   // Initialize family module indexes
   logger.info("Initializing family module indexes...");
   const familyRepo = new FamilyRepository();
-  const membershipRepo = new FamilyMembershipRepository();
+  const familyMembershipRepo = new FamilyMembershipRepository();
   await Promise.all([
     familyRepo.ensureIndexes(),
-    membershipRepo.ensureIndexes(),
+    familyMembershipRepo.ensureIndexes(),
   ]);
   logger.info("Family module indexes initialized successfully");
 
@@ -68,6 +84,11 @@ async function start() {
   const server = app.listen(port, () => {
     logger.info(`Famly API listening on port ${port}`);
   });
+
+  // Initialize Socket.IO
+  logger.info("Initializing Socket.IO server...");
+  createSocketServer(server);
+  logger.info("Socket.IO server initialized successfully");
 
   // Graceful shutdown handler
   const shutdown = async (signal: string) => {

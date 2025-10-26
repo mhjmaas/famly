@@ -58,7 +58,13 @@ function initAuth() {
           const rounds = settings.isTest ? 1 : 10;
           return await bcrypt.hash(password, rounds);
         },
-        verify: async ({ hash, password }: { hash: string; password: string }) => {
+        verify: async ({
+          hash,
+          password,
+        }: {
+          hash: string;
+          password: string;
+        }) => {
           return await bcrypt.compare(password, hash);
         },
       },

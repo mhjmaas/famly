@@ -1,0 +1,36 @@
+meta {
+  name: Create Group
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/v1/chats
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "type": "group",
+    "memberIds": ["{{otherUserId}}"],
+    "title": "Family Chat"
+  }
+}
+
+script:post-response {
+  try {
+    const body = res.body;
+    if (body?._id) {
+      bru.setEnvVar('currentChatId', body._id);
+      console.log('Group Chat ID saved: ' + body._id);
+    }
+  } catch (error) {
+    console.log('Failed to save chat ID: ' + error?.message);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

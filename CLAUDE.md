@@ -87,6 +87,47 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   └── validators
 │   │   │   │   │       ├── login.validator.ts
 │   │   │   │   │       └── register.validator.ts
+│   │   │   │   ├── chat
+│   │   │   │   │   ├── domain
+│   │   │   │   │   │   ├── chat.ts
+│   │   │   │   │   │   ├── membership.ts
+│   │   │   │   │   │   └── message.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── lib
+│   │   │   │   │   │   ├── chat.mapper.ts
+│   │   │   │   │   │   ├── membership.mapper.ts
+│   │   │   │   │   │   └── message.mapper.ts
+│   │   │   │   │   ├── middleware
+│   │   │   │   │   │   ├── index.ts
+│   │   │   │   │   │   ├── require-admin.ts
+│   │   │   │   │   │   └── verify-membership.ts
+│   │   │   │   │   ├── repositories
+│   │   │   │   │   │   ├── chat.repository.ts
+│   │   │   │   │   │   ├── membership.repository.ts
+│   │   │   │   │   │   └── message.repository.ts
+│   │   │   │   │   ├── routes
+│   │   │   │   │   │   ├── add-members.route.ts
+│   │   │   │   │   │   ├── chat.router.ts
+│   │   │   │   │   │   ├── create-chat.route.ts
+│   │   │   │   │   │   ├── create-message.route.ts
+│   │   │   │   │   │   ├── get-chat.route.ts
+│   │   │   │   │   │   ├── list-chats.route.ts
+│   │   │   │   │   │   ├── list-messages.route.ts
+│   │   │   │   │   │   ├── remove-member.route.ts
+│   │   │   │   │   │   ├── search-messages.route.ts
+│   │   │   │   │   │   └── update-read-cursor.route.ts
+│   │   │   │   │   ├── services
+│   │   │   │   │   │   ├── chat.service.ts
+│   │   │   │   │   │   ├── membership.service.ts
+│   │   │   │   │   │   └── message.service.ts
+│   │   │   │   │   └── validators
+│   │   │   │   │       ├── add-members.validator.ts
+│   │   │   │   │       ├── create-chat.validator.ts
+│   │   │   │   │       ├── create-message.validator.ts
+│   │   │   │   │       ├── list-chats.validator.ts
+│   │   │   │   │       ├── list-messages.validator.ts
+│   │   │   │   │       ├── search-messages.validator.ts
+│   │   │   │   │       └── update-read-cursor.validator.ts
 │   │   │   │   ├── diary
 │   │   │   │   │   ├── domain
 │   │   │   │   │   │   └── diary-entry.ts
@@ -201,6 +242,18 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   ├── login.e2e.test.ts
 │   │   │   │   │   ├── me.e2e.test.ts
 │   │   │   │   │   └── register.e2e.test.ts
+│   │   │   │   ├── chat
+│   │   │   │   │   ├── add-members.e2e.test.ts
+│   │   │   │   │   ├── authorization.e2e.test.ts
+│   │   │   │   │   ├── create-dm.e2e.test.ts
+│   │   │   │   │   ├── create-group.e2e.test.ts
+│   │   │   │   │   ├── create-message.e2e.test.ts
+│   │   │   │   │   ├── get-chat.e2e.test.ts
+│   │   │   │   │   ├── list-chats.e2e.test.ts
+│   │   │   │   │   ├── list-messages.e2e.test.ts
+│   │   │   │   │   ├── remove-member.e2e.test.ts
+│   │   │   │   │   ├── search-messages.e2e.test.ts
+│   │   │   │   │   └── update-read-cursor.e2e.test.ts
 │   │   │   │   ├── diary
 │   │   │   │   │   ├── authorization.e2e.test.ts
 │   │   │   │   │   ├── create-entry.e2e.test.ts
@@ -267,6 +320,14 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │       ├── auth
 │   │   │       │   ├── require-creator-ownership.test.ts
 │   │   │       │   └── require-family-role.test.ts
+│   │   │       ├── chat
+│   │   │       │   ├── chat.mapper.test.ts
+│   │   │       │   ├── chat.service.test.ts
+│   │   │       │   ├── create-chat.validator.test.ts
+│   │   │       │   ├── create-message.validator.test.ts
+│   │   │       │   ├── list-chats.validator.test.ts
+│   │   │       │   ├── membership.mapper.test.ts
+│   │   │       │   └── message.mapper.test.ts
 │   │   │       ├── diary
 │   │   │       │   ├── create-entry.validator.test.ts
 │   │   │       │   ├── diary-entry.mapper.test.ts
@@ -322,6 +383,17 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   ├── refresh.bru
 │       │   └── signup.bru
 │       ├── bruno.json
+│       ├── chat
+│       │   ├── add-members.bru
+│       │   ├── create-dm.bru
+│       │   ├── create-group.bru
+│       │   ├── create-message.bru
+│       │   ├── get-chat.bru
+│       │   ├── list-chats.bru
+│       │   ├── list-messages.bru
+│       │   ├── remove-member.bru
+│       │   ├── search-messages.bru
+│       │   └── update-read-cursor.bru
 │       ├── diary
 │       │   ├── create entry.bru
 │       │   ├── delete entry.bru
@@ -337,6 +409,13 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   ├── delete member.bru
 │       │   ├── folder.bru
 │       │   └── get all.bru
+│       ├── family-diary
+│       │   ├── create-entry.bru
+│       │   ├── delete-entry.bru
+│       │   ├── folder.bru
+│       │   ├── get-entry.bru
+│       │   ├── list-entries.bru
+│       │   └── update-entry.bru
 │       ├── shopping-lists
 │       │   ├── add item.bru
 │       │   ├── create list.bru
@@ -366,15 +445,12 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   └── add-family-diary-entries
-│   │       ├── proposal.md
-│   │       ├── specs
-│   │       │   └── diary
-│   │       │       └── spec.md
-│   │       └── tasks.md
+│   │   └── add-chat-feature
 │   ├── project.md
 │   └── specs
 │       ├── auth
+│       │   └── spec.md
+│       ├── chat
 │       │   └── spec.md
 │       ├── diary
 │       │   └── spec.md
@@ -392,7 +468,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-91 directories, 261 files
+102 directories, 326 files
 ```
 <!-- TREE END -->
 

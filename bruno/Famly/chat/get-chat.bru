@@ -1,0 +1,15 @@
+meta {
+  name: Get Chat
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/v1/chats/{{currentChatId}}
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
