@@ -1,6 +1,6 @@
-import { ObjectId } from "mongodb";
-import { toMembershipDTO } from "@modules/chat/lib/membership.mapper";
 import type { Membership } from "@modules/chat/domain/membership";
+import { toMembershipDTO } from "@modules/chat/lib/membership.mapper";
+import { ObjectId } from "mongodb";
 
 describe("Membership Mapper", () => {
   describe("toMembershipDTO", () => {

@@ -12,7 +12,9 @@ export class RateLimiter {
   private userTimestamps: Map<string, number[]> = new Map();
   private config: RateLimitConfig;
 
-  constructor(config: RateLimitConfig = { maxMessages: 10, windowSeconds: 10 }) {
+  constructor(
+    config: RateLimitConfig = { maxMessages: 10, windowSeconds: 10 },
+  ) {
     this.config = config;
   }
 

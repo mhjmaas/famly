@@ -1,8 +1,8 @@
 import { ObjectId } from "mongodb";
 import request from "supertest";
+import { registerTestUser } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { registerTestUser } from "../helpers/auth-setup";
 
 describe("E2E: GET /v1/diary/:entryId - Get Entry", () => {
   let baseUrl: string;

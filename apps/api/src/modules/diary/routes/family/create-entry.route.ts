@@ -31,7 +31,9 @@ export function createFamilyDiaryCreateEntryRoute(): Router {
   router.post(
     "/",
     authenticate,
-    authorizeFamilyRole({ allowedRoles: [FamilyRole.Parent, FamilyRole.Child] }),
+    authorizeFamilyRole({
+      allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
+    }),
     validateCreateEntry,
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
       try {

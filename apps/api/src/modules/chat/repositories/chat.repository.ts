@@ -1,6 +1,6 @@
+import { createHash } from "node:crypto";
 import { getDb } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
-import { createHash } from "node:crypto";
 import { type Collection, ObjectId } from "mongodb";
 import type { Chat } from "../domain/chat";
 
@@ -42,10 +42,10 @@ export class ChatRepository {
       // Only indexes documents where memberIdsHash exists (not null/undefined)
       await this.collection.createIndex(
         { type: 1, memberIdsHash: 1 },
-        { 
-          unique: true, 
+        {
+          unique: true,
           name: "idx_dm_unique",
-          partialFilterExpression: { memberIdsHash: { $type: "string" } }
+          partialFilterExpression: { memberIdsHash: { $type: "string" } },
         },
       );
 
@@ -75,7 +75,9 @@ export class ChatRepository {
       memberIds,
       // For DMs, generate a hash for deduplication
       // For groups, memberIdsHash is not set (sparse index handles this)
-      ...(type === "dm" && { memberIdsHash: this.generateMemberIdsHash(memberIds) }),
+      ...(type === "dm" && {
+        memberIdsHash: this.generateMemberIdsHash(memberIds),
+      }),
       createdAt: now,
       updatedAt: now,
     };

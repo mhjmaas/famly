@@ -1,8 +1,7 @@
 import request from "supertest";
-
+import { registerTestUser, setupTestFamily } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { registerTestUser, setupTestFamily } from "../helpers/auth-setup";
 
 describe("E2E: GET /v1/families", () => {
   let baseUrl: string;
@@ -17,7 +16,11 @@ describe("E2E: GET /v1/families", () => {
 
   describe("Success Cases", () => {
     it("should return empty array when user has no families", async () => {
-      const { token: authToken } = await registerTestUser(baseUrl, Date.now(), "nofamilies");
+      const { token: authToken } = await registerTestUser(
+        baseUrl,
+        Date.now(),
+        "nofamilies",
+      );
 
       const response = await request(baseUrl)
         .get("/v1/families")
@@ -32,7 +35,7 @@ describe("E2E: GET /v1/families", () => {
       const { token: authToken } = await setupTestFamily(baseUrl, Date.now(), {
         userName: "One Family User",
         familyName: "Test Family",
-        prefix: "onefamily"
+        prefix: "onefamily",
       });
 
       // List families
@@ -60,9 +63,14 @@ describe("E2E: GET /v1/families", () => {
     });
 
     it("should return multiple families in correct order (newest first)", async () => {
-      const { token: authToken } = await registerTestUser(baseUrl, Date.now(), "multifamily", {
-        name: "Multi Family User"
-      });
+      const { token: authToken } = await registerTestUser(
+        baseUrl,
+        Date.now(),
+        "multifamily",
+        {
+          name: "Multi Family User",
+        },
+      );
 
       // Create three families with small delays to ensure ordering
       await request(baseUrl)
@@ -118,9 +126,14 @@ describe("E2E: GET /v1/families", () => {
     });
 
     it("should handle families with null names", async () => {
-      const { token: authToken } = await registerTestUser(baseUrl, Date.now(), "nullname", {
-        name: "Null Name User"
-      });
+      const { token: authToken } = await registerTestUser(
+        baseUrl,
+        Date.now(),
+        "nullname",
+        {
+          name: "Null Name User",
+        },
+      );
 
       // Create family without name
       await request(baseUrl)
@@ -147,7 +160,11 @@ describe("E2E: GET /v1/families", () => {
     it("should include all family members with correct details", async () => {
       const timestamp = Date.now();
 
-      const { token: parentToken, userId: parentId, familyId } = await setupTestFamily(baseUrl, timestamp, {
+      const {
+        token: parentToken,
+        userId: parentId,
+        familyId,
+      } = await setupTestFamily(baseUrl, timestamp, {
         userName: "Parent User",
         familyName: "Test Family",
         prefix: "parent",
@@ -260,11 +277,15 @@ describe("E2E: GET /v1/families", () => {
 
   describe("Payload Consistency", () => {
     it("should return consistent payload structure matching create response", async () => {
-      const { token: authToken, family: createdFamily } = await setupTestFamily(baseUrl, Date.now(), {
-        userName: "Consistency User",
-        familyName: "Consistency Family",
-        prefix: "consistency"
-      });
+      const { token: authToken, family: createdFamily } = await setupTestFamily(
+        baseUrl,
+        Date.now(),
+        {
+          userName: "Consistency User",
+          familyName: "Consistency Family",
+          prefix: "consistency",
+        },
+      );
 
       // List families
       const listResponse = await request(baseUrl)
@@ -304,14 +325,18 @@ describe("E2E: GET /v1/families", () => {
       const { token: user1Token } = await setupTestFamily(baseUrl, timestamp, {
         userName: "User One",
         familyName: "User 1 Family",
-        prefix: "user1"
+        prefix: "user1",
       });
 
-      const { token: user2Token } = await setupTestFamily(baseUrl, timestamp + 1, {
-        userName: "User Two",
-        familyName: "User 2 Family",
-        prefix: "user2"
-      });
+      const { token: user2Token } = await setupTestFamily(
+        baseUrl,
+        timestamp + 1,
+        {
+          userName: "User Two",
+          familyName: "User 2 Family",
+          prefix: "user2",
+        },
+      );
 
       // Verify User 1 only sees their family
       const user1List = await request(baseUrl)

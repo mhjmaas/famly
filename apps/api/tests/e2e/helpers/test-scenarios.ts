@@ -4,8 +4,12 @@
  */
 
 import request from "supertest";
-import { TestUserBuilder, TestFamilyBuilder, TestDataFactory } from "./test-data-factory";
-import { ResponseAssertions, assertResponse } from "./request-assertions";
+import { assertResponse, ResponseAssertions } from "./request-assertions";
+import {
+  TestDataFactory,
+  TestFamilyBuilder,
+  TestUserBuilder,
+} from "./test-data-factory";
 
 /**
  * Scenario: Create diary entry
@@ -36,7 +40,11 @@ export async function scenarioCreateDiaryEntryVerified(
   token: string,
   data: { date: string; entry: string },
 ) {
-  const { response, entryId } = await scenarioCreateDiaryEntry(baseUrl, token, data);
+  const { response, entryId } = await scenarioCreateDiaryEntry(
+    baseUrl,
+    token,
+    data,
+  );
   response.isCreated();
   return { entryId, response };
 }
@@ -67,7 +75,9 @@ export async function scenarioListDiaryEntries(
   token: string,
   query?: { startDate?: string; endDate?: string },
 ) {
-  const req = request(baseUrl).get("/v1/diary").set("Authorization", `Bearer ${token}`);
+  const req = request(baseUrl)
+    .get("/v1/diary")
+    .set("Authorization", `Bearer ${token}`);
 
   if (query) {
     if (query.startDate) req.query({ startDate: query.startDate });
@@ -268,7 +278,9 @@ export async function scenarioTestForbiddenAccess(
   unauthorizedToken: string,
   data?: any,
 ) {
-  let req = request(baseUrl)[method](endpoint).set("Authorization", `Bearer ${unauthorizedToken}`);
+  let req = request(baseUrl)
+    [method](endpoint)
+    .set("Authorization", `Bearer ${unauthorizedToken}`);
 
   if (data) {
     req = req.send(data);

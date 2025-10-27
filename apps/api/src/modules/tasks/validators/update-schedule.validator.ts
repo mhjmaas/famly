@@ -79,6 +79,16 @@ export const updateScheduleSchema = z.object({
   assignment: taskAssignmentSchema.optional(),
   schedule: scheduleSchema.optional(),
   timeOfDay: timeOfDaySchema.optional(),
+  metadata: z
+    .object({
+      karma: z
+        .number()
+        .int("Karma must be an integer")
+        .min(1, "Karma must be at least 1")
+        .max(1000, "Karma cannot exceed 1000")
+        .optional(),
+    })
+    .optional(),
 });
 
 export type UpdateScheduleInput = z.infer<typeof updateScheduleSchema>;

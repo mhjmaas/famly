@@ -57,6 +57,7 @@ export class ScheduleRepository {
       assignment: input.assignment,
       schedule: input.schedule,
       timeOfDay: input.timeOfDay,
+      metadata: input.metadata,
       createdBy,
       createdAt: now,
       updatedAt: now,
@@ -130,6 +131,9 @@ export class ScheduleRepository {
     }
     if (input.timeOfDay !== undefined) {
       updateFields.timeOfDay = input.timeOfDay;
+    }
+    if (input.metadata !== undefined) {
+      updateFields.metadata = input.metadata;
     }
 
     const result = await this.collection.findOneAndUpdate(

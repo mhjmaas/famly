@@ -3,15 +3,15 @@
  * Tests for JWT and session token authentication
  */
 
-import { setupTestUsers, registerTestUser } from "../../helpers/auth-setup";
+import request from "supertest";
+import { registerTestUser, setupTestUsers } from "../../helpers/auth-setup";
 import { cleanDatabase } from "../../helpers/database";
-import { getTestApp } from "../../helpers/test-app";
 import {
   connectSocketClient,
   disconnectSocketClient,
   emitWithAck,
 } from "../../helpers/socket-client";
-import request from "supertest";
+import { getTestApp } from "../../helpers/test-app";
 
 describe("E2E: Socket.IO - Authentication", () => {
   let baseUrl: string;
@@ -39,11 +39,7 @@ describe("E2E: Socket.IO - Authentication", () => {
     it("should reject connection with invalid JWT token", async () => {
       let connectionFailed = false;
       try {
-        await connectSocketClient(
-          baseUrl,
-          "invalid.jwt.token",
-          5000
-        );
+        await connectSocketClient(baseUrl, "invalid.jwt.token", 5000);
       } catch (err) {
         connectionFailed = true;
       }
@@ -68,7 +64,8 @@ describe("E2E: Socket.IO - Authentication", () => {
       // For now, test that invalid token is rejected
       let connectionFailed = false;
       try {
-        const expiredToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjB9.invalid";
+        const expiredToken =
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjB9.invalid";
         await connectSocketClient(baseUrl, expiredToken, 5000);
       } catch (err) {
         connectionFailed = true;
@@ -93,11 +90,7 @@ describe("E2E: Socket.IO - Authentication", () => {
     it("should reject connection with invalid session token", async () => {
       let connectionFailed = false;
       try {
-        await connectSocketClient(
-          baseUrl,
-          "invalid-session-token",
-          5000
-        );
+        await connectSocketClient(baseUrl, "invalid-session-token", 5000);
       } catch (err) {
         connectionFailed = true;
       }
@@ -252,7 +245,8 @@ describe("E2E: Socket.IO - Authentication", () => {
     it("should reject connection if token cannot be verified", async () => {
       let connectionFailed = false;
       try {
-        const invalidToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U";
+        const invalidToken =
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U";
         await connectSocketClient(baseUrl, invalidToken, 5000);
       } catch (err) {
         connectionFailed = true;

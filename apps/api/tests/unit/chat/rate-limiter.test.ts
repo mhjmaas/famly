@@ -137,7 +137,10 @@ describe("RateLimiter", () => {
 
   describe("configuration", () => {
     it("should respect custom limits", () => {
-      const customLimiter = new RateLimiter({ maxMessages: 3, windowSeconds: 10 });
+      const customLimiter = new RateLimiter({
+        maxMessages: 3,
+        windowSeconds: 10,
+      });
       const userId = "user-1";
 
       // Can send 3 messages

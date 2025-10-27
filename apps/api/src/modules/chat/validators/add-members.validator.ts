@@ -6,24 +6,18 @@ import { z } from "zod";
 // ObjectId string validation
 const objectIdSchema = z
   .string()
-  .refine(
-    (val) => ObjectId.isValid(val),
-    "Invalid user ID format"
-  );
+  .refine((val) => ObjectId.isValid(val), "Invalid user ID format");
 
 // Add members input schema
 export const addMembersSchema = z.object({
   userIds: z
     .array(objectIdSchema)
     .min(1, "At least one user ID is required")
-    .refine(
-      (ids: string[]) => {
-        // User IDs must be unique
-        const uniqueIds = new Set(ids);
-        return uniqueIds.size === ids.length;
-      },
-      "User IDs must be unique"
-    ),
+    .refine((ids: string[]) => {
+      // User IDs must be unique
+      const uniqueIds = new Set(ids);
+      return uniqueIds.size === ids.length;
+    }, "User IDs must be unique"),
 });
 
 export type AddMembersInput = z.infer<typeof addMembersSchema>;

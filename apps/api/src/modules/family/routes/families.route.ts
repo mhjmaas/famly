@@ -1,4 +1,5 @@
 import { createFamilyDiaryRouter } from "@modules/diary";
+import { createKarmaRouter } from "@modules/karma";
 import { createShoppingListsRouter } from "@modules/shopping-lists";
 import { createTasksRouter } from "@modules/tasks";
 import { Router } from "express";
@@ -17,6 +18,7 @@ import { createRemoveMemberRoute } from "./remove-member.route";
  * - DELETE /v1/families/:familyId/members/:memberId - Remove a member from a family
  * - GET/POST /v1/families/:familyId/diary/* - Family diary endpoints (mounted via createFamilyDiaryRouter)
  * - GET/POST /v1/families/:familyId/tasks/* - Tasks endpoints (mounted via createTasksRouter)
+ * - GET/POST /v1/families/:familyId/karma/* - Karma endpoints (mounted via createKarmaRouter)
  */
 export function createFamiliesRouter(): Router {
   const router = Router();
@@ -36,6 +38,9 @@ export function createFamiliesRouter(): Router {
 
   // Mount shopping lists router for /:familyId/shopping-lists/* paths
   router.use("/:familyId/shopping-lists", createShoppingListsRouter());
+
+  // Mount karma router for /:familyId/karma/* paths
+  router.use("/:familyId/karma", createKarmaRouter());
 
   return router;
 }

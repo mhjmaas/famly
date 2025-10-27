@@ -4,12 +4,12 @@ import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import { ObjectId } from "mongodb";
+import { verifyMembership } from "../middleware/verify-membership";
 import { ChatRepository } from "../repositories/chat.repository";
 import { MembershipRepository } from "../repositories/membership.repository";
 import { MessageRepository } from "../repositories/message.repository";
 import { MessageService } from "../services/message.service";
 import { validateListMessages } from "../validators/list-messages.validator";
-import { verifyMembership } from "../middleware/verify-membership";
 
 /**
  * GET /v1/chats/:chatId/messages - List messages for a chat
@@ -41,11 +41,7 @@ export function listMessagesRoute(): Router {
     authenticate,
     validateListMessages,
     verifyMembership,
-    async (
-      req: AuthenticatedRequest,
-      res: Response,
-      next: NextFunction,
-    ) => {
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
       try {
         if (!req.user?.id) {
           throw HttpError.unauthorized("Authentication required");

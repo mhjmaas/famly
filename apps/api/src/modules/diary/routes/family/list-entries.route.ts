@@ -29,7 +29,9 @@ export function createFamilyDiaryListEntriesRoute(): Router {
   router.get(
     "/",
     authenticate,
-    authorizeFamilyRole({ allowedRoles: [FamilyRole.Parent, FamilyRole.Child] }),
+    authorizeFamilyRole({
+      allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
+    }),
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
       try {
         if (!req.user?.id) {

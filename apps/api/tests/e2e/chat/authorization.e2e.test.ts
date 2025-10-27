@@ -1,7 +1,7 @@
 import request from "supertest";
+import { registerTestUser } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { registerTestUser } from "../helpers/auth-setup";
 
 describe("E2E: Chat Authorization Matrix", () => {
   let baseUrl: string;
@@ -80,7 +80,9 @@ describe("E2E: Chat Authorization Matrix", () => {
       const chatId = chatRes.body._id;
 
       // Unauthenticated request
-      const listRes = await request(baseUrl).get(`/v1/chats/${chatId}/messages`);
+      const listRes = await request(baseUrl).get(
+        `/v1/chats/${chatId}/messages`,
+      );
 
       expect(listRes.status).toBe(401);
     });

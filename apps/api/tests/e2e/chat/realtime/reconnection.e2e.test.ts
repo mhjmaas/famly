@@ -3,16 +3,16 @@
  * Tests for handling client disconnections and backfill patterns
  */
 
+import { randomUUID } from "node:crypto";
+import request from "supertest";
 import { setupTestUsers } from "../../helpers/auth-setup";
 import { cleanDatabase } from "../../helpers/database";
-import { getTestApp } from "../../helpers/test-app";
 import {
   connectSocketClient,
   disconnectSocketClient,
   emitWithAck,
 } from "../../helpers/socket-client";
-import request from "supertest";
-import { randomUUID } from "node:crypto";
+import { getTestApp } from "../../helpers/test-app";
 
 describe("E2E: Socket.IO - Reconnection", () => {
   let baseUrl: string;
@@ -251,10 +251,10 @@ describe("E2E: Socket.IO - Reconnection", () => {
       // Both messages should be present
       const messages = messagesResponse.body.messages;
       const hasUser1Message = messages.some(
-        (m: any) => m.body === "From user1" && m.senderId === user1.userId
+        (m: any) => m.body === "From user1" && m.senderId === user1.userId,
       );
       const hasUser3Message = messages.some(
-        (m: any) => m.body === "From user3" && m.senderId === user3.userId
+        (m: any) => m.body === "From user3" && m.senderId === user3.userId,
       );
 
       expect(hasUser1Message).toBe(true);
@@ -343,7 +343,7 @@ describe("E2E: Socket.IO - Reconnection", () => {
         const socket2 = await connectSocketClient(
           baseUrl,
           "invalid-token-xyz",
-          5000
+          5000,
         );
         // Should fail or timeout
         connectionFailed = !socket2.connected;

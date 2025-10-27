@@ -69,7 +69,8 @@ export interface RoomLeaveAck extends Ack {
   ok: true;
 }
 
-export interface MessageSendAck extends Ack<{ clientId: string; serverId: string }> {
+export interface MessageSendAck
+  extends Ack<{ clientId: string; serverId: string }> {
   ok: true;
   data: {
     clientId: string;

@@ -1,13 +1,14 @@
 import "dotenv/config";
 import { connectMongo, disconnectMongo } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
-import { ChatRepository } from "@modules/chat/repositories/chat.repository";
-import { MessageRepository } from "@modules/chat/repositories/message.repository";
-import { MembershipRepository } from "@modules/chat/repositories/membership.repository";
 import { createSocketServer } from "@modules/chat/realtime/socket-server";
+import { ChatRepository } from "@modules/chat/repositories/chat.repository";
+import { MembershipRepository } from "@modules/chat/repositories/membership.repository";
+import { MessageRepository } from "@modules/chat/repositories/message.repository";
 import { DiaryRepository } from "@modules/diary";
 import { FamilyRepository } from "@modules/family/repositories/family.repository";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
+import { KarmaRepository } from "@modules/karma";
 import { ShoppingListRepository } from "@modules/shopping-lists";
 import {
   ScheduleRepository,
@@ -71,6 +72,12 @@ async function start() {
   const diaryRepo = new DiaryRepository();
   await diaryRepo.ensureIndexes();
   logger.info("Diary module indexes initialized successfully");
+
+  // Initialize karma module indexes
+  logger.info("Initializing karma module indexes...");
+  const karmaRepo = new KarmaRepository();
+  await karmaRepo.ensureIndexes();
+  logger.info("Karma module indexes initialized successfully");
 
   // Start task scheduler cron job
   logger.info("Starting task scheduler...");

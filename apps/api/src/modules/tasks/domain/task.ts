@@ -21,6 +21,9 @@ export interface Task {
   assignment: TaskAssignment;
   scheduleId?: ObjectId; // Reference if generated from schedule
   completedAt?: Date; // Optional completion timestamp
+  metadata?: {
+    karma?: number; // Optional karma reward (1-1000)
+  };
   createdBy: ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -43,6 +46,9 @@ export interface CreateTaskInput {
   description?: string;
   dueDate?: Date;
   assignment: TaskAssignment;
+  metadata?: {
+    karma?: number;
+  };
 }
 
 /**
@@ -54,6 +60,9 @@ export interface UpdateTaskInput {
   dueDate?: Date;
   assignment?: TaskAssignment;
   completedAt?: Date | null;
+  metadata?: {
+    karma?: number;
+  };
 }
 
 /**
@@ -68,6 +77,9 @@ export interface TaskDTO {
   assignment: TaskAssignment;
   scheduleId?: string;
   completedAt?: string;
+  metadata?: {
+    karma?: number;
+  };
   createdBy: string;
   createdAt: string;
   updatedAt: string;

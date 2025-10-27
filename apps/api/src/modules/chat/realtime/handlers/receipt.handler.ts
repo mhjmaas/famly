@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { isHttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import { ChatRepository } from "@modules/chat/repositories/chat.repository";
@@ -5,15 +6,18 @@ import { MembershipRepository } from "@modules/chat/repositories/membership.repo
 import { MessageRepository } from "@modules/chat/repositories/message.repository";
 import { MembershipService } from "@modules/chat/services/membership.service";
 import { ObjectId } from "mongodb";
-import { randomUUID } from "node:crypto";
 import type { Socket } from "socket.io";
 import { z } from "zod";
 import type { Ack, ReceiptReadPayload } from "../types";
 
 // Validation schema for read receipt events
 const receiptSchema = z.object({
-  chatId: z.string().refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
-  messageId: z.string().refine((val) => ObjectId.isValid(val), "Invalid messageId format"),
+  chatId: z
+    .string()
+    .refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
+  messageId: z
+    .string()
+    .refine((val) => ObjectId.isValid(val), "Invalid messageId format"),
 });
 
 /**
@@ -56,7 +60,11 @@ export async function handleReceiptRead(
     const chatRepo = new ChatRepository();
     const membershipRepo = new MembershipRepository();
     const messageRepo = new MessageRepository();
-    const membershipService = new MembershipService(chatRepo, membershipRepo, messageRepo);
+    const membershipService = new MembershipService(
+      chatRepo,
+      membershipRepo,
+      messageRepo,
+    );
 
     const updatedMembership = await membershipService.updateReadCursor(
       chatObjectId,
@@ -74,7 +82,9 @@ export async function handleReceiptRead(
       readAt,
     });
 
-    logger.debug(`Socket ${socket.id}: User ${userId} marked message ${messageId} as read in chat ${chatId}`);
+    logger.debug(
+      `Socket ${socket.id}: User ${userId} marked message ${messageId} as read in chat ${chatId}`,
+    );
 
     // Send success ack
     ack({

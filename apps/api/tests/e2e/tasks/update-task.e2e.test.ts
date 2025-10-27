@@ -1,8 +1,8 @@
 import { ObjectId } from "mongodb";
 import request from "supertest";
+import { setupTestFamily } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { setupTestFamily } from "../helpers/auth-setup";
 
 describe("E2E: PATCH /v1/families/:familyId/tasks/:taskId", () => {
   let baseUrl: string;
@@ -22,7 +22,7 @@ describe("E2E: PATCH /v1/families/:familyId/tasks/:taskId", () => {
     const setup = await setupTestFamily(baseUrl, testCounter, {
       userName: "Task User",
       familyName: "Test Family",
-      prefix: "taskuser"
+      prefix: "taskuser",
     });
 
     authToken = setup.token;

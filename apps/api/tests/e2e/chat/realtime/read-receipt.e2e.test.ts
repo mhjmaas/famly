@@ -3,16 +3,16 @@
  * Tests for read cursor updates and receipt broadcasts
  */
 
+import request from "supertest";
 import { setupTestUsers } from "../../helpers/auth-setup";
 import { cleanDatabase } from "../../helpers/database";
-import { getTestApp } from "../../helpers/test-app";
 import {
   connectSocketClient,
   disconnectSocketClient,
   emitWithAck,
   waitForEvent,
 } from "../../helpers/socket-client";
-import request from "supertest";
+import { getTestApp } from "../../helpers/test-app";
 
 describe("E2E: Socket.IO - Read Receipts", () => {
   let baseUrl: string;
@@ -342,8 +342,16 @@ describe("E2E: Socket.IO - Read Receipts", () => {
       await emitWithAck(socket3, "room:join", { chatId });
 
       // Track receipts on both other sockets
-      const receipt1Promise = waitForEvent<any>(socket1, "receipt:update", 5000);
-      const receipt3Promise = waitForEvent<any>(socket3, "receipt:update", 5000);
+      const receipt1Promise = waitForEvent<any>(
+        socket1,
+        "receipt:update",
+        5000,
+      );
+      const receipt3Promise = waitForEvent<any>(
+        socket3,
+        "receipt:update",
+        5000,
+      );
 
       // User2 marks as read
       const ack = await emitWithAck<any>(socket2, "receipt:read", {

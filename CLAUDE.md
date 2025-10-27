@@ -88,6 +88,7 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │       ├── login.validator.ts
 │   │   │   │   │       └── register.validator.ts
 │   │   │   │   ├── chat
+│   │   │   │   │   ├── API.md
 │   │   │   │   │   ├── domain
 │   │   │   │   │   │   ├── chat.ts
 │   │   │   │   │   │   ├── membership.ts
@@ -101,6 +102,27 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   │   ├── index.ts
 │   │   │   │   │   │   ├── require-admin.ts
 │   │   │   │   │   │   └── verify-membership.ts
+│   │   │   │   │   ├── realtime
+│   │   │   │   │   │   ├── README.md
+│   │   │   │   │   │   ├── events
+│   │   │   │   │   │   │   └── chat-events.ts
+│   │   │   │   │   │   ├── handlers
+│   │   │   │   │   │   │   ├── message.handler.ts
+│   │   │   │   │   │   │   ├── presence.handler.ts
+│   │   │   │   │   │   │   ├── receipt.handler.ts
+│   │   │   │   │   │   │   ├── room.handler.ts
+│   │   │   │   │   │   │   └── typing.handler.ts
+│   │   │   │   │   │   ├── middleware
+│   │   │   │   │   │   │   └── auth.middleware.ts
+│   │   │   │   │   │   ├── presence
+│   │   │   │   │   │   │   └── presence-tracker.ts
+│   │   │   │   │   │   ├── register-handlers.ts
+│   │   │   │   │   │   ├── socket-server.ts
+│   │   │   │   │   │   ├── types.ts
+│   │   │   │   │   │   └── utils
+│   │   │   │   │   │       ├── error-handler.ts
+│   │   │   │   │   │       ├── get-contacts.ts
+│   │   │   │   │   │       └── rate-limiter.ts
 │   │   │   │   │   ├── repositories
 │   │   │   │   │   │   ├── chat.repository.ts
 │   │   │   │   │   │   ├── membership.repository.ts
@@ -251,6 +273,17 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   ├── get-chat.e2e.test.ts
 │   │   │   │   │   ├── list-chats.e2e.test.ts
 │   │   │   │   │   ├── list-messages.e2e.test.ts
+│   │   │   │   │   ├── realtime
+│   │   │   │   │   │   ├── auth.e2e.test.ts
+│   │   │   │   │   │   ├── chat-update.e2e.test.ts
+│   │   │   │   │   │   ├── errors.e2e.test.ts
+│   │   │   │   │   │   ├── message-send.e2e.test.ts
+│   │   │   │   │   │   ├── presence.e2e.test.ts
+│   │   │   │   │   │   ├── read-receipt.e2e.test.ts
+│   │   │   │   │   │   ├── reconnection.e2e.test.ts
+│   │   │   │   │   │   ├── room-join.e2e.test.ts
+│   │   │   │   │   │   ├── room-leave.e2e.test.ts
+│   │   │   │   │   │   └── typing.e2e.test.ts
 │   │   │   │   │   ├── remove-member.e2e.test.ts
 │   │   │   │   │   ├── search-messages.e2e.test.ts
 │   │   │   │   │   └── update-read-cursor.e2e.test.ts
@@ -284,6 +317,7 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   ├── database.ts
 │   │   │   │   │   ├── index.ts
 │   │   │   │   │   ├── request-assertions.ts
+│   │   │   │   │   ├── socket-client.ts
 │   │   │   │   │   ├── test-app.ts
 │   │   │   │   │   ├── test-data-factory.ts
 │   │   │   │   │   ├── test-scenarios.ts
@@ -321,13 +355,25 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │       │   ├── require-creator-ownership.test.ts
 │   │   │       │   └── require-family-role.test.ts
 │   │   │       ├── chat
+│   │   │       │   ├── auth.middleware.test.ts
 │   │   │       │   ├── chat.mapper.test.ts
 │   │   │       │   ├── chat.service.test.ts
 │   │   │       │   ├── create-chat.validator.test.ts
 │   │   │       │   ├── create-message.validator.test.ts
+│   │   │       │   ├── error-handler.test.ts
 │   │   │       │   ├── list-chats.validator.test.ts
 │   │   │       │   ├── membership.mapper.test.ts
-│   │   │       │   └── message.mapper.test.ts
+│   │   │       │   ├── message.handler.test.ts
+│   │   │       │   ├── message.mapper.test.ts
+│   │   │       │   ├── presence-tracker.test.ts
+│   │   │       │   ├── presence.handler.test.ts
+│   │   │       │   ├── rate-limiter.test.ts
+│   │   │       │   ├── receipt.handler.test.ts
+│   │   │       │   ├── register-handlers.test.ts
+│   │   │       │   ├── room.handler.test.ts
+│   │   │       │   ├── socket-client.test.ts
+│   │   │       │   ├── socket-server.test.ts
+│   │   │       │   └── typing.handler.test.ts
 │   │   │       ├── diary
 │   │   │       │   ├── create-entry.validator.test.ts
 │   │   │       │   ├── diary-entry.mapper.test.ts
@@ -446,6 +492,12 @@ Our core guiding principles are found in the `constitution.md` file.
 │   ├── AGENTS.md
 │   ├── changes
 │   │   └── add-chat-feature
+│   │       ├── design.md
+│   │       ├── proposal.md
+│   │       ├── specs
+│   │       │   └── chat
+│   │       │       └── spec.md
+│   │       └── tasks.md
 │   ├── project.md
 │   └── specs
 │       ├── auth
@@ -468,7 +520,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-102 directories, 326 files
+111 directories, 369 files
 ```
 <!-- TREE END -->
 

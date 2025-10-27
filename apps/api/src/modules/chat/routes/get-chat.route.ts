@@ -44,11 +44,15 @@ export function getChatRoute(): Router {
         // Validate chatId format - must be a valid 24-character hex string (MongoDB ObjectId format)
         // We check the hex format first, then use ObjectId.isValid() as additional validation
         if (!/^[0-9a-fA-F]{24}$/.test(chatIdParam)) {
-          throw HttpError.badRequest("Invalid chat ID format - must be a valid ObjectId");
+          throw HttpError.badRequest(
+            "Invalid chat ID format - must be a valid ObjectId",
+          );
         }
 
         if (!ObjectId.isValid(chatIdParam)) {
-          throw HttpError.badRequest("Invalid chat ID format - must be a valid ObjectId");
+          throw HttpError.badRequest(
+            "Invalid chat ID format - must be a valid ObjectId",
+          );
         }
 
         const chatId = new ObjectId(chatIdParam);

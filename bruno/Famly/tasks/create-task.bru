@@ -17,13 +17,11 @@ body:json {
     "dueDate": "2025-01-15T10:00:00Z",
     "assignment": {
       "type": "unassigned"
+    },
+    "metadata": {
+      "karma": 10
     }
   }
-}
-
-settings {
-  encodeUrl: true
-  timeout: 0
 }
 
 script:post-response {
@@ -36,4 +34,9 @@ script:post-response {
   } catch (error) {
     console.log('Failed to persist task ID: ' + error?.message);
   }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
 }

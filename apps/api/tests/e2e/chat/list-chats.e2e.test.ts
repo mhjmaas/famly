@@ -1,7 +1,7 @@
 import request from "supertest";
+import { registerTestUser, setupTestUsers } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { registerTestUser, setupTestUsers } from "../helpers/auth-setup";
 
 describe("E2E: GET /v1/chats - List Chats", () => {
   let baseUrl: string;
@@ -204,7 +204,9 @@ describe("E2E: GET /v1/chats - List Chats", () => {
       expect(response.status).toBe(200);
       expect(response.body.chats).toHaveLength(1); // Only chat with User1
       expect(response.body.chats[0]._id).toBe(chat1Response.body._id);
-      expect(response.body.chats.map((c: any) => c._id)).not.toContain(chat2Response.body._id);
+      expect(response.body.chats.map((c: any) => c._id)).not.toContain(
+        chat2Response.body._id,
+      );
     });
   });
 
@@ -217,7 +219,11 @@ describe("E2E: GET /v1/chats - List Chats", () => {
     });
 
     it("should reject invalid pagination limit", async () => {
-      const user = await registerTestUser(baseUrl, testCounter++, "validationuser");
+      const user = await registerTestUser(
+        baseUrl,
+        testCounter++,
+        "validationuser",
+      );
 
       const response = await request(baseUrl)
         .get("/v1/chats?limit=500")
@@ -228,7 +234,11 @@ describe("E2E: GET /v1/chats - List Chats", () => {
     });
 
     it("should reject invalid cursor format", async () => {
-      const user = await registerTestUser(baseUrl, testCounter++, "validationuser");
+      const user = await registerTestUser(
+        baseUrl,
+        testCounter++,
+        "validationuser",
+      );
 
       const response = await request(baseUrl)
         .get("/v1/chats?cursor=not-a-valid-id")
@@ -239,7 +249,11 @@ describe("E2E: GET /v1/chats - List Chats", () => {
     });
 
     it("should reject negative limit", async () => {
-      const user = await registerTestUser(baseUrl, testCounter++, "validationuser");
+      const user = await registerTestUser(
+        baseUrl,
+        testCounter++,
+        "validationuser",
+      );
 
       const response = await request(baseUrl)
         .get("/v1/chats?limit=-5")
@@ -249,7 +263,11 @@ describe("E2E: GET /v1/chats - List Chats", () => {
     });
 
     it("should reject non-numeric limit", async () => {
-      const user = await registerTestUser(baseUrl, testCounter++, "validationuser");
+      const user = await registerTestUser(
+        baseUrl,
+        testCounter++,
+        "validationuser",
+      );
 
       const response = await request(baseUrl)
         .get("/v1/chats?limit=abc")

@@ -1,18 +1,22 @@
-import type { Socket } from "socket.io";
-import { ObjectId } from "mongodb";
-import { z } from "zod";
 import { logger } from "@lib/logger";
 import { MembershipRepository } from "@modules/chat/repositories/membership.repository";
-import type { RoomJoinPayload, RoomLeavePayload, Ack } from "../types";
+import { ObjectId } from "mongodb";
+import type { Socket } from "socket.io";
+import { z } from "zod";
+import type { Ack, RoomJoinPayload, RoomLeavePayload } from "../types";
 import { ErrorCode } from "../types";
 
 // Validation schemas
 const roomJoinSchema = z.object({
-  chatId: z.string().refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
+  chatId: z
+    .string()
+    .refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
 });
 
 const roomLeaveSchema = z.object({
-  chatId: z.string().refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
+  chatId: z
+    .string()
+    .refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
 });
 
 /**
@@ -71,7 +75,9 @@ export async function handleRoomJoin(
 
     // Join socket to chat room
     socket.join(`chat:${chatId}`);
-    logger.debug(`Socket ${socket.id}: User ${userId} joined room chat:${chatId}`);
+    logger.debug(
+      `Socket ${socket.id}: User ${userId} joined room chat:${chatId}`,
+    );
 
     ack({ ok: true });
   } catch (error) {
@@ -124,7 +130,9 @@ export async function handleRoomLeave(
 
     // Leave socket from chat room
     socket.leave(`chat:${chatId}`);
-    logger.debug(`Socket ${socket.id}: User ${userId} left room chat:${chatId}`);
+    logger.debug(
+      `Socket ${socket.id}: User ${userId} left room chat:${chatId}`,
+    );
 
     ack({ ok: true });
   } catch (error) {

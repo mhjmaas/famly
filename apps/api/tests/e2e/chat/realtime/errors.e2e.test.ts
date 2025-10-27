@@ -3,16 +3,16 @@
  * Tests for standardized error responses and error codes
  */
 
-import { setupTestUsers, registerTestUser } from "../../helpers/auth-setup";
+import { randomUUID } from "node:crypto";
+import request from "supertest";
+import { registerTestUser, setupTestUsers } from "../../helpers/auth-setup";
 import { cleanDatabase } from "../../helpers/database";
-import { getTestApp } from "../../helpers/test-app";
 import {
   connectSocketClient,
   disconnectSocketClient,
   emitWithAck,
 } from "../../helpers/socket-client";
-import request from "supertest";
-import { randomUUID } from "node:crypto";
+import { getTestApp } from "../../helpers/test-app";
 
 describe("E2E: Socket.IO - Error Handling", () => {
   let baseUrl: string;

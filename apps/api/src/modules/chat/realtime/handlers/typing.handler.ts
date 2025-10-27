@@ -1,13 +1,15 @@
-import type { Socket } from "socket.io";
-import { ObjectId } from "mongodb";
-import { z } from "zod";
 import { logger } from "@lib/logger";
 import { MembershipRepository } from "@modules/chat/repositories/membership.repository";
+import { ObjectId } from "mongodb";
+import type { Socket } from "socket.io";
+import { z } from "zod";
 import type { TypingStartPayload, TypingStopPayload } from "../types";
 
 // Validation schema for typing events
 const typingSchema = z.object({
-  chatId: z.string().refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
+  chatId: z
+    .string()
+    .refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
 });
 
 /**
@@ -18,7 +20,10 @@ const typingSchema = z.object({
  * @param socket Socket.IO socket instance
  * @param payload Event payload with chatId
  */
-export async function handleTypingStart(socket: Socket, payload: TypingStartPayload): Promise<void> {
+export async function handleTypingStart(
+  socket: Socket,
+  payload: TypingStartPayload,
+): Promise<void> {
   const userId = socket.data.userId as string;
 
   try {
@@ -37,7 +42,10 @@ export async function handleTypingStart(socket: Socket, payload: TypingStartPayl
 
     // Verify user is a member of the chat
     const membershipRepo = new MembershipRepository();
-    const membership = await membershipRepo.findByUserAndChat(userObjectId, chatObjectId);
+    const membership = await membershipRepo.findByUserAndChat(
+      userObjectId,
+      chatObjectId,
+    );
 
     if (!membership) {
       logger.debug(
@@ -53,7 +61,9 @@ export async function handleTypingStart(socket: Socket, payload: TypingStartPayl
       state: "start",
     });
 
-    logger.debug(`Socket ${socket.id}: User ${userId} started typing in chat ${chatId}`);
+    logger.debug(
+      `Socket ${socket.id}: User ${userId} started typing in chat ${chatId}`,
+    );
   } catch (error) {
     logger.error(
       `Socket ${socket.id}: Typing start error:`,
@@ -71,7 +81,10 @@ export async function handleTypingStart(socket: Socket, payload: TypingStartPayl
  * @param socket Socket.IO socket instance
  * @param payload Event payload with chatId
  */
-export async function handleTypingStop(socket: Socket, payload: TypingStopPayload): Promise<void> {
+export async function handleTypingStop(
+  socket: Socket,
+  payload: TypingStopPayload,
+): Promise<void> {
   const userId = socket.data.userId as string;
 
   try {
@@ -90,7 +103,10 @@ export async function handleTypingStop(socket: Socket, payload: TypingStopPayloa
 
     // Verify user is a member of the chat
     const membershipRepo = new MembershipRepository();
-    const membership = await membershipRepo.findByUserAndChat(userObjectId, chatObjectId);
+    const membership = await membershipRepo.findByUserAndChat(
+      userObjectId,
+      chatObjectId,
+    );
 
     if (!membership) {
       logger.debug(
@@ -106,7 +122,9 @@ export async function handleTypingStop(socket: Socket, payload: TypingStopPayloa
       state: "stop",
     });
 
-    logger.debug(`Socket ${socket.id}: User ${userId} stopped typing in chat ${chatId}`);
+    logger.debug(
+      `Socket ${socket.id}: User ${userId} stopped typing in chat ${chatId}`,
+    );
   } catch (error) {
     logger.error(
       `Socket ${socket.id}: Typing stop error:`,

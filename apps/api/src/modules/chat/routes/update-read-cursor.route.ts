@@ -4,13 +4,13 @@ import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import { ObjectId } from "mongodb";
+import { verifyMembership } from "../middleware/verify-membership";
 import { ChatRepository } from "../repositories/chat.repository";
 import { MembershipRepository } from "../repositories/membership.repository";
 import { MessageRepository } from "../repositories/message.repository";
 import { MembershipService } from "../services/membership.service";
-import { validateUpdateReadCursor } from "../validators/update-read-cursor.validator";
-import { verifyMembership } from "../middleware/verify-membership";
 import type { UpdateReadCursorInput } from "../validators/update-read-cursor.validator";
+import { validateUpdateReadCursor } from "../validators/update-read-cursor.validator";
 
 /**
  * PUT /v1/chats/:chatId/read-cursor - Update read cursor for a chat
@@ -42,11 +42,7 @@ export function updateReadCursorRoute(): Router {
     authenticate,
     validateUpdateReadCursor,
     verifyMembership,
-    async (
-      req: AuthenticatedRequest,
-      res: Response,
-      next: NextFunction,
-    ) => {
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
       try {
         if (!req.user?.id) {
           throw HttpError.unauthorized("Authentication required");

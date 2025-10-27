@@ -44,7 +44,10 @@ describe("Unit: ChatService", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new ChatService(mockChatRepository as any, mockMembershipRepository as any);
+    service = new ChatService(
+      mockChatRepository as any,
+      mockMembershipRepository as any,
+    );
   });
 
   describe("createDM", () => {
@@ -85,8 +88,9 @@ describe("Unit: ChatService", () => {
       expect(result.chat).toEqual(mockChat);
       expect(result.isNew).toBe(true);
       // Verify sorted IDs are used for finding
-      const findCall = mockChatRepository.findByMemberIds.mock.calls[0][0] as ObjectId[];
-      const findIdStrings = findCall.map(id => id.toString());
+      const findCall = mockChatRepository.findByMemberIds.mock
+        .calls[0][0] as ObjectId[];
+      const findIdStrings = findCall.map((id) => id.toString());
       const sortedFind = [...findIdStrings].sort();
       expect(findIdStrings).toEqual(sortedFind);
       // Verify sorted IDs are used for creation
@@ -97,16 +101,13 @@ describe("Unit: ChatService", () => {
       // Check that memberIds are sorted
       const memberIds = callArgs[2] as ObjectId[];
       expect(memberIds).toHaveLength(2);
-      const idStrings = memberIds.map(id => id.toString());
+      const idStrings = memberIds.map((id) => id.toString());
       const sorted = [...idStrings].sort();
       expect(idStrings).toEqual(sorted);
-      expect(mockMembershipRepository.createBulk).toHaveBeenCalledWith(
-        chatId,
-        [
-          { userId: creatorId, role: "member" },
-          { userId: otherUserId, role: "member" },
-        ]
-      );
+      expect(mockMembershipRepository.createBulk).toHaveBeenCalledWith(chatId, [
+        { userId: creatorId, role: "member" },
+        { userId: otherUserId, role: "member" },
+      ]);
     });
 
     it("should return existing DM without creating new one", async () => {
@@ -132,11 +133,11 @@ describe("Unit: ChatService", () => {
 
     it("should handle repository errors", async () => {
       mockChatRepository.findByMemberIds.mockRejectedValue(
-        new Error("Database error")
+        new Error("Database error"),
       );
 
       await expect(service.createDM(creatorId, otherUserId)).rejects.toThrow(
-        "Database error"
+        "Database error",
       );
     });
   });
@@ -159,7 +160,7 @@ describe("Unit: ChatService", () => {
       const result = await service.createGroup(
         creatorId,
         [otherUserId, userId3],
-        "Family Planning"
+        "Family Planning",
       );
 
       expect(result).toEqual(mockChat);
@@ -167,16 +168,13 @@ describe("Unit: ChatService", () => {
         "group",
         creatorId,
         [creatorId, otherUserId, userId3],
-        "Family Planning"
+        "Family Planning",
       );
-      expect(mockMembershipRepository.createBulk).toHaveBeenCalledWith(
-        chatId,
-        [
-          { userId: creatorId, role: "admin" },
-          { userId: otherUserId, role: "member" },
-          { userId: userId3, role: "member" },
-        ]
-      );
+      expect(mockMembershipRepository.createBulk).toHaveBeenCalledWith(chatId, [
+        { userId: creatorId, role: "admin" },
+        { userId: otherUserId, role: "member" },
+        { userId: userId3, role: "member" },
+      ]);
     });
 
     it("should create a group without title", async () => {
@@ -200,7 +198,7 @@ describe("Unit: ChatService", () => {
         "group",
         creatorId,
         [creatorId, otherUserId],
-        null
+        null,
       );
     });
 
@@ -224,7 +222,7 @@ describe("Unit: ChatService", () => {
         "group",
         creatorId,
         [creatorId, otherUserId],
-        null
+        null,
       );
     });
 
@@ -245,7 +243,7 @@ describe("Unit: ChatService", () => {
       const result = await service.createGroup(
         creatorId,
         [otherUserId],
-        "Pair Group"
+        "Pair Group",
       );
 
       expect(result).toEqual(mockChat);
@@ -253,17 +251,15 @@ describe("Unit: ChatService", () => {
         "group",
         creatorId,
         [creatorId, otherUserId],
-        "Pair Group"
+        "Pair Group",
       );
     });
 
     it("should handle repository errors during creation", async () => {
-      mockChatRepository.create.mockRejectedValue(
-        new Error("Database error")
-      );
+      mockChatRepository.create.mockRejectedValue(new Error("Database error"));
 
       await expect(
-        service.createGroup(creatorId, [otherUserId], "Test Group")
+        service.createGroup(creatorId, [otherUserId], "Test Group"),
       ).rejects.toThrow("Database error");
     });
 
@@ -284,7 +280,7 @@ describe("Unit: ChatService", () => {
       await service.createGroup(
         creatorId,
         [otherUserId, userId3],
-        "Multi Group"
+        "Multi Group",
       );
 
       // Verify members were passed in correct order: creator first, then others

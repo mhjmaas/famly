@@ -1,9 +1,13 @@
 import { FamilyRole } from "@modules/family/domain/family";
 import { ObjectId } from "mongodb";
 import request from "supertest";
+import {
+  addChildMember,
+  registerTestUser,
+  setupTestFamily,
+} from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { registerTestUser, setupTestFamily, addChildMember } from "../helpers/auth-setup";
 
 describe("POST /v1/families/:familyId/members - Authorization (Non-Parent)", () => {
   let baseUrl: string;
@@ -26,7 +30,12 @@ describe("POST /v1/families/:familyId/members - Authorization (Non-Parent)", () 
       const { familyId, parentToken } = setup;
 
       // 2. Add a child member
-      const child = await addChildMember(baseUrl, familyId, parentToken, testCounter);
+      const child = await addChildMember(
+        baseUrl,
+        familyId,
+        parentToken,
+        testCounter,
+      );
       const childToken = child.childToken;
 
       // 3. Try to add a new member as a child - should get 403
@@ -81,7 +90,12 @@ describe("POST /v1/families/:familyId/members - Authorization (Non-Parent)", () 
       const { familyId, parentToken } = setup;
 
       // 2. Add a child member
-      const child = await addChildMember(baseUrl, familyId, parentToken, testCounter);
+      const child = await addChildMember(
+        baseUrl,
+        familyId,
+        parentToken,
+        testCounter,
+      );
       const childToken = child.childToken;
 
       // 3. Verify 403 response structure
@@ -110,7 +124,12 @@ describe("POST /v1/families/:familyId/members - Authorization (Non-Parent)", () 
       const { familyId, parentToken } = setup;
 
       // 2. Add a child member
-      const child = await addChildMember(baseUrl, familyId, parentToken, testCounter);
+      const child = await addChildMember(
+        baseUrl,
+        familyId,
+        parentToken,
+        testCounter,
+      );
       const childToken = child.childToken;
 
       // 3. Try to add member with email that would be unique - should fail

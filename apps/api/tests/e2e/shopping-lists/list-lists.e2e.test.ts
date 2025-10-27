@@ -1,7 +1,7 @@
 import request from "supertest";
+import { setupTestFamily } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { setupTestFamily } from "../helpers/auth-setup";
 
 describe("E2E: GET /v1/families/:familyId/shopping-lists", () => {
   let baseUrl: string;
@@ -20,7 +20,7 @@ describe("E2E: GET /v1/families/:familyId/shopping-lists", () => {
     const setup = await setupTestFamily(baseUrl, testCounter, {
       userName: "List User",
       familyName: "Test Family",
-      prefix: "listuser"
+      prefix: "listuser",
     });
 
     authToken = setup.token;

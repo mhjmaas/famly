@@ -1,0 +1,43 @@
+meta {
+  name: create task with karma
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/tasks
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Clean your room",
+    "description": "Make your bed and organize toys",
+    "dueDate": "2025-01-15T18:00:00Z",
+    "assignment": {
+      "type": "unassigned"
+    },
+    "metadata": {
+      "karma": 10
+    }
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+script:post-response {
+  try {
+    const body = res.body;
+
+    if (body?._id) {
+      bru.setEnvVar('currentTaskId', body._id);
+      console.log(`Task created with ${body.metadata?.karma || 0} karma reward`);
+    }
+  } catch (error) {
+    console.log('Failed to persist task ID: ' + error?.message);
+  }
+}

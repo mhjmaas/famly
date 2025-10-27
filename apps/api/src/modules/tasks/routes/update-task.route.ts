@@ -2,6 +2,7 @@ import { HttpError } from "@lib/http-error";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
+import { KarmaRepository, KarmaService } from "@modules/karma";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import { ObjectId } from "mongodb";
@@ -21,6 +22,7 @@ import { validateUpdateTask } from "../validators/update-task.validator";
  * - dueDate?: Date
  * - assignment?: TaskAssignment
  * - completedAt?: Date | null
+ * - metadata?: { karma?: number }
  *
  * Response (200): TaskDTO
  * Response (400): Validation error or invalid task ID
@@ -32,7 +34,13 @@ export function createUpdateTaskRoute(): Router {
   const router = Router({ mergeParams: true });
   const taskRepository = new TaskRepository();
   const membershipRepository = new FamilyMembershipRepository();
-  const taskService = new TaskService(taskRepository, membershipRepository);
+  const karmaRepository = new KarmaRepository();
+  const karmaService = new KarmaService(karmaRepository, membershipRepository);
+  const taskService = new TaskService(
+    taskRepository,
+    membershipRepository,
+    karmaService,
+  );
 
   router.patch(
     "/:taskId",

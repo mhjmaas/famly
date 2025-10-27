@@ -4,7 +4,11 @@
  */
 
 import request from "supertest";
-import { generateUniqueEmail, AUTH_CONSTANTS, extractAuthToken } from "./auth-setup";
+import {
+  AUTH_CONSTANTS,
+  extractAuthToken,
+  generateUniqueEmail,
+} from "./auth-setup";
 
 /**
  * Represents a test user with cached token
@@ -57,15 +61,19 @@ export class TokenManager {
     const name = options?.name || "Test User";
     const birthdate = options?.birthdate || AUTH_CONSTANTS.DEFAULT_BIRTHDATE;
 
-    const response = await request(this.baseUrl).post("/v1/auth/register").send({
-      email,
-      password,
-      name,
-      birthdate,
-    });
+    const response = await request(this.baseUrl)
+      .post("/v1/auth/register")
+      .send({
+        email,
+        password,
+        name,
+        birthdate,
+      });
 
     if (response.status !== 201) {
-      throw new Error(`Failed to create user: ${response.status} ${response.body.message}`);
+      throw new Error(
+        `Failed to create user: ${response.status} ${response.body.message}`,
+      );
     }
 
     const token = extractAuthToken(response.body);
@@ -109,8 +117,12 @@ export class TokenManager {
     const users: TestUserToken[] = [];
 
     for (let i = 1; i <= count; i++) {
-      const name = options?.nameTemplate ? options.nameTemplate(i) : `User ${i}`;
-      const password = options?.passwordTemplate ? options.passwordTemplate(i) : undefined;
+      const name = options?.nameTemplate
+        ? options.nameTemplate(i)
+        : `User ${i}`;
+      const password = options?.passwordTemplate
+        ? options.passwordTemplate(i)
+        : undefined;
 
       const user = await this.createUser(`${prefix}${i}`, { name, password });
       users.push(user);
@@ -184,7 +196,10 @@ let globalTokenManager: TokenManager | null = null;
 /**
  * Initialize global token manager
  */
-export function initializeTokenManager(baseUrl: string, uniqueIdStart?: number): TokenManager {
+export function initializeTokenManager(
+  baseUrl: string,
+  uniqueIdStart?: number,
+): TokenManager {
   globalTokenManager = new TokenManager(baseUrl, uniqueIdStart);
   return globalTokenManager;
 }
@@ -194,7 +209,9 @@ export function initializeTokenManager(baseUrl: string, uniqueIdStart?: number):
  */
 export function getTokenManager(): TokenManager {
   if (!globalTokenManager) {
-    throw new Error("TokenManager not initialized. Call initializeTokenManager() first.");
+    throw new Error(
+      "TokenManager not initialized. Call initializeTokenManager() first.",
+    );
   }
   return globalTokenManager;
 }
@@ -274,7 +291,9 @@ export class TokenPool {
     prefixTemplate?: (index: number, name: string) => string,
   ): Promise<Map<string, TestUserToken>> {
     for (let i = 0; i < names.length; i++) {
-      const prefix = prefixTemplate ? prefixTemplate(i, names[i]) : `${names[i]}`;
+      const prefix = prefixTemplate
+        ? prefixTemplate(i, names[i])
+        : `${names[i]}`;
       await this.add(names[i], prefix);
     }
     return this.tokens;

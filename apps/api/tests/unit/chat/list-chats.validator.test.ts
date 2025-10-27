@@ -1,6 +1,6 @@
+import { validateListChats } from "@modules/chat/validators/list-chats.validator";
 import type { NextFunction, Request, Response } from "express";
 import { ObjectId } from "mongodb";
-import { validateListChats } from "@modules/chat/validators/list-chats.validator";
 
 describe("Unit: validateListChats middleware", () => {
   let mockReq: Partial<Request>;
@@ -35,7 +35,9 @@ describe("Unit: validateListChats middleware", () => {
       validateListChats(mockReq as Request, mockRes as Response, mockNext);
 
       expect(mockNext).toHaveBeenCalled();
-      expect((mockReq as any).paginationParams.cursor).toEqual(new ObjectId(validCursor));
+      expect((mockReq as any).paginationParams.cursor).toEqual(
+        new ObjectId(validCursor),
+      );
       expect((mockReq as any).paginationParams.limit).toBe(20);
     });
 

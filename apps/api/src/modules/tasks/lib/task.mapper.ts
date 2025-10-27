@@ -13,6 +13,7 @@ export function toTaskDTO(task: Task): TaskDTO {
     assignment: task.assignment,
     scheduleId: task.scheduleId?.toString(),
     completedAt: task.completedAt?.toISOString(),
+    metadata: task.metadata,
     createdBy: task.createdBy.toString(),
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString(),

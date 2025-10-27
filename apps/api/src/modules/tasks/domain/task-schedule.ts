@@ -22,6 +22,9 @@ export interface TaskSchedule {
   assignment: TaskAssignment;
   schedule: Schedule;
   timeOfDay?: string; // Optional HH:mm for due time
+  metadata?: {
+    karma?: number; // Optional karma reward (1-1000)
+  };
   createdBy: ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -37,6 +40,9 @@ export interface CreateScheduleInput {
   assignment: TaskAssignment;
   schedule: Schedule;
   timeOfDay?: string;
+  metadata?: {
+    karma?: number;
+  };
 }
 
 /**
@@ -48,6 +54,9 @@ export interface UpdateScheduleInput {
   assignment?: TaskAssignment;
   schedule?: Schedule;
   timeOfDay?: string;
+  metadata?: {
+    karma?: number;
+  };
 }
 
 /**
@@ -61,6 +70,9 @@ export interface TaskScheduleDTO {
   assignment: TaskAssignment;
   schedule: Schedule;
   timeOfDay?: string;
+  metadata?: {
+    karma?: number;
+  };
   createdBy: string;
   createdAt: string;
   updatedAt: string;

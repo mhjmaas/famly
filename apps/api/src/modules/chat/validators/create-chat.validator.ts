@@ -6,10 +6,7 @@ import { z } from "zod";
 // ObjectId string validation
 const objectIdSchema = z
   .string()
-  .refine(
-    (val) => ObjectId.isValid(val),
-    "Invalid user ID format"
-  );
+  .refine((val) => ObjectId.isValid(val), "Invalid user ID format");
 
 // Create chat input schema
 export const createChatSchema = z
@@ -18,18 +15,21 @@ export const createChatSchema = z
     memberIds: z
       .array(objectIdSchema)
       .min(1, "At least one member is required")
-      .refine(
-        (ids: string[]) => {
-          // Member IDs must be unique
-          const uniqueIds = new Set(ids);
-          return uniqueIds.size === ids.length;
-        },
-        "Member IDs must be unique"
-      ),
+      .refine((ids: string[]) => {
+        // Member IDs must be unique
+        const uniqueIds = new Set(ids);
+        return uniqueIds.size === ids.length;
+      }, "Member IDs must be unique"),
     title: z.string().optional().nullable(),
   })
   .refine(
-    (data: unknown): data is { type: "dm" | "group"; memberIds: string[]; title?: string | null } => {
+    (
+      data: unknown,
+    ): data is {
+      type: "dm" | "group";
+      memberIds: string[];
+      title?: string | null;
+    } => {
       const obj = data as any;
       // For DMs: exactly 1 member (creator + 1 = 2 total)
       if (obj.type === "dm") {
@@ -41,7 +41,7 @@ export const createChatSchema = z
     {
       message: "Invalid member count for chat type",
       path: ["memberIds"],
-    }
+    },
   )
   .refine(
     (data: any) => {
@@ -54,7 +54,7 @@ export const createChatSchema = z
     {
       message: "Title is not allowed for direct messages",
       path: ["title"],
-    }
+    },
   );
 
 export type CreateChatInput = z.infer<typeof createChatSchema>;

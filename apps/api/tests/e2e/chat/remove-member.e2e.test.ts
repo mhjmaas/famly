@@ -1,7 +1,7 @@
 import request from "supertest";
+import { setupTestUsers } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { setupTestUsers } from "../helpers/auth-setup";
 
 describe("E2E: DELETE /v1/chats/:chatId/members/:userId - Remove Member", () => {
   let baseUrl: string;
@@ -201,8 +201,9 @@ describe("E2E: DELETE /v1/chats/:chatId/members/:userId - Remove Member", () => 
       const chatId = createResponse.body._id;
 
       // Try without auth
-      const response = await request(baseUrl)
-        .delete(`/v1/chats/${chatId}/members/${member.userId}`);
+      const response = await request(baseUrl).delete(
+        `/v1/chats/${chatId}/members/${member.userId}`,
+      );
 
       expect(response.status).toBe(401);
       expect(response.body.error).toBeDefined();

@@ -1,7 +1,7 @@
 import request from "supertest";
+import { registerTestUser } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { registerTestUser } from "../helpers/auth-setup";
 
 describe("E2E: POST /v1/chats/:chatId/messages - Create Message", () => {
   let baseUrl: string;
@@ -155,7 +155,9 @@ describe("E2E: POST /v1/chats/:chatId/messages - Create Message", () => {
         .set("Authorization", `Bearer ${user1.token}`);
 
       const newUpdatedAt = new Date(updatedChatRes.body.updatedAt);
-      expect(newUpdatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
+      expect(newUpdatedAt.getTime()).toBeGreaterThan(
+        originalUpdatedAt.getTime(),
+      );
     });
 
     it("should promote DM members to admin after 2 messages", async () => {
@@ -314,8 +316,7 @@ describe("E2E: POST /v1/chats/:chatId/messages - Create Message", () => {
       const msgRes = await request(baseUrl)
         .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
-        .send({
-        });
+        .send({});
 
       expect(msgRes.status).toBe(400);
     });

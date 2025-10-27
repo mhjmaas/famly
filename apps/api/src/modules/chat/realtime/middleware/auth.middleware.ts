@@ -1,7 +1,7 @@
-import type { Socket } from "socket.io";
 import { logger } from "@lib/logger";
-import { isJWT, verifyJWT } from "@modules/auth/middleware/jwt-verify";
 import { getAuth } from "@modules/auth/better-auth";
+import { isJWT, verifyJWT } from "@modules/auth/middleware/jwt-verify";
+import type { Socket } from "socket.io";
 
 /**
  * Authenticate Socket.IO connections using JWT or session tokens
@@ -42,7 +42,9 @@ export async function authenticateSocket(
         return next(error);
       }
 
-      logger.debug(`Socket ${socket.id}: Authenticated via JWT (userId: ${userId})`);
+      logger.debug(
+        `Socket ${socket.id}: Authenticated via JWT (userId: ${userId})`,
+      );
     } else {
       // Verify session token (database-backed)
       const auth = getAuth();

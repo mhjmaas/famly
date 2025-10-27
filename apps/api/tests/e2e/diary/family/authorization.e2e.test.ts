@@ -1,12 +1,12 @@
 import request from "supertest";
-import { cleanDatabase } from "../../helpers/database";
-import { getTestApp } from "../../helpers/test-app";
 import {
-  registerTestUser,
-  setupTestFamily,
   addChildMember,
   loginTestUser,
+  registerTestUser,
+  setupTestFamily,
 } from "../../helpers/auth-setup";
+import { cleanDatabase } from "../../helpers/database";
+import { getTestApp } from "../../helpers/test-app";
 
 describe("E2E: /v1/families/:familyId/diary - Family Diary Authorization", () => {
   let baseUrl: string;
@@ -42,7 +42,7 @@ describe("E2E: /v1/families/:familyId/diary - Family Diary Authorization", () =>
     testCounter++;
     const parent2Email = `parent2user${testCounter}@test.com`;
     const parent2Password = "Password123!";
-    
+
     const parent2Response = await request(baseUrl)
       .post(`/v1/families/${familyId}/members`)
       .set("Authorization", `Bearer ${parent1Token}`)
@@ -55,18 +55,30 @@ describe("E2E: /v1/families/:familyId/diary - Family Diary Authorization", () =>
       });
 
     if (parent2Response.status !== 201) {
-      throw new Error(`Failed to add parent2: ${parent2Response.status} ${parent2Response.body.message}`);
+      throw new Error(
+        `Failed to add parent2: ${parent2Response.status} ${parent2Response.body.message}`,
+      );
     }
 
     // Login as parent2 to get token
-    const parent2LoginResponse = await loginTestUser(baseUrl, parent2Email, parent2Password);
+    const parent2LoginResponse = await loginTestUser(
+      baseUrl,
+      parent2Email,
+      parent2Password,
+    );
     parent2Token = parent2LoginResponse.token;
 
     // Create child and add to family
     testCounter++;
-    const childResponse = await addChildMember(baseUrl, familyId, parent1Token, testCounter, {
-      name: "Child",
-    });
+    const childResponse = await addChildMember(
+      baseUrl,
+      familyId,
+      parent1Token,
+      testCounter,
+      {
+        name: "Child",
+      },
+    );
 
     childToken = childResponse.childToken;
 
@@ -335,11 +347,15 @@ describe("E2E: /v1/families/:familyId/diary - Family Diary Authorization", () =>
 
       // Create user in other family (they're already the creator of otherFamily)
       testCounter++;
-      const otherFamilySetup = await setupTestFamily(baseUrl, testCounter + 200, {
-        userName: "Other Family Member",
-        familyName: "Other Family 2",
-        prefix: "otherfamilymember"
-      });
+      const otherFamilySetup = await setupTestFamily(
+        baseUrl,
+        testCounter + 200,
+        {
+          userName: "Other Family Member",
+          familyName: "Other Family 2",
+          prefix: "otherfamilymember",
+        },
+      );
 
       // Other family member tries to access Family 1's entry
       const getResponse = await request(baseUrl)
@@ -360,10 +376,15 @@ describe("E2E: /v1/families/:familyId/diary - Family Diary Authorization", () =>
         });
 
       // Other family: Use other family's parent to create entry
-      const otherParent = await registerTestUser(baseUrl, testCounter + 200, "otherparent2", {
-        name: "Other Parent 2",
-        birthdate: "1980-01-01",
-      });
+      const otherParent = await registerTestUser(
+        baseUrl,
+        testCounter + 200,
+        "otherparent2",
+        {
+          name: "Other Parent 2",
+          birthdate: "1980-01-01",
+        },
+      );
 
       // Add other parent to other family
       const addResponse = await request(baseUrl)

@@ -1,6 +1,6 @@
+import { RateLimiter } from "@modules/chat/realtime/utils/rate-limiter";
 import { ObjectId } from "mongodb";
 import { z } from "zod";
-import { RateLimiter } from "@modules/chat/realtime/utils/rate-limiter";
 
 /**
  * Unit tests for Message Sending Handler logic
@@ -12,7 +12,9 @@ import { RateLimiter } from "@modules/chat/realtime/utils/rate-limiter";
 describe("Message Sending Handler Logic", () => {
   // Validation schema (same as in handler)
   const messageSendSchema = z.object({
-    chatId: z.string().refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
+    chatId: z
+      .string()
+      .refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
     clientId: z.string().min(1, "clientId is required"),
     body: z
       .string()

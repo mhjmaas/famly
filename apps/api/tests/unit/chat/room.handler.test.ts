@@ -11,7 +11,9 @@ import { z } from "zod";
 describe("Room Management Handler Logic", () => {
   // Validation schema (same as in handler)
   const roomSchema = z.object({
-    chatId: z.string().refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
+    chatId: z
+      .string()
+      .refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
   });
 
   describe("chatId validation", () => {

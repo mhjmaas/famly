@@ -3,15 +3,15 @@
  * Tests for chat:update broadcasts triggered by REST API changes
  */
 
+import request from "supertest";
 import { setupTestUsers } from "../../helpers/auth-setup";
 import { cleanDatabase } from "../../helpers/database";
-import { getTestApp } from "../../helpers/test-app";
 import {
   connectSocketClient,
   disconnectSocketClient,
   waitForEvent,
 } from "../../helpers/socket-client";
-import request from "supertest";
+import { getTestApp } from "../../helpers/test-app";
 
 describe("E2E: Socket.IO - Chat Updates", () => {
   let baseUrl: string;
@@ -98,9 +98,11 @@ describe("E2E: Socket.IO - Chat Updates", () => {
       const socket3 = await connectSocketClient(baseUrl, user3.token);
 
       // User3 should not receive updates (not a member yet)
-      const update3Promise = waitForEvent<any>(socket3, "chat:update", 2000).catch(
-        () => null
-      );
+      const update3Promise = waitForEvent<any>(
+        socket3,
+        "chat:update",
+        2000,
+      ).catch(() => null);
 
       // Add user3 to chat
       await request(baseUrl)
