@@ -4,15 +4,15 @@ import { createChatRoute } from "./create-chat.route";
 import { createMessageRoute } from "./create-message.route";
 import { getChatRoute } from "./get-chat.route";
 import { listChatsRoute } from "./list-chats.route";
-import { removeMemberRoute } from "./remove-member.route";
 import { listMessagesRoute } from "./list-messages.route";
+import { removeMemberRoute } from "./remove-member.route";
 import { searchMessagesRoute } from "./search-messages.route";
 import { updateReadCursorRoute } from "./update-read-cursor.route";
 
 /**
  * Create and configure the chat router
  * Mounts all chat-related routes
- * 
+ *
  * Route Structure:
  * - Chat Management: Create, list, get chats
  * - Membership: Add/remove members

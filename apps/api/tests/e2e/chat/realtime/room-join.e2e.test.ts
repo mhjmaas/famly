@@ -3,15 +3,15 @@
  * Tests for joining chat rooms and membership verification
  */
 
-import { setupTestUsers, registerTestUser } from "../../helpers/auth-setup";
+import request from "supertest";
+import { registerTestUser, setupTestUsers } from "../../helpers/auth-setup";
 import { cleanDatabase } from "../../helpers/database";
-import { getTestApp } from "../../helpers/test-app";
 import {
   connectSocketClient,
   disconnectSocketClient,
   emitWithAck,
 } from "../../helpers/socket-client";
-import request from "supertest";
+import { getTestApp } from "../../helpers/test-app";
 
 describe("E2E: Socket.IO - Room Join", () => {
   let baseUrl: string;

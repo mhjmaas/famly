@@ -32,7 +32,9 @@ export function createFamilyDiaryUpdateEntryRoute(): Router {
   router.patch(
     "/:entryId",
     authenticate,
-    authorizeFamilyRole({ allowedRoles: [FamilyRole.Parent, FamilyRole.Child] }),
+    authorizeFamilyRole({
+      allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
+    }),
     validateUpdateEntry,
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
       try {

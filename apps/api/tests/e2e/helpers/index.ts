@@ -5,24 +5,26 @@
 
 // Authentication & Setup
 export * from "./auth-setup";
-export * from "./test-data-factory";
-export * from "./token-manager";
 export * from "./authorization-matrix";
-
+// Database
+export {
+  cleanDatabase,
+  clearAuthCaches,
+  closeMongoClient,
+  dropDatabase,
+} from "./database";
 // Test Patterns & Assertions
 export * from "./request-assertions";
-export * from "./test-scenarios";
-
-// Database
-export { cleanDatabase, clearAuthCaches, dropDatabase, closeMongoClient } from "./database";
-export { getTestApp } from "./test-app";
-
 // Socket.IO Client Helpers
 export {
   connectSocketClient,
   disconnectSocketClient,
-  waitForEvent,
   emitWithAck,
-  waitForMultipleEvents,
+  waitForEvent,
   waitForEventOrNull,
+  waitForMultipleEvents,
 } from "./socket-client";
+export { getTestApp } from "./test-app";
+export * from "./test-data-factory";
+export * from "./test-scenarios";
+export * from "./token-manager";

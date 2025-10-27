@@ -1,18 +1,20 @@
-import type { Socket } from "socket.io";
-import { ObjectId } from "mongodb";
-import { z } from "zod";
 import { logger } from "@lib/logger";
+import { ChatRepository } from "@modules/chat/repositories/chat.repository";
 import { MembershipRepository } from "@modules/chat/repositories/membership.repository";
 import { MessageRepository } from "@modules/chat/repositories/message.repository";
-import { ChatRepository } from "@modules/chat/repositories/chat.repository";
 import { MessageService } from "@modules/chat/services/message.service";
-import type { MessageSendPayload, Ack } from "../types";
+import { ObjectId } from "mongodb";
+import type { Socket } from "socket.io";
+import { z } from "zod";
+import type { Ack, MessageSendPayload } from "../types";
 import { ErrorCode } from "../types";
 import { getRateLimiter } from "../utils/rate-limiter";
 
 // Validation schema for message send
 const messageSendSchema = z.object({
-  chatId: z.string().refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
+  chatId: z
+    .string()
+    .refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
   clientId: z.string().min(1, "clientId is required"),
   body: z
     .string()
@@ -61,7 +63,9 @@ export async function handleMessageSend(
     // Check rate limit
     const rateLimiter = getRateLimiter();
     if (!rateLimiter.checkLimit(userId)) {
-      logger.debug(`Socket ${socket.id}: User ${userId} rate limited (10 messages per 10s)`);
+      logger.debug(
+        `Socket ${socket.id}: User ${userId} rate limited (10 messages per 10s)`,
+      );
       ack({
         ok: false,
         error: ErrorCode.RATE_LIMITED,
@@ -73,10 +77,15 @@ export async function handleMessageSend(
 
     // Verify user is a member of the chat
     const membershipRepo = new MembershipRepository();
-    const membership = await membershipRepo.findByUserAndChat(userObjectId, chatObjectId);
+    const membership = await membershipRepo.findByUserAndChat(
+      userObjectId,
+      chatObjectId,
+    );
 
     if (!membership) {
-      logger.debug(`Socket ${socket.id}: User ${userId} is not a member of chat ${chatId}`);
+      logger.debug(
+        `Socket ${socket.id}: User ${userId} is not a member of chat ${chatId}`,
+      );
       ack({
         ok: false,
         error: ErrorCode.FORBIDDEN,
@@ -89,7 +98,11 @@ export async function handleMessageSend(
     // Create message with idempotency (via clientId)
     const messageRepo = new MessageRepository();
     const chatRepo = new ChatRepository();
-    const messageService = new MessageService(messageRepo, membershipRepo, chatRepo);
+    const messageService = new MessageService(
+      messageRepo,
+      membershipRepo,
+      chatRepo,
+    );
     const result = await messageService.createMessage(
       chatObjectId,
       userObjectId,

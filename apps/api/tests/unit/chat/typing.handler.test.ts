@@ -11,7 +11,9 @@ import { z } from "zod";
 describe("Typing Indicators Handler Logic", () => {
   // Validation schema (same as in handler)
   const typingSchema = z.object({
-    chatId: z.string().refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
+    chatId: z
+      .string()
+      .refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
   });
 
   describe("chatId validation", () => {
@@ -71,8 +73,16 @@ describe("Typing Indicators Handler Logic", () => {
     });
 
     it("should support both start and stop states", () => {
-      const startPayload = { chatId: new ObjectId().toString(), userId: new ObjectId().toString(), state: "start" as const };
-      const stopPayload = { chatId: new ObjectId().toString(), userId: new ObjectId().toString(), state: "stop" as const };
+      const startPayload = {
+        chatId: new ObjectId().toString(),
+        userId: new ObjectId().toString(),
+        state: "start" as const,
+      };
+      const stopPayload = {
+        chatId: new ObjectId().toString(),
+        userId: new ObjectId().toString(),
+        state: "stop" as const,
+      };
 
       expect(startPayload.state).toBe("start");
       expect(stopPayload.state).toBe("stop");

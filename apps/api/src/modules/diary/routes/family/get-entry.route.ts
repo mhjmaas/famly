@@ -26,7 +26,9 @@ export function createFamilyDiaryGetEntryRoute(): Router {
   router.get(
     "/:entryId",
     authenticate,
-    authorizeFamilyRole({ allowedRoles: [FamilyRole.Parent, FamilyRole.Child] }),
+    authorizeFamilyRole({
+      allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
+    }),
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
       try {
         if (!req.user?.id) {

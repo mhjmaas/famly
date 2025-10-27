@@ -1,12 +1,20 @@
-import type { Server, Socket } from "socket.io";
 import { logger } from "@lib/logger";
-import { handleRoomJoin, handleRoomLeave } from "./handlers/room.handler";
+import type { Server, Socket } from "socket.io";
 import { handleMessageSend } from "./handlers/message.handler";
-import { handleReceiptRead } from "./handlers/receipt.handler";
-import { handleTypingStart, handleTypingStop } from "./handlers/typing.handler";
 import { handlePresencePing } from "./handlers/presence.handler";
-import type { RoomJoinPayload, RoomLeavePayload, MessageSendPayload, ReceiptReadPayload, TypingStartPayload, TypingStopPayload, PresencePingPayload } from "./types";
+import { handleReceiptRead } from "./handlers/receipt.handler";
+import { handleRoomJoin, handleRoomLeave } from "./handlers/room.handler";
+import { handleTypingStart, handleTypingStop } from "./handlers/typing.handler";
 import { getPresenceTracker } from "./presence/presence-tracker";
+import type {
+  MessageSendPayload,
+  PresencePingPayload,
+  ReceiptReadPayload,
+  RoomJoinPayload,
+  RoomLeavePayload,
+  TypingStartPayload,
+  TypingStopPayload,
+} from "./types";
 import { getContactUserIds } from "./utils/get-contacts";
 
 /**
@@ -19,7 +27,9 @@ export function registerSocketEventHandlers(socket: Socket): void {
   const userId = socket.data.userId as string;
   const presenceTracker = getPresenceTracker();
 
-  logger.debug(`Socket ${socket.id}: Registering event handlers for user ${userId}`);
+  logger.debug(
+    `Socket ${socket.id}: Registering event handlers for user ${userId}`,
+  );
 
   // ===== Room Management Events =====
   socket.on("room:join", (payload: RoomJoinPayload, ack) => {
@@ -77,7 +87,7 @@ export function registerSocketEventHandlers(socket: Socket): void {
 
     if (wentOffline) {
       logger.debug(`Socket ${socket.id}: User ${userId} went offline`);
-      
+
       // Broadcast presence update asynchronously (fire and forget)
       getContactUserIds(userId)
         .then((contactIds) => {
@@ -87,10 +97,15 @@ export function registerSocketEventHandlers(socket: Socket): void {
               status: "offline",
             });
           }
-          logger.debug(`Socket ${socket.id}: Broadcast offline status to ${contactIds.length} contacts`);
+          logger.debug(
+            `Socket ${socket.id}: Broadcast offline status to ${contactIds.length} contacts`,
+          );
         })
         .catch((error) => {
-          logger.error(`Socket ${socket.id}: Error broadcasting offline presence:`, error);
+          logger.error(
+            `Socket ${socket.id}: Error broadcasting offline presence:`,
+            error,
+          );
         });
     }
   });
@@ -120,7 +135,7 @@ export function registerConnectionHandler(io: Server): void {
     // Broadcast presence update asynchronously (don't block connection)
     if (cameOnline) {
       logger.debug(`Socket ${socket.id}: User ${userId} came online`);
-      
+
       // Fire and forget - don't await to avoid blocking connection
       getContactUserIds(userId)
         .then((contactIds) => {
@@ -130,10 +145,15 @@ export function registerConnectionHandler(io: Server): void {
               status: "online",
             });
           }
-          logger.debug(`Socket ${socket.id}: Broadcast online status to ${contactIds.length} contacts`);
+          logger.debug(
+            `Socket ${socket.id}: Broadcast online status to ${contactIds.length} contacts`,
+          );
         })
         .catch((error) => {
-          logger.error(`Socket ${socket.id}: Error broadcasting online presence:`, error);
+          logger.error(
+            `Socket ${socket.id}: Error broadcasting online presence:`,
+            error,
+          );
         });
     }
   });

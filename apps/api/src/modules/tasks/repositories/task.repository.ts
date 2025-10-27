@@ -66,6 +66,7 @@ export class TaskRepository {
       dueDate: input.dueDate,
       assignment: input.assignment,
       scheduleId,
+      metadata: input.metadata,
       createdBy,
       createdAt: now,
       updatedAt: now,

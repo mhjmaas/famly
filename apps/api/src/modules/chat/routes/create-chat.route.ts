@@ -42,11 +42,7 @@ export function createChatRoute(): Router {
     "/",
     authenticate,
     validateCreateChat,
-    async (
-      req: AuthenticatedRequest,
-      res: Response,
-      next: NextFunction,
-    ) => {
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
       try {
         if (!req.user?.id) {
           throw HttpError.unauthorized("Authentication required");
@@ -72,7 +68,7 @@ export function createChatRoute(): Router {
           chat = await chatService.createGroup(
             creatorId,
             memberIds,
-            input.title ?? null
+            input.title ?? null,
           );
 
           isNew = true;

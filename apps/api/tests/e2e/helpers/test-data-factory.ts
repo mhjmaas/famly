@@ -4,7 +4,11 @@
  */
 
 import request from "supertest";
-import { extractAuthToken, generateUniqueEmail, AUTH_CONSTANTS } from "./auth-setup";
+import {
+  AUTH_CONSTANTS,
+  extractAuthToken,
+  generateUniqueEmail,
+} from "./auth-setup";
 
 /**
  * Fluent builder for creating test users with sensible defaults
@@ -54,15 +58,19 @@ export class TestUserBuilder {
   async build() {
     const email = generateUniqueEmail(this.data.prefix, this.uniqueId);
 
-    const response = await request(this.baseUrl).post("/v1/auth/register").send({
-      email,
-      password: this.data.password,
-      name: this.data.name,
-      birthdate: this.data.birthdate,
-    });
+    const response = await request(this.baseUrl)
+      .post("/v1/auth/register")
+      .send({
+        email,
+        password: this.data.password,
+        name: this.data.name,
+        birthdate: this.data.birthdate,
+      });
 
     if (response.status !== 201) {
-      throw new Error(`Failed to register user: ${response.status} ${response.body.message}`);
+      throw new Error(
+        `Failed to register user: ${response.status} ${response.body.message}`,
+      );
     }
 
     const token = extractAuthToken(response.body);
@@ -105,7 +113,9 @@ export class TestFamilyBuilder {
   constructor(baseUrl: string, uniqueId: number) {
     this.baseUrl = baseUrl;
     this.uniqueId = uniqueId;
-    this.parentBuilder = new TestUserBuilder(baseUrl, uniqueId).withEmailPrefix("family");
+    this.parentBuilder = new TestUserBuilder(baseUrl, uniqueId).withEmailPrefix(
+      "family",
+    );
     this.data = {
       familyName: "Test Family",
       parentName: "Parent User",
@@ -130,12 +140,18 @@ export class TestFamilyBuilder {
     return this;
   }
 
-  addChild(name: string, birthdate: string = AUTH_CONSTANTS.CHILD_BIRTHDATE): this {
+  addChild(
+    name: string,
+    birthdate: string = AUTH_CONSTANTS.CHILD_BIRTHDATE,
+  ): this {
     this.data.members.push({ name, birthdate, role: "Child" });
     return this;
   }
 
-  addParent(name: string, birthdate: string = AUTH_CONSTANTS.DEFAULT_BIRTHDATE): this {
+  addParent(
+    name: string,
+    birthdate: string = AUTH_CONSTANTS.DEFAULT_BIRTHDATE,
+  ): this {
     this.data.members.push({ name, birthdate, role: "Parent" });
     return this;
   }
@@ -171,15 +187,23 @@ export class TestFamilyBuilder {
         .post(`/v1/families/${familyId}/members`)
         .set("Authorization", `Bearer ${parent.token}`)
         .send({
-          email: generateUniqueEmail(`${member.role.toLowerCase()}`, this.uniqueId + addedMembers.length),
-          password: member.role === "Child" ? AUTH_CONSTANTS.CHILD_PASSWORD : AUTH_CONSTANTS.DEFAULT_PASSWORD,
+          email: generateUniqueEmail(
+            `${member.role.toLowerCase()}`,
+            this.uniqueId + addedMembers.length,
+          ),
+          password:
+            member.role === "Child"
+              ? AUTH_CONSTANTS.CHILD_PASSWORD
+              : AUTH_CONSTANTS.DEFAULT_PASSWORD,
           name: member.name,
           birthdate: member.birthdate,
           role: member.role,
         });
 
       if (memberResponse.status !== 201) {
-        throw new Error(`Failed to add family member: ${memberResponse.status} ${memberResponse.body.message}`);
+        throw new Error(
+          `Failed to add family member: ${memberResponse.status} ${memberResponse.body.message}`,
+        );
       }
 
       addedMembers.push(memberResponse.body);
@@ -201,6 +225,8 @@ export class TestFamilyBuilder {
  * Factory helper to create builders with less boilerplate
  */
 export const TestDataFactory = {
-  user: (baseUrl: string, uniqueId: number) => new TestUserBuilder(baseUrl, uniqueId),
-  family: (baseUrl: string, uniqueId: number) => new TestFamilyBuilder(baseUrl, uniqueId),
+  user: (baseUrl: string, uniqueId: number) =>
+    new TestUserBuilder(baseUrl, uniqueId),
+  family: (baseUrl: string, uniqueId: number) =>
+    new TestFamilyBuilder(baseUrl, uniqueId),
 };

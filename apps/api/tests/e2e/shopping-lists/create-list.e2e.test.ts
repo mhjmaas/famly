@@ -1,7 +1,7 @@
 import request from "supertest";
+import { registerTestUser, setupTestFamily } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { setupTestFamily, registerTestUser } from "../helpers/auth-setup";
 
 describe("E2E: POST /v1/families/:familyId/shopping-lists", () => {
   let baseUrl: string;
@@ -20,7 +20,7 @@ describe("E2E: POST /v1/families/:familyId/shopping-lists", () => {
     const setup = await setupTestFamily(baseUrl, testCounter, {
       userName: "Shopping User",
       familyName: "Test Family",
-      prefix: "shoppinguser"
+      prefix: "shoppinguser",
     });
 
     authToken = setup.token;
@@ -182,9 +182,14 @@ describe("E2E: POST /v1/families/:familyId/shopping-lists", () => {
     it("should reject request from non-family member", async () => {
       // Create another user not in the family
       testCounter++;
-      const { token: otherToken } = await registerTestUser(baseUrl, testCounter, "other", {
-        name: "Other User"
-      });
+      const { token: otherToken } = await registerTestUser(
+        baseUrl,
+        testCounter,
+        "other",
+        {
+          name: "Other User",
+        },
+      );
 
       const response = await request(baseUrl)
         .post(`/v1/families/${familyId}/shopping-lists`)

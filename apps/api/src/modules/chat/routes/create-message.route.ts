@@ -4,12 +4,12 @@ import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import { ObjectId } from "mongodb";
-import type { CreateMessageInput } from "../validators/create-message.validator";
-import { validateCreateMessage } from "../validators/create-message.validator";
 import { ChatRepository } from "../repositories/chat.repository";
 import { MembershipRepository } from "../repositories/membership.repository";
 import { MessageRepository } from "../repositories/message.repository";
 import { MessageService } from "../services/message.service";
+import type { CreateMessageInput } from "../validators/create-message.validator";
+import { validateCreateMessage } from "../validators/create-message.validator";
 
 /**
  * POST /v1/chats/:chatId/messages - Create a new message with idempotency support
@@ -42,11 +42,7 @@ export function createMessageRoute(): Router {
     "/:chatId/messages",
     authenticate,
     validateCreateMessage,
-    async (
-      req: AuthenticatedRequest,
-      res: Response,
-      next: NextFunction,
-    ) => {
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
       try {
         if (!req.user?.id) {
           throw HttpError.unauthorized("Authentication required");
@@ -56,11 +52,15 @@ export function createMessageRoute(): Router {
 
         // Validate chatId format
         if (!/^[0-9a-fA-F]{24}$/.test(chatIdParam)) {
-          throw HttpError.badRequest("Invalid chat ID format - must be a valid ObjectId");
+          throw HttpError.badRequest(
+            "Invalid chat ID format - must be a valid ObjectId",
+          );
         }
 
         if (!ObjectId.isValid(chatIdParam)) {
-          throw HttpError.badRequest("Invalid chat ID format - must be a valid ObjectId");
+          throw HttpError.badRequest(
+            "Invalid chat ID format - must be a valid ObjectId",
+          );
         }
 
         const input: CreateMessageInput = (req as any).validatedBody;

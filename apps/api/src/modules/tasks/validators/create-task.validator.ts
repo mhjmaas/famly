@@ -35,6 +35,16 @@ export const createTaskSchema = z.object({
     .optional(),
   dueDate: z.coerce.date().optional(),
   assignment: taskAssignmentSchema,
+  metadata: z
+    .object({
+      karma: z
+        .number()
+        .int("Karma must be an integer")
+        .min(1, "Karma must be at least 1")
+        .max(1000, "Karma cannot exceed 1000")
+        .optional(),
+    })
+    .optional(),
 });
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;

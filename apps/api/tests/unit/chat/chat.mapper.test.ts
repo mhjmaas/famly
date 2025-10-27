@@ -1,6 +1,6 @@
-import { ObjectId } from "mongodb";
-import { toChatDTO } from "@modules/chat/lib/chat.mapper";
 import type { Chat } from "@modules/chat/domain/chat";
+import { toChatDTO } from "@modules/chat/lib/chat.mapper";
+import { ObjectId } from "mongodb";
 
 describe("Chat Mapper", () => {
   describe("toChatDTO", () => {

@@ -1,7 +1,7 @@
 import request from "supertest";
+import { setupTestUsers } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { setupTestUsers } from "../helpers/auth-setup";
 
 describe("E2E: POST /v1/chats/:chatId/members - Add Members", () => {
   let baseUrl: string;

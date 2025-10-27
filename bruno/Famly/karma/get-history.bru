@@ -1,0 +1,37 @@
+meta {
+  name: get history
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/karma/history/{{currentUserId}}?limit=50
+  body: none
+  auth: inherit
+}
+
+params:query {
+  limit: 50
+  ~cursor:
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+script:post-response {
+  try {
+    const body = res.body;
+
+    if (body?.events) {
+      console.log(`Found ${body.events.length} karma events`);
+      console.log(`Has more: ${body.pagination?.hasMore}`);
+      if (body.pagination?.nextCursor) {
+        console.log(`Next cursor: ${body.pagination.nextCursor}`);
+      }
+    }
+  } catch (error) {
+    console.log('Failed to read karma history: ' + error?.message);
+  }
+}

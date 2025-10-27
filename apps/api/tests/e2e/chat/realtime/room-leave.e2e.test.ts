@@ -3,15 +3,15 @@
  * Tests for leaving chat rooms
  */
 
-import { setupTestUsers, registerTestUser } from "../../helpers/auth-setup";
+import request from "supertest";
+import { registerTestUser, setupTestUsers } from "../../helpers/auth-setup";
 import { cleanDatabase } from "../../helpers/database";
-import { getTestApp } from "../../helpers/test-app";
 import {
   connectSocketClient,
   disconnectSocketClient,
   emitWithAck,
 } from "../../helpers/socket-client";
-import request from "supertest";
+import { getTestApp } from "../../helpers/test-app";
 
 describe("E2E: Socket.IO - Room Leave", () => {
   let baseUrl: string;

@@ -3,14 +3,14 @@
  * Tests for online/offline status and presence pings
  */
 
-import { setupTestUsers, registerTestUser } from "../../helpers/auth-setup";
+import { registerTestUser, setupTestUsers } from "../../helpers/auth-setup";
 import { cleanDatabase } from "../../helpers/database";
-import { getTestApp } from "../../helpers/test-app";
 import {
   connectSocketClient,
   disconnectSocketClient,
   emitWithAck,
 } from "../../helpers/socket-client";
+import { getTestApp } from "../../helpers/test-app";
 
 describe("E2E: Socket.IO - Presence Tracking", () => {
   let baseUrl: string;
@@ -76,7 +76,7 @@ describe("E2E: Socket.IO - Presence Tracking", () => {
       const presenceUpdate = await Promise.race([
         presencePromise,
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Timeout")), 2000)
+          setTimeout(() => reject(new Error("Timeout")), 2000),
         ),
       ]);
 
@@ -122,7 +122,10 @@ describe("E2E: Socket.IO - Presence Tracking", () => {
       const socket1 = await connectSocketClient(baseUrl, user1.token);
 
       // Both should receive the update
-      const [update2, update3] = await Promise.all([presence2Promise, presence3Promise]);
+      const [update2, update3] = await Promise.all([
+        presence2Promise,
+        presence3Promise,
+      ]);
 
       expect(update2.userId).toBe(user1.userId);
       expect(update2.status).toBe("online");
@@ -168,7 +171,7 @@ describe("E2E: Socket.IO - Presence Tracking", () => {
       const presenceUpdate = await Promise.race([
         presencePromise,
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Timeout")), 2000)
+          setTimeout(() => reject(new Error("Timeout")), 2000),
         ),
       ]);
 
@@ -305,9 +308,7 @@ describe("E2E: Socket.IO - Presence Tracking", () => {
       const user1 = users[0];
       const user2 = users[1];
 
-      const chatResponse = await (
-        await import("supertest")
-      )
+      const chatResponse = await (await import("supertest"))
         .default(baseUrl)
         .post("/v1/chats")
         .set("Authorization", `Bearer ${user1.token}`)

@@ -40,11 +40,7 @@ export function searchMessagesRoute(): Router {
     "/search/messages",
     authenticate,
     validateSearchMessages,
-    async (
-      req: AuthenticatedRequest,
-      res: Response,
-      next: NextFunction,
-    ) => {
+    async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
       try {
         if (!req.user?.id) {
           throw HttpError.unauthorized("Authentication required");

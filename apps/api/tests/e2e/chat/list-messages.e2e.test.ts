@@ -1,7 +1,7 @@
 import request from "supertest";
+import { registerTestUser } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { registerTestUser } from "../helpers/auth-setup";
 
 describe("E2E: GET /v1/chats/:chatId/messages - List Messages", () => {
   let baseUrl: string;
@@ -138,7 +138,7 @@ describe("E2E: GET /v1/chats/:chatId/messages - List Messages", () => {
       // Get second page using cursor
       const page2Res = await request(baseUrl)
         .get(
-          `/v1/chats/${chatId}/messages?limit=2&before=${page1Res.body.nextCursor}`
+          `/v1/chats/${chatId}/messages?limit=2&before=${page1Res.body.nextCursor}`,
         )
         .set("Authorization", `Bearer ${user1.token}`);
 
@@ -151,7 +151,7 @@ describe("E2E: GET /v1/chats/:chatId/messages - List Messages", () => {
 
       // No overlap between pages
       expect(
-        page1MessageIds.some((id: string) => page2MessageIds.includes(id))
+        page1MessageIds.some((id: string) => page2MessageIds.includes(id)),
       ).toBe(false);
     });
 
@@ -309,7 +309,7 @@ describe("E2E: GET /v1/chats/:chatId/messages - List Messages", () => {
 
       // Try to list without auth
       const listRes = await request(baseUrl).get(
-        `/v1/chats/${chatId}/messages`
+        `/v1/chats/${chatId}/messages`,
       );
 
       expect(listRes.status).toBe(401);

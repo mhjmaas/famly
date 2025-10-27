@@ -3,6 +3,7 @@ import { logger } from "@lib/logger";
 import { requireFamilyRole } from "@modules/auth/lib/require-family-role";
 import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
+import type { KarmaService } from "@modules/karma";
 import type { ObjectId } from "mongodb";
 import type { CreateTaskInput, Task, UpdateTaskInput } from "../domain/task";
 import type { TaskRepository } from "../repositories/task.repository";
@@ -11,6 +12,7 @@ export class TaskService {
   constructor(
     private taskRepository: TaskRepository,
     private membershipRepository: FamilyMembershipRepository,
+    private karmaService?: KarmaService, // Optional to avoid breaking existing instantiations
   ) {}
 
   /**
@@ -190,6 +192,38 @@ export class TaskService {
 
       if (!updatedTask) {
         throw HttpError.notFound("Task not found");
+      }
+
+      // Award karma if task was just completed and has karma metadata
+      if (
+        input.completedAt &&
+        !existingTask.completedAt &&
+        updatedTask.metadata?.karma &&
+        this.karmaService
+      ) {
+        try {
+          await this.karmaService.awardKarma({
+            familyId: updatedTask.familyId,
+            userId,
+            amount: updatedTask.metadata.karma,
+            source: "task_completion",
+            description: `Completed task "${updatedTask.name}"`,
+            metadata: { taskId: taskId.toString() },
+          });
+
+          logger.info("Karma awarded for task completion", {
+            taskId: taskId.toString(),
+            userId: userId.toString(),
+            karma: updatedTask.metadata.karma,
+          });
+        } catch (error) {
+          logger.error("Failed to award karma for task completion", {
+            taskId: taskId.toString(),
+            userId: userId.toString(),
+            error,
+          });
+          // Don't throw - task completion should succeed even if karma fails
+        }
       }
 
       logger.info("Task updated successfully", {

@@ -12,6 +12,7 @@ export function toTaskScheduleDTO(schedule: TaskSchedule): TaskScheduleDTO {
     assignment: schedule.assignment,
     schedule: schedule.schedule,
     timeOfDay: schedule.timeOfDay,
+    metadata: schedule.metadata,
     createdBy: schedule.createdBy.toString(),
     createdAt: schedule.createdAt.toISOString(),
     updatedAt: schedule.updatedAt.toISOString(),

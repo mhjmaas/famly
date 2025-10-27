@@ -29,7 +29,10 @@ export function getSocketIOServer(): Server | null {
  * @param chat The full chat DTO to broadcast
  * @param targetMemberIds Optional array of member IDs to broadcast to. If not provided, broadcasts to all members in chat.memberIds
  */
-export function emitChatUpdate(chat: ChatDTO, targetMemberIds?: string[]): void {
+export function emitChatUpdate(
+  chat: ChatDTO,
+  targetMemberIds?: string[],
+): void {
   const io = getSocketIOServer();
 
   if (!io) {
@@ -42,7 +45,7 @@ export function emitChatUpdate(chat: ChatDTO, targetMemberIds?: string[]): void 
   try {
     // Use targetMemberIds if provided, otherwise use chat.memberIds
     const membersToNotify = targetMemberIds || chat.memberIds || [];
-    
+
     // Emit to each member's user room
     if (membersToNotify.length > 0) {
       for (const memberId of membersToNotify) {

@@ -1,7 +1,10 @@
 import request from "supertest";
+import {
+  registerTestUser,
+  setupFamilyWithMembers,
+} from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { registerTestUser, setupFamilyWithMembers } from "../helpers/auth-setup";
 
 describe("E2E: Shopping Lists Authorization", () => {
   let baseUrl: string;
@@ -247,10 +250,15 @@ describe("E2E: Shopping Lists Authorization", () => {
 
     beforeEach(async () => {
       testCounter++;
-      const outsider = await registerTestUser(baseUrl, testCounter, "outsider", {
-        name: "Outsider User",
-        birthdate: "1985-05-20",
-      });
+      const outsider = await registerTestUser(
+        baseUrl,
+        testCounter,
+        "outsider",
+        {
+          name: "Outsider User",
+          birthdate: "1985-05-20",
+        },
+      );
 
       outsiderToken = outsider.token;
     });

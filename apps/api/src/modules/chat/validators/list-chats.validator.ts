@@ -27,11 +27,15 @@ export function validateListChats(
     // Validate cursor if provided
     if (cursor !== undefined && cursor !== "") {
       if (!ObjectId.isValid(cursor)) {
-        throw HttpError.badRequest("Invalid cursor format. Must be a valid ObjectId.");
+        throw HttpError.badRequest(
+          "Invalid cursor format. Must be a valid ObjectId.",
+        );
       }
       req.query.cursor = cursor;
     } else if (cursor === "") {
-      throw HttpError.badRequest("Invalid cursor format. Must be a valid ObjectId.");
+      throw HttpError.badRequest(
+        "Invalid cursor format. Must be a valid ObjectId.",
+      );
     }
 
     // Validate and parse limit

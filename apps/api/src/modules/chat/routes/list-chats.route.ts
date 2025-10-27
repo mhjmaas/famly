@@ -29,7 +29,11 @@ export function listChatsRoute(): Router {
   const chatRepository = new ChatRepository();
   const membershipRepository = new MembershipRepository();
   const messageRepository = new MessageRepository();
-  const chatService = new ChatService(chatRepository, membershipRepository, messageRepository);
+  const chatService = new ChatService(
+    chatRepository,
+    membershipRepository,
+    messageRepository,
+  );
 
   router.get(
     "/",

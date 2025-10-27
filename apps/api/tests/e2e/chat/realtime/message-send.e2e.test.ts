@@ -3,17 +3,17 @@
  * Tests for sending messages via Socket.IO with idempotency and rate limiting
  */
 
+import { randomUUID } from "node:crypto";
+import request from "supertest";
 import { setupTestUsers } from "../../helpers/auth-setup";
 import { cleanDatabase } from "../../helpers/database";
-import { getTestApp } from "../../helpers/test-app";
 import {
   connectSocketClient,
   disconnectSocketClient,
   emitWithAck,
   waitForEvent,
 } from "../../helpers/socket-client";
-import request from "supertest";
-import { randomUUID } from "node:crypto";
+import { getTestApp } from "../../helpers/test-app";
 
 describe("E2E: Socket.IO - Message Sending", () => {
   let baseUrl: string;
@@ -141,7 +141,7 @@ describe("E2E: Socket.IO - Message Sending", () => {
       expect(typeof broadcast.message.createdAt).toBe("string");
       // Should be ISO format
       expect(new Date(broadcast.message.createdAt).toString()).not.toBe(
-        "Invalid Date"
+        "Invalid Date",
       );
 
       await disconnectSocketClient(socket1);

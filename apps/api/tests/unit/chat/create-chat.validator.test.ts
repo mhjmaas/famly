@@ -40,7 +40,9 @@ describe("Unit: createChatSchema Validator", () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("Invalid member count");
+        expect(result.error.issues[0].message).toContain(
+          "Invalid member count",
+        );
       }
     });
 
@@ -52,7 +54,9 @@ describe("Unit: createChatSchema Validator", () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("Member IDs must be unique");
+        expect(result.error.issues[0].message).toContain(
+          "Member IDs must be unique",
+        );
       }
     });
 
@@ -65,7 +69,9 @@ describe("Unit: createChatSchema Validator", () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("Title is not allowed for direct messages");
+        expect(result.error.issues[0].message).toContain(
+          "Title is not allowed for direct messages",
+        );
       }
     });
 
@@ -90,7 +96,9 @@ describe("Unit: createChatSchema Validator", () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("Invalid user ID format");
+        expect(result.error.issues[0].message).toContain(
+          "Invalid user ID format",
+        );
       }
     });
   });
@@ -172,7 +180,9 @@ describe("Unit: createChatSchema Validator", () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("Member IDs must be unique");
+        expect(result.error.issues[0].message).toContain(
+          "Member IDs must be unique",
+        );
       }
     });
 
@@ -185,7 +195,9 @@ describe("Unit: createChatSchema Validator", () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("Invalid user ID format");
+        expect(result.error.issues[0].message).toContain(
+          "Invalid user ID format",
+        );
       }
     });
   });

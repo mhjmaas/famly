@@ -1,9 +1,9 @@
 import type { Server as HTTPServer } from "node:http";
-import { Server } from "socket.io";
 import { logger } from "@lib/logger";
+import { Server } from "socket.io";
+import { setSocketIOServer } from "./events/chat-events";
 import { authenticateSocket } from "./middleware/auth.middleware";
 import { registerConnectionHandler } from "./register-handlers";
-import { setSocketIOServer } from "./events/chat-events";
 
 /**
  * Create and configure Socket.IO server

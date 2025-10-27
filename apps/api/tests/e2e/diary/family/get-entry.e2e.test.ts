@@ -1,8 +1,8 @@
+import { ObjectId } from "mongodb";
 import request from "supertest";
+import { setupTestFamily } from "../../helpers/auth-setup";
 import { cleanDatabase } from "../../helpers/database";
 import { getTestApp } from "../../helpers/test-app";
-import { setupTestFamily } from "../../helpers/auth-setup";
-import { ObjectId } from "mongodb";
 
 describe("E2E: GET /v1/families/:familyId/diary/:entryId - Get Family Diary Entry", () => {
   let baseUrl: string;
@@ -21,7 +21,7 @@ describe("E2E: GET /v1/families/:familyId/diary/:entryId - Get Family Diary Entr
     const setup = await setupTestFamily(baseUrl, testCounter, {
       userName: "Parent User",
       familyName: "Test Family",
-      prefix: "parentuser"
+      prefix: "parentuser",
     });
 
     parentToken = setup.token;

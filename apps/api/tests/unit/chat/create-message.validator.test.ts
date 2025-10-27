@@ -1,15 +1,12 @@
-import { z } from "zod";
 import { ObjectId } from "mongodb";
+import { z } from "zod";
 
 // Extract and test the schema directly
 const createMessageSchema = z.object({
   chatId: z
     .string()
     .min(1, "Chat ID is required")
-    .refine(
-      (val) => ObjectId.isValid(val),
-      "Chat ID must be a valid ObjectId"
-    ),
+    .refine((val) => ObjectId.isValid(val), "Chat ID must be a valid ObjectId"),
   clientId: z.string().optional(),
   body: z
     .string()

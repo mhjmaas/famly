@@ -73,12 +73,15 @@ export async function createAuthorizationFamilyTestUsers(
 
   // Login as child member to get their token
   const childEmail = `child${uniqueId}@example.com`;
-  const childLoginResponse = await request(baseUrl).post("/v1/auth/login").send({
-    email: childEmail,
-    password: "ChildPassword123!",
-  });
+  const childLoginResponse = await request(baseUrl)
+    .post("/v1/auth/login")
+    .send({
+      email: childEmail,
+      password: "ChildPassword123!",
+    });
 
-  const memberToken = childLoginResponse.body.accessToken || childLoginResponse.body.sessionToken;
+  const memberToken =
+    childLoginResponse.body.accessToken || childLoginResponse.body.sessionToken;
 
   // Other user: not in family
   const otherUser = await TestDataFactory.user(baseUrl, uniqueId + 10)
@@ -193,10 +196,14 @@ export async function executeAuthorizationTest(
       req = request(config.baseUrl).get(config.endpoint);
       break;
     case "post":
-      req = request(config.baseUrl).post(config.endpoint).send(config.data || {});
+      req = request(config.baseUrl)
+        .post(config.endpoint)
+        .send(config.data || {});
       break;
     case "patch":
-      req = request(config.baseUrl).patch(config.endpoint).send(config.data || {});
+      req = request(config.baseUrl)
+        .patch(config.endpoint)
+        .send(config.data || {});
       break;
     case "delete":
       req = request(config.baseUrl).delete(config.endpoint);
@@ -224,7 +231,7 @@ export async function executeAuthorizationTest(
   if (response.status !== scenario.expectedStatus) {
     throw new Error(
       `${scenario.name}: Expected ${scenario.expectedStatus} but got ${response.status}. ` +
-      `${scenario.description || ""} Actor: ${scenario.actor}`,
+        `${scenario.description || ""} Actor: ${scenario.actor}`,
     );
   }
 }
@@ -267,7 +274,10 @@ export class AuthorizationMatrixBuilder {
   }
 
   async executeWithSimpleUsers(): Promise<void> {
-    const tokens = await createAuthorizationTestUsers(this.baseUrl, this.uniqueId);
+    const tokens = await createAuthorizationTestUsers(
+      this.baseUrl,
+      this.uniqueId,
+    );
 
     for (const scenario of this.scenarios) {
       const config: EndpointAuthTestConfig = {
@@ -284,7 +294,10 @@ export class AuthorizationMatrixBuilder {
   }
 
   async executeWithFamilyUsers(): Promise<void> {
-    const tokens = await createAuthorizationFamilyTestUsers(this.baseUrl, this.uniqueId);
+    const tokens = await createAuthorizationFamilyTestUsers(
+      this.baseUrl,
+      this.uniqueId,
+    );
 
     for (const scenario of this.scenarios) {
       const config: EndpointAuthTestConfig = {

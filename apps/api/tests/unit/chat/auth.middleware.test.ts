@@ -12,7 +12,10 @@ import type { Socket } from "socket.io";
 
 describe("Socket.IO Authentication Logic (Unit Test Reference)", () => {
   // Mock Socket.IO socket
-  const createMockSocket = (auth?: { token?: string }, query?: { token?: string }): Socket => {
+  const createMockSocket = (
+    auth?: { token?: string },
+    query?: { token?: string },
+  ): Socket => {
     return {
       id: "test-socket-id",
       data: {},
@@ -27,25 +30,36 @@ describe("Socket.IO Authentication Logic (Unit Test Reference)", () => {
   describe("Token Extraction", () => {
     it("should extract token from auth payload", () => {
       const socket = createMockSocket({ token: "auth-token" });
-      const token = (socket.handshake.auth as any)?.token || (socket.handshake.query as any)?.token;
+      const token =
+        (socket.handshake.auth as any)?.token ||
+        (socket.handshake.query as any)?.token;
       expect(token).toBe("auth-token");
     });
 
     it("should extract token from query parameter", () => {
       const socket = createMockSocket(undefined, { token: "query-token" });
-      const token = (socket.handshake.auth as any)?.token || (socket.handshake.query as any)?.token;
+      const token =
+        (socket.handshake.auth as any)?.token ||
+        (socket.handshake.query as any)?.token;
       expect(token).toBe("query-token");
     });
 
     it("should prefer auth payload over query parameter", () => {
-      const socket = createMockSocket({ token: "auth-token" }, { token: "query-token" });
-      const token = (socket.handshake.auth as any)?.token || (socket.handshake.query as any)?.token;
+      const socket = createMockSocket(
+        { token: "auth-token" },
+        { token: "query-token" },
+      );
+      const token =
+        (socket.handshake.auth as any)?.token ||
+        (socket.handshake.query as any)?.token;
       expect(token).toBe("auth-token");
     });
 
     it("should return undefined if no token provided", () => {
       const socket = createMockSocket();
-      const token = (socket.handshake.auth as any)?.token || (socket.handshake.query as any)?.token;
+      const token =
+        (socket.handshake.auth as any)?.token ||
+        (socket.handshake.query as any)?.token;
       expect(token).toBeUndefined();
     });
   });

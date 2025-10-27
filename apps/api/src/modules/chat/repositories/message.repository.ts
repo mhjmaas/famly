@@ -27,10 +27,10 @@ export class MessageRepository {
       // Only indexes documents where clientId exists (not null/undefined)
       await this.collection.createIndex(
         { chatId: 1, clientId: 1 },
-        { 
-          unique: true, 
+        {
+          unique: true,
           name: "idx_idempotency",
-          partialFilterExpression: { clientId: { $type: "string" } }
+          partialFilterExpression: { clientId: { $type: "string" } },
         },
       );
 
@@ -84,7 +84,7 @@ export class MessageRepository {
   /**
    * Find messages for a chat with cursor pagination
    * Returns messages sorted by createdAt descending (newest first), with _id as tie-breaker
-   * 
+   *
    * @param chatId - The chat to query messages from
    * @param before - Optional cursor (message ID) - will fetch messages older than this message's createdAt
    * @param limit - Maximum number of messages to return
@@ -110,13 +110,13 @@ export class MessageRepository {
             {
               $or: [
                 { createdAt: { $lt: cursorMessage.createdAt } },
-                { 
+                {
                   createdAt: cursorMessage.createdAt,
-                  _id: { $lt: before }
-                }
-              ]
-            }
-          ]
+                  _id: { $lt: before },
+                },
+              ],
+            },
+          ],
         };
       }
     }
@@ -187,15 +187,18 @@ export class MessageRepository {
         // Find messages older than the cursor message
         const dateConditions = [
           { createdAt: { $lt: cursorMessage.createdAt } },
-          { 
+          {
             createdAt: cursorMessage.createdAt,
-            _id: { $lt: cursor }
-          }
+            _id: { $lt: cursor },
+          },
         ];
-        
+
         // Combine with existing conditions
         if (searchQuery.$or) {
-          searchQuery.$and = [{ $or: searchQuery.$or }, { $or: dateConditions }];
+          searchQuery.$and = [
+            { $or: searchQuery.$or },
+            { $or: dateConditions },
+          ];
           delete searchQuery.$or;
         } else {
           searchQuery.$or = dateConditions;

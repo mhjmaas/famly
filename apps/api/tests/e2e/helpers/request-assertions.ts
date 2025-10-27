@@ -3,12 +3,15 @@
  * Common assertions for API requests to reduce duplication
  */
 
-import { Response } from "supertest";
+import type { Response } from "supertest";
 
 /**
  * Asserts a successful response (2xx status)
  */
-export function expectSuccess(response: Response, expectedStatus: number = 200): void {
+export function expectSuccess(
+  response: Response,
+  expectedStatus: number = 200,
+): void {
   if (response.status !== expectedStatus) {
     throw new Error(
       `Expected status ${expectedStatus} but got ${response.status}. Body: ${JSON.stringify(response.body)}`,
@@ -67,7 +70,9 @@ export function expectBadRequest(response: Response): void {
 export function expectHasFields(obj: any, fields: string[]): void {
   for (const field of fields) {
     if (!(field in obj)) {
-      throw new Error(`Expected field "${field}" in object: ${JSON.stringify(obj)}`);
+      throw new Error(
+        `Expected field "${field}" in object: ${JSON.stringify(obj)}`,
+      );
     }
   }
 }
@@ -91,7 +96,9 @@ export function expectArray(response: Response, length?: number): void {
     throw new Error(`Expected array response but got ${typeof response.body}`);
   }
   if (length !== undefined && response.body.length !== length) {
-    throw new Error(`Expected array of length ${length} but got ${response.body.length}`);
+    throw new Error(
+      `Expected array of length ${length} but got ${response.body.length}`,
+    );
   }
 }
 
@@ -177,7 +184,9 @@ export class ResponseAssertions {
       throw new Error("Expected 204 No Content");
     }
     if (Object.keys(this.response.body).length > 0) {
-      throw new Error(`Expected empty body but got: ${JSON.stringify(this.response.body)}`);
+      throw new Error(
+        `Expected empty body but got: ${JSON.stringify(this.response.body)}`,
+      );
     }
     return this;
   }

@@ -1,7 +1,7 @@
 import request from "supertest";
+import { registerTestUser } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { registerTestUser } from "../helpers/auth-setup";
 
 describe("E2E: PUT /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
   let baseUrl: string;
@@ -66,7 +66,10 @@ describe("E2E: PUT /v1/chats/:chatId/read-cursor - Update Read Cursor", () => {
       expect(cursorRes.body).toHaveProperty("_id");
       expect(cursorRes.body).toHaveProperty("chatId", chatId);
       expect(cursorRes.body).toHaveProperty("userId", user2.userId);
-      expect(cursorRes.body).toHaveProperty("lastReadMessageId", msg2Res.body._id);
+      expect(cursorRes.body).toHaveProperty(
+        "lastReadMessageId",
+        msg2Res.body._id,
+      );
       expect(cursorRes.body).toHaveProperty("role");
       expect(cursorRes.body).toHaveProperty("createdAt");
       expect(cursorRes.body).toHaveProperty("updatedAt");

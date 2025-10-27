@@ -1,0 +1,28 @@
+meta {
+  name: get balance
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/karma/balance/{{currentUserId}}
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+script:post-response {
+  try {
+    const body = res.body;
+
+    if (body?.totalKarma !== undefined) {
+      console.log(`Karma balance: ${body.totalKarma}`);
+    }
+  } catch (error) {
+    console.log('Failed to read karma balance: ' + error?.message);
+  }
+}

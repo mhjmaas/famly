@@ -1,9 +1,9 @@
 import { FamilyRole } from "@modules/family/domain/family";
 import { ObjectId } from "mongodb";
 import request from "supertest";
+import { loginTestUser, setupTestFamily } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { setupTestFamily, loginTestUser } from "../helpers/auth-setup";
 
 describe("DELETE /v1/families/:familyId/members/:memberId - Remove Family Member", () => {
   let baseUrl: string;
@@ -19,10 +19,14 @@ describe("DELETE /v1/families/:familyId/members/:memberId - Remove Family Member
   it("allows a parent to remove a child and updates roster access immediately", async () => {
     const timestamp = Date.now();
 
-    const { token: parentToken, userId: parentId, familyId } = await setupTestFamily(baseUrl, timestamp, {
+    const {
+      token: parentToken,
+      userId: parentId,
+      familyId,
+    } = await setupTestFamily(baseUrl, timestamp, {
       userName: "Parent User",
       familyName: "Test Family",
-      prefix: "parent"
+      prefix: "parent",
     });
 
     // 2. Add a child member so the parent can remove them
@@ -44,7 +48,11 @@ describe("DELETE /v1/families/:familyId/members/:memberId - Remove Family Member
     expect(addChildRes.body.addedBy).toBe(parentId);
 
     // 3. Child logs in to obtain credentials prior to removal
-    const { token: childToken } = await loginTestUser(baseUrl, childEmail, "childpass123");
+    const { token: childToken } = await loginTestUser(
+      baseUrl,
+      childEmail,
+      "childpass123",
+    );
 
     // 4. Parent removes the child member
     await request(baseUrl)

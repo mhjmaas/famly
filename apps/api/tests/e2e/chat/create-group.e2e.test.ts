@@ -1,7 +1,7 @@
 import request from "supertest";
+import { registerTestUser, setupTestUsers } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { registerTestUser, setupTestUsers } from "../helpers/auth-setup";
 
 describe("E2E: POST /v1/chats - Create Group", () => {
   let baseUrl: string;

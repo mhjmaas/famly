@@ -1,8 +1,8 @@
 import { FamilyRole } from "@modules/family/domain/family";
 import request from "supertest";
+import { loginTestUser, setupTestFamily } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { setupTestFamily, loginTestUser } from "../helpers/auth-setup";
 
 describe("DELETE /v1/families/:familyId/members/:memberId - Non-parent authorization", () => {
   let baseUrl: string;
@@ -18,11 +18,15 @@ describe("DELETE /v1/families/:familyId/members/:memberId - Non-parent authoriza
   it("returns 403 when a child attempts to remove a family member", async () => {
     const timestamp = Date.now();
 
-    const { token: parentToken, familyId } = await setupTestFamily(baseUrl, timestamp, {
-      userName: "Parent User",
-      familyName: "Authorization Family",
-      prefix: "parent"
-    });
+    const { token: parentToken, familyId } = await setupTestFamily(
+      baseUrl,
+      timestamp,
+      {
+        userName: "Parent User",
+        familyName: "Authorization Family",
+        prefix: "parent",
+      },
+    );
     const childEmail = `child-${timestamp}@example.com`;
 
     const addChildRes = await request(baseUrl)
@@ -39,7 +43,11 @@ describe("DELETE /v1/families/:familyId/members/:memberId - Non-parent authoriza
 
     const childId = addChildRes.body.memberId;
 
-    const { token: childToken } = await loginTestUser(baseUrl, childEmail, "childpass123");
+    const { token: childToken } = await loginTestUser(
+      baseUrl,
+      childEmail,
+      "childpass123",
+    );
 
     const forbiddenRes = await request(baseUrl)
       .delete(`/v1/families/${familyId}/members/${childId}`)

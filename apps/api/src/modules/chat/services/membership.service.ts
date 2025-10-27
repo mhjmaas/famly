@@ -1,14 +1,14 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
-import { type ObjectId } from "mongodb";
+import type { ObjectId } from "mongodb";
 import type { Chat } from "../domain/chat";
 import type { MembershipDTO } from "../domain/membership";
 import { toChatDTO } from "../lib/chat.mapper";
 import { toMembershipDTO } from "../lib/membership.mapper";
+import { emitChatUpdate } from "../realtime/events/chat-events";
 import type { ChatRepository } from "../repositories/chat.repository";
 import type { MembershipRepository } from "../repositories/membership.repository";
 import type { MessageRepository } from "../repositories/message.repository";
-import { emitChatUpdate } from "../realtime/events/chat-events";
 
 export class MembershipService {
   constructor(
@@ -49,11 +49,10 @@ export class MembershipService {
       }
 
       // Check which users are already members
-      const existingMemberships = await this.membershipRepository.findByChat(
-        chatId
-      );
+      const existingMemberships =
+        await this.membershipRepository.findByChat(chatId);
       const existingMemberIds = new Set(
-        existingMemberships.map((m) => m.userId.toString())
+        existingMemberships.map((m) => m.userId.toString()),
       );
 
       // Find users that aren't already members
@@ -63,7 +62,7 @@ export class MembershipService {
           newUserIds.push(userId);
         } else {
           throw HttpError.badRequest(
-            `User ${userId.toString()} is already a member of this chat`
+            `User ${userId.toString()} is already a member of this chat`,
           );
         }
       }
@@ -72,17 +71,14 @@ export class MembershipService {
       if (newUserIds.length > 0) {
         await this.membershipRepository.createBulk(
           chatId,
-          newUserIds.map((userId) => ({ userId, role: "member" }))
+          newUserIds.map((userId) => ({ userId, role: "member" })),
         );
 
         // Update chat's memberIds array
-        const updatedMemberIds = [
-          ...chat.memberIds,
-          ...newUserIds,
-        ];
+        const updatedMemberIds = [...chat.memberIds, ...newUserIds];
         const updatedChat = await this.chatRepository.updateMembers(
           chatId,
-          updatedMemberIds
+          updatedMemberIds,
         );
 
         if (!updatedChat) {
@@ -149,7 +145,7 @@ export class MembershipService {
       // Find the membership to delete
       const membership = await this.membershipRepository.findByUserAndChat(
         userId,
-        chatId
+        chatId,
       );
       if (!membership) {
         throw HttpError.notFound("Member not found");
@@ -163,11 +159,11 @@ export class MembershipService {
 
       // Update chat's memberIds array
       const updatedMemberIds = chat.memberIds.filter(
-        (id) => id.toString() !== userId.toString()
+        (id) => id.toString() !== userId.toString(),
       );
       const updatedChat = await this.chatRepository.updateMembers(
         chatId,
-        updatedMemberIds
+        updatedMemberIds,
       );
 
       if (!updatedChat) {
@@ -217,7 +213,9 @@ export class MembershipService {
   ): Promise<MembershipDTO> {
     try {
       if (!this.messageRepository) {
-        throw new Error("MessageRepository not initialized in MembershipService");
+        throw new Error(
+          "MessageRepository not initialized in MembershipService",
+        );
       }
 
       logger.info("Updating read cursor", {
@@ -247,9 +245,10 @@ export class MembershipService {
 
       // Only update if new message is newer than current lastReadMessageId
       // ObjectIds can be compared as hex strings for chronological ordering
-      const shouldUpdate = !membership.lastReadMessageId || 
+      const shouldUpdate =
+        !membership.lastReadMessageId ||
         messageId.toString() > membership.lastReadMessageId.toString();
-      
+
       if (shouldUpdate) {
         const updated = await this.membershipRepository.updateReadCursor(
           membership._id,

@@ -11,8 +11,12 @@ import { z } from "zod";
 describe("Read Receipt Handler Logic", () => {
   // Validation schema (same as in handler)
   const receiptSchema = z.object({
-    chatId: z.string().refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
-    messageId: z.string().refine((val) => ObjectId.isValid(val), "Invalid messageId format"),
+    chatId: z
+      .string()
+      .refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
+    messageId: z
+      .string()
+      .refine((val) => ObjectId.isValid(val), "Invalid messageId format"),
   });
 
   describe("payload validation", () => {

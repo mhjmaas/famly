@@ -1,7 +1,7 @@
 import { HttpError } from "@lib/http-error";
+import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { z } from "zod";
-import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 
 /**
  * Input DTO for creating a message

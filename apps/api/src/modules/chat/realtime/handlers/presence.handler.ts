@@ -1,9 +1,8 @@
-import type { Socket } from "socket.io";
-import { z } from "zod";
 import { randomUUID } from "node:crypto";
 import { logger } from "@lib/logger";
-import type { PresencePingPayload } from "../types";
-import type { Ack } from "../types";
+import type { Socket } from "socket.io";
+import { z } from "zod";
+import type { Ack, PresencePingPayload } from "../types";
 
 // Validation schema for presence ping
 const presenceSchema = z.object({

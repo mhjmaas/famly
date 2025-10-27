@@ -3,9 +3,9 @@
  * Tests for typing start/stop events and broadcasts
  */
 
-import { setupTestUsers, registerTestUser } from "../../helpers/auth-setup";
+import request from "supertest";
+import { registerTestUser, setupTestUsers } from "../../helpers/auth-setup";
 import { cleanDatabase } from "../../helpers/database";
-import { getTestApp } from "../../helpers/test-app";
 import {
   connectSocketClient,
   disconnectSocketClient,
@@ -13,7 +13,7 @@ import {
   waitForEvent,
   waitForEventOrNull,
 } from "../../helpers/socket-client";
-import request from "supertest";
+import { getTestApp } from "../../helpers/test-app";
 
 describe("E2E: Socket.IO - Typing Indicators", () => {
   let baseUrl: string;
@@ -81,7 +81,11 @@ describe("E2E: Socket.IO - Typing Indicators", () => {
       await emitWithAck(socket2, "room:join", { chatId });
 
       // Set up listener on sender's socket
-      const typingPromise = waitForEventOrNull<any>(socket1, "typing:update", 2000);
+      const typingPromise = waitForEventOrNull<any>(
+        socket1,
+        "typing:update",
+        2000,
+      );
 
       // Sender emits typing start
       socket1.emit("typing:start", { chatId });
@@ -145,7 +149,11 @@ describe("E2E: Socket.IO - Typing Indicators", () => {
       await emitWithAck(socket1, "room:join", { chatId });
       await emitWithAck(socket2, "room:join", { chatId });
 
-      const typingPromise = waitForEventOrNull<any>(socket1, "typing:update", 2000);
+      const typingPromise = waitForEventOrNull<any>(
+        socket1,
+        "typing:update",
+        2000,
+      );
 
       socket1.emit("typing:stop", { chatId });
 
@@ -179,7 +187,11 @@ describe("E2E: Socket.IO - Typing Indicators", () => {
       await emitWithAck(socket2, "room:join", { chatId });
 
       // Set up listener on member's socket
-      const typingPromise = waitForEventOrNull<any>(socket2, "typing:update", 2000);
+      const typingPromise = waitForEventOrNull<any>(
+        socket2,
+        "typing:update",
+        2000,
+      );
 
       // Non-member emits typing (should be silently ignored)
       socket3.emit("typing:start", { chatId });

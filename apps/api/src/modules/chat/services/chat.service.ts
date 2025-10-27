@@ -1,10 +1,14 @@
 import { logger } from "@lib/logger";
-import { type ObjectId } from "mongodb";
-import type { Chat, ChatWithPreviewDTO, ListChatsResponse } from "../domain/chat";
+import type { ObjectId } from "mongodb";
+import type {
+  Chat,
+  ChatWithPreviewDTO,
+  ListChatsResponse,
+} from "../domain/chat";
+import { toChatWithPreviewDTO } from "../lib/chat.mapper";
 import type { ChatRepository } from "../repositories/chat.repository";
 import type { MembershipRepository } from "../repositories/membership.repository";
 import type { MessageRepository } from "../repositories/message.repository";
-import { toChatWithPreviewDTO } from "../lib/chat.mapper";
 
 export class ChatService {
   constructor(
@@ -38,7 +42,7 @@ export class ChatService {
 
       // Sort IDs to ensure consistent ordering for queries and hashing
       const sortedIds = [creatorId, otherUserId].sort((a, b) =>
-        a.toString().localeCompare(b.toString())
+        a.toString().localeCompare(b.toString()),
       );
 
       // Check if DM already exists between these two users
@@ -58,7 +62,7 @@ export class ChatService {
         "dm",
         creatorId,
         sortedIds,
-        null // title is null for DMs
+        null, // title is null for DMs
       );
 
       // Create memberships for both users
@@ -78,16 +82,20 @@ export class ChatService {
       // Handle MongoDB duplicate key error (E11000)
       // This can happen in a race condition where two requests create the same DM simultaneously
       if (error instanceof Error && error.message.includes("E11000")) {
-        logger.info("DM creation race condition detected, fetching existing chat", {
-          creatorId: creatorId.toString(),
-          otherUserId: otherUserId.toString(),
-        });
+        logger.info(
+          "DM creation race condition detected, fetching existing chat",
+          {
+            creatorId: creatorId.toString(),
+            otherUserId: otherUserId.toString(),
+          },
+        );
 
         // Retry fetching the existing chat
         const sortedIds = [creatorId, otherUserId].sort((a, b) =>
-          a.toString().localeCompare(b.toString())
+          a.toString().localeCompare(b.toString()),
         );
-        const existingChat = await this.chatRepository.findByMemberIds(sortedIds);
+        const existingChat =
+          await this.chatRepository.findByMemberIds(sortedIds);
 
         if (existingChat) {
           logger.info("Found existing DM after race condition", {
@@ -139,7 +147,7 @@ export class ChatService {
         "group",
         creatorId,
         allMemberIds,
-        title ?? null
+        title ?? null,
       );
 
       // Create memberships: creator as admin, others as members
@@ -213,7 +221,11 @@ export class ChatService {
       const chatIds = memberships.map((m) => m.chatId);
 
       // Step 3: Query chats with pagination
-      const chats = await this.chatRepository.findByIdsWithPagination(chatIds, cursor, limit + 1);
+      const chats = await this.chatRepository.findByIdsWithPagination(
+        chatIds,
+        cursor,
+        limit + 1,
+      );
 
       // Determine if there's a next page
       let nextCursor: string | undefined;
@@ -230,7 +242,11 @@ export class ChatService {
       for (const chat of chatsToReturn) {
         try {
           // Fetch last message (newest first)
-          const messages = await this.messageRepository.findByChatId(chat._id, undefined, 1);
+          const messages = await this.messageRepository.findByChatId(
+            chat._id,
+            undefined,
+            1,
+          );
           const lastMessage = messages.length > 0 ? messages[0] : null;
 
           // Get user's membership for this chat
@@ -241,7 +257,9 @@ export class ChatService {
           if (membership) {
             if (!membership.lastReadMessageId) {
               // No messages read yet, count all messages in chat
-              unreadCount = await this.messageRepository.countByChatId(chat._id);
+              unreadCount = await this.messageRepository.countByChatId(
+                chat._id,
+              );
             } else {
               // Count messages after lastReadMessageId
               unreadCount = await this.messageRepository.countUnreadMessages(
@@ -303,7 +321,10 @@ export class ChatService {
       });
 
       // Verify membership
-      const membership = await this.membershipRepository.findByUserAndChat(userId, chatId);
+      const membership = await this.membershipRepository.findByUserAndChat(
+        userId,
+        chatId,
+      );
       if (!membership) {
         logger.warn("User attempted to access chat without membership", {
           chatId: chatId.toString(),

@@ -56,11 +56,14 @@ export class MessageService {
           clientId,
         );
         if (existing) {
-          logger.info("Message already exists, returning existing (idempotent)", {
-            chatId: chatId.toString(),
-            clientId,
-            messageId: existing._id.toString(),
-          });
+          logger.info(
+            "Message already exists, returning existing (idempotent)",
+            {
+              chatId: chatId.toString(),
+              clientId,
+              messageId: existing._id.toString(),
+            },
+          );
           isNew = false;
           message = existing;
         } else {
@@ -95,13 +98,15 @@ export class MessageService {
           const chat = await this.chatRepository.findById(chatId);
           if (chat && chat.type === "dm") {
             // Get all memberships for the chat
-            const memberships = await this.membershipRepository.findByChat(
-              chatId,
-            );
+            const memberships =
+              await this.membershipRepository.findByChat(chatId);
 
             // Update both members to admin role
             for (const membership of memberships) {
-              await this.membershipRepository.updateRole(membership._id, "admin");
+              await this.membershipRepository.updateRole(
+                membership._id,
+                "admin",
+              );
             }
 
             logger.info("DM role promotion: both users now admin", {
@@ -175,7 +180,8 @@ export class MessageService {
 
       if (messages.length > limit) {
         messagesToReturn = messages.slice(0, limit);
-        nextCursor = messagesToReturn[messagesToReturn.length - 1]._id.toString();
+        nextCursor =
+          messagesToReturn[messagesToReturn.length - 1]._id.toString();
       }
 
       const dtos = messagesToReturn.map(toMessageDTO);
@@ -263,7 +269,8 @@ export class MessageService {
 
       if (results.length > limit) {
         messagesToReturn = results.slice(0, limit);
-        nextCursor = messagesToReturn[messagesToReturn.length - 1]._id.toString();
+        nextCursor =
+          messagesToReturn[messagesToReturn.length - 1]._id.toString();
       }
 
       const dtos = messagesToReturn.map(toMessageDTO);

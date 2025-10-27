@@ -16,7 +16,11 @@ export const AUTH_CONSTANTS = {
  */
 export function extractSessionCookie(headers: any): string | undefined {
   const cookies = headers["set-cookie"];
-  const cookieArray = Array.isArray(cookies) ? cookies : cookies ? [cookies] : [];
+  const cookieArray = Array.isArray(cookies)
+    ? cookies
+    : cookies
+      ? [cookies]
+      : [];
   const sessionCookie = cookieArray.find((c: string) =>
     c.includes(AUTH_CONSTANTS.SESSION_COOKIE_PREFIX),
   );
@@ -74,7 +78,9 @@ export async function registerTestUser(
   });
 
   if (response.status !== 201) {
-    throw new Error(`Failed to register user: ${response.status} ${response.body.message}`);
+    throw new Error(
+      `Failed to register user: ${response.status} ${response.body.message}`,
+    );
   }
 
   const token = extractAuthToken(response.body);
@@ -101,14 +107,20 @@ export async function registerTestUser(
  * @param password - User password
  * @returns Object containing token and user data
  */
-export async function loginTestUser(baseUrl: string, email: string, password: string) {
+export async function loginTestUser(
+  baseUrl: string,
+  email: string,
+  password: string,
+) {
   const response = await request(baseUrl).post("/v1/auth/login").send({
     email,
     password,
   });
 
   if (response.status !== 200) {
-    throw new Error(`Failed to login user: ${response.status} ${response.body.message}`);
+    throw new Error(
+      `Failed to login user: ${response.status} ${response.body.message}`,
+    );
   }
 
   const token = extractAuthToken(response.body);
@@ -138,10 +150,15 @@ export async function setupTestFamily(
   },
 ) {
   // Register user
-  const user = await registerTestUser(baseUrl, uniqueId, options?.prefix || "familyuser", {
-    name: options?.userName || "Family User",
-    birthdate: options?.userBirthdate,
-  });
+  const user = await registerTestUser(
+    baseUrl,
+    uniqueId,
+    options?.prefix || "familyuser",
+    {
+      name: options?.userName || "Family User",
+      birthdate: options?.userBirthdate,
+    },
+  );
 
   // Create family
   const familyResponse = await request(baseUrl)
@@ -166,7 +183,7 @@ export async function setupTestFamily(
   return {
     token: user.token,
     parentToken: user.token, // Alias for clarity in family context
-    userId: user.userId,
+    userId: user.userId, // From registerTestUser (better-auth user.id, already ObjectId format)
     email: user.email,
     familyId,
     family: familyResponse.body,
@@ -217,12 +234,16 @@ export async function addChildMember(
   }
 
   // Login as child to get token
-  const childLoginResponse = await loginTestUser(baseUrl, childEmail, childPassword);
+  const childLoginResponse = await loginTestUser(
+    baseUrl,
+    childEmail,
+    childPassword,
+  );
 
   return {
     childToken: childLoginResponse.token,
     childEmail,
-    childUserId: childLoginResponse.user.id,
+    childUserId: addMemberResponse.body.memberId, // Use memberId from add-member response (ObjectId)
     child: childLoginResponse.user,
   };
 }
@@ -251,9 +272,15 @@ export async function setupFamilyWithMembers(
   });
 
   // Add child member
-  const child = await addChildMember(baseUrl, family.familyId, family.token, uniqueId, {
-    name: options?.childName || "Child User",
-  });
+  const child = await addChildMember(
+    baseUrl,
+    family.familyId,
+    family.token,
+    uniqueId,
+    {
+      name: options?.childName || "Child User",
+    },
+  );
 
   return {
     parentToken: family.token,

@@ -1,7 +1,7 @@
 import request from "supertest";
+import { registerTestUser, setupTestUsers } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
 import { getTestApp } from "../helpers/test-app";
-import { registerTestUser, setupTestUsers } from "../helpers/auth-setup";
 
 describe("E2E: GET /v1/chats/:chatId - Get Chat", () => {
   let baseUrl: string;
@@ -145,7 +145,11 @@ describe("E2E: GET /v1/chats/:chatId - Get Chat", () => {
 
   describe("Error Cases", () => {
     it("should return 404 for non-existent chat", async () => {
-      const user = await registerTestUser(baseUrl, testCounter++, "notfounduser");
+      const user = await registerTestUser(
+        baseUrl,
+        testCounter++,
+        "notfounduser",
+      );
 
       // Try to get non-existent chat
       const fakeId = "507f1f77bcf86cd799439011"; // Valid ObjectId format but doesn't exist
@@ -193,7 +197,11 @@ describe("E2E: GET /v1/chats/:chatId - Get Chat", () => {
     });
 
     it("should return 400 for invalid chat ID format", async () => {
-      const user = await registerTestUser(baseUrl, testCounter++, "invalididuser");
+      const user = await registerTestUser(
+        baseUrl,
+        testCounter++,
+        "invalididuser",
+      );
 
       const response = await request(baseUrl)
         .get("/v1/chats/not-a-valid-id")
@@ -205,14 +213,18 @@ describe("E2E: GET /v1/chats/:chatId - Get Chat", () => {
     });
 
     it("should reject invalid ObjectId formats", async () => {
-      const user = await registerTestUser(baseUrl, testCounter++, "invalidobjectiduser");
+      const user = await registerTestUser(
+        baseUrl,
+        testCounter++,
+        "invalidobjectiduser",
+      );
 
       // Test IDs that are not 24 hex characters
       const invalidIds = [
-        "123",                           // Too short
-        "xyz123",                        // Non-hex characters
-        "12345678901234567890123x",     // Invalid hex character at end
-        "12345678901234567890123g",     // Invalid hex character
+        "123", // Too short
+        "xyz123", // Non-hex characters
+        "12345678901234567890123x", // Invalid hex character at end
+        "12345678901234567890123g", // Invalid hex character
       ];
 
       for (const invalidId of invalidIds) {

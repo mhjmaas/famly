@@ -1,0 +1,37 @@
+meta {
+  name: grant karma
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/karma/grant
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "userId": "{{childUserId}}",
+    "amount": 25,
+    "description": "Great job helping with chores!"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+script:post-response {
+  try {
+    const body = res.body;
+
+    if (body?.eventId) {
+      console.log(`Karma granted! Event ID: ${body.eventId}`);
+      console.log(`New total: ${body.totalKarma}`);
+    }
+  } catch (error) {
+    console.log('Failed to grant karma: ' + error?.message);
+  }
+}
