@@ -20,10 +20,11 @@
   - Define `KarmaHistoryResponse` interface with pagination fields
   - Export all types
 
-- [ ] 2.2 Write unit tests for domain types
+- [x] 2.2 Write unit tests for domain types
   - Test file: `apps/api/tests/unit/karma/karma.domain.test.ts`
   - Verify type definitions compile correctly
   - Test DTO type mappings (if applicable)
+  - ✅ Tests verify all type definitions and DTO mappings
 
 ## 3. Repository Layer
 
@@ -45,7 +46,7 @@
     - Return total count of events for pagination metadata
   - Export repository class
 
-- [ ] 3.2 Write unit tests for repository
+- [x] 3.2 Write unit tests for repository
   - Test file: `apps/api/tests/unit/karma/karma.repository.test.ts`
   - Mock MongoDB collections
   - Test `findMemberKarma` returns null when not found
@@ -55,6 +56,7 @@
   - Test `findKarmaEvents` pagination logic
   - Test `findKarmaEvents` cursor handling
   - All tests MUST pass before proceeding
+  - ✅ All repository tests passing
 
 ## 4. Service Layer
 
@@ -83,7 +85,7 @@
     - Return created event
   - Add comprehensive error handling and logging
 
-- [ ] 4.2 Write unit tests for service
+- [x] 4.2 Write unit tests for service
   - Test file: `apps/api/tests/unit/karma/karma.service.test.ts`
   - Mock repositories
   - Test `awardKarma` creates event and updates total
@@ -96,6 +98,7 @@
   - Test `grantKarma` validates recipient is family member
   - Test error handling for all methods
   - All tests MUST pass before proceeding
+  - ✅ All service tests passing with comprehensive coverage
 
 ## 5. Mapper Functions
 
@@ -108,12 +111,13 @@
     - Convert Dates to ISO 8601 strings
   - Export mapper functions
 
-- [ ] 5.2 Write unit tests for mappers
+- [x] 5.2 Write unit tests for mappers
   - Test file: `apps/api/tests/unit/karma/karma.mapper.test.ts`
   - Test `toMemberKarmaDTO` converts all fields correctly
   - Test `toKarmaEventDTO` converts all fields correctly
   - Test edge cases (null/undefined optional fields)
   - All tests MUST pass before proceeding
+  - ✅ All mapper tests passing
 
 ## 6. Validators
 
@@ -124,7 +128,7 @@
   - Validate `description` is optional string, max 500 characters
   - Export `grantKarmaSchema`
 
-- [ ] 6.2 Write unit tests for validators
+- [x] 6.2 Write unit tests for validators
   - Test file: `apps/api/tests/unit/karma/grant-karma.validator.test.ts`
   - Test valid grant request passes validation
   - Test negative amount is rejected
@@ -135,6 +139,7 @@
   - Test invalid userId format is rejected
   - Test missing required fields are rejected
   - All tests MUST pass before proceeding
+  - ✅ All validator tests passing
 
 ## 7. API Routes
 
@@ -319,7 +324,7 @@
   - Fix any failing tests before proceeding
   - ✅ All 783 E2E tests passing (1 skipped)
 
-- [ ] 11.3 Manual testing with Bruno or similar API client
+- [x] 11.3 Manual testing with Bruno or similar API client
   - Test GET `/v1/families/{familyId}/karma/balance` with authenticated user
   - Test GET `/v1/families/{familyId}/karma/history` with pagination
   - Test POST `/v1/families/{familyId}/karma/grant` as parent
@@ -327,6 +332,8 @@
   - Test task completion triggers karma award
   - Verify karma totals match event sums in database
   - Test authorization boundaries (non-members, children granting karma)
+  - ✅ All manual tests completed via Bruno API collection
+  - ✅ All endpoints verified working correctly
 
 ## 12. Bruno API Collection Updates
 
