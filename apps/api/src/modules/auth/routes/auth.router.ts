@@ -12,6 +12,8 @@ export function createAuthRouter(): Router {
   router.use(createRegisterRoute());
   router.use(createLoginRoute());
   router.use(createMeRoute());
+  // Note: Password reset routes are handled by Better Auth's native handler below
+  // to ensure the sendResetPassword callback is properly triggered
 
   // Mount Better Auth handler for all other endpoints:
   // - GET /token - Get new JWT access token

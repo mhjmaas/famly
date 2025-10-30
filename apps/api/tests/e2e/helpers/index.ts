@@ -26,5 +26,7 @@ export {
 } from "./socket-client";
 export { getTestApp } from "./test-app";
 export * from "./test-data-factory";
+// Email Testing Helpers
+export * from "./test-email";
 export * from "./test-scenarios";
 export * from "./token-manager";

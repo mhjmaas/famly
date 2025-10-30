@@ -1,5 +1,7 @@
 import { settings } from "@config/settings";
 import { getDb } from "@infra/mongo/client";
+import { sendPasswordResetEmail } from "@lib/email";
+import { logger } from "@lib/logger";
 import bcrypt from "bcrypt";
 import { betterAuth as betterAuthInit } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
@@ -67,6 +69,48 @@ function initAuth() {
         }) => {
           return await bcrypt.compare(password, hash);
         },
+      },
+      // Password reset configuration
+      sendResetPassword: async ({ user, url, token }, _request: Request) => {
+        // IMPORTANT: This callback is triggered by Better Auth when a password reset is requested
+        // It receives the user object, the complete reset URL with token, and the raw token
+        console.log("========================");
+        console.log("sendResetPassword callback TRIGGERED!");
+        console.log("User:", user.id, user.email);
+        console.log("URL:", url);
+        console.log("Token:", token);
+        console.log("========================");
+
+        logger.warn("sendResetPassword callback TRIGGERED!", {
+          userId: user.id,
+          email: user.email,
+          hasUrl: Boolean(url),
+          hasToken: Boolean(token),
+        });
+        try {
+          await sendPasswordResetEmail(user.email, url, token);
+          logger.info("Password reset email sent", {
+            userId: user.id,
+            email: user.email,
+          });
+        } catch (error) {
+          logger.error("Failed to send password reset email", {
+            userId: user.id,
+            email: user.email,
+            error: error instanceof Error ? error.message : String(error),
+          });
+          // Don't throw - we don't want to crash the app if email fails
+          // Better Auth will still return success to prevent email enumeration
+        }
+      },
+      // Token expires after 1 hour
+      resetPasswordTokenExpiresIn: 3600, // 1 hour in seconds
+      // Callback executed after successful password reset
+      onPasswordReset: async ({ user }, _request: Request) => {
+        logger.info("Password reset successful", {
+          userId: user.id,
+          email: user.email,
+        });
       },
     },
 
