@@ -137,6 +137,110 @@ describe("E2E: POST /v1/families/:familyId/karma/grant", () => {
 
       expect(response.body.totalKarma).toBe(10);
     });
+
+    it("should allow parent to deduct karma (negative grant)", async () => {
+      testCounter++;
+      const { familyId, parentToken, childUserId, childToken } =
+        await setupFamilyWithMembers(baseUrl, testCounter);
+
+      // First give karma
+      await request(baseUrl)
+        .post(`/v1/families/${familyId}/karma/grant`)
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({
+          userId: childUserId,
+          amount: 100,
+        })
+        .expect(201);
+
+      // Then deduct karma (penalty)
+      const response = await request(baseUrl)
+        .post(`/v1/families/${familyId}/karma/grant`)
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({
+          userId: childUserId,
+          amount: -50,
+          description: "Penalty for not completing chores",
+        })
+        .expect(201);
+
+      expect(response.body.totalKarma).toBe(50);
+      expect(response.body.amount).toBe(-50);
+
+      // Verify in history
+      const historyResponse = await request(baseUrl)
+        .get(`/v1/families/${familyId}/karma/history/${childUserId}`)
+        .set("Authorization", `Bearer ${childToken}`)
+        .expect(200);
+
+      expect(historyResponse.body.events).toHaveLength(2);
+      expect(historyResponse.body.events[0]).toMatchObject({
+        amount: -50,
+        source: "manual_grant",
+        description: "Penalty for not completing chores",
+      });
+    });
+
+    it("should allow negative karma total", async () => {
+      testCounter++;
+      const { familyId, parentToken, childUserId, childToken } =
+        await setupFamilyWithMembers(baseUrl, testCounter);
+
+      // Deduct karma without prior balance
+      const response = await request(baseUrl)
+        .post(`/v1/families/${familyId}/karma/grant`)
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({
+          userId: childUserId,
+          amount: -75,
+          description: "Major violation",
+        })
+        .expect(201);
+
+      expect(response.body.totalKarma).toBe(-75);
+
+      // Verify balance shows negative
+      const balanceResponse = await request(baseUrl)
+        .get(`/v1/families/${familyId}/karma/balance/${childUserId}`)
+        .set("Authorization", `Bearer ${childToken}`)
+        .expect(200);
+
+      expect(balanceResponse.body.totalKarma).toBe(-75);
+    });
+
+    it("should accept maximum positive amount (100,000)", async () => {
+      testCounter++;
+      const { familyId, parentToken, childUserId } =
+        await setupFamilyWithMembers(baseUrl, testCounter);
+
+      const response = await request(baseUrl)
+        .post(`/v1/families/${familyId}/karma/grant`)
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({
+          userId: childUserId,
+          amount: 100000,
+        })
+        .expect(201);
+
+      expect(response.body.totalKarma).toBe(100000);
+    });
+
+    it("should accept maximum negative amount (-100,000)", async () => {
+      testCounter++;
+      const { familyId, parentToken, childUserId } =
+        await setupFamilyWithMembers(baseUrl, testCounter);
+
+      const response = await request(baseUrl)
+        .post(`/v1/families/${familyId}/karma/grant`)
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({
+          userId: childUserId,
+          amount: -100000,
+        })
+        .expect(201);
+
+      expect(response.body.totalKarma).toBe(-100000);
+    });
   });
 
   describe("Validation Errors", () => {
@@ -189,7 +293,7 @@ describe("E2E: POST /v1/families/:familyId/karma/grant", () => {
         .expect(400);
     });
 
-    it("should reject amount greater than 1000", async () => {
+    it("should reject amount greater than 100,000", async () => {
       testCounter++;
       const { familyId, parentToken, childUserId } =
         await setupFamilyWithMembers(baseUrl, testCounter);
@@ -199,7 +303,22 @@ describe("E2E: POST /v1/families/:familyId/karma/grant", () => {
         .set("Authorization", `Bearer ${parentToken}`)
         .send({
           userId: childUserId,
-          amount: 1001,
+          amount: 100001,
+        })
+        .expect(400);
+    });
+
+    it("should reject amount less than -100,000", async () => {
+      testCounter++;
+      const { familyId, parentToken, childUserId } =
+        await setupFamilyWithMembers(baseUrl, testCounter);
+
+      await request(baseUrl)
+        .post(`/v1/families/${familyId}/karma/grant`)
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({
+          userId: childUserId,
+          amount: -100001,
         })
         .expect(400);
     });

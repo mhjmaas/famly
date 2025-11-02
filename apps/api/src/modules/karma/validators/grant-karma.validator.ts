@@ -8,7 +8,7 @@ import { z } from "zod";
  *
  * Validates:
  * - userId: Valid ObjectId string format
- * - amount: Positive integer between 1 and 1000
+ * - amount: Integer between -100,000 and 100,000 (positive for grants, negative for deductions/penalties)
  * - description: Optional string, max 500 characters
  */
 export const grantKarmaSchema = z.object({
@@ -22,8 +22,11 @@ export const grantKarmaSchema = z.object({
   amount: z
     .number()
     .int("Amount must be an integer")
-    .min(1, "Amount must be at least 1")
-    .max(1000, "Amount cannot exceed 1000"),
+    .min(-100000, "Amount cannot be less than -100,000")
+    .max(100000, "Amount cannot exceed 100,000")
+    .refine((val) => val !== 0, {
+      message: "Amount cannot be zero",
+    }),
 
   description: z
     .string()

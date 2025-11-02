@@ -32,7 +32,7 @@ describe("Grant Karma Validator", () => {
       }
     });
 
-    it("should accept minimum amount (1)", () => {
+    it("should accept minimum positive amount (1)", () => {
       const validInput = {
         userId: new ObjectId().toString(),
         amount: 1,
@@ -43,15 +43,41 @@ describe("Grant Karma Validator", () => {
       expect(result.success).toBe(true);
     });
 
-    it("should accept maximum amount (1000)", () => {
+    it("should accept maximum positive amount (100,000)", () => {
       const validInput = {
         userId: new ObjectId().toString(),
-        amount: 1000,
+        amount: 100000,
       };
 
       const result = grantKarmaSchema.safeParse(validInput);
 
       expect(result.success).toBe(true);
+    });
+
+    it("should accept minimum negative amount (-100,000)", () => {
+      const validInput = {
+        userId: new ObjectId().toString(),
+        amount: -100000,
+      };
+
+      const result = grantKarmaSchema.safeParse(validInput);
+
+      expect(result.success).toBe(true);
+    });
+
+    it("should accept negative amount (-50)", () => {
+      const validInput = {
+        userId: new ObjectId().toString(),
+        amount: -50,
+        description: "Penalty for not completing chores",
+      };
+
+      const result = grantKarmaSchema.safeParse(validInput);
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.amount).toBe(-50);
+      }
     });
 
     it("should reject invalid ObjectId", () => {
@@ -86,7 +112,7 @@ describe("Grant Karma Validator", () => {
       expect(result.success).toBe(false);
     });
 
-    it("should reject amount less than 1", () => {
+    it("should reject zero amount", () => {
       const invalidInput = {
         userId: new ObjectId().toString(),
         amount: 0,
@@ -97,10 +123,10 @@ describe("Grant Karma Validator", () => {
       expect(result.success).toBe(false);
     });
 
-    it("should reject negative amount", () => {
+    it("should reject amount below -100,000", () => {
       const invalidInput = {
         userId: new ObjectId().toString(),
-        amount: -10,
+        amount: -100001,
       };
 
       const result = grantKarmaSchema.safeParse(invalidInput);
@@ -108,10 +134,10 @@ describe("Grant Karma Validator", () => {
       expect(result.success).toBe(false);
     });
 
-    it("should reject amount greater than 1000", () => {
+    it("should reject amount greater than 100,000", () => {
       const invalidInput = {
         userId: new ObjectId().toString(),
-        amount: 1001,
+        amount: 100001,
       };
 
       const result = grantKarmaSchema.safeParse(invalidInput);
