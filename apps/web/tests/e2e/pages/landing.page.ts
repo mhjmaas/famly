@@ -181,4 +181,39 @@ export class LandingPage {
       cloud: this.page.getByTestId('pricing-cloud'),
     };
   }
+
+  /**
+   * Switch language using the language selector in footer
+   */
+  async switchLanguage(locale: 'en-US' | 'nl-NL') {
+    const localeMap = {
+      'en-US': 'EN',
+      'nl-NL': 'NL',
+    };
+
+    // Find the language selector group and get the button with the target locale
+    const languageGroup = this.page.locator('[role="group"]').filter({
+      has: this.page.getByRole('button').filter({ hasText: /EN|NL/ })
+    });
+
+    const languageButton = languageGroup.getByRole('button').filter({
+      hasText: new RegExp(localeMap[locale])
+    }).first();
+
+    // Scroll to ensure button is visible
+    await languageButton.scrollIntoViewIfNeeded();
+    await languageButton.click();
+
+    // Wait for navigation to complete - match locale anywhere in path
+    await this.page.waitForURL(`**/${locale}**`, { timeout: 10000 });
+  }
+
+  /**
+   * Get current locale from URL
+   */
+  async getCurrentLocale(): Promise<'en-US' | 'nl-NL'> {
+    const url = this.page.url();
+    const match = url.match(/\/(en-US|nl-NL)/);
+    return (match?.[1] as 'en-US' | 'nl-NL') || 'en-US';
+  }
 }
