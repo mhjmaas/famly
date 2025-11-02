@@ -19,7 +19,7 @@
     "update:claude:tree": "bash scripts/update-claude-tree.sh",
     "claude": "pnpm run update:claude:tree && claude",
     "update:codex:tree": "bash scripts/update-codex-tree.sh",
-    "codex": "export CODEX_HOME=./.codex && pnpm run update:codex:tree && codex"
+    "codex": "export CODEX_HOME=~/.codex && pnpm run update:codex:tree && codex"
   },
   "keywords": [],
   "author": "",
