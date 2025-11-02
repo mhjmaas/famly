@@ -8,6 +8,7 @@ import {
   AUTH_CONSTANTS,
   extractAuthToken,
   generateUniqueEmail,
+  loginTestUser,
 } from "./auth-setup";
 
 /**
@@ -69,7 +70,7 @@ export class TestUserBuilder {
 
     if (response.status !== 201) {
       throw new Error(
-        `Failed to register user: ${response.status} ${response.body.message}`,
+        `Failed to register user: ${response.status} ${response.body.error}`,
       );
     }
 
@@ -170,7 +171,7 @@ export class TestFamilyBuilder {
 
     if (familyResponse.status !== 201) {
       throw new Error(
-        `Failed to create family: ${familyResponse.status} ${familyResponse.body.message}`,
+        `Failed to create family: ${familyResponse.status} ${familyResponse.body.error}`,
       );
     }
 
@@ -183,18 +184,21 @@ export class TestFamilyBuilder {
     // Add additional members
     const addedMembers = [];
     for (const member of this.data.members) {
+      const memberEmail = generateUniqueEmail(
+        `${member.role.toLowerCase()}`,
+        this.uniqueId + addedMembers.length,
+      );
+      const memberPassword =
+        member.role === "Child"
+          ? AUTH_CONSTANTS.CHILD_PASSWORD
+          : AUTH_CONSTANTS.DEFAULT_PASSWORD;
+
       const memberResponse = await request(this.baseUrl)
         .post(`/v1/families/${familyId}/members`)
         .set("Authorization", `Bearer ${parent.token}`)
         .send({
-          email: generateUniqueEmail(
-            `${member.role.toLowerCase()}`,
-            this.uniqueId + addedMembers.length,
-          ),
-          password:
-            member.role === "Child"
-              ? AUTH_CONSTANTS.CHILD_PASSWORD
-              : AUTH_CONSTANTS.DEFAULT_PASSWORD,
+          email: memberEmail,
+          password: memberPassword,
           name: member.name,
           birthdate: member.birthdate,
           role: member.role,
@@ -202,11 +206,22 @@ export class TestFamilyBuilder {
 
       if (memberResponse.status !== 201) {
         throw new Error(
-          `Failed to add family member: ${memberResponse.status} ${memberResponse.body.message}`,
+          `Failed to add family member: ${memberResponse.status} ${memberResponse.body.error}`,
         );
       }
 
-      addedMembers.push(memberResponse.body);
+      // Login the member to get their token
+      const loginResponse = await loginTestUser(
+        this.baseUrl,
+        memberEmail,
+        memberPassword,
+      );
+
+      addedMembers.push({
+        ...memberResponse.body,
+        token: loginResponse.token,
+        email: memberEmail,
+      });
     }
 
     return {

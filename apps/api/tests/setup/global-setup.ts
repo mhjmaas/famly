@@ -8,7 +8,7 @@ declare global {
   var __MONGO_URI__: string;
   var __MONGO_CONTAINER__: StartedMongoDBContainer;
   var __SERVER_PROCESS__: ChildProcess;
-  var __TEST_BASE_URL__: string;
+  var __TEST_baseUrl__: string;
 }
 
 export default async function globalSetup() {
@@ -101,7 +101,7 @@ export default async function globalSetup() {
 
   const baseUrl = `http://localhost:${serverPort}`;
   global.__SERVER_PROCESS__ = serverProcess;
-  global.__TEST_BASE_URL__ = baseUrl;
+  global.__TEST_baseUrl__ = baseUrl;
 
   console.log(`Shared API server ready at ${baseUrl}`);
 }

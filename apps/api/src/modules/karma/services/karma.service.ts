@@ -5,6 +5,7 @@ import type { FamilyMembershipRepository } from "@modules/family/repositories/fa
 import { ObjectId } from "mongodb";
 import type {
   AwardKarmaInput,
+  DeductKarmaInput,
   KarmaEvent,
   KarmaHistoryResponse,
   MemberKarma,
@@ -297,6 +298,90 @@ export class KarmaService {
         familyId: familyId.toString(),
         userId: userId.toString(),
         grantedBy: grantedBy.toString(),
+        error,
+      });
+
+      throw error;
+    }
+  }
+
+  /**
+   * Deduct karma from a user (for reward redemption)
+   *
+   * @param input - Deduct karma input with familyId, userId, amount, claimId, rewardName
+   * @returns The created karma event (with negative amount)
+   * @throws HttpError if user is not a family member or has insufficient karma
+   */
+  async deductKarma(input: DeductKarmaInput): Promise<KarmaEvent> {
+    try {
+      // Verify user is a family member
+      const membership = await this.membershipRepository.findByFamilyAndUser(
+        input.familyId,
+        input.userId,
+      );
+
+      if (!membership) {
+        throw HttpError.forbidden("User is not a member of this family");
+      }
+
+      // Verify sufficient karma balance
+      const memberKarma = await this.karmaRepository.findMemberKarma(
+        input.familyId,
+        input.userId,
+      );
+
+      const currentKarma = memberKarma?.totalKarma ?? 0;
+      if (currentKarma < input.amount) {
+        throw HttpError.badRequest(
+          `Insufficient karma. Required: ${input.amount}, Available: ${currentKarma}`,
+        );
+      }
+
+      logger.info("Deducting karma", {
+        familyId: input.familyId.toString(),
+        userId: input.userId.toString(),
+        amount: input.amount,
+        rewardName: input.rewardName,
+        claimId: input.claimId,
+      });
+
+      // Create karma event with negative amount
+      const karmaEvent = await this.karmaRepository.createKarmaEvent({
+        familyId: input.familyId,
+        userId: input.userId,
+        amount: -input.amount, // Negative for deduction
+        source: "reward_redemption",
+        description: `Redeemed reward: ${input.rewardName}`,
+        metadata: {
+          claimId: input.claimId,
+        },
+      });
+
+      // Update member karma total atomically (with negative amount)
+      await this.karmaRepository.upsertMemberKarma(
+        input.familyId,
+        input.userId,
+        -input.amount,
+      );
+
+      logger.info("Karma deducted successfully", {
+        eventId: karmaEvent._id.toString(),
+        familyId: input.familyId.toString(),
+        userId: input.userId.toString(),
+        amount: input.amount,
+        claimId: input.claimId,
+      });
+
+      return karmaEvent;
+    } catch (error) {
+      if (error instanceof HttpError) {
+        throw error;
+      }
+
+      logger.error("Failed to deduct karma", {
+        familyId: input.familyId.toString(),
+        userId: input.userId.toString(),
+        amount: input.amount,
         error,
       });
 

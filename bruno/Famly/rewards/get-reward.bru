@@ -1,0 +1,60 @@
+meta {
+  name: Get Reward
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/rewards/{{currentRewardId}}
+  body: none
+  auth: inherit
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+docs {
+  # Get Reward Details
+  
+  Retrieves detailed information about a specific reward including aggregated metadata. Any family member can get reward details.
+  
+  ## Authorization
+  - Requires authentication
+  - Must be a family member
+  
+  ## Path Parameters
+  - `reward_id`: The reward ID to retrieve
+  
+  ## Responses
+  - `200 OK`: Reward details with metadata
+    - Returns: RewardDetailsDTO with aggregated metadata
+  - `401 Unauthorized`: Not authenticated
+  - `403 Forbidden`: Not a family member
+  - `404 Not Found`: Reward not found
+  
+  ## Example Success Response (200)
+  ```json
+  {
+    "_id": "507f1f77bcf86cd799439011",
+    "familyId": "507f191e810c19729de860ea",
+    "name": "Movie Night",
+    "karmaCost": 50,
+    "description": "One movie night of their choice",
+    "imageUrl": "https://example.com/movie.png",
+    "createdBy": "507f1f77bcf86cd799439012",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-15T10:30:00Z",
+    "memberFavourite": false,
+    "memberClaimCount": 1,
+    "totalClaimCount": 5,
+    "totalFavouriteCount": 3
+  }
+  ```
+  
+  ## Notes
+  - `memberClaimCount`: How many times this member has claimed this reward
+  - `memberFavourite`: Whether this member has marked it as favourite
+  - `totalClaimCount`: Total claims across all family members
+  - `totalFavouriteCount`: Total members who marked as favourite
+}

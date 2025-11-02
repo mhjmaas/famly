@@ -1,0 +1,69 @@
+meta {
+  name: List Rewards
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/rewards
+  body: none
+  auth: inherit
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+docs {
+  # List Rewards
+  
+  Retrieves all rewards for a family. Any family member can list rewards.
+  
+  ## Authorization
+  - Requires authentication
+  - Must be a family member
+  
+  ## Query Parameters
+  None
+  
+  ## Responses
+  - `200 OK`: List of rewards
+    - Returns: Array of RewardDTO objects
+  - `401 Unauthorized`: Not authenticated
+  - `403 Forbidden`: Not a family member
+  
+  ## Example Success Response (200)
+  ```json
+  [
+    {
+      "_id": "507f1f77bcf86cd799439011",
+      "familyId": "507f191e810c19729de860ea",
+      "name": "Movie Night",
+      "karmaCost": 50,
+      "description": "One movie night of their choice",
+      "imageUrl": "https://example.com/movie.png",
+      "createdBy": "507f1f77bcf86cd799439012",
+      "createdAt": "2024-01-15T10:30:00Z",
+      "updatedAt": "2024-01-15T10:30:00Z",
+      "memberFavourite": false,
+      "memberClaimCount": 0
+    },
+    {
+      "_id": "507f1f77bcf86cd799439013",
+      "familyId": "507f191e810c19729de860ea",
+      "name": "Ice Cream",
+      "karmaCost": 25,
+      "description": "Ice cream outing",
+      "createdBy": "507f1f77bcf86cd799439012",
+      "createdAt": "2024-01-16T11:00:00Z",
+      "updatedAt": "2024-01-16T11:00:00Z",
+      "memberFavourite": true,
+      "memberClaimCount": 2
+    }
+  ]
+  ```
+  
+  ## Notes
+  - Results include member-specific metadata (favourite status, member claim count)
+  - Different members see different metadata for the same rewards
+}

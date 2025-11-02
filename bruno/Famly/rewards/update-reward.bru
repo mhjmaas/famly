@@ -1,0 +1,70 @@
+meta {
+  name: Update Reward
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/v1/families/{{family_id}}/rewards/{{currentRewardId}}
+  body: json
+  auth: inherit
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+    "name": "Movie Night",
+    "karmaCost": 75,
+    "description": "One movie night of their choice (updated!)",
+    "imageUrl": "https://example.com/movie-updated.png"
+  }
+}
+
+docs {
+  # Update Reward
+  
+  Updates an existing reward. Only parents can update rewards. Can update rewards even if they have existing claims.
+  
+  ## Authorization
+  - Requires authentication
+  - Must be parent role in the family
+  
+  ## Path Parameters
+  - `reward_id`: The reward ID to update
+  
+  ## Request Body (all fields optional)
+  - `name` (string): Reward name (1-100 characters)
+  - `karmaCost` (number): Karma cost (1-1000)
+  - `description` (string): Reward description (max 500 characters)
+  - `imageUrl` (string): Reward image URL (valid HTTP/HTTPS)
+  
+  ## Responses
+  - `200 OK`: Reward updated successfully
+    - Returns: Updated RewardDTO
+  - `400 Bad Request`: Validation error
+  - `401 Unauthorized`: Not authenticated
+  - `403 Forbidden`: Not a parent in this family
+  - `404 Not Found`: Reward not found
+  
+  ## Example Success Response (200)
+  ```json
+  {
+    "_id": "507f1f77bcf86cd799439011",
+    "familyId": "507f191e810c19729de860ea",
+    "name": "Movie Night",
+    "karmaCost": 75,
+    "description": "One movie night of their choice (updated!)",
+    "imageUrl": "https://example.com/movie-updated.png",
+    "createdBy": "507f1f77bcf86cd799439012",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-15T14:45:00Z"
+  }
+  ```
+  
+  ## Notes
+  - Can update rewards with pending or completed claims
+  - Partial updates supported (only provide fields to change)
+}

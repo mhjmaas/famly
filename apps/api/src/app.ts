@@ -8,9 +8,16 @@ import { searchMessagesRoute } from "./modules/chat/routes/search-messages.route
 import { createDiaryRouter } from "./modules/diary";
 import { createFamiliesRouter } from "./modules/family/routes";
 import { createHealthRouter } from "./routes/health";
+import { getTaskService } from "./modules/tasks/services/task.service.instance";
+import { initializeRewardsIntegration } from "./modules/rewards/init";
 
 export const createApp = (): Express => {
   const app = express();
+
+  // Initialize module integrations
+  // This must happen before routes are mounted
+  const taskService = getTaskService();
+  initializeRewardsIntegration(taskService);
 
   app.disable("x-powered-by");
 

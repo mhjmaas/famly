@@ -306,4 +306,93 @@ describe("createTaskSchema", () => {
       expect(result.success).toBe(false);
     });
   });
+
+  describe("metadata validation", () => {
+    it("should accept task with karma metadata", () => {
+      const input = {
+        name: "Task",
+        assignment: {
+          type: "unassigned" as const,
+        },
+        metadata: {
+          karma: 50,
+        },
+      };
+
+      const result = createTaskSchema.safeParse(input);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.metadata?.karma).toBe(50);
+      }
+    });
+
+    it("should accept task with claimId metadata", () => {
+      const claimId = new ObjectId().toString();
+      const input = {
+        name: "Provide reward",
+        assignment: {
+          type: "role" as const,
+          role: "parent" as const,
+        },
+        metadata: {
+          claimId,
+        },
+      };
+
+      const result = createTaskSchema.safeParse(input);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.metadata?.claimId).toBe(claimId);
+      }
+    });
+
+    it("should accept task with both karma and claimId metadata", () => {
+      const claimId = new ObjectId().toString();
+      const input = {
+        name: "Task",
+        assignment: {
+          type: "unassigned" as const,
+        },
+        metadata: {
+          karma: 30,
+          claimId,
+        },
+      };
+
+      const result = createTaskSchema.safeParse(input);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.metadata?.karma).toBe(30);
+        expect(result.data.metadata?.claimId).toBe(claimId);
+      }
+    });
+
+    it("should accept task without metadata", () => {
+      const input = {
+        name: "Task",
+        assignment: {
+          type: "unassigned" as const,
+        },
+      };
+
+      const result = createTaskSchema.safeParse(input);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.metadata).toBeUndefined();
+      }
+    });
+
+    it("should accept task with empty metadata object", () => {
+      const input = {
+        name: "Task",
+        assignment: {
+          type: "unassigned" as const,
+        },
+        metadata: {},
+      };
+
+      const result = createTaskSchema.safeParse(input);
+      expect(result.success).toBe(true);
+    });
+  });
 });

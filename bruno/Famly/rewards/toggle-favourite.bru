@@ -1,0 +1,71 @@
+meta {
+  name: Toggle Favourite
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/rewards/{{currentRewardId}}/favourite
+  body: json
+  auth: inherit
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+    "isFavourite": true
+  }
+}
+
+docs {
+  # Toggle Favourite
+  
+  Marks or unmarks a reward as a member's favourite. Any family member can manage their own favourites. Favourite status is per-member and independent of claims.
+  
+  ## Authorization
+  - Requires authentication
+  - Must be a family member
+  
+  ## Path Parameters
+  - `reward_id`: The reward ID to toggle favourite for
+  
+  ## Request Body
+  - `isFavourite` (boolean, required): True to mark as favourite, false to unmark
+  
+  ## Responses
+  - `200 OK`: Favourite status updated
+    - Returns: Updated RewardDetailsDTO with memberFavourite field
+  - `400 Bad Request`: Validation error
+  - `401 Unauthorized`: Not authenticated
+  - `403 Forbidden`: Not a family member
+  - `404 Not Found`: Reward not found
+  
+  ## Example Success Response (200)
+  ```json
+  {
+    "_id": "507f1f77bcf86cd799439011",
+    "familyId": "507f191e810c19729de860ea",
+    "name": "Movie Night",
+    "karmaCost": 50,
+    "description": "One movie night of their choice",
+    "imageUrl": "https://example.com/movie.png",
+    "createdBy": "507f1f77bcf86cd799439012",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-15T10:30:00Z",
+    "memberFavourite": true,
+    "memberClaimCount": 1,
+    "totalClaimCount": 5,
+    "totalFavouriteCount": 4
+  }
+  ```
+  
+  ## Notes
+  - Favourite status is per-member (different members can have different favourites for same reward)
+  - Independent of claim status (can favourite without claiming)
+  - Persists across operations
+  - Can toggle on/off multiple times
+  - totalFavouriteCount shows how many family members have this as favourite
+}

@@ -12,11 +12,40 @@ patch {
 
 body:json {
   {
-    "completedAt": "2025-10-27"
+    "completedAt": "{{$isoTimestamp}}"
   }
 }
 
 settings {
   encodeUrl: true
   timeout: 0
+}
+
+docs {
+  # Complete Task
+
+  Marks a task as completed. When a task is completed:
+  - If the task has karma metadata, karma is automatically awarded
+  - If the task is linked to a reward claim (has metadata.claimId), the claim is automatically completed and karma is deducted
+
+  ## Authorization
+  - Requires authentication
+  - Must be a family member
+
+  ## URL Parameters
+  - `currentTaskId` (string, required): The ID of the task to complete
+
+  ## Request Body
+  - `completedAt` (string, required): ISO 8601 timestamp of completion
+
+  ## Responses
+  - `200 OK`: Task completed successfully
+  - `401 Unauthorized`: Not authenticated
+  - `403 Forbidden`: Not a family member
+  - `404 Not Found`: Task not found
+
+  ## Notes
+  - For reward claim tasks, this triggers automatic claim completion and karma deduction
+  - Karma is only awarded/deducted once, even if called multiple times
+  - Use $isoTimestamp for current time
 }

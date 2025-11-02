@@ -45,6 +45,7 @@ export const updateTaskSchema = z.object({
         .min(1, "Karma must be at least 1")
         .max(1000, "Karma cannot exceed 1000")
         .optional(),
+      claimId: z.string().optional(),
     })
     .optional(),
 });

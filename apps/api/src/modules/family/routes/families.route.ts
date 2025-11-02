@@ -2,9 +2,11 @@ import { createFamilyDiaryRouter } from "@modules/diary";
 import { createKarmaRouter } from "@modules/karma";
 import { createShoppingListsRouter } from "@modules/shopping-lists";
 import { createTasksRouter } from "@modules/tasks";
+import { rewardsRouter } from "@modules/rewards/routes/rewards.router";
 import { Router } from "express";
 import { createAddMemberRoute } from "./add-member.route";
 import { createCreateFamilyRoute } from "./create-family.route";
+import { createGetMemberKarmaRoute } from "./get-member-karma.route";
 import { createListFamiliesRoute } from "./list-families.route";
 import { createRemoveMemberRoute } from "./remove-member.route";
 
@@ -41,6 +43,12 @@ export function createFamiliesRouter(): Router {
 
   // Mount karma router for /:familyId/karma/* paths
   router.use("/:familyId/karma", createKarmaRouter());
+
+  // Mount convenience karma route for /:familyId/members/:memberId/karma
+  router.use("/:familyId", createGetMemberKarmaRoute());
+
+  // Mount rewards router for /:familyId/rewards/* and /:familyId/claims/* paths
+  router.use("/:familyId", rewardsRouter());
 
   return router;
 }

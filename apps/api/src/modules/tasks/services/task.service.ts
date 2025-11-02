@@ -7,13 +7,26 @@ import type { KarmaService } from "@modules/karma";
 import type { ObjectId } from "mongodb";
 import type { CreateTaskInput, Task, UpdateTaskInput } from "../domain/task";
 import type { TaskRepository } from "../repositories/task.repository";
+import type { TaskCompletionHook } from "../hooks/task-completion.hook";
+import { TaskCompletionHookRegistry } from "../hooks/task-completion.hook";
 
 export class TaskService {
+  private hookRegistry: TaskCompletionHookRegistry;
+
   constructor(
     private taskRepository: TaskRepository,
     private membershipRepository: FamilyMembershipRepository,
     private karmaService?: KarmaService, // Optional to avoid breaking existing instantiations
-  ) {}
+  ) {
+    this.hookRegistry = new TaskCompletionHookRegistry();
+  }
+
+  /**
+   * Register a task completion hook
+   */
+  registerCompletionHook(hook: TaskCompletionHook): void {
+    this.hookRegistry.register(hook);
+  }
 
   /**
    * Create a new task
@@ -223,6 +236,26 @@ export class TaskService {
             error,
           });
           // Don't throw - task completion should succeed even if karma fails
+        }
+      }
+
+      // Invoke task completion hooks if task was just completed
+      if (input.completedAt && !existingTask.completedAt) {
+        try {
+          await this.hookRegistry.invokeHooks(updatedTask, userId, (error) => {
+            logger.error("Task completion hook failed", {
+              taskId: taskId.toString(),
+              userId: userId.toString(),
+              error,
+            });
+          });
+        } catch (error) {
+          logger.error("Unexpected error invoking task completion hooks", {
+            taskId: taskId.toString(),
+            userId: userId.toString(),
+            error,
+          });
+          // Don't throw - task completion should succeed even if hook fails
         }
       }
 

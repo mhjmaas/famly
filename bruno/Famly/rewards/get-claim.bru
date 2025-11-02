@@ -1,0 +1,58 @@
+meta {
+  name: Get Claim
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/claims/{{currentClaimId}}
+  body: none
+  auth: inherit
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+docs {
+  # Get Claim
+  
+  Retrieves a specific claim by ID. Members can view their own claims, parents can view any claim in the family.
+  
+  ## Authorization
+  - Requires authentication
+  - Must be a family member
+  - Members can only view their own claims
+  - Parents can view any family claim
+  
+  ## URL Parameters
+  - `claim_id` (string, required): The ID of the claim to retrieve
+  
+  ## Responses
+  - `200 OK`: Claim retrieved successfully
+    - Returns: ClaimDTO object
+  - `401 Unauthorized`: Not authenticated
+  - `403 Forbidden`: Not a family member or not authorized to view this claim
+  - `404 Not Found`: Claim not found
+  
+  ## Example Success Response (200)
+  ```json
+  {
+    "_id": "507f1f77bcf86cd799439020",
+    "rewardId": "507f1f77bcf86cd799439011",
+    "familyId": "507f191e810c19729de860ea",
+    "memberId": "507f1f77bcf86cd799439015",
+    "status": "completed",
+    "autoTaskId": "507f1f77bcf86cd799439021",
+    "completedBy": "507f191e810c19729de860eb",
+    "createdAt": "2024-01-15T11:00:00Z",
+    "updatedAt": "2024-01-15T11:30:00Z",
+    "completedAt": "2024-01-15T11:30:00Z"
+  }
+  ```
+  
+  ## Notes
+  - Use this to check claim status after task completion
+  - Status can be: "pending", "completed", or "cancelled"
+  - Includes autoTaskId for linking to the approval task
+}
