@@ -267,9 +267,7 @@ describe("E2E: Reward Favourite Functionality", () => {
         .set("Authorization", `Bearer ${childToken}`);
 
       if (listResponse.status === 200 && Array.isArray(listResponse.body)) {
-        const reward = listResponse.body.find(
-          (r: any) => r._id === rewardId,
-        );
+        const reward = listResponse.body.find((r: any) => r._id === rewardId);
         if (reward) {
           // Verify reward has favourite info in list
           expect(reward).toHaveProperty("memberFavourite");
@@ -340,7 +338,9 @@ describe("E2E: Reward Favourite Functionality", () => {
       const fakeRewardId = new ObjectId().toString();
 
       const response = await request(baseUrl)
-        .post(`/v1/families/${family.familyId}/rewards/${fakeRewardId}/favourite`)
+        .post(
+          `/v1/families/${family.familyId}/rewards/${fakeRewardId}/favourite`,
+        )
         .set("Authorization", `Bearer ${childToken}`)
         .send({
           isFavourite: true,

@@ -1,0 +1,65 @@
+meta {
+  name: Create Recipe
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/families/:currentFamilyId/recipes
+  body: json
+  auth: inherit
+}
+
+params:path {
+  currentFamilyId: {{currentFamilyId}}
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Pasta Carbonara",
+    "description": "Classic Roman pasta with eggs, cheese, and bacon",
+    "steps": [
+      "Cook pasta until al dente",
+      "Make sauce with eggs and cheese",
+      "Combine pasta with sauce and bacon"
+    ],
+    "tags": ["italian", "pasta", "breakfast"]
+  }
+}
+
+docs {
+  # Create Recipe
+
+  Create a new recipe for a family.
+
+  ## Request Body
+
+  - `name` (string, required): Recipe name (1-200 characters)
+  - `description` (string, required): Recipe description (1-2000 characters)
+  - `steps` (array, required): Array of cooking steps (minimum 1, each 1-500 characters)
+  - `tags` (array, optional): Array of tags (max 20 tags, each 1-50 characters)
+
+  ## Response
+
+  Returns the created recipe with the following properties:
+  - `_id`: Unique identifier
+  - `familyId`: ID of the family
+  - `name`: Recipe name
+  - `description`: Recipe description
+  - `steps`: Array of cooking steps
+  - `tags`: Array of tags
+  - `createdBy`: ID of the user who created it
+  - `createdAt`: Creation timestamp
+  - `updatedAt`: Last update timestamp
+
+  ## Status Codes
+
+  - `201`: Recipe created successfully
+  - `400`: Validation error
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not a family member)
+}

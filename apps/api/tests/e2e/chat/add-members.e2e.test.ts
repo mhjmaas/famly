@@ -5,7 +5,7 @@ import { getTestApp } from "../helpers/test-app";
 
 describe("E2E: POST /v1/chats/:chatId/members - Add Members", () => {
   let baseUrl: string;
-  let testCounter = 0;
+  let _testCounter = 0;
 
   beforeAll(() => {
     baseUrl = getTestApp();
@@ -13,7 +13,7 @@ describe("E2E: POST /v1/chats/:chatId/members - Add Members", () => {
 
   beforeEach(async () => {
     await cleanDatabase();
-    testCounter++;
+    _testCounter++;
   });
 
   describe("Success Cases", () => {

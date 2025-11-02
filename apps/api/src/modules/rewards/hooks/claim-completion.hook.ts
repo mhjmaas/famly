@@ -1,11 +1,11 @@
 import { logger } from "@lib/logger";
-import type { TaskCompletionHook } from "@modules/tasks/hooks/task-completion.hook";
+import type { KarmaService } from "@modules/karma";
 import type { Task } from "@modules/tasks/domain/task";
+import type { TaskCompletionHook } from "@modules/tasks/hooks/task-completion.hook";
 import { ObjectId } from "mongodb";
 import type { ClaimRepository } from "../repositories/claim.repository";
-import type { RewardRepository } from "../repositories/reward.repository";
 import type { MetadataRepository } from "../repositories/metadata.repository";
-import type { KarmaService } from "@modules/karma";
+import type { RewardRepository } from "../repositories/reward.repository";
 
 /**
  * Hook that completes reward claims when their associated auto-task is completed

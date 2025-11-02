@@ -2,9 +2,9 @@ import { HttpError } from "@lib/http-error";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
+import { toMemberKarmaDTO } from "@modules/karma/lib/karma.mapper";
 import { KarmaRepository } from "@modules/karma/repositories/karma.repository";
 import { KarmaService } from "@modules/karma/services/karma.service";
-import { toMemberKarmaDTO } from "@modules/karma/lib/karma.mapper";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import { ObjectId } from "mongodb";
@@ -56,8 +56,11 @@ export function createGetMemberKarmaRoute(): Router {
 
         // Get karma balance using karma service
         const karmaRepository = new KarmaRepository();
-        const karmaService = new KarmaService(karmaRepository, membershipRepository);
-        
+        const karmaService = new KarmaService(
+          karmaRepository,
+          membershipRepository,
+        );
+
         const memberKarma = await karmaService.getMemberKarma(
           familyId,
           userId,

@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
-import { RewardRepository } from "@/modules/rewards/repositories/reward.repository";
 import type { Reward } from "@/modules/rewards/domain/reward";
+import { RewardRepository } from "@/modules/rewards/repositories/reward.repository";
 
 // Mock logger to avoid env config errors
 jest.mock("@lib/logger", () => ({
@@ -167,9 +167,7 @@ describe("RewardRepository", () => {
         updatedAt: new Date(),
       };
 
-      mockCollection.findOneAndUpdate.mockResolvedValue({
-        value: updatedReward,
-      });
+      mockCollection.findOneAndUpdate.mockResolvedValue(updatedReward);
 
       const input = {
         name: "Updated reward",
@@ -186,9 +184,7 @@ describe("RewardRepository", () => {
 
     it("should update only provided fields", async () => {
       const rewardId = new ObjectId();
-      mockCollection.findOneAndUpdate.mockResolvedValue({
-        value: { _id: rewardId },
-      });
+      mockCollection.findOneAndUpdate.mockResolvedValue({ _id: rewardId });
 
       await repository.update(rewardId, { name: "New name" });
 
@@ -198,7 +194,7 @@ describe("RewardRepository", () => {
     });
 
     it("should return null when reward not found", async () => {
-      mockCollection.findOneAndUpdate.mockResolvedValue({ value: null });
+      mockCollection.findOneAndUpdate.mockResolvedValue(null);
 
       const result = await repository.update(new ObjectId(), { name: "Test" });
 

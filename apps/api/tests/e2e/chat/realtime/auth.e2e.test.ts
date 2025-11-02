@@ -40,7 +40,7 @@ describe("E2E: Socket.IO - Authentication", () => {
       let connectionFailed = false;
       try {
         await connectSocketClient(baseUrl, "invalid.jwt.token", 5000);
-      } catch (err) {
+      } catch (_err) {
         connectionFailed = true;
       }
 
@@ -51,7 +51,7 @@ describe("E2E: Socket.IO - Authentication", () => {
       let connectionFailed = false;
       try {
         await connectSocketClient(baseUrl, "not-a-jwt", 5000);
-      } catch (err) {
+      } catch (_err) {
         connectionFailed = true;
       }
 
@@ -67,7 +67,7 @@ describe("E2E: Socket.IO - Authentication", () => {
         const expiredToken =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjB9.invalid";
         await connectSocketClient(baseUrl, expiredToken, 5000);
-      } catch (err) {
+      } catch (_err) {
         connectionFailed = true;
       }
 
@@ -91,7 +91,7 @@ describe("E2E: Socket.IO - Authentication", () => {
       let connectionFailed = false;
       try {
         await connectSocketClient(baseUrl, "invalid-session-token", 5000);
-      } catch (err) {
+      } catch (_err) {
         connectionFailed = true;
       }
 
@@ -199,7 +199,7 @@ describe("E2E: Socket.IO - Authentication", () => {
       let errorOccurred = false;
       try {
         await connectSocketClient(baseUrl, "invalid.token", 5000);
-      } catch (err) {
+      } catch (_err) {
         errorOccurred = true;
       }
 
@@ -248,7 +248,7 @@ describe("E2E: Socket.IO - Authentication", () => {
         const invalidToken =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U";
         await connectSocketClient(baseUrl, invalidToken, 5000);
-      } catch (err) {
+      } catch (_err) {
         connectionFailed = true;
       }
 

@@ -1,7 +1,10 @@
 import { logger } from "@lib/logger";
-import type { ObjectId } from "mongodb";
-import { MongoClient } from "mongodb";
-import type { CreateRewardInput, Reward, UpdateRewardInput } from "../domain/reward";
+import type { MongoClient, ObjectId } from "mongodb";
+import type {
+  CreateRewardInput,
+  Reward,
+  UpdateRewardInput,
+} from "../domain/reward";
 
 /**
  * Repository for Reward CRUD operations
@@ -78,7 +81,8 @@ export class RewardRepository {
     };
 
     if (input.name !== undefined) updateData.name = input.name;
-    if (input.description !== undefined) updateData.description = input.description;
+    if (input.description !== undefined)
+      updateData.description = input.description;
     if (input.karmaCost !== undefined) updateData.karmaCost = input.karmaCost;
     if (input.imageUrl !== undefined) updateData.imageUrl = input.imageUrl;
 

@@ -1,0 +1,64 @@
+meta {
+  name: Update Recipe
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/v1/families/:currentFamilyId/recipes/:recipeId
+  body: json
+  auth: inherit
+}
+
+params:path {
+  currentFamilyId: {{currentFamilyId}}
+  recipeId:
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Updated Recipe Name"
+  }
+}
+
+docs {
+  # Update Recipe
+
+  Update a recipe with partial data. All fields are optional.
+
+  ## Path Parameters
+
+  - `recipeId` (string, required): The ID of the recipe to update
+
+  ## Request Body
+
+  - `name` (string, optional): Recipe name (1-200 characters)
+  - `description` (string, optional): Recipe description (1-2000 characters)
+  - `steps` (array, optional): Array of cooking steps (minimum 1 if provided, each 1-500 characters)
+  - `tags` (array, optional): Array of tags (max 20 tags, each 1-50 characters)
+
+  ## Response
+
+  Returns the updated recipe object with:
+  - `_id`: Unique identifier
+  - `familyId`: ID of the family
+  - `name`: Recipe name
+  - `description`: Recipe description
+  - `steps`: Array of cooking steps
+  - `tags`: Array of tags
+  - `createdBy`: ID of the user who created it
+  - `createdAt`: Creation timestamp
+  - `updatedAt`: Updated timestamp
+
+  ## Status Codes
+
+  - `200`: Recipe updated successfully
+  - `400`: Validation error
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not a family member)
+  - `404`: Recipe not found
+}

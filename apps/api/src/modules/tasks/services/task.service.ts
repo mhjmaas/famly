@@ -6,9 +6,9 @@ import type { FamilyMembershipRepository } from "@modules/family/repositories/fa
 import type { KarmaService } from "@modules/karma";
 import type { ObjectId } from "mongodb";
 import type { CreateTaskInput, Task, UpdateTaskInput } from "../domain/task";
-import type { TaskRepository } from "../repositories/task.repository";
 import type { TaskCompletionHook } from "../hooks/task-completion.hook";
 import { TaskCompletionHookRegistry } from "../hooks/task-completion.hook";
+import type { TaskRepository } from "../repositories/task.repository";
 
 export class TaskService {
   private hookRegistry: TaskCompletionHookRegistry;

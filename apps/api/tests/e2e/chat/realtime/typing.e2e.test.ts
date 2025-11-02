@@ -302,7 +302,7 @@ describe("E2E: Socket.IO - Typing Indicators", () => {
       try {
         socket.emit("typing:start", { chatId });
         // No callback means fire-and-forget
-      } catch (err) {
+      } catch (_err) {
         errorOccurred = true;
       }
 

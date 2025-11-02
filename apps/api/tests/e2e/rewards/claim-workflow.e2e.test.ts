@@ -52,12 +52,16 @@ describe("E2E: Claim Workflow (Happy Path)", () => {
         });
 
       if (taskResponse.status !== 201) {
-        console.log("Task creation failed:", taskResponse.status, taskResponse.body);
+        console.log(
+          "Task creation failed:",
+          taskResponse.status,
+          taskResponse.body,
+        );
       }
       expect(taskResponse.status).toBe(201);
       const taskId = taskResponse.body._id;
 
-      // Complete the task to grant karma  
+      // Complete the task to grant karma
       const completeSetupTaskResponse = await request(baseUrl)
         .patch(`/v1/families/${family.familyId}/tasks/${taskId}`)
         .set("Authorization", `Bearer ${childToken}`)
@@ -98,9 +102,7 @@ describe("E2E: Claim Workflow (Happy Path)", () => {
         (c: any) => c.status === "pending",
       );
       expect(pendingClaims.length).toBeGreaterThan(0);
-      expect(
-        pendingClaims.some((c: any) => c._id === claimId),
-      ).toBe(true);
+      expect(pendingClaims.some((c: any) => c._id === claimId)).toBe(true);
 
       // Step 6: Verify auto-task was created
       // Note: This test assumes tasks can be listed via family endpoint

@@ -27,7 +27,9 @@ export function validateCreateReward(input: unknown): CreateRewardInput {
 
   // Validate karmaCost
   if (typeof data.karmaCost !== "number") {
-    throw HttpError.badRequest("Reward karmaCost is required and must be a number");
+    throw HttpError.badRequest(
+      "Reward karmaCost is required and must be a number",
+    );
   }
 
   if (!Number.isInteger(data.karmaCost)) {
@@ -35,9 +37,7 @@ export function validateCreateReward(input: unknown): CreateRewardInput {
   }
 
   if (data.karmaCost < 1 || data.karmaCost > 1000) {
-    throw HttpError.badRequest(
-      "Reward karmaCost must be between 1 and 1000",
-    );
+    throw HttpError.badRequest("Reward karmaCost must be between 1 and 1000");
   }
 
   // Validate description (optional)

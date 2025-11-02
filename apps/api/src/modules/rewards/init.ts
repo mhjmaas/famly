@@ -11,7 +11,7 @@ import { RewardRepository } from "./repositories/reward.repository";
  * Initialize rewards module integration with task service
  * This registers the claim completion hook so that reward claims are automatically
  * completed when their associated auto-task is marked as completed
- * 
+ *
  * @param taskService - The task service instance to register hooks with
  */
 export function initializeRewardsIntegration(taskService: TaskService): void {
@@ -20,7 +20,7 @@ export function initializeRewardsIntegration(taskService: TaskService): void {
   const claimRepository = new ClaimRepository(mongoClient);
   const rewardRepository = new RewardRepository(mongoClient);
   const metadataRepository = new MetadataRepository(mongoClient);
-  
+
   const membershipRepository = new FamilyMembershipRepository();
   const karmaRepository = new KarmaRepository();
   const karmaService = new KarmaService(karmaRepository, membershipRepository);

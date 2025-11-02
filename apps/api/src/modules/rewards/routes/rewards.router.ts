@@ -1,14 +1,14 @@
 import { Router } from "express";
-import { createRewardRoute } from "./create-reward.route";
-import { listRewardsRoute } from "./list-rewards.route";
-import { getRewardRoute } from "./get-reward.route";
-import { updateRewardRoute } from "./update-reward.route";
-import { deleteRewardRoute } from "./delete-reward.route";
-import { claimRewardRoute } from "./claim-reward.route";
-import { listClaimsRoute } from "./list-claims.route";
-import { getClaimRoute } from "./get-claim.route";
 import { cancelClaimRoute } from "./cancel-claim.route";
+import { claimRewardRoute } from "./claim-reward.route";
+import { createRewardRoute } from "./create-reward.route";
+import { deleteRewardRoute } from "./delete-reward.route";
+import { getClaimRoute } from "./get-claim.route";
+import { getRewardRoute } from "./get-reward.route";
+import { listClaimsRoute } from "./list-claims.route";
+import { listRewardsRoute } from "./list-rewards.route";
 import { toggleFavouriteRoute } from "./toggle-favourite.route";
+import { updateRewardRoute } from "./update-reward.route";
 
 /**
  * Main rewards router
@@ -22,18 +22,18 @@ export function rewardsRouter(): Router {
   const router = Router({ mergeParams: true });
 
   // Reward routes - order matters! More specific paths before parameterized ones
-  router.use(createRewardRoute());      // POST /rewards
-  router.use(listRewardsRoute());       // GET /rewards
-  router.use(claimRewardRoute());       // POST /rewards/:rewardId/claim
-  router.use(toggleFavouriteRoute());   // POST /rewards/:rewardId/favourite
-  router.use(updateRewardRoute());      // PATCH /rewards/:rewardId
-  router.use(deleteRewardRoute());      // DELETE /rewards/:rewardId
-  router.use(getRewardRoute());         // GET /rewards/:rewardId
+  router.use(createRewardRoute()); // POST /rewards
+  router.use(listRewardsRoute()); // GET /rewards
+  router.use(claimRewardRoute()); // POST /rewards/:rewardId/claim
+  router.use(toggleFavouriteRoute()); // POST /rewards/:rewardId/favourite
+  router.use(updateRewardRoute()); // PATCH /rewards/:rewardId
+  router.use(deleteRewardRoute()); // DELETE /rewards/:rewardId
+  router.use(getRewardRoute()); // GET /rewards/:rewardId
 
   // Claim routes
-  router.use(listClaimsRoute());        // GET /claims
-  router.use(getClaimRoute());          // GET /claims/:claimId
-  router.use(cancelClaimRoute());       // DELETE /claims/:claimId
+  router.use(listClaimsRoute()); // GET /claims
+  router.use(getClaimRoute()); // GET /claims/:claimId
+  router.use(cancelClaimRoute()); // DELETE /claims/:claimId
 
   return router;
 }

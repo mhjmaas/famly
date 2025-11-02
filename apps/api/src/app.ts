@@ -7,9 +7,10 @@ import { createMessageRoute } from "./modules/chat/routes/create-message.route";
 import { searchMessagesRoute } from "./modules/chat/routes/search-messages.route";
 import { createDiaryRouter } from "./modules/diary";
 import { createFamiliesRouter } from "./modules/family/routes";
-import { createHealthRouter } from "./routes/health";
-import { getTaskService } from "./modules/tasks/services/task.service.instance";
+import { initializeRecipesModule } from "./modules/recipes/init";
 import { initializeRewardsIntegration } from "./modules/rewards/init";
+import { getTaskService } from "./modules/tasks/services/task.service.instance";
+import { createHealthRouter } from "./routes/health";
 
 export const createApp = (): Express => {
   const app = express();
@@ -18,6 +19,11 @@ export const createApp = (): Express => {
   // This must happen before routes are mounted
   const taskService = getTaskService();
   initializeRewardsIntegration(taskService);
+
+  // Initialize recipes module (ensure indexes)
+  initializeRecipesModule().catch((error) => {
+    console.error("Failed to initialize recipes module:", error);
+  });
 
   app.disable("x-powered-by");
 

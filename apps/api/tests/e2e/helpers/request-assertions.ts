@@ -118,7 +118,7 @@ export function expectProperty(obj: any, property: string, value: any): void {
  */
 export function expectISODate(value: string): void {
   const date = new Date(value);
-  if (isNaN(date.getTime()) || date.toISOString() !== value) {
+  if (Number.isNaN(date.getTime()) || date.toISOString() !== value) {
     throw new Error(`Expected ISO date format but got "${value}"`);
   }
 }

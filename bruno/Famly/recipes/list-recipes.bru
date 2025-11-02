@@ -1,0 +1,60 @@
+meta {
+  name: List Recipes
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/v1/families/:currentFamilyId/recipes
+  auth: inherit
+}
+
+params:path {
+  currentFamilyId: {{currentFamilyId}}
+}
+
+params:query {
+  limit: 10
+  offset: 0
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  # List Recipes
+
+  List all recipes for a family with pagination support.
+
+  ## Query Parameters
+
+  - `limit` (number, optional): Number of recipes to return (default: 10, max: 100)
+  - `offset` (number, optional): Number of recipes to skip for pagination (default: 0)
+
+  ## Response
+
+  Returns an array of recipes with pagination metadata:
+  - `recipes`: Array of recipe objects
+  - `total`: Total number of recipes in the family
+  - `limit`: Applied limit parameter
+  - `offset`: Applied offset parameter
+
+  Each recipe includes:
+  - `_id`: Unique identifier
+  - `familyId`: ID of the family
+  - `name`: Recipe name
+  - `description`: Recipe description
+  - `steps`: Array of cooking steps
+  - `tags`: Array of tags
+  - `createdBy`: ID of the user who created it
+  - `createdAt`: Creation timestamp
+  - `updatedAt`: Last update timestamp
+
+  ## Status Codes
+
+  - `200`: Success
+  - `400`: Invalid pagination parameters
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not a family member)
+}

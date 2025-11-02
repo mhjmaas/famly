@@ -2,8 +2,8 @@ import type {
   ClaimDTO,
   Reward,
   RewardClaim,
-  RewardDTO,
   RewardDetailsDTO,
+  RewardDTO,
 } from "../domain/reward";
 
 /**

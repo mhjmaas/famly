@@ -1,18 +1,24 @@
 // Domain exports
-export type { Reward, RewardClaim, RewardMetadata } from "./domain/reward";
-export type { RewardDTO, ClaimDTO, RewardDetailsDTO } from "./domain/reward";
-
-// Repository exports
-export { RewardRepository } from "./repositories/reward.repository";
+export type {
+  ClaimDTO,
+  Reward,
+  RewardClaim,
+  RewardDetailsDTO,
+  RewardDTO,
+  RewardMetadata,
+} from "./domain/reward";
+// Mapper exports
+export {
+  toClaimDTO,
+  toRewardDetailsDTO,
+  toRewardDTO,
+} from "./lib/reward.mapper";
 export { ClaimRepository } from "./repositories/claim.repository";
 export { MetadataRepository } from "./repositories/metadata.repository";
-
-// Service exports
-export { RewardService } from "./services/reward.service";
-export { ClaimService } from "./services/claim.service";
-
-// Mapper exports
-export { toRewardDTO, toClaimDTO, toRewardDetailsDTO } from "./lib/reward.mapper";
-
+// Repository exports
+export { RewardRepository } from "./repositories/reward.repository";
 // Router export
 export { rewardsRouter } from "./routes/rewards.router";
+export { ClaimService } from "./services/claim.service";
+// Service exports
+export { RewardService } from "./services/reward.service";

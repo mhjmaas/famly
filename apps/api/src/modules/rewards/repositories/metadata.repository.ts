@@ -1,6 +1,5 @@
 import { logger } from "@lib/logger";
-import type { ObjectId } from "mongodb";
-import { MongoClient } from "mongodb";
+import type { MongoClient, ObjectId } from "mongodb";
 import type { RewardMetadata } from "../domain/reward";
 
 /**
@@ -172,9 +171,7 @@ export class MetadataRepository {
    */
   async findByReward(rewardId: ObjectId): Promise<RewardMetadata[]> {
     const collection = this.getCollection();
-    const metadata = await collection
-      .find({ rewardId })
-      .toArray();
+    const metadata = await collection.find({ rewardId }).toArray();
     return metadata;
   }
 }

@@ -1,3 +1,4 @@
+import { getMongoClient } from "@infra/mongo/client";
 import { HttpError } from "@lib/http-error";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
@@ -6,9 +7,9 @@ import { FamilyMembershipRepository } from "@modules/family/repositories/family-
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import { ObjectId } from "mongodb";
-import { getMongoClient } from "@infra/mongo/client";
-import { ClaimRepository } from "../repositories/claim.repository";
+import type { RewardClaim } from "../domain/reward";
 import { toClaimDTO } from "../lib/reward.mapper";
+import { ClaimRepository } from "../repositories/claim.repository";
 
 /**
  * GET /claims - List claims
@@ -59,7 +60,7 @@ export function listClaimsRoute(): Router {
         const mongoClient = getMongoClient();
         const claimRepository = new ClaimRepository(mongoClient);
 
-        let claims;
+        let claims: RewardClaim[];
         if (membership.role === FamilyRole.Parent) {
           // Parents see all family claims
           claims = await claimRepository.findByFamily(familyId);

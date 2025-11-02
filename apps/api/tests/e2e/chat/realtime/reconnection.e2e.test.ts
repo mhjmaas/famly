@@ -319,7 +319,7 @@ describe("E2E: Socket.IO - Reconnection", () => {
         const socket = await connectSocketClient(baseUrl, user.token, 100);
         connected = socket.connected;
         await disconnectSocketClient(socket);
-      } catch (err) {
+      } catch (_err) {
         // Timeout is acceptable
         connected = false;
       }
@@ -350,7 +350,7 @@ describe("E2E: Socket.IO - Reconnection", () => {
         if (socket2.connected) {
           await disconnectSocketClient(socket2);
         }
-      } catch (err) {
+      } catch (_err) {
         connectionFailed = true;
       }
 

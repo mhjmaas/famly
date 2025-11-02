@@ -5,7 +5,7 @@ import { getTestApp } from "../helpers/test-app";
 
 describe("E2E: DELETE /v1/chats/:chatId/members/:userId - Remove Member", () => {
   let baseUrl: string;
-  let testCounter = 0;
+  let _testCounter = 0;
 
   beforeAll(() => {
     baseUrl = getTestApp();
@@ -13,7 +13,7 @@ describe("E2E: DELETE /v1/chats/:chatId/members/:userId - Remove Member", () => 
 
   beforeEach(async () => {
     await cleanDatabase();
-    testCounter++;
+    _testCounter++;
   });
 
   describe("Success Cases", () => {

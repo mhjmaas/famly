@@ -139,8 +139,8 @@ export class TokenManager {
     options?: any,
   ): Promise<TestUserToken> {
     // Try to get from cache first
-    const cached = Array.from(this.tokenCache.values()).find(
-      (u) => u.email && u.email.startsWith(prefix),
+    const cached = Array.from(this.tokenCache.values()).find((u) =>
+      u.email?.startsWith(prefix),
     );
 
     if (cached) {

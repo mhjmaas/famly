@@ -15,7 +15,10 @@ export function getTaskService(): TaskService {
     const taskRepository = new TaskRepository();
     const membershipRepository = new FamilyMembershipRepository();
     const karmaRepository = new KarmaRepository();
-    const karmaService = new KarmaService(karmaRepository, membershipRepository);
+    const karmaService = new KarmaService(
+      karmaRepository,
+      membershipRepository,
+    );
 
     taskServiceInstance = new TaskService(
       taskRepository,

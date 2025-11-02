@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
-import { MetadataRepository } from "@/modules/rewards/repositories/metadata.repository";
 import type { RewardMetadata } from "@/modules/rewards/domain/reward";
+import { MetadataRepository } from "@/modules/rewards/repositories/metadata.repository";
 
 // Mock logger to avoid env config errors
 jest.mock("@lib/logger", () => ({
@@ -245,7 +245,10 @@ describe("MetadataRepository", () => {
 
       mockCollection.toArray.mockResolvedValue(mockMetadata);
 
-      const result = await repository.findFavouritesByMember(familyId, memberId);
+      const result = await repository.findFavouritesByMember(
+        familyId,
+        memberId,
+      );
 
       expect(result).toEqual(mockMetadata);
       expect(mockCollection.find).toHaveBeenCalledWith({
@@ -258,7 +261,10 @@ describe("MetadataRepository", () => {
     it("should return empty array when no favourites exist", async () => {
       mockCollection.toArray.mockResolvedValue([]);
 
-      const result = await repository.findFavouritesByMember(familyId, memberId);
+      const result = await repository.findFavouritesByMember(
+        familyId,
+        memberId,
+      );
 
       expect(result).toEqual([]);
     });
@@ -266,9 +272,7 @@ describe("MetadataRepository", () => {
 
   describe("getTotalClaimCount", () => {
     it("should return total claim count for reward", async () => {
-      mockCollection.toArray.mockResolvedValue([
-        { _id: null, total: 25 },
-      ]);
+      mockCollection.toArray.mockResolvedValue([{ _id: null, total: 25 }]);
 
       const result = await repository.getTotalClaimCount(rewardId);
 

@@ -217,7 +217,9 @@ describe("E2E: Claim Cancellation Workflows", () => {
 
         // Parent cancels claim
         const cancelResponse = await request(baseUrl)
-          .delete(`/v1/families/${family.familyId}/claims/${claimResponse.body._id}`)
+          .delete(
+            `/v1/families/${family.familyId}/claims/${claimResponse.body._id}`,
+          )
           .set("Authorization", `Bearer ${parentToken}`)
           .send({});
 

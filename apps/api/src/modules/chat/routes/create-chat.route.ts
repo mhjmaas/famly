@@ -4,6 +4,7 @@ import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import { ObjectId } from "mongodb";
+import type { Chat } from "../domain/chat";
 import { toChatDTO } from "../lib/chat.mapper";
 import { ChatRepository } from "../repositories/chat.repository";
 import { MembershipRepository } from "../repositories/membership.repository";
@@ -51,7 +52,7 @@ export function createChatRoute(): Router {
         const creatorId = new ObjectId(req.user.id);
         const input: CreateChatInput = req.body;
 
-        let chat;
+        let chat: Chat;
         let isNew = false;
 
         if (input.type === "dm") {

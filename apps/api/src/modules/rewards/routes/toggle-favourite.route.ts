@@ -1,3 +1,4 @@
+import { getMongoClient } from "@infra/mongo/client";
 import { HttpError } from "@lib/http-error";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
@@ -5,7 +6,6 @@ import { FamilyMembershipRepository } from "@modules/family/repositories/family-
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import { ObjectId } from "mongodb";
-import { getMongoClient } from "@infra/mongo/client";
 import { MetadataRepository } from "../repositories/metadata.repository";
 import { RewardRepository } from "../repositories/reward.repository";
 import { RewardService } from "../services/reward.service";

@@ -3,7 +3,7 @@ import { getTestApp } from "../helpers/test-app";
 
 describe("E2E: GET /v1/chats/search/messages - Search Messages", () => {
   let baseUrl: string;
-  let testCounter = 0;
+  let _testCounter = 0;
 
   beforeAll(() => {
     baseUrl = getTestApp();
@@ -11,7 +11,7 @@ describe("E2E: GET /v1/chats/search/messages - Search Messages", () => {
 
   beforeEach(async () => {
     await cleanDatabase();
-    testCounter++;
+    _testCounter++;
   });
 
   // TODO: Fix MongoDB text search functionality before uncommenting these tests

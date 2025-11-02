@@ -1,3 +1,4 @@
+import { getMongoClient } from "@infra/mongo/client";
 import { HttpError } from "@lib/http-error";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
@@ -6,9 +7,8 @@ import { FamilyMembershipRepository } from "@modules/family/repositories/family-
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import { ObjectId } from "mongodb";
-import { getMongoClient } from "@infra/mongo/client";
-import { ClaimRepository } from "../repositories/claim.repository";
 import { toClaimDTO } from "../lib/reward.mapper";
+import { ClaimRepository } from "../repositories/claim.repository";
 
 /**
  * GET /claims/:claimId - Get a specific claim
@@ -72,7 +72,10 @@ export function getClaimRoute(): Router {
         }
 
         // Authorization: members can only see own claims, parents can see all
-        if (membership.role !== FamilyRole.Parent && !claim.memberId.equals(userId)) {
+        if (
+          membership.role !== FamilyRole.Parent &&
+          !claim.memberId.equals(userId)
+        ) {
           throw HttpError.forbidden("You can only view your own claims");
         }
 

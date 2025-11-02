@@ -120,10 +120,7 @@ describe("E2E: Reward CRUD Operations", () => {
       expect(getResponse.body).toHaveProperty("_id", rewardId);
       expect(getResponse.body).toHaveProperty("name", "Test Reward");
       expect(getResponse.body).toHaveProperty("karmaCost", 75);
-      expect(getResponse.body).toHaveProperty(
-        "description",
-        "A test reward",
-      );
+      expect(getResponse.body).toHaveProperty("description", "A test reward");
     });
 
     it("should update reward as parent", async () => {

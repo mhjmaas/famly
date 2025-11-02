@@ -1,0 +1,49 @@
+meta {
+  name: Get Recipe
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/v1/families/:currentFamilyId/recipes/:recipeId
+  auth: inherit
+}
+
+params:path {
+  currentFamilyId: {{currentFamilyId}}
+  recipeId:
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  # Get Recipe
+
+  Retrieve a specific recipe by ID.
+
+  ## Path Parameters
+
+  - `recipeId` (string, required): The ID of the recipe to retrieve
+
+  ## Response
+
+  Returns a complete recipe object:
+  - `_id`: Unique identifier
+  - `familyId`: ID of the family
+  - `name`: Recipe name
+  - `description`: Recipe description
+  - `steps`: Array of cooking steps
+  - `tags`: Array of tags
+  - `createdBy`: ID of the user who created it
+  - `createdAt`: Creation timestamp
+  - `updatedAt`: Last update timestamp
+
+  ## Status Codes
+
+  - `200`: Recipe retrieved successfully
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not a family member)
+  - `404`: Recipe not found
+}

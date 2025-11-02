@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
-import { ClaimRepository } from "@/modules/rewards/repositories/claim.repository";
 import type { RewardClaim } from "@/modules/rewards/domain/reward";
+import { ClaimRepository } from "@/modules/rewards/repositories/claim.repository";
 
 // Mock logger to avoid env config errors
 jest.mock("@lib/logger", () => ({
@@ -164,9 +164,7 @@ describe("ClaimRepository", () => {
         updatedAt: new Date(),
       };
 
-      mockCollection.findOneAndUpdate.mockResolvedValue({
-        value: updatedClaim,
-      });
+      mockCollection.findOneAndUpdate.mockResolvedValue(updatedClaim);
 
       const result = await repository.updateStatus(claimId, "completed", {
         completedBy,
@@ -184,12 +182,10 @@ describe("ClaimRepository", () => {
       const cancelledAt = new Date();
 
       mockCollection.findOneAndUpdate.mockResolvedValue({
-        value: {
-          _id: claimId,
-          status: "cancelled",
-          cancelledBy,
-          cancelledAt,
-        },
+        _id: claimId,
+        status: "cancelled",
+        cancelledBy,
+        cancelledAt,
       });
 
       await repository.updateStatus(claimId, "cancelled", {
@@ -257,9 +253,7 @@ describe("ClaimRepository", () => {
         updatedAt: new Date(),
       };
 
-      mockCollection.findOneAndUpdate.mockResolvedValue({
-        value: updatedClaim,
-      });
+      mockCollection.findOneAndUpdate.mockResolvedValue(updatedClaim);
 
       const result = await repository.updateAutoTaskId(claimId, autoTaskId);
 

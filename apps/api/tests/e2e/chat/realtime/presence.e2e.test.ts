@@ -338,7 +338,7 @@ describe("E2E: Socket.IO - Presence Tracking", () => {
       try {
         // Try to connect with very short timeout (should fail)
         await connectSocketClient(baseUrl, user.token, 100);
-      } catch (err) {
+      } catch (_err) {
         connectionFailed = true;
       }
 

@@ -3,13 +3,13 @@ import { logger } from "@lib/logger";
 import type { ObjectId } from "mongodb";
 import type {
   CreateRewardInput,
-  RewardDTO,
   RewardDetailsDTO,
+  RewardDTO,
   UpdateRewardInput,
 } from "../domain/reward";
+import { toRewardDetailsDTO, toRewardDTO } from "../lib/reward.mapper";
 import type { MetadataRepository } from "../repositories/metadata.repository";
 import type { RewardRepository } from "../repositories/reward.repository";
-import { toRewardDTO, toRewardDetailsDTO } from "../lib/reward.mapper";
 
 /**
  * Service for reward business logic

@@ -1,8 +1,9 @@
 import { createFamilyDiaryRouter } from "@modules/diary";
 import { createKarmaRouter } from "@modules/karma";
+import { createRecipesRouter } from "@modules/recipes";
+import { rewardsRouter } from "@modules/rewards/routes/rewards.router";
 import { createShoppingListsRouter } from "@modules/shopping-lists";
 import { createTasksRouter } from "@modules/tasks";
-import { rewardsRouter } from "@modules/rewards/routes/rewards.router";
 import { Router } from "express";
 import { createAddMemberRoute } from "./add-member.route";
 import { createCreateFamilyRoute } from "./create-family.route";
@@ -21,6 +22,7 @@ import { createRemoveMemberRoute } from "./remove-member.route";
  * - GET/POST /v1/families/:familyId/diary/* - Family diary endpoints (mounted via createFamilyDiaryRouter)
  * - GET/POST /v1/families/:familyId/tasks/* - Tasks endpoints (mounted via createTasksRouter)
  * - GET/POST /v1/families/:familyId/karma/* - Karma endpoints (mounted via createKarmaRouter)
+ * - GET/POST/PATCH/DELETE /v1/families/:familyId/recipes/* - Recipes endpoints (mounted via createRecipesRouter)
  */
 export function createFamiliesRouter(): Router {
   const router = Router();
@@ -40,6 +42,9 @@ export function createFamiliesRouter(): Router {
 
   // Mount shopping lists router for /:familyId/shopping-lists/* paths
   router.use("/:familyId/shopping-lists", createShoppingListsRouter());
+
+  // Mount recipes router for /:familyId/recipes/* paths
+  router.use("/:familyId/recipes", createRecipesRouter());
 
   // Mount karma router for /:familyId/karma/* paths
   router.use("/:familyId/karma", createKarmaRouter());

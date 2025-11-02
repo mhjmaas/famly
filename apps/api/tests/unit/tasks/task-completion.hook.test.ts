@@ -1,8 +1,8 @@
 import { ObjectId } from "mongodb";
 import type { Task } from "@/modules/tasks/domain/task";
 import {
-  TaskCompletionHookRegistry,
   type TaskCompletionHook,
+  TaskCompletionHookRegistry,
 } from "@/modules/tasks/hooks/task-completion.hook";
 
 describe("TaskCompletionHookRegistry", () => {

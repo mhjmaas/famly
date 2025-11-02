@@ -1,0 +1,40 @@
+meta {
+  name: Delete Recipe
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/v1/families/:currentFamilyId/recipes/:recipeId
+  auth: inherit
+}
+
+params:path {
+  currentFamilyId: {{currentFamilyId}}
+  recipeId:
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  # Delete Recipe
+
+  Delete a recipe by ID.
+
+  ## Path Parameters
+
+  - `recipeId` (string, required): The ID of the recipe to delete
+
+  ## Response
+
+  Returns no content on successful deletion.
+
+  ## Status Codes
+
+  - `204`: Recipe deleted successfully
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not a family member)
+  - `404`: Recipe not found
+}

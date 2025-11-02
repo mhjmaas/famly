@@ -1,0 +1,65 @@
+meta {
+  name: Search Recipes
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/v1/families/:currentFamilyId/recipes/search
+  body: json
+  auth: inherit
+}
+
+params:path {
+  currentFamilyId: {{currentFamilyId}}
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "query": "pasta",
+    "limit": 10,
+    "offset": 0
+  }
+}
+
+docs {
+  # Search Recipes
+
+  Search recipes by name and description with pagination support.
+
+  ## Request Body
+
+  - `query` (string, required): Search query (case-insensitive, searches in name and description)
+  - `limit` (number, optional): Number of results to return (default: 10, max: 100)
+  - `offset` (number, optional): Number of results to skip for pagination (default: 0)
+
+  ## Response
+
+  Returns an array of matching recipes with pagination metadata:
+  - `recipes`: Array of recipe objects matching the search query
+  - `total`: Total number of recipes matching the query
+  - `limit`: Applied limit parameter
+  - `offset`: Applied offset parameter
+
+  Each recipe includes:
+  - `_id`: Unique identifier
+  - `familyId`: ID of the family
+  - `name`: Recipe name
+  - `description`: Recipe description
+  - `steps`: Array of cooking steps
+  - `tags`: Array of tags
+  - `createdBy`: ID of the user who created it
+  - `createdAt`: Creation timestamp
+  - `updatedAt`: Last update timestamp
+
+  ## Status Codes
+
+  - `200`: Success
+  - `400`: Validation error (empty query, invalid pagination)
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (not a family member)
+}

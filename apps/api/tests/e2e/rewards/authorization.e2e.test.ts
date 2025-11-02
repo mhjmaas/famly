@@ -412,8 +412,9 @@ describe("E2E: Reward Authorization Matrix", () => {
         .withName("Auth List Family")
         .build();
 
-      const response = await request(baseUrl)
-        .get(`/v1/families/${family.familyId}/rewards`);
+      const response = await request(baseUrl).get(
+        `/v1/families/${family.familyId}/rewards`,
+      );
 
       expect(response.status).toBe(401);
     });
@@ -424,8 +425,9 @@ describe("E2E: Reward Authorization Matrix", () => {
         .build();
 
       const fakeRewardId = new ObjectId().toString();
-      const response = await request(baseUrl)
-        .post(`/v1/families/${family.familyId}/rewards/${fakeRewardId}/claim`);
+      const response = await request(baseUrl).post(
+        `/v1/families/${family.familyId}/rewards/${fakeRewardId}/claim`,
+      );
 
       expect(response.status).toBe(401);
     });
@@ -436,7 +438,9 @@ describe("E2E: Reward Authorization Matrix", () => {
         .build();
 
       const response = await request(baseUrl)
-        .patch(`/v1/families/${family.familyId}/rewards/${new ObjectId().toString()}`)
+        .patch(
+          `/v1/families/${family.familyId}/rewards/${new ObjectId().toString()}`,
+        )
         .send({
           name: "Hacked",
         });
@@ -449,10 +453,9 @@ describe("E2E: Reward Authorization Matrix", () => {
         .withName("Auth Delete Family")
         .build();
 
-      const response = await request(baseUrl)
-        .delete(
-          `/v1/families/${family.familyId}/rewards/${new ObjectId().toString()}`,
-        );
+      const response = await request(baseUrl).delete(
+        `/v1/families/${family.familyId}/rewards/${new ObjectId().toString()}`,
+      );
 
       expect(response.status).toBe(401);
     });

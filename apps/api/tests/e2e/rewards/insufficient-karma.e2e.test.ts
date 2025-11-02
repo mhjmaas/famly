@@ -161,10 +161,7 @@ describe("E2E: Insufficient Karma Scenarios", () => {
             .set("Authorization", `Bearer ${childToken}`);
 
           if (claimCheck.status === 200) {
-            expect([
-              "pending",
-              "completed",
-            ]).toContain(claimCheck.body.status);
+            expect(["pending", "completed"]).toContain(claimCheck.body.status);
           }
         }
       }

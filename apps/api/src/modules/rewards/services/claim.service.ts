@@ -1,14 +1,14 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import type { KarmaService } from "@modules/karma";
-import type { TaskService } from "@modules/tasks/services/task.service";
 import type { CreateTaskInput } from "@modules/tasks/domain/task";
+import type { TaskService } from "@modules/tasks/services/task.service";
 import type { ObjectId } from "mongodb";
 import type { ClaimDTO } from "../domain/reward";
+import { toClaimDTO } from "../lib/reward.mapper";
 import type { ClaimRepository } from "../repositories/claim.repository";
 import type { MetadataRepository } from "../repositories/metadata.repository";
 import type { RewardRepository } from "../repositories/reward.repository";
-import { toClaimDTO } from "../lib/reward.mapper";
 
 /**
  * Service for reward claim business logic

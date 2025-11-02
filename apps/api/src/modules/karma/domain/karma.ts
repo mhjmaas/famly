@@ -6,7 +6,10 @@ import type { ObjectId } from "mongodb";
  * - manual_grant: Karma manually granted by a parent
  * - reward_redemption: Karma deducted for redeeming a reward
  */
-export type KarmaSource = "task_completion" | "manual_grant" | "reward_redemption";
+export type KarmaSource =
+  | "task_completion"
+  | "manual_grant"
+  | "reward_redemption";
 
 /**
  * Member karma aggregate
