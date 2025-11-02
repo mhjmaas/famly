@@ -9,4 +9,3 @@ build/
 *.log
 .env
 .env.*
-pnpm-lock.yaml
