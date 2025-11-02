@@ -588,15 +588,6 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   └── add-karma-rewards
-│   │       ├── design.md
-│   │       ├── proposal.md
-│   │       ├── specs
-│   │       │   ├── karma
-│   │       │   │   └── spec.md
-│   │       │   └── rewards
-│   │       │       └── spec.md
-│   │       └── tasks.md
 │   ├── project.md
 │   └── specs
 │       ├── auth
@@ -608,6 +599,8 @@ Our core guiding principles are found in the `constitution.md` file.
 │       ├── family
 │       │   └── spec.md
 │       ├── karma
+│       │   └── spec.md
+│       ├── rewards
 │       │   └── spec.md
 │       ├── shopping-lists
 │       │   └── spec.md
@@ -621,7 +614,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-135 directories, 446 files
+132 directories, 442 files
 ```
 <!-- TREE END -->
 
