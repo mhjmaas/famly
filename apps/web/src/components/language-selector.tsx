@@ -1,10 +1,15 @@
-'use client';
+"use client";
 
-import { useCallback, useMemo } from 'react';
-import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Globe } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { i18n, localeLabels, type Locale } from '@/i18n/config';
+import { Globe } from "lucide-react";
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+import { useCallback, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import { i18n, type Locale, localeLabels } from "@/i18n/config";
 
 type LanguageSelectorProps = {
   lang: Locale;
@@ -18,8 +23,10 @@ export function LanguageSelector({ lang, ariaLabel }: LanguageSelectorProps) {
   const searchParams = useSearchParams();
 
   const currentLocale = useMemo(() => {
-    const paramLocale = typeof params?.lang === 'string' ? (params.lang as Locale) : undefined;
-    return (i18n.locales.find((locale) => locale === paramLocale) ?? lang) as Locale;
+    const paramLocale =
+      typeof params?.lang === "string" ? (params.lang as Locale) : undefined;
+    return (i18n.locales.find((locale) => locale === paramLocale) ??
+      lang) as Locale;
   }, [lang, params]);
 
   const handleLocaleChange = useCallback(
@@ -28,16 +35,16 @@ export function LanguageSelector({ lang, ariaLabel }: LanguageSelectorProps) {
         return;
       }
 
-      const segments = pathname?.split('/').filter(Boolean) ?? [];
+      const segments = pathname?.split("/").filter(Boolean) ?? [];
       if (segments.length === 0) {
         const query = searchParams?.toString();
-        const target = `/${newLocale}${query ? `?${query}` : ''}`;
+        const target = `/${newLocale}${query ? `?${query}` : ""}`;
         router.push(target);
         return;
       }
 
       segments[0] = newLocale;
-      const newPathname = `/${segments.join('/')}`;
+      const newPathname = `/${segments.join("/")}`;
       const query = searchParams?.toString();
       router.push(query ? `${newPathname}?${query}` : newPathname);
     },
@@ -45,7 +52,10 @@ export function LanguageSelector({ lang, ariaLabel }: LanguageSelectorProps) {
   );
 
   return (
-    <div role="group" aria-label={ariaLabel} className="flex items-center gap-1 rounded-lg bg-muted p-1">
+    <nav
+      aria-label={ariaLabel}
+      className="flex items-center gap-1 rounded-lg bg-muted p-1"
+    >
       {i18n.locales.map((locale) => {
         const labels = localeLabels[locale];
         const isActive = locale === currentLocale;
@@ -56,9 +66,9 @@ export function LanguageSelector({ lang, ariaLabel }: LanguageSelectorProps) {
             variant="ghost"
             size="sm"
             onClick={() => handleLocaleChange(locale)}
-            className={`gap-2 ${isActive ? 'bg-background shadow-sm' : 'hover:bg-background/50'}`}
+            className={`gap-2 ${isActive ? "bg-background shadow-sm" : "hover:bg-background/50"}`}
             aria-pressed={isActive}
-            aria-current={isActive ? 'true' : undefined}
+            aria-current={isActive ? "true" : undefined}
             title={labels.name}
             aria-label={labels.name}
           >
@@ -67,6 +77,6 @@ export function LanguageSelector({ lang, ariaLabel }: LanguageSelectorProps) {
           </Button>
         );
       })}
-    </div>
+    </nav>
   );
 }

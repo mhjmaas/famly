@@ -1,4 +1,4 @@
-import type { Page, Locator } from '@playwright/test';
+import type { Locator, Page } from "@playwright/test";
 
 /**
  * Page Object for the Landing Page
@@ -39,45 +39,45 @@ export class LandingPage {
     this.page = page;
 
     // Navigation
-    this.navigation = page.getByTestId('navigation');
-    this.logoLink = page.getByTestId('nav-logo');
-    this.featuresLink = page.getByTestId('nav-features');
-    this.privacyLink = page.getByTestId('nav-privacy');
-    this.pricingLink = page.getByTestId('nav-pricing');
-    this.docsLink = page.getByTestId('nav-docs');
-    this.signInButton = page.getByTestId('nav-signin');
-    this.getStartedButton = page.getByTestId('nav-get-started');
+    this.navigation = page.getByTestId("navigation");
+    this.logoLink = page.getByTestId("nav-logo");
+    this.featuresLink = page.getByTestId("nav-features");
+    this.privacyLink = page.getByTestId("nav-privacy");
+    this.pricingLink = page.getByTestId("nav-pricing");
+    this.docsLink = page.getByTestId("nav-docs");
+    this.signInButton = page.getByTestId("nav-signin");
+    this.getStartedButton = page.getByTestId("nav-get-started");
 
     // Sections
-    this.heroSection = page.getByTestId('hero-section');
-    this.featuresSection = page.getByTestId('features-section');
-    this.privacySection = page.getByTestId('privacy-section');
-    this.pricingSection = page.getByTestId('pricing-section');
-    this.footerSection = page.getByTestId('footer-section');
+    this.heroSection = page.getByTestId("hero-section");
+    this.featuresSection = page.getByTestId("features-section");
+    this.privacySection = page.getByTestId("privacy-section");
+    this.pricingSection = page.getByTestId("pricing-section");
+    this.footerSection = page.getByTestId("footer-section");
 
     // Hero elements
-    this.heroHeading = page.getByTestId('hero-heading');
-    this.heroSubheading = page.getByTestId('hero-subheading');
-    this.heroCTAButtons = page.getByTestId('hero-cta');
+    this.heroHeading = page.getByTestId("hero-heading");
+    this.heroSubheading = page.getByTestId("hero-subheading");
+    this.heroCTAButtons = page.getByTestId("hero-cta");
 
     // Theme toggle
-    this.themeToggle = page.getByTestId('theme-toggle');
-    this.lightThemeButton = page.getByTestId('theme-light');
-    this.darkThemeButton = page.getByTestId('theme-dark');
-    this.autoThemeButton = page.getByTestId('theme-auto');
+    this.themeToggle = page.getByTestId("theme-toggle");
+    this.lightThemeButton = page.getByTestId("theme-light");
+    this.darkThemeButton = page.getByTestId("theme-dark");
+    this.autoThemeButton = page.getByTestId("theme-auto");
   }
 
   /**
    * Navigate to the landing page
    */
   async goto() {
-    await this.page.goto('/en-US');
+    await this.page.goto("/en-US");
   }
 
   /**
    * Navigate to a specific section by clicking the nav link
    */
-  async navigateToSection(section: 'features' | 'privacy' | 'pricing') {
+  async navigateToSection(section: "features" | "privacy" | "pricing") {
     const linkMap = {
       features: this.featuresLink,
       privacy: this.privacyLink,
@@ -92,8 +92,8 @@ export class LandingPage {
    * Check if navigation has scrolled state (blurred background)
    */
   async isNavigationScrolled(): Promise<boolean> {
-    const classes = await this.navigation.getAttribute('class');
-    return classes?.includes('backdrop-blur') ?? false;
+    const classes = await this.navigation.getAttribute("class");
+    return classes?.includes("backdrop-blur") ?? false;
   }
 
   /**
@@ -110,14 +110,16 @@ export class LandingPage {
    */
   async getCurrentTheme(): Promise<string | null> {
     return await this.page.evaluate(() => {
-      return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      return document.documentElement.classList.contains("dark")
+        ? "dark"
+        : "light";
     });
   }
 
   /**
    * Set the theme
    */
-  async setTheme(theme: 'light' | 'dark' | 'auto') {
+  async setTheme(theme: "light" | "dark" | "auto") {
     const buttonMap = {
       light: this.lightThemeButton,
       dark: this.darkThemeButton,
@@ -131,7 +133,9 @@ export class LandingPage {
   /**
    * Check if a section is visible in viewport
    */
-  async isSectionVisible(section: 'hero' | 'features' | 'privacy' | 'pricing' | 'footer'): Promise<boolean> {
+  async isSectionVisible(
+    section: "hero" | "features" | "privacy" | "pricing" | "footer",
+  ): Promise<boolean> {
     const sectionMap = {
       hero: this.heroSection,
       features: this.featuresSection,
@@ -146,7 +150,9 @@ export class LandingPage {
   /**
    * Scroll to a section
    */
-  async scrollToSection(section: 'hero' | 'features' | 'privacy' | 'pricing' | 'footer') {
+  async scrollToSection(
+    section: "hero" | "features" | "privacy" | "pricing" | "footer",
+  ) {
     const sectionMap = {
       hero: this.heroSection,
       features: this.featuresSection,
@@ -162,14 +168,14 @@ export class LandingPage {
    * Tab through navigation elements
    */
   async tabThroughNavigation() {
-    await this.page.keyboard.press('Tab');
+    await this.page.keyboard.press("Tab");
   }
 
   /**
    * Get all feature cards
    */
   async getFeatureCards() {
-    return this.page.getByTestId('feature-card').all();
+    return this.page.getByTestId("feature-card").all();
   }
 
   /**
@@ -177,28 +183,28 @@ export class LandingPage {
    */
   async getPricingCards() {
     return {
-      selfHosted: this.page.getByTestId('pricing-self-hosted'),
-      cloud: this.page.getByTestId('pricing-cloud'),
+      selfHosted: this.page.getByTestId("pricing-self-hosted"),
+      cloud: this.page.getByTestId("pricing-cloud"),
     };
   }
 
   /**
    * Switch language using the language selector in footer
    */
-  async switchLanguage(locale: 'en-US' | 'nl-NL') {
+  async switchLanguage(locale: "en-US" | "nl-NL") {
     const localeMap = {
-      'en-US': 'EN',
-      'nl-NL': 'NL',
+      "en-US": "English",
+      "nl-NL": "Nederlands",
     };
 
-    // Find the language selector group and get the button with the target locale
-    const languageGroup = this.page.locator('[role="group"]').filter({
-      has: this.page.getByRole('button').filter({ hasText: /EN|NL/ })
+    // Find the language selector navigation and get the button with the target locale
+    const languageNav = this.page.locator("nav").filter({
+      has: this.page.getByRole("button").filter({ hasText: /EN|NL/ }),
     });
 
-    const languageButton = languageGroup.getByRole('button').filter({
-      hasText: new RegExp(localeMap[locale])
-    }).first();
+    const languageButton = languageNav
+      .getByRole("button", { name: localeMap[locale] })
+      .first();
 
     // Scroll to ensure button is visible
     await languageButton.scrollIntoViewIfNeeded();
@@ -211,9 +217,9 @@ export class LandingPage {
   /**
    * Get current locale from URL
    */
-  async getCurrentLocale(): Promise<'en-US' | 'nl-NL'> {
+  async getCurrentLocale(): Promise<"en-US" | "nl-NL"> {
     const url = this.page.url();
     const match = url.match(/\/(en-US|nl-NL)/);
-    return (match?.[1] as 'en-US' | 'nl-NL') || 'en-US';
+    return (match?.[1] as "en-US" | "nl-NL") || "en-US";
   }
 }

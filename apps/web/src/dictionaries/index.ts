@@ -11,6 +11,8 @@ const dictionaries: Record<Locale, () => Promise<Dictionary>> = {
 
 export async function getDictionary(locale: Locale): Promise<Dictionary> {
   // Lazy-load the requested locale dictionary on the server only.
-  const normalized = i18n.locales.includes(locale) ? locale : (i18n.defaultLocale as Locale);
+  const normalized = i18n.locales.includes(locale)
+    ? locale
+    : (i18n.defaultLocale as Locale);
   return dictionaries[normalized]();
 }

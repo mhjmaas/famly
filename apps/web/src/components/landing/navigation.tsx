@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import type { Locale } from '@/i18n/config';
-import type { DictionarySection } from '@/i18n/types';
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import type { Locale } from "@/i18n/config";
+import type { DictionarySection } from "@/i18n/types";
 
 type NavigationProps = {
-  dict: DictionarySection<'navigation'>;
+  dict: DictionarySection<"navigation">;
   lang: Locale;
 };
 
@@ -22,21 +22,27 @@ export function Navigation({ dict, lang }: NavigationProps) {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <nav
       data-testid="navigation"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-background/80 backdrop-blur-lg border-b border-border shadow-sm' : 'bg-transparent'
+        scrolled
+          ? "bg-background/80 backdrop-blur-lg border-b border-border shadow-sm"
+          : "bg-transparent"
       }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link href={`/${lang}`} data-testid="nav-logo" className="flex items-center gap-2 group">
+          <Link
+            href={`/${lang}`}
+            data-testid="nav-logo"
+            className="flex items-center gap-2 group"
+          >
             <div className="relative w-8 h-8">
               <div className="absolute top-0 left-0 w-5 h-5 rounded-full bg-primary opacity-80 transition-transform group-hover:scale-110" />
               <div className="absolute top-0 right-0 w-5 h-5 rounded-full bg-chart-2 opacity-80 transition-transform group-hover:scale-110" />
@@ -85,12 +91,19 @@ export function Navigation({ dict, lang }: NavigationProps) {
 
           <div className="flex items-center gap-3">
             <Link href={`/${lang}/signin`} data-testid="nav-signin">
-              <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="hidden sm:inline-flex"
+              >
                 {dict.buttons.signIn}
               </Button>
             </Link>
             <Link href={`/${lang}/get-started`} data-testid="nav-get-started">
-              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Button
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
                 {dict.buttons.getStarted}
               </Button>
             </Link>

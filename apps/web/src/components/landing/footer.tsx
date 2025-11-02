@@ -1,20 +1,30 @@
-import { Suspense } from 'react';
-import Link from 'next/link';
-import { Heart, Github, Twitter, Mail } from 'lucide-react';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { LanguageSelector } from '@/components/language-selector';
-import type { Locale } from '@/i18n/config';
-import type { DictionarySection } from '@/i18n/types';
+import { Github, Heart, Mail, Twitter } from "lucide-react";
+import Link from "next/link";
+import { Suspense } from "react";
+import { LanguageSelector } from "@/components/language-selector";
+import { ThemeToggle } from "@/components/theme-toggle";
+import type { Locale } from "@/i18n/config";
+import type { DictionarySection } from "@/i18n/types";
 
 type FooterProps = {
-  dict: DictionarySection<'footer'>;
+  dict: DictionarySection<"footer">;
   lang: Locale;
-  languageDict: DictionarySection<'languageSelector'>;
+  languageDict: DictionarySection<"languageSelector">;
 };
 
-const productLinks = ['features', 'pricing', 'roadmap', 'changelog'] as const;
-const resourceLinks = ['documentation', 'selfHostingGuide', 'apiReference', 'community'] as const;
-const companyLinks = ['about', 'blog', 'privacyPolicy', 'termsOfService'] as const;
+const productLinks = ["features", "pricing", "roadmap", "changelog"] as const;
+const resourceLinks = [
+  "documentation",
+  "selfHostingGuide",
+  "apiReference",
+  "community",
+] as const;
+const companyLinks = [
+  "about",
+  "blog",
+  "privacyPolicy",
+  "termsOfService",
+] as const;
 
 /**
  * Footer component for the landing page
@@ -22,12 +32,13 @@ const companyLinks = ['about', 'blog', 'privacyPolicy', 'termsOfService'] as con
  */
 export function Footer({ dict, lang, languageDict }: FooterProps) {
   const currentYear = new Date().getFullYear();
-  const copyright =
-    dict.bottom.prefix.replace('{year}', currentYear.toString()) +
-    ' ';
+  const copyright = `${dict.bottom.prefix.replace("{year}", currentYear.toString())} `;
 
   return (
-    <footer data-testid="footer-section" className="border-t border-border bg-muted/30">
+    <footer
+      data-testid="footer-section"
+      className="border-t border-border bg-muted/30"
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
@@ -38,12 +49,20 @@ export function Footer({ dict, lang, languageDict }: FooterProps) {
                 {dict.brandName}
               </span>
             </Link>
-            <p className="text-sm text-muted-foreground leading-relaxed">{dict.tagline}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {dict.tagline}
+            </p>
             <div className="flex items-center gap-3">
-              <a href="https://github.com" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a
+                href="https://github.com"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 <Github className="h-5 w-5" />
               </a>
-              <a href="https://twitter.com" className="text-muted-foreground hover:text-foreground transition-colors">
+              <a
+                href="https://twitter.com"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 <Twitter className="h-5 w-5" />
               </a>
               <a
@@ -57,17 +76,19 @@ export function Footer({ dict, lang, languageDict }: FooterProps) {
 
           {/* Product */}
           <div>
-            <h4 className="font-semibold mb-4">{dict.sections.product.title}</h4>
+            <h4 className="font-semibold mb-4">
+              {dict.sections.product.title}
+            </h4>
             <ul className="space-y-2 text-sm">
               {productLinks.map((key) => (
                 <li key={key}>
                   <Link
                     href={
-                      key === 'features'
+                      key === "features"
                         ? `/${lang}#features`
-                        : key === 'pricing'
+                        : key === "pricing"
                           ? `/${lang}#pricing`
-                          : `/${lang}/${key === 'roadmap' ? 'roadmap' : 'changelog'}`
+                          : `/${lang}/${key === "roadmap" ? "roadmap" : "changelog"}`
                     }
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
@@ -80,19 +101,21 @@ export function Footer({ dict, lang, languageDict }: FooterProps) {
 
           {/* Resources */}
           <div>
-            <h4 className="font-semibold mb-4">{dict.sections.resources.title}</h4>
+            <h4 className="font-semibold mb-4">
+              {dict.sections.resources.title}
+            </h4>
             <ul className="space-y-2 text-sm">
               {resourceLinks.map((key) => (
                 <li key={key}>
                   <Link
                     href={`/${lang}/${
-                      key === 'documentation'
-                        ? 'docs'
-                        : key === 'selfHostingGuide'
-                          ? 'guides'
-                          : key === 'apiReference'
-                            ? 'api'
-                            : 'community'
+                      key === "documentation"
+                        ? "docs"
+                        : key === "selfHostingGuide"
+                          ? "guides"
+                          : key === "apiReference"
+                            ? "api"
+                            : "community"
                     }`}
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
@@ -105,12 +128,14 @@ export function Footer({ dict, lang, languageDict }: FooterProps) {
 
           {/* Company */}
           <div>
-            <h4 className="font-semibold mb-4">{dict.sections.company.title}</h4>
+            <h4 className="font-semibold mb-4">
+              {dict.sections.company.title}
+            </h4>
             <ul className="space-y-2 text-sm">
               {companyLinks.map((key) => (
                 <li key={key}>
                   <Link
-                    href={`/${lang}/${key === 'termsOfService' ? 'terms' : key === 'privacyPolicy' ? 'privacy' : key}`}
+                    href={`/${lang}/${key === "termsOfService" ? "terms" : key === "privacyPolicy" ? "privacy" : key}`}
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {dict.sections.company.links[key]}
@@ -125,7 +150,8 @@ export function Footer({ dict, lang, languageDict }: FooterProps) {
         <div className="pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
             {copyright}
-            <Heart className="inline h-3 w-3 text-primary fill-primary" /> {dict.bottom.suffix}
+            <Heart className="inline h-3 w-3 text-primary fill-primary" />{" "}
+            {dict.bottom.suffix}
           </p>
           <ThemeToggle />
           <Suspense fallback={null}>

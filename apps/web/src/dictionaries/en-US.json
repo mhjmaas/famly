@@ -209,6 +209,107 @@
       "suffix": "for families."
     }
   },
+  "auth": {
+    "common": {
+      "unexpectedError": "An unexpected error occurred. Please try again."
+    },
+    "signIn": {
+      "title": "Welcome back",
+      "description": "Sign in to your Famly account",
+      "fields": {
+        "email": {
+          "label": "Email",
+          "placeholder": "Enter your email"
+        },
+        "password": {
+          "label": "Password",
+          "placeholder": "Enter your password"
+        }
+      },
+      "submit": {
+        "idle": "Sign In",
+        "loading": "Signing in..."
+      },
+      "cta": {
+        "prompt": "Don't have an account?",
+        "link": "Get started"
+      }
+    },
+    "getStarted": {
+      "progress": {
+        "step": "Step {current} of {total}",
+        "labels": {
+          "register": "Create Account",
+          "family": "Create Family"
+        }
+      },
+      "deployment": {
+        "title": "Choose Your Deployment",
+        "description": "Select how you want to host Famly",
+        "selfHosted": {
+          "title": "Self-Hosted",
+          "description": "Deploy with Docker on your own infrastructure",
+          "highlight": "Free Forever"
+        },
+        "cloud": {
+          "title": "Cloud Hosted",
+          "description": "We manage everything for you",
+          "highlight": "€5 per member/month"
+        }
+      },
+      "register": {
+        "title": "Create Your Account",
+        "description": "Enter your details to get started with Famly Cloud",
+        "fields": {
+          "name": {
+            "label": "Name",
+            "placeholder": "John Doe"
+          },
+          "email": {
+            "label": "Email (used for login)",
+            "placeholder": "your@email.com"
+          },
+          "birthdate": {
+            "label": "Birthdate"
+          },
+          "password": {
+            "label": "Password",
+            "placeholder": "Create a strong password"
+          },
+          "confirmPassword": {
+            "label": "Confirm Password",
+            "placeholder": "Confirm your password"
+          }
+        },
+        "button": {
+          "idle": "Continue",
+          "loading": "Creating Account..."
+        }
+      },
+      "family": {
+        "title": "Create Your Family",
+        "description": "Give your family a name. You'll be the first member!",
+        "fields": {
+          "familyName": {
+            "label": "Family Name",
+            "placeholder": "e.g., The Smiths, Johnson Family",
+            "helper": "You can always change this later in settings"
+          }
+        },
+        "button": {
+          "idle": "Complete Setup",
+          "loading": "Creating Family..."
+        }
+      },
+      "errors": {
+        "passwordMismatch": "Passwords do not match",
+        "birthdateRequired": "Birthdate is required"
+      }
+    }
+  },
+  "app": {
+    "placeholderHeading": "App goes here"
+  },
   "languageSelector": {
     "ariaLabel": "Switch language"
   }

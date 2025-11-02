@@ -538,12 +538,21 @@ Our core guiding principles are found in the `constitution.md` file.
 │       ├── src
 │       │   ├── app
 │       │   │   ├── [lang]
+│       │   │   │   ├── app
+│       │   │   │   │   └── page.tsx
+│       │   │   │   ├── get-started
+│       │   │   │   │   └── page.tsx
 │       │   │   │   ├── layout.tsx
-│       │   │   │   └── page.tsx
+│       │   │   │   ├── page.tsx
+│       │   │   │   └── signin
+│       │   │   │       └── page.tsx
 │       │   │   ├── favicon.ico
 │       │   │   ├── globals.css
 │       │   │   └── layout.tsx
 │       │   ├── components
+│       │   │   ├── auth
+│       │   │   │   ├── get-started-flow.tsx
+│       │   │   │   └── signin-form.tsx
 │       │   │   ├── landing
 │       │   │   │   ├── features.tsx
 │       │   │   │   ├── footer.tsx
@@ -555,8 +564,12 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   │   ├── theme-provider.tsx
 │       │   │   ├── theme-toggle.tsx
 │       │   │   └── ui
+│       │   │       ├── alert.tsx
 │       │   │       ├── button.tsx
-│       │   │       └── card.tsx
+│       │   │       ├── card.tsx
+│       │   │       ├── input.tsx
+│       │   │       ├── label.tsx
+│       │   │       └── progress.tsx
 │       │   ├── dictionaries
 │       │   │   ├── en-US.json
 │       │   │   ├── index.ts
@@ -565,6 +578,7 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   │   ├── config.ts
 │       │   │   └── types.ts
 │       │   ├── lib
+│       │   │   ├── api-client.ts
 │       │   │   └── utils.ts
 │       │   ├── proxy.ts
 │       │   ├── static-data
@@ -574,6 +588,10 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   ├── e2e
 │       │   │   ├── accessibility
 │       │   │   │   └── a11y.spec.ts
+│       │   │   ├── auth
+│       │   │   │   ├── protected-routes.spec.ts
+│       │   │   │   ├── registration.spec.ts
+│       │   │   │   └── signin.spec.ts
 │       │   │   ├── global-setup.ts
 │       │   │   ├── global-teardown.ts
 │       │   │   ├── landing
@@ -581,10 +599,12 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   │   │   ├── footer.spec.ts
 │       │   │   │   ├── full-page.spec.ts
 │       │   │   │   ├── hero.spec.ts
+│       │   │   │   ├── language-switching.spec.ts
 │       │   │   │   ├── navigation.spec.ts
 │       │   │   │   ├── pricing.spec.ts
 │       │   │   │   └── privacy.spec.ts
 │       │   │   ├── pages
+│       │   │   │   ├── auth.page.ts
 │       │   │   │   └── landing.page.ts
 │       │   │   ├── performance
 │       │   │   │   └── performance.spec.ts
@@ -694,11 +714,11 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   └── add-i18n
+│   │   └── add-auth-ui
 │   │       ├── design.md
 │   │       ├── proposal.md
 │   │       ├── specs
-│   │       │   └── i18n
+│   │       │   └── web-auth
 │   │       │       └── spec.md
 │   │       └── tasks.md
 │   ├── project.md
@@ -840,7 +860,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-189 directories, 611 files
+194 directories, 626 files
 ```
 <!-- TREE END -->
 

@@ -1,30 +1,27 @@
-import type { ReactElement } from "react";
-import { Features } from "@/components/landing/features";
+import { SignInForm } from "@/components/auth/signin-form";
 import { Footer } from "@/components/landing/footer";
-import { Hero } from "@/components/landing/hero";
 import { Navigation } from "@/components/landing/navigation";
-import { Pricing } from "@/components/landing/pricing";
-import { Privacy } from "@/components/landing/privacy";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
 
-export default async function Home({
-  params,
-}: {
+interface SignInPageProps {
   params: Promise<{ lang: string }>;
-}): Promise<ReactElement> {
+}
+
+export default async function SignInPage({ params }: SignInPageProps) {
   const { lang: rawLang } = await params;
-  const lang = isLocale(rawLang) ? rawLang : (i18n.defaultLocale as Locale);
+  const lang = (isLocale(rawLang) ? rawLang : i18n.defaultLocale) as Locale;
   const dict = await getDictionary(lang);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navigation dict={dict.navigation} lang={lang} />
-      <main>
-        <Hero dict={dict.hero} />
-        <Features dict={dict.features} />
-        <Privacy dict={dict.privacy} />
-        <Pricing dict={dict.pricing} />
+      <main className="flex-1 flex items-center justify-center px-4 py-12 pt-20 md:pt-24">
+        <SignInForm
+          locale={lang}
+          dict={dict.auth.signIn}
+          commonDict={dict.auth.common}
+        />
       </main>
       <Footer
         dict={dict.footer}

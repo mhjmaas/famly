@@ -537,11 +537,22 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   └── window.svg
 │       ├── src
 │       │   ├── app
+│       │   │   ├── [lang]
+│       │   │   │   ├── app
+│       │   │   │   │   └── page.tsx
+│       │   │   │   ├── get-started
+│       │   │   │   │   └── page.tsx
+│       │   │   │   ├── layout.tsx
+│       │   │   │   ├── page.tsx
+│       │   │   │   └── signin
+│       │   │   │       └── page.tsx
 │       │   │   ├── favicon.ico
 │       │   │   ├── globals.css
-│       │   │   ├── layout.tsx
-│       │   │   └── page.tsx
+│       │   │   └── layout.tsx
 │       │   ├── components
+│       │   │   ├── auth
+│       │   │   │   ├── get-started-flow.tsx
+│       │   │   │   └── signin-form.tsx
 │       │   │   ├── landing
 │       │   │   │   ├── features.tsx
 │       │   │   │   ├── footer.tsx
@@ -553,16 +564,33 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   │   ├── theme-provider.tsx
 │       │   │   ├── theme-toggle.tsx
 │       │   │   └── ui
+│       │   │       ├── alert.tsx
 │       │   │       ├── button.tsx
-│       │   │       └── card.tsx
+│       │   │       ├── card.tsx
+│       │   │       ├── input.tsx
+│       │   │       ├── label.tsx
+│       │   │       └── progress.tsx
+│       │   ├── dictionaries
+│       │   │   ├── en-US.json
+│       │   │   ├── index.ts
+│       │   │   └── nl-NL.json
+│       │   ├── i18n
+│       │   │   ├── config.ts
+│       │   │   └── types.ts
 │       │   ├── lib
+│       │   │   ├── api-client.ts
 │       │   │   └── utils.ts
-│       │   └── static-data
-│       │       └── features.ts
+│       │   ├── proxy.ts
+│       │   ├── static-data
+│       │   │   └── features.ts
+│       │   └── types
 │       ├── tests
 │       │   ├── e2e
 │       │   │   ├── accessibility
 │       │   │   │   └── a11y.spec.ts
+│       │   │   ├── auth
+│       │   │   │   ├── registration.spec.ts
+│       │   │   │   └── signin.spec.ts
 │       │   │   ├── global-setup.ts
 │       │   │   ├── global-teardown.ts
 │       │   │   ├── landing
@@ -570,10 +598,12 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   │   │   ├── footer.spec.ts
 │       │   │   │   ├── full-page.spec.ts
 │       │   │   │   ├── hero.spec.ts
+│       │   │   │   ├── language-switching.spec.ts
 │       │   │   │   ├── navigation.spec.ts
 │       │   │   │   ├── pricing.spec.ts
 │       │   │   │   └── privacy.spec.ts
 │       │   │   ├── pages
+│       │   │   │   ├── auth.page.ts
 │       │   │   │   └── landing.page.ts
 │       │   │   ├── performance
 │       │   │   │   └── performance.spec.ts
@@ -683,11 +713,11 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   └── add-i18n
+│   │   └── add-auth-ui
 │   │       ├── design.md
 │   │       ├── proposal.md
 │   │       ├── specs
-│   │       │   └── i18n
+│   │       │   └── web-auth
 │   │       │       └── spec.md
 │   │       └── tasks.md
 │   ├── project.md
@@ -829,6 +859,6 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-185 directories, 604 files
+194 directories, 625 files
 ```
 <!-- TREE END -->

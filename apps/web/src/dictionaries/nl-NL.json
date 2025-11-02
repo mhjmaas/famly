@@ -209,6 +209,107 @@
       "suffix": "voor gezinnen."
     }
   },
+  "auth": {
+    "common": {
+      "unexpectedError": "Er is een onverwachte fout opgetreden. Probeer het opnieuw."
+    },
+    "signIn": {
+      "title": "Welkom terug",
+      "description": "Log in op uw Famly-account",
+      "fields": {
+        "email": {
+          "label": "E-mail",
+          "placeholder": "Vul uw e-mailadres in"
+        },
+        "password": {
+          "label": "Wachtwoord",
+          "placeholder": "Vul uw wachtwoord in"
+        }
+      },
+      "submit": {
+        "idle": "Inloggen",
+        "loading": "Bezig met inloggen..."
+      },
+      "cta": {
+        "prompt": "Nog geen account?",
+        "link": "Aan de slag"
+      }
+    },
+    "getStarted": {
+      "progress": {
+        "step": "Stap {current} van {total}",
+        "labels": {
+          "register": "Account aanmaken",
+          "family": "Gezin aanmaken"
+        }
+      },
+      "deployment": {
+        "title": "Kies uw implementatie",
+        "description": "Selecteer hoe u Famly wilt hosten",
+        "selfHosted": {
+          "title": "Zelf gehost",
+          "description": "Implementeer via Docker op uw eigen infrastructuur",
+          "highlight": "Altijd gratis"
+        },
+        "cloud": {
+          "title": "Cloud-hosting",
+          "description": "Wij regelen alles voor u",
+          "highlight": "€5 per lid/maand"
+        }
+      },
+      "register": {
+        "title": "Maak uw account aan",
+        "description": "Voer uw gegevens in om met Famly Cloud te starten",
+        "fields": {
+          "name": {
+            "label": "Naam",
+            "placeholder": "Jan Jansen"
+          },
+          "email": {
+            "label": "E-mail (gebruikt voor login)",
+            "placeholder": "jij@email.com"
+          },
+          "birthdate": {
+            "label": "Geboortedatum"
+          },
+          "password": {
+            "label": "Wachtwoord",
+            "placeholder": "Kies een sterk wachtwoord"
+          },
+          "confirmPassword": {
+            "label": "Bevestig wachtwoord",
+            "placeholder": "Bevestig uw wachtwoord"
+          }
+        },
+        "button": {
+          "idle": "Doorgaan",
+          "loading": "Account wordt aangemaakt..."
+        }
+      },
+      "family": {
+        "title": "Maak uw gezin aan",
+        "description": "Geef uw gezin een naam. U bent het eerste lid!",
+        "fields": {
+          "familyName": {
+            "label": "Gezinsnaam",
+            "placeholder": "bijv. Familie Jansen, De Vissers",
+            "helper": "U kunt dit later altijd aanpassen in de instellingen"
+          }
+        },
+        "button": {
+          "idle": "Setup voltooien",
+          "loading": "Gezin wordt aangemaakt..."
+        }
+      },
+      "errors": {
+        "passwordMismatch": "Wachtwoorden komen niet overeen",
+        "birthdateRequired": "Geboortedatum is verplicht"
+      }
+    }
+  },
+  "app": {
+    "placeholderHeading": "App verschijnt hier"
+  },
   "languageSelector": {
     "ariaLabel": "Wijzig taal"
   }

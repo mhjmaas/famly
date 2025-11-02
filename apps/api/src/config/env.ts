@@ -17,6 +17,11 @@ const envSchema = z.object({
     .min(32)
     .describe("Better Auth JWT secret (min 32 chars)"),
   BETTER_AUTH_URL: z.string().url().describe("Better Auth API URL"),
+  CLIENT_URL: z
+    .string()
+    .url()
+    .default("http://localhost:3000")
+    .describe("Frontend client URL for CORS"),
 });
 
 type Env = z.infer<typeof envSchema>;
@@ -34,6 +39,7 @@ export function getEnv(): Env {
     MONGODB_URI: process.env.MONGODB_URI,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+    CLIENT_URL: process.env.CLIENT_URL,
   };
 
   try {

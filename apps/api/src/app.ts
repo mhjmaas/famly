@@ -1,6 +1,8 @@
 import { errorHandler } from "@middleware/error-handler";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import express, { type Express } from "express";
+import { getEnv } from "./config/env";
 import { createAuthRouter } from "./modules/auth/routes/auth.router";
 import { createChatRouter } from "./modules/chat";
 import { createMessageRoute } from "./modules/chat/routes/create-message.route";
@@ -14,6 +16,7 @@ import { createHealthRouter } from "./routes/health";
 
 export const createApp = (): Express => {
   const app = express();
+  const env = getEnv();
 
   // Initialize module integrations
   // This must happen before routes are mounted
@@ -26,6 +29,16 @@ export const createApp = (): Express => {
   });
 
   app.disable("x-powered-by");
+
+  // Configure CORS
+  app.use(
+    cors({
+      origin: env.CLIENT_URL,
+      credentials: true, // Allow cookies and authorization headers
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    }),
+  );
 
   // Parse JSON payloads
   app.use(express.json({ limit: "10mb" }));
