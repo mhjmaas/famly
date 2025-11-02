@@ -188,6 +188,7 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   │   ├── add-member.route.ts
 │   │   │   │   │   │   ├── create-family.route.ts
 │   │   │   │   │   │   ├── families.route.ts
+│   │   │   │   │   │   ├── get-member-karma.route.ts
 │   │   │   │   │   │   ├── index.ts
 │   │   │   │   │   │   ├── list-families.route.ts
 │   │   │   │   │   │   └── remove-member.route.ts
@@ -218,7 +219,10 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   ├── README.md
 │   │   │   │   │   ├── domain
 │   │   │   │   │   │   └── reward.ts
+│   │   │   │   │   ├── hooks
+│   │   │   │   │   │   └── claim-completion.hook.ts
 │   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── init.ts
 │   │   │   │   │   ├── lib
 │   │   │   │   │   │   └── reward.mapper.ts
 │   │   │   │   │   ├── repositories
@@ -230,6 +234,7 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   │   ├── claim-reward.route.ts
 │   │   │   │   │   │   ├── create-reward.route.ts
 │   │   │   │   │   │   ├── delete-reward.route.ts
+│   │   │   │   │   │   ├── get-claim.route.ts
 │   │   │   │   │   │   ├── get-reward.route.ts
 │   │   │   │   │   │   ├── list-claims.route.ts
 │   │   │   │   │   │   ├── list-rewards.route.ts
@@ -298,6 +303,7 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │       ├── services
 │   │   │   │       │   ├── schedule.service.ts
 │   │   │   │       │   ├── task-generator.service.ts
+│   │   │   │       │   ├── task.service.instance.ts
 │   │   │   │       │   └── task.service.ts
 │   │   │   │       └── validators
 │   │   │   │           ├── create-schedule.validator.ts
@@ -546,6 +552,7 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   ├── create-reward.bru
 │       │   ├── delete-reward.bru
 │       │   ├── folder.bru
+│       │   ├── get-claim.bru
 │       │   ├── get-reward.bru
 │       │   ├── list-claims.bru
 │       │   ├── list-rewards.bru
@@ -614,7 +621,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-134 directories, 440 files
+135 directories, 446 files
 ```
 <!-- TREE END -->
 

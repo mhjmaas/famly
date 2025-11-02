@@ -8,15 +8,16 @@ import type { KarmaService } from "../services/karma.service";
 import { validateGrantKarma } from "../validators/grant-karma.validator";
 
 /**
- * Grant karma route
+ * Grant or deduct karma route
  *
  * POST /v1/families/:familyId/karma/grant
  *
- * Manually grants karma to a family member (parent-only operation)
+ * Manually grants or deducts karma to/from a family member (parent-only operation)
+ * Positive amounts grant karma, negative amounts deduct karma (penalties/corrections)
  *
  * Request body:
  * - userId: string (ObjectId)
- * - amount: number (1-1000)
+ * - amount: number (-100,000 to 100,000; positive for grants, negative for deductions)
  * - description: string (optional, max 500 chars)
  *
  * Response (201): Created event with new total
