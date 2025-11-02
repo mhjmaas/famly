@@ -64,7 +64,7 @@ Family members MUST be able to retrieve a paginated history of all karma events 
 - **THEN** the API responds with HTTP 403 Forbidden
 
 ### Requirement: Manual Karma Grants
-Parents MUST be able to manually grant karma to family members with an optional description.
+Parents MUST be able to manually grant or deduct karma to family members with an optional description.
 
 #### Scenario: Grant karma successfully
 - **GIVEN** an authenticated parent in a family
@@ -80,10 +80,40 @@ Parents MUST be able to manually grant karma to family members with an optional 
 - **WHEN** they POST to grant karma with `{ userId, amount }` (no description)
 - **THEN** the karma grant succeeds with an empty or default description
 
-#### Scenario: Reject negative karma amounts
+#### Scenario: Deduct karma successfully (negative grant)
+- **GIVEN** an authenticated parent in a family
+- **WHEN** they POST to `/v1/families/{familyId}/karma/grant` with `{ userId, amount: -50, description: "Penalty" }`
+- **THEN** the API responds with HTTP 201 and returns the created karma event
+- **AND** the response includes `amount: -50` and `newTotal` reflecting the deduction
+- **AND** a karma event is created with `source: 'manual_grant'` and `amount: -50`
+- **AND** the member's karma total is decremented by 50 (moved toward negative)
+- **AND** the event metadata includes `grantedBy` with the parent's user ID
+
+#### Scenario: Grant negative amount without description
 - **GIVEN** an authenticated parent
-- **WHEN** they POST to grant karma with `amount: -10`
-- **THEN** the API responds with HTTP 400 indicating amount must be positive
+- **WHEN** they POST to grant karma with `{ userId, amount: -25 }` (no description)
+- **THEN** the karma deduction succeeds with an empty or default description
+
+#### Scenario: Deduct maximum allowed amount
+- **GIVEN** an authenticated parent
+- **WHEN** they POST to grant karma with `amount: -100000` (maximum negative)
+- **THEN** the API responds with HTTP 201 and the deduction succeeds
+
+#### Scenario: Reject amount below minimum
+- **GIVEN** an authenticated parent
+- **WHEN** they POST to grant karma with `amount: -100001` (exceeds minimum)
+- **THEN** the API responds with HTTP 400 indicating amount cannot be less than -100,000
+
+#### Scenario: Allow negative karma totals
+- **GIVEN** a member with 0 karma balance
+- **WHEN** a parent grants -50 karma
+- **THEN** the member's total karma becomes -50
+- **AND** the negative total is persisted and retrievable
+
+#### Scenario: Negative amount appears in history
+- **GIVEN** a member who received a -30 karma penalty
+- **WHEN** they GET karma history
+- **THEN** the event appears with `amount: -30` and negative amount is recorded
 
 #### Scenario: Reject zero karma amounts
 - **GIVEN** an authenticated parent
@@ -92,8 +122,8 @@ Parents MUST be able to manually grant karma to family members with an optional 
 
 #### Scenario: Reject excessive karma amounts
 - **GIVEN** an authenticated parent
-- **WHEN** they POST to grant karma with `amount: 10000` (exceeds max)
-- **THEN** the API responds with HTTP 400 indicating maximum amount is 1000
+- **WHEN** they POST to grant karma with `amount: 100001` (exceeds max)
+- **THEN** the API responds with HTTP 400 indicating maximum amount is 100,000
 
 #### Scenario: Reject non-integer karma amounts
 - **GIVEN** an authenticated parent
@@ -212,7 +242,17 @@ The system MUST maintain consistency between the aggregate karma total and the s
 - **AND** both operations succeed or both fail (no partial updates)
 
 ### Requirement: Field Validation
-The system MUST enforce field constraints and formats for all karma operations, including deductions.
+The system MUST enforce field constraints and formats for all karma operations.
+
+#### Scenario: Validate karma amount range
+- **GIVEN** a karma grant or task with karma metadata
+- **WHEN** the amount is less than -100,000 or greater than 100,000
+- **THEN** the API responds with HTTP 400 and validation error
+
+#### Scenario: Validate karma amount type
+- **GIVEN** a karma grant request
+- **WHEN** the amount is not an integer (e.g., 10.5 or "ten")
+- **THEN** the API responds with HTTP 400 and validation error
 
 #### Scenario: Validate deduction amount is negative
 - **GIVEN** a karma deduction operation
@@ -289,4 +329,42 @@ The system MUST maintain consistency between the aggregate karma total and the s
 - **GIVEN** a reward redemption deducting 50 karma
 - **THEN** the karma event is stored with `amount: -50` (not as positive 50 with special flag)
 - **AND** the event description clearly indicates deduction
+
+### Requirement: Manual Karma Deductions via Grant Endpoint
+Parents MUST be able to manually deduct karma (negative amounts) from family members via the grant endpoint for penalties or corrections.
+
+#### Scenario: Deduct karma successfully (negative grant)
+- **GIVEN** an authenticated parent in a family
+- **WHEN** they POST to `/v1/families/{familyId}/karma/grant` with `{ userId, amount: -50, description: "Penalty" }`
+- **THEN** the API responds with HTTP 201 and returns the created karma event
+- **AND** the response includes `amount: -50` and `newTotal` reflecting the deduction
+- **AND** a karma event is created with `source: 'manual_grant'` and `amount: -50`
+- **AND** the member's karma total is decremented by 50 (moved toward negative)
+- **AND** the event metadata includes `grantedBy` with the parent's user ID
+
+#### Scenario: Grant negative amount without description
+- **GIVEN** an authenticated parent
+- **WHEN** they POST to grant karma with `{ userId, amount: -25 }` (no description)
+- **THEN** the karma deduction succeeds with an empty or default description
+
+#### Scenario: Deduct maximum allowed amount
+- **GIVEN** an authenticated parent
+- **WHEN** they POST to grant karma with `amount: -100000` (maximum negative)
+- **THEN** the API responds with HTTP 201 and the deduction succeeds
+
+#### Scenario: Reject amount below minimum
+- **GIVEN** an authenticated parent
+- **WHEN** they POST to grant karma with `amount: -100001` (exceeds minimum)
+- **THEN** the API responds with HTTP 400 indicating amount cannot be less than -100,000
+
+#### Scenario: Allow negative karma totals
+- **GIVEN** a member with 0 karma balance
+- **WHEN** a parent grants -50 karma
+- **THEN** the member's total karma becomes -50
+- **AND** the negative total is persisted and retrievable
+
+#### Scenario: Negative amount appears in history
+- **GIVEN** a member who received a -30 karma penalty
+- **WHEN** they GET karma history
+- **THEN** the event appears with `amount: -30` and negative amount is recorded
 
