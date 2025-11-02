@@ -18,146 +18,159 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-export type Feature = {
+export type FeatureCardKey =
+  | 'personalDiary'
+  | 'familyMessaging'
+  | 'locationSharing'
+  | 'tasksAndChores'
+  | 'sharedMemories'
+  | 'shoppingLists'
+  | 'recipeManagement'
+  | 'allowanceRewards'
+  | 'aiIntegration'
+  | 'smartHomeIntegration';
+
+export type FeatureCard = {
+  key: FeatureCardKey;
   icon: LucideIcon;
-  title: string;
-  description: string;
   color: string;
   bgColor: string;
 };
 
-export const features: Feature[] = [
+export const featureCards: FeatureCard[] = [
   {
+    key: 'personalDiary',
     icon: BookOpen,
-    title: 'Personal Diary',
-    description: 'Capture your thoughts and memories in a private, secure space.',
     color: 'text-chart-3',
     bgColor: 'bg-chart-3/10',
   },
   {
+    key: 'familyMessaging',
     icon: MessageSquare,
-    title: 'Family Messaging',
-    description: 'Stay connected with secure, private messaging for your family.',
     color: 'text-chart-2',
     bgColor: 'bg-chart-2/10',
   },
   {
+    key: 'locationSharing',
     icon: MapPin,
-    title: 'Location Sharing',
-    description: 'Know where your loved ones are with optional real-time location sharing.',
     color: 'text-destructive',
     bgColor: 'bg-destructive/10',
   },
   {
+    key: 'tasksAndChores',
     icon: CheckSquare,
-    title: 'Tasks & Chores',
-    description: 'Organize household responsibilities and track completion.',
     color: 'text-primary',
     bgColor: 'bg-primary/10',
   },
   {
+    key: 'sharedMemories',
     icon: Camera,
-    title: 'Shared Memories',
-    description: 'Create a family timeline of photos, videos, and special moments.',
     color: 'text-chart-2',
     bgColor: 'bg-chart-2/10',
   },
   {
+    key: 'shoppingLists',
     icon: ShoppingCart,
-    title: 'Shopping Lists',
-    description: 'Collaborative shopping lists that sync across all family members.',
     color: 'text-chart-4',
     bgColor: 'bg-chart-4/10',
   },
   {
+    key: 'recipeManagement',
     icon: UtensilsCrossed,
-    title: 'Recipe Management',
-    description: 'Store and share your favorite family recipes in one place.',
     color: 'text-chart-5',
     bgColor: 'bg-chart-5/10',
   },
   {
+    key: 'allowanceRewards',
     icon: Coins,
-    title: 'Allowance & Rewards',
-    description: 'Manage allowances and reward systems for completed tasks.',
     color: 'text-chart-2',
     bgColor: 'bg-chart-2/10',
   },
   {
+    key: 'aiIntegration',
     icon: Sparkles,
-    title: 'AI Integration',
-    description: 'Optional AI features to help with meal planning, scheduling, and more.',
     color: 'text-chart-3',
     bgColor: 'bg-chart-3/10',
   },
   {
+    key: 'smartHomeIntegration',
     icon: Home,
-    title: 'Smart Home Integration',
-    description: 'Connect with Home Assistant and other home management platforms.',
     color: 'text-chart-1',
     bgColor: 'bg-chart-1/10',
   },
 ];
 
-export const selfHostedFeatures = [
-  'Complete data ownership',
-  'Host on your own hardware',
-  'One-command Docker setup',
-  'Unlimited family members',
-  'All features included',
-  'Free forever',
-  'Community support',
-  'Regular updates',
-];
+export const featureHighlightBulletKeys = [
+  'intuitiveInterface',
+  'worksOnAllDevices',
+  'offlineFirstDesign',
+  'customizable',
+] as const;
 
-export const cloudFeatures = [
-  'Managed hosting',
-  'Automatic backups',
-  'Zero maintenance',
-  '99.9% uptime SLA',
-  'All features included',
-  'Priority support',
-  'Early access to new features',
-  'Cancel anytime',
-];
+export type FeatureHighlightBulletKey = (typeof featureHighlightBulletKeys)[number];
 
-export type PrivacyFeature = {
+export const selfHostedFeatureKeys = [
+  'completeDataOwnership',
+  'hostOnYourHardware',
+  'oneCommandDockerSetup',
+  'unlimitedFamilyMembers',
+  'allFeaturesIncluded',
+  'freeForever',
+  'communitySupport',
+  'regularUpdates',
+] as const;
+
+export type SelfHostedFeatureKey = (typeof selfHostedFeatureKeys)[number];
+
+export const cloudFeatureKeys = [
+  'managedHosting',
+  'automaticBackups',
+  'zeroMaintenance',
+  'uptimeSla',
+  'allFeaturesIncluded',
+  'prioritySupport',
+  'earlyAccess',
+  'cancelAnytime',
+] as const;
+
+export type CloudFeatureKey = (typeof cloudFeatureKeys)[number];
+
+export type PrivacyFeatureKey =
+  | 'yourDataYourControl'
+  | 'endToEndEncryption'
+  | 'selfHostingFreedom'
+  | 'zeroTracking'
+  | 'dataPortability'
+  | 'openSource';
+
+export type PrivacyFeatureCard = {
+  key: PrivacyFeatureKey;
   icon: LucideIcon;
-  title: string;
-  description: string;
 };
 
-export const privacyFeatures: PrivacyFeature[] = [
+export const privacyFeatureCards: PrivacyFeatureCard[] = [
   {
+    key: 'yourDataYourControl',
     icon: Shield,
-    title: 'Your Data, Your Control',
-    description:
-      'We never sell, share, or use your data for advertising. Your family information belongs to you alone.',
   },
   {
+    key: 'endToEndEncryption',
     icon: Lock,
-    title: 'End-to-End Encryption',
-    description: 'All sensitive data is encrypted both in transit and at rest, ensuring maximum security.',
   },
   {
+    key: 'selfHostingFreedom',
     icon: Server,
-    title: 'Self-Hosting Freedom',
-    description:
-      'Host Famly on your own infrastructure with our easy Docker setup. Complete control, zero compromises.',
   },
   {
+    key: 'zeroTracking',
     icon: Eye,
-    title: 'Zero Tracking',
-    description: 'No analytics, no tracking pixels, no third-party scripts. We respect your privacy completely.',
   },
   {
+    key: 'dataPortability',
     icon: Database,
-    title: 'Data Portability',
-    description: 'Export your data anytime in standard formats. No lock-in, no barriers to leaving.',
   },
   {
+    key: 'openSource',
     icon: Key,
-    title: 'Open Source',
-    description: 'Our code is open for inspection. Verify our security claims and contribute to the project.',
   },
 ];

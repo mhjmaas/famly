@@ -1,28 +1,44 @@
-import { Heart, Github, Twitter, Mail } from 'lucide-react';
+import { Suspense } from 'react';
 import Link from 'next/link';
+import { Heart, Github, Twitter, Mail } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LanguageSelector } from '@/components/language-selector';
+import type { Locale } from '@/i18n/config';
+import type { DictionarySection } from '@/i18n/types';
+
+type FooterProps = {
+  dict: DictionarySection<'footer'>;
+  lang: Locale;
+  languageDict: DictionarySection<'languageSelector'>;
+};
+
+const productLinks = ['features', 'pricing', 'roadmap', 'changelog'] as const;
+const resourceLinks = ['documentation', 'selfHostingGuide', 'apiReference', 'community'] as const;
+const companyLinks = ['about', 'blog', 'privacyPolicy', 'termsOfService'] as const;
 
 /**
  * Footer component for the landing page
  * Contains navigation links, social links, and theme toggle
  */
-export function Footer() {
+export function Footer({ dict, lang, languageDict }: FooterProps) {
+  const currentYear = new Date().getFullYear();
+  const copyright =
+    dict.bottom.prefix.replace('{year}', currentYear.toString()) +
+    ' ';
+
   return (
     <footer data-testid="footer-section" className="border-t border-border bg-muted/30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-2 group">
+            <Link href={`/${lang}`} className="flex items-center gap-2 group">
               <Heart className="h-6 w-6 text-primary fill-primary" />
               <span className="text-xl font-bold bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent">
-                Famly
+                {dict.brandName}
               </span>
             </Link>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Privacy-first family management. Your data stays yours—forever.
-            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{dict.tagline}</p>
             <div className="flex items-center gap-3">
               <a href="https://github.com" className="text-muted-foreground hover:text-foreground transition-colors">
                 <Github className="h-5 w-5" />
@@ -41,82 +57,66 @@ export function Footer() {
 
           {/* Product */}
           <div>
-            <h4 className="font-semibold mb-4">Product</h4>
+            <h4 className="font-semibold mb-4">{dict.sections.product.title}</h4>
             <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Features
-                </Link>
-              </li>
-              <li>
-                <Link href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link href="/roadmap" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Roadmap
-                </Link>
-              </li>
-              <li>
-                <Link href="/changelog" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Changelog
-                </Link>
-              </li>
+              {productLinks.map((key) => (
+                <li key={key}>
+                  <Link
+                    href={
+                      key === 'features'
+                        ? `/${lang}#features`
+                        : key === 'pricing'
+                          ? `/${lang}#pricing`
+                          : `/${lang}/${key === 'roadmap' ? 'roadmap' : 'changelog'}`
+                    }
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {dict.sections.product.links[key]}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Resources */}
           <div>
-            <h4 className="font-semibold mb-4">Resources</h4>
+            <h4 className="font-semibold mb-4">{dict.sections.resources.title}</h4>
             <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Documentation
-                </Link>
-              </li>
-              <li>
-                <Link href="/guides" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Self-Hosting Guide
-                </Link>
-              </li>
-              <li>
-                <Link href="/api" className="text-muted-foreground hover:text-foreground transition-colors">
-                  API Reference
-                </Link>
-              </li>
-              <li>
-                <Link href="/community" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Community
-                </Link>
-              </li>
+              {resourceLinks.map((key) => (
+                <li key={key}>
+                  <Link
+                    href={`/${lang}/${
+                      key === 'documentation'
+                        ? 'docs'
+                        : key === 'selfHostingGuide'
+                          ? 'guides'
+                          : key === 'apiReference'
+                            ? 'api'
+                            : 'community'
+                    }`}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {dict.sections.resources.links[key]}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Company */}
           <div>
-            <h4 className="font-semibold mb-4">Company</h4>
+            <h4 className="font-semibold mb-4">{dict.sections.company.title}</h4>
             <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/about" className="text-muted-foreground hover:text-foreground transition-colors">
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Terms of Service
-                </Link>
-              </li>
+              {companyLinks.map((key) => (
+                <li key={key}>
+                  <Link
+                    href={`/${lang}/${key === 'termsOfService' ? 'terms' : key === 'privacyPolicy' ? 'privacy' : key}`}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {dict.sections.company.links[key]}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
@@ -124,11 +124,13 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Famly. Built with{' '}
-            <Heart className="inline h-3 w-3 text-primary fill-primary" /> for families.
+            {copyright}
+            <Heart className="inline h-3 w-3 text-primary fill-primary" /> {dict.bottom.suffix}
           </p>
           <ThemeToggle />
-          <LanguageSelector />
+          <Suspense fallback={null}>
+            <LanguageSelector lang={lang} ariaLabel={languageDict.ariaLabel} />
+          </Suspense>
         </div>
       </div>
     </footer>

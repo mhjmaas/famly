@@ -1,0 +1,215 @@
+{
+  "metadata": {
+    "title": "Famly - Your Family's Digital Home",
+    "description": "Privacy-first family organization platform. Self-hosted or cloud. End-to-end encrypted messaging, shared calendars, and more."
+  },
+  "navigation": {
+    "logo": "Famly",
+    "links": {
+      "features": "Features",
+      "privacy": "Privacy",
+      "pricing": "Pricing",
+      "docs": "Docs"
+    },
+    "buttons": {
+      "signIn": "Sign In",
+      "getStarted": "Get Started"
+    }
+  },
+  "hero": {
+    "badge": "Privacy-First Family Management",
+    "heading": {
+      "leading": "Your Family's Digital",
+      "highlight": "Home"
+    },
+    "subheading": "Keep your family connected, organized, and secure. Your data stays yours—forever.",
+    "primaryCta": "Start Self-Hosting",
+    "secondaryCta": "Try Cloud Beta",
+    "trustIndicators": {
+      "encrypted": "End-to-End Encrypted",
+      "selfHosted": "Self-Hosted Option",
+      "familyFirst": "Family-First Design"
+    }
+  },
+  "features": {
+    "title": "Everything Your Family Needs",
+    "description": "From daily tasks to cherished memories, Famly brings all aspects of family life together in one secure platform.",
+    "cards": {
+      "personalDiary": {
+        "title": "Personal Diary",
+        "description": "Capture your thoughts and memories in a private, secure space."
+      },
+      "familyMessaging": {
+        "title": "Family Messaging",
+        "description": "Stay connected with secure, private messaging for your family."
+      },
+      "locationSharing": {
+        "title": "Location Sharing",
+        "description": "Know where your loved ones are with optional real-time location sharing."
+      },
+      "tasksAndChores": {
+        "title": "Tasks & Chores",
+        "description": "Organize household responsibilities and track completion."
+      },
+      "sharedMemories": {
+        "title": "Shared Memories",
+        "description": "Create a family timeline of photos, videos, and special moments."
+      },
+      "shoppingLists": {
+        "title": "Shopping Lists",
+        "description": "Collaborative shopping lists that sync across all family members."
+      },
+      "recipeManagement": {
+        "title": "Recipe Management",
+        "description": "Store and share your favorite family recipes in one place."
+      },
+      "allowanceRewards": {
+        "title": "Allowance & Rewards",
+        "description": "Manage allowances and reward systems for completed tasks."
+      },
+      "aiIntegration": {
+        "title": "AI Integration",
+        "description": "Optional AI features to help with meal planning, scheduling, and more."
+      },
+      "smartHomeIntegration": {
+        "title": "Smart Home Integration",
+        "description": "Connect with Home Assistant and other home management platforms."
+      }
+    },
+    "highlight": {
+      "title": "Built for Modern Families",
+      "description": "Whether you're coordinating schedules, sharing grocery lists, or preserving precious memories, Famly adapts to your family's unique needs.",
+      "bullets": {
+        "intuitiveInterface": "Intuitive interface for all ages",
+        "worksOnAllDevices": "Works on all devices",
+        "offlineFirstDesign": "Offline-first design",
+        "customizable": "Customizable for your family"
+      },
+      "badge": "Your Family Hub"
+    }
+  },
+  "privacy": {
+    "badge": "Privacy Guaranteed",
+    "title": "Privacy Isn't Optional",
+    "description": "In a world where your data is constantly harvested, we take a different approach. Your family's privacy is our top priority—not an afterthought.",
+    "cards": {
+      "yourDataYourControl": {
+        "title": "Your Data, Your Control",
+        "description": "We never sell, share, or use your data for advertising. Your family information belongs to you alone."
+      },
+      "endToEndEncryption": {
+        "title": "End-to-End Encryption",
+        "description": "All sensitive data is encrypted both in transit and at rest, ensuring maximum security."
+      },
+      "selfHostingFreedom": {
+        "title": "Self-Hosting Freedom",
+        "description": "Host Famly on your own infrastructure with our easy Docker setup. Complete control, zero compromises."
+      },
+      "zeroTracking": {
+        "title": "Zero Tracking",
+        "description": "No analytics, no tracking pixels, no third-party scripts. We respect your privacy completely."
+      },
+      "dataPortability": {
+        "title": "Data Portability",
+        "description": "Export your data anytime in standard formats. No lock-in, no barriers to leaving."
+      },
+      "openSource": {
+        "title": "Open Source",
+        "description": "Our code is open for inspection. Verify our security claims and contribute to the project."
+      }
+    },
+    "promise": {
+      "title": "Our Privacy Promise",
+      "description": "We will <strong>never</strong> sell your data. We will <strong>never</strong> use it for advertising. We will <strong>never</strong> share it with third parties. Your family's information is sacred, and we treat it that way. This isn't just a policy—it's our core principle.",
+      "linkLabel": "Read our full privacy policy →"
+    }
+  },
+  "pricing": {
+    "title": "Choose Your Path",
+    "description": "Whether you prefer complete control or hassle-free convenience, we've got you covered.",
+    "selfHosted": {
+      "title": "Self-Hosted",
+      "price": {
+        "amount": "Free",
+        "note": "Forever"
+      },
+      "cta": "Get Docker Setup",
+      "disclaimer": "Requires your own server or NAS",
+      "features": {
+        "completeDataOwnership": "Complete data ownership",
+        "hostOnYourHardware": "Host on your own hardware",
+        "oneCommandDockerSetup": "One-command Docker setup",
+        "unlimitedFamilyMembers": "Unlimited family members",
+        "allFeaturesIncluded": "All features included",
+        "freeForever": "Free forever",
+        "communitySupport": "Community support",
+        "regularUpdates": "Regular updates"
+      }
+    },
+    "cloud": {
+      "badge": "BETA",
+      "title": "Cloud Hosted",
+      "price": {
+        "amount": "€5",
+        "interval": "per member/month",
+        "note": "Billed monthly"
+      },
+      "cta": "Start Free Trial",
+      "disclaimer": "14-day free trial • No credit card required",
+      "features": {
+        "managedHosting": "Managed hosting",
+        "automaticBackups": "Automatic backups",
+        "zeroMaintenance": "Zero maintenance",
+        "uptimeSla": "99.9% uptime SLA",
+        "allFeaturesIncluded": "All features included",
+        "prioritySupport": "Priority support",
+        "earlyAccess": "Early access to new features",
+        "cancelAnytime": "Cancel anytime"
+      }
+    },
+    "featureNote": {
+      "title": "Same Features, Different Hosting",
+      "description": "Both options include all Famly features. The only difference is who manages the infrastructure. Self-hosting gives you complete control, while cloud hosting offers convenience. You can even start with cloud and migrate to self-hosted later!"
+    }
+  },
+  "footer": {
+    "brandName": "Famly",
+    "tagline": "Privacy-first family management. Your data stays yours—forever.",
+    "sections": {
+      "product": {
+        "title": "Product",
+        "links": {
+          "features": "Features",
+          "pricing": "Pricing",
+          "roadmap": "Roadmap",
+          "changelog": "Changelog"
+        }
+      },
+      "resources": {
+        "title": "Resources",
+        "links": {
+          "documentation": "Documentation",
+          "selfHostingGuide": "Self-Hosting Guide",
+          "apiReference": "API Reference",
+          "community": "Community"
+        }
+      },
+      "company": {
+        "title": "Company",
+        "links": {
+          "about": "About",
+          "blog": "Blog",
+          "privacyPolicy": "Privacy Policy",
+          "termsOfService": "Terms of Service"
+        }
+      }
+    },
+    "bottom": {
+      "prefix": "© {year} Famly. Built with",
+      "suffix": "for families."
+    }
+  },
+  "languageSelector": {
+    "ariaLabel": "Switch language"
+  }
+}

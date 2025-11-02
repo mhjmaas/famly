@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Famly Web
+
+Next.js 16 App Router project for the Famly marketing site and public surfaces. The app now ships with built-in internationalization (i18n) that serves localized routes for `en-US` and `nl-NL` using sub-path routing (`/<locale>`).
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+pnpm --filter web dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The dev server is available at [http://localhost:3000](http://localhost:3000). Visiting `/` automatically redirects to the best matching locale based on the `Accept-Language` header.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+  app/
+    [lang]/          # locale-scoped routes
+      layout.tsx     # awaits params (Next.js 16) and loads locale dictionary
+      page.tsx       # landing page composed from localized components
+    globals.css
+  components/        # UI and landing components
+  dictionaries/      # locale dictionaries (JSON)
+  i18n/              # locale config and types
+  proxy.ts      # locale detection + redirect proxy
+```
 
-## Learn More
+## Dictionary Conventions
 
-To learn more about Next.js, take a look at the following resources:
+- Source-of-truth dictionaries live in `src/dictionaries/<locale>.json`.
+- Each dictionary must share the same shape. Types are generated from `en-US.json` (`Dictionary` in `src/i18n/types.ts`).
+- Nested objects group copy by section (`navigation`, `hero`, `features`, etc.).
+- HTML markup should be avoided—when needed (e.g. `<strong>` emphasis) keep it minimal and render with `dangerouslySetInnerHTML`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Adding Translation Keys
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Add the key and copy to `src/dictionaries/en-US.json`.
+2. Mirror the key in every locale dictionary with translated text.
+3. Update component props and TypeScript types if you introduce a new dictionary section.
+4. Run `pnpm --filter web lint` to ensure formatting and type-safety hold.
 
-## Deploy on Vercel
+### Adding a New Locale
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Update `src/i18n/config.ts` to include the new locale in `i18n.locales` and `localeLabels`.
+2. Create `src/dictionaries/<locale>.json` by copying `en-US.json` and translating values.
+3. Ensure proxy redirects support the locale (no code changes if you use the same config).
+4. Revalidate static params if using ISR or regenerate the site.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Middleware Behaviour
+
+`src/proxy.ts` uses `@formatjs/intl-localematcher` and `negotiator` to read the `Accept-Language` header. Requests lacking a locale segment are redirected to the best match. API routes, static assets, and Next.js internals are excluded from redirects via the proxy matcher.
+
+## Commands
+
+```bash
+pnpm --filter web dev     # start dev server
+pnpm --filter web build   # build production assets
+pnpm --filter web start   # run production build
+pnpm --filter web lint    # biome lint/format check
+pnpm --filter web format  # apply biome formatting
+pnpm --filter web test:e2e # run Playwright E2E tests
+```
+
+## Useful Links
+
+- [Next.js App Router Internationalization Guide](https://nextjs.org/docs/app/guides/internationalization)
+- [Biome](https://biomejs.dev/) – formatting & linting
+- [Playwright](https://playwright.dev/) – end-to-end testing

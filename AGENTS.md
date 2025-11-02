@@ -549,13 +549,16 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   │   │   ├── navigation.tsx
 │       │   │   │   ├── pricing.tsx
 │       │   │   │   └── privacy.tsx
+│       │   │   ├── language-selector.tsx
 │       │   │   ├── theme-provider.tsx
 │       │   │   ├── theme-toggle.tsx
 │       │   │   └── ui
 │       │   │       ├── button.tsx
 │       │   │       └── card.tsx
-│       │   └── lib
-│       │       └── utils.ts
+│       │   ├── lib
+│       │   │   └── utils.ts
+│       │   └── static-data
+│       │       └── features.ts
 │       ├── tests
 │       │   ├── e2e
 │       │   │   ├── accessibility
@@ -680,11 +683,11 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   └── add-landing-page
+│   │   └── add-i18n
 │   │       ├── design.md
 │   │       ├── proposal.md
 │   │       ├── specs
-│   │       │   └── landing-page
+│   │       │   └── i18n
 │   │       │       └── spec.md
 │   │       └── tasks.md
 │   ├── project.md
@@ -698,6 +701,8 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       ├── family
 │       │   └── spec.md
 │       ├── karma
+│       │   └── spec.md
+│       ├── landing-page
 │       │   └── spec.md
 │       ├── recipes
 │       │   └── spec.md
@@ -758,6 +763,7 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   ├── footer.tsx
 │       │   ├── get-started-flow.tsx
 │       │   ├── hero.tsx
+│       │   ├── language-selector.tsx
 │       │   ├── locations-view.tsx
 │       │   ├── memories-view.tsx
 │       │   ├── navigation.tsx
@@ -823,6 +829,6 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-183 directories, 600 files
+185 directories, 604 files
 ```
 <!-- TREE END -->

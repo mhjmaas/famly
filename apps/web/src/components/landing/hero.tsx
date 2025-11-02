@@ -1,14 +1,21 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Shield, Home } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Shield, Home } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import type { DictionarySection } from '@/i18n/types';
+
+type HeroProps = {
+  dict: DictionarySection<'hero'>;
+};
+
+const trustIndicatorOrder = ['encrypted', 'selfHosted', 'familyFirst'] as const;
 
 /**
  * Hero section component for the landing page
  * Features animated entrance effects and orbital background elements
  */
-export function Hero() {
+export function Hero({ dict }: HeroProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -47,7 +54,7 @@ export function Hero() {
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
           >
             <Shield className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Privacy-First Family Management</span>
+            <span className="text-sm font-medium text-primary">{dict.badge}</span>
           </div>
 
           {/* Main Heading */}
@@ -55,9 +62,9 @@ export function Hero() {
             data-testid="hero-heading"
             className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-balance transition-all duration-700 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
           >
-            Your Family's Digital{' '}
+            {dict.heading.leading}{' '}
             <span className="bg-gradient-to-r from-primary via-chart-2 to-chart-3 bg-clip-text text-transparent">
-              Home
+              {dict.heading.highlight}
             </span>
           </h1>
 
@@ -66,7 +73,7 @@ export function Hero() {
             data-testid="hero-subheading"
             className={`text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto text-balance transition-all duration-700 delay-200 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
           >
-            Keep your family connected, organized, and secure. Your data stays yours—forever.
+            {dict.subheading}
           </p>
 
           {/* CTA Buttons */}
@@ -78,10 +85,10 @@ export function Hero() {
               size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-12 text-base shadow-lg shadow-primary/25"
             >
-              Start Self-Hosting
+              {dict.primaryCta}
             </Button>
             <Button size="lg" variant="outline" className="px-8 h-12 text-base border-2 bg-transparent">
-              Try Cloud Beta
+              {dict.secondaryCta}
             </Button>
           </div>
 
@@ -89,21 +96,33 @@ export function Hero() {
           <div
             className={`flex flex-wrap items-center justify-center gap-6 pt-8 text-sm text-muted-foreground transition-all duration-700 delay-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
           >
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-chart-2" />
-              <span>End-to-End Encrypted</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Home className="h-4 w-4 text-chart-3" />
-              <span>Self-Hosted Option</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="relative w-4 h-4">
-                <div className="absolute top-0 left-0 w-2.5 h-2.5 rounded-full bg-primary" />
-                <div className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-chart-2" />
-              </div>
-              <span>Family-First Design</span>
-            </div>
+            {trustIndicatorOrder.map((key) => {
+              if (key === 'encrypted') {
+                return (
+                  <div key={key} className="flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-chart-2" />
+                    <span>{dict.trustIndicators.encrypted}</span>
+                  </div>
+                );
+              }
+              if (key === 'selfHosted') {
+                return (
+                  <div key={key} className="flex items-center gap-2">
+                    <Home className="h-4 w-4 text-chart-3" />
+                    <span>{dict.trustIndicators.selfHosted}</span>
+                  </div>
+                );
+              }
+              return (
+                <div key={key} className="flex items-center gap-2">
+                  <div className="relative w-4 h-4">
+                    <div className="absolute top-0 left-0 w-2.5 h-2.5 rounded-full bg-primary" />
+                    <div className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-chart-2" />
+                  </div>
+                  <span>{dict.trustIndicators.familyFirst}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -45,6 +45,7 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── README.md
 ├── apps
 │   ├── api
+│   │   ├── Dockerfile.test
 │   │   ├── README.md
 │   │   ├── biome.json
 │   │   ├── docker
@@ -215,6 +216,32 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   │   └── karma.service.ts
 │   │   │   │   │   └── validators
 │   │   │   │   │       └── grant-karma.validator.ts
+│   │   │   │   ├── recipes
+│   │   │   │   │   ├── domain
+│   │   │   │   │   │   └── recipe.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── init.ts
+│   │   │   │   │   ├── lib
+│   │   │   │   │   │   └── recipe.mapper.ts
+│   │   │   │   │   ├── middleware
+│   │   │   │   │   │   └── index.ts
+│   │   │   │   │   ├── repositories
+│   │   │   │   │   │   └── recipe.repository.ts
+│   │   │   │   │   ├── routes
+│   │   │   │   │   │   ├── create-recipe.route.ts
+│   │   │   │   │   │   ├── delete-recipe.route.ts
+│   │   │   │   │   │   ├── get-recipe.route.ts
+│   │   │   │   │   │   ├── list-recipes.route.ts
+│   │   │   │   │   │   ├── recipes.router.ts
+│   │   │   │   │   │   ├── search-recipes.route.ts
+│   │   │   │   │   │   └── update-recipe.route.ts
+│   │   │   │   │   ├── services
+│   │   │   │   │   │   └── recipe.service.ts
+│   │   │   │   │   └── validators
+│   │   │   │   │       ├── create-recipe.validator.ts
+│   │   │   │   │       ├── list-recipes.validator.ts
+│   │   │   │   │       ├── search-recipes.validator.ts
+│   │   │   │   │       └── update-recipe.validator.ts
 │   │   │   │   ├── rewards
 │   │   │   │   │   ├── README.md
 │   │   │   │   │   ├── domain
@@ -383,6 +410,14 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   ├── get-history.e2e.test.ts
 │   │   │   │   │   ├── grant-karma.e2e.test.ts
 │   │   │   │   │   └── task-integration.e2e.test.ts
+│   │   │   │   ├── recipes
+│   │   │   │   │   ├── authorization.e2e.test.ts
+│   │   │   │   │   ├── create-recipe.e2e.test.ts
+│   │   │   │   │   ├── delete-recipe.e2e.test.ts
+│   │   │   │   │   ├── get-recipe.e2e.test.ts
+│   │   │   │   │   ├── list-recipes.e2e.test.ts
+│   │   │   │   │   ├── search-recipes.e2e.test.ts
+│   │   │   │   │   └── update-recipe.e2e.test.ts
 │   │   │   │   ├── rewards
 │   │   │   │   │   ├── authorization.e2e.test.ts
 │   │   │   │   │   ├── claim-cancellation.e2e.test.ts
@@ -458,6 +493,11 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │       │   └── karma.service.test.ts
 │   │   │       ├── lib
 │   │   │       │   └── http-error.test.ts
+│   │   │       ├── recipes
+│   │   │       │   ├── recipe.mapper.test.ts
+│   │   │       │   ├── recipe.repository.test.ts
+│   │   │       │   ├── recipe.service.test.ts
+│   │   │       │   └── validators.test.ts
 │   │   │       ├── rewards
 │   │   │       │   ├── claim.repository.test.ts
 │   │   │       │   ├── metadata.repository.test.ts
@@ -480,11 +520,14 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   ├── tsconfig.json
 │   │   └── tsconfig.spec.json
 │   └── web
+│       ├── Dockerfile.test
 │       ├── README.md
 │       ├── biome.json
+│       ├── components.json
 │       ├── next-env.d.ts
 │       ├── next.config.ts
 │       ├── package.json
+│       ├── playwright.config.ts
 │       ├── postcss.config.mjs
 │       ├── public
 │       │   ├── file.svg
@@ -493,11 +536,54 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   ├── vercel.svg
 │       │   └── window.svg
 │       ├── src
-│       │   └── app
-│       │       ├── favicon.ico
-│       │       ├── globals.css
-│       │       ├── layout.tsx
-│       │       └── page.tsx
+│       │   ├── app
+│       │   │   ├── favicon.ico
+│       │   │   ├── globals.css
+│       │   │   ├── layout.tsx
+│       │   │   └── page.tsx
+│       │   ├── components
+│       │   │   ├── landing
+│       │   │   │   ├── features.tsx
+│       │   │   │   ├── footer.tsx
+│       │   │   │   ├── hero.tsx
+│       │   │   │   ├── navigation.tsx
+│       │   │   │   ├── pricing.tsx
+│       │   │   │   └── privacy.tsx
+│       │   │   ├── language-selector.tsx
+│       │   │   ├── theme-provider.tsx
+│       │   │   ├── theme-toggle.tsx
+│       │   │   └── ui
+│       │   │       ├── button.tsx
+│       │   │       └── card.tsx
+│       │   ├── lib
+│       │   │   └── utils.ts
+│       │   └── static-data
+│       │       └── features.ts
+│       ├── tests
+│       │   ├── e2e
+│       │   │   ├── accessibility
+│       │   │   │   └── a11y.spec.ts
+│       │   │   ├── global-setup.ts
+│       │   │   ├── global-teardown.ts
+│       │   │   ├── landing
+│       │   │   │   ├── features.spec.ts
+│       │   │   │   ├── footer.spec.ts
+│       │   │   │   ├── full-page.spec.ts
+│       │   │   │   ├── hero.spec.ts
+│       │   │   │   ├── navigation.spec.ts
+│       │   │   │   ├── pricing.spec.ts
+│       │   │   │   └── privacy.spec.ts
+│       │   │   ├── pages
+│       │   │   │   └── landing.page.ts
+│       │   │   ├── performance
+│       │   │   │   └── performance.spec.ts
+│       │   │   ├── responsive
+│       │   │   │   ├── mobile.spec.ts
+│       │   │   │   └── tablet.spec.ts
+│       │   │   └── setup
+│       │   │       ├── docker-setup.ts
+│       │   │       └── test-helpers.ts
+│       │   └── example.spec.ts
 │       └── tsconfig.json
 ├── bruno
 │   └── Famly
@@ -546,6 +632,14 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   ├── get-balance.bru
 │       │   ├── get-history.bru
 │       │   └── grant-karma.bru
+│       ├── recipes
+│       │   ├── create-recipe.bru
+│       │   ├── delete-recipe.bru
+│       │   ├── folder.bru
+│       │   ├── get-recipe.bru
+│       │   ├── list-recipes.bru
+│       │   ├── search-recipes.bru
+│       │   └── update-recipe.bru
 │       ├── rewards
 │       │   ├── cancel-claim.bru
 │       │   ├── claim-reward.bru
@@ -584,10 +678,18 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── constitution.md
 ├── docker
 │   ├── compose.dev.yml
+│   ├── compose.test.yml
 │   └── scripts
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
+│   │   └── add-i18n
+│   │       ├── design.md
+│   │       ├── proposal.md
+│   │       ├── specs
+│   │       │   └── i18n
+│   │       │       └── spec.md
+│   │       └── tasks.md
 │   ├── project.md
 │   └── specs
 │       ├── auth
@@ -600,6 +702,10 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   └── spec.md
 │       ├── karma
 │       │   └── spec.md
+│       ├── landing-page
+│       │   └── spec.md
+│       ├── recipes
+│       │   └── spec.md
 │       ├── rewards
 │       │   └── spec.md
 │       ├── shopping-lists
@@ -610,11 +716,120 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── packages
 ├── pnpm-lock.yaml
 ├── pnpm-workspace.yaml
+├── reference
+│   └── v0-famly
+│       ├── README.md
+│       ├── app
+│       │   ├── api
+│       │   │   └── chat
+│       │   │       └── route.ts
+│       │   ├── app
+│       │   │   ├── ai-settings
+│       │   │   │   └── page.tsx
+│       │   │   ├── chat
+│       │   │   │   └── page.tsx
+│       │   │   ├── diary
+│       │   │   │   └── page.tsx
+│       │   │   ├── family
+│       │   │   │   └── page.tsx
+│       │   │   ├── locations
+│       │   │   │   └── page.tsx
+│       │   │   ├── memories
+│       │   │   │   └── page.tsx
+│       │   │   ├── page.tsx
+│       │   │   ├── rewards
+│       │   │   │   └── page.tsx
+│       │   │   ├── settings
+│       │   │   │   └── page.tsx
+│       │   │   ├── shopping-lists
+│       │   │   │   └── page.tsx
+│       │   │   └── tasks
+│       │   │       └── page.tsx
+│       │   ├── get-started
+│       │   │   └── page.tsx
+│       │   ├── globals.css
+│       │   ├── layout.tsx
+│       │   ├── page.tsx
+│       │   └── signin
+│       │       └── page.tsx
+│       ├── components
+│       │   ├── ai-settings-view.tsx
+│       │   ├── chat-view.tsx
+│       │   ├── dashboard-layout.tsx
+│       │   ├── dashboard-overview.tsx
+│       │   ├── diary-view.tsx
+│       │   ├── family-view.tsx
+│       │   ├── features.tsx
+│       │   ├── footer.tsx
+│       │   ├── get-started-flow.tsx
+│       │   ├── hero.tsx
+│       │   ├── language-selector.tsx
+│       │   ├── locations-view.tsx
+│       │   ├── memories-view.tsx
+│       │   ├── navigation.tsx
+│       │   ├── pricing.tsx
+│       │   ├── privacy.tsx
+│       │   ├── profile-view.tsx
+│       │   ├── rewards-view.tsx
+│       │   ├── shopping-lists-view.tsx
+│       │   ├── signin-form.tsx
+│       │   ├── tasks-view.tsx
+│       │   ├── theme-provider.tsx
+│       │   ├── theme-toggle.tsx
+│       │   └── ui
+│       │       ├── alert-dialog.tsx
+│       │       ├── alert.tsx
+│       │       ├── avatar.tsx
+│       │       ├── badge.tsx
+│       │       ├── button.tsx
+│       │       ├── calendar.tsx
+│       │       ├── card.tsx
+│       │       ├── checkbox.tsx
+│       │       ├── collapsible.tsx
+│       │       ├── dialog.tsx
+│       │       ├── dropdown-menu.tsx
+│       │       ├── input.tsx
+│       │       ├── label.tsx
+│       │       ├── popover.tsx
+│       │       ├── progress.tsx
+│       │       ├── radio-group.tsx
+│       │       ├── scroll-area.tsx
+│       │       ├── select.tsx
+│       │       ├── sheet.tsx
+│       │       ├── tabs.tsx
+│       │       ├── textarea.tsx
+│       │       ├── toast.tsx
+│       │       └── toaster.tsx
+│       ├── components.json
+│       ├── hooks
+│       │   └── use-toast.ts
+│       ├── lib
+│       │   └── utils.ts
+│       ├── next.config.mjs
+│       ├── package.json
+│       ├── pnpm-lock.yaml
+│       ├── postcss.config.mjs
+│       ├── public
+│       │   ├── beach-sunset.png
+│       │   ├── dinner-food-reward.jpg
+│       │   ├── family-dinner.png
+│       │   ├── money-reward-euro.jpg
+│       │   ├── movie-night-popcorn.jpg
+│       │   ├── placeholder-logo.png
+│       │   ├── placeholder-logo.svg
+│       │   ├── placeholder-user.jpg
+│       │   ├── placeholder.jpg
+│       │   ├── placeholder.svg
+│       │   ├── sandcastle.jpg
+│       │   └── screen-time-reward.jpg
+│       ├── styles
+│       │   └── globals.css
+│       └── tsconfig.json
 └── scripts
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-132 directories, 442 files
+185 directories, 604 files
 ```
 <!-- TREE END -->
 
