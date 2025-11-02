@@ -1,0 +1,48 @@
+services:
+  mongo-test:
+    image: mongo:7
+    container_name: famly-mongo-test
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_DATABASE: famly_test
+    tmpfs:
+      - /data/db
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - --eval
+        - 'db.adminCommand("ping").ok'
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api-test:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile.test
+    container_name: famly-api-test
+    ports:
+      - "3002:3000"
+    depends_on:
+      mongo-test:
+        condition: service_healthy
+    environment:
+      MONGODB_URI: mongodb://mongo-test:27017/famly_test
+      NODE_ENV: test
+      PORT: 3000
+      BETTER_AUTH_SECRET: test_better_auth_secret_min_32_chars_required_here_for_testing
+      BETTER_AUTH_URL: http://localhost:3002
+    working_dir: /app/apps/api
+    command: pnpm dev
+    volumes:
+      # Mount source code to avoid rebuilding on changes
+      - ../apps/api/src:/app/apps/api/src:ro
+      - ../apps/api/package.json:/app/apps/api/package.json:ro
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/v1/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s

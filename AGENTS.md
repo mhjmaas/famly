@@ -45,6 +45,7 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 ├── README.md
 ├── apps
 │   ├── api
+│   │   ├── Dockerfile.test
 │   │   ├── README.md
 │   │   ├── biome.json
 │   │   ├── docker
@@ -519,11 +520,14 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │   │   ├── tsconfig.json
 │   │   └── tsconfig.spec.json
 │   └── web
+│       ├── Dockerfile.test
 │       ├── README.md
 │       ├── biome.json
+│       ├── components.json
 │       ├── next-env.d.ts
 │       ├── next.config.ts
 │       ├── package.json
+│       ├── playwright.config.ts
 │       ├── postcss.config.mjs
 │       ├── public
 │       │   ├── file.svg
@@ -532,11 +536,51 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   ├── vercel.svg
 │       │   └── window.svg
 │       ├── src
-│       │   └── app
-│       │       ├── favicon.ico
-│       │       ├── globals.css
-│       │       ├── layout.tsx
-│       │       └── page.tsx
+│       │   ├── app
+│       │   │   ├── favicon.ico
+│       │   │   ├── globals.css
+│       │   │   ├── layout.tsx
+│       │   │   └── page.tsx
+│       │   ├── components
+│       │   │   ├── landing
+│       │   │   │   ├── features.tsx
+│       │   │   │   ├── footer.tsx
+│       │   │   │   ├── hero.tsx
+│       │   │   │   ├── navigation.tsx
+│       │   │   │   ├── pricing.tsx
+│       │   │   │   └── privacy.tsx
+│       │   │   ├── theme-provider.tsx
+│       │   │   ├── theme-toggle.tsx
+│       │   │   └── ui
+│       │   │       ├── button.tsx
+│       │   │       └── card.tsx
+│       │   └── lib
+│       │       └── utils.ts
+│       ├── tests
+│       │   ├── e2e
+│       │   │   ├── accessibility
+│       │   │   │   └── a11y.spec.ts
+│       │   │   ├── global-setup.ts
+│       │   │   ├── global-teardown.ts
+│       │   │   ├── landing
+│       │   │   │   ├── features.spec.ts
+│       │   │   │   ├── footer.spec.ts
+│       │   │   │   ├── full-page.spec.ts
+│       │   │   │   ├── hero.spec.ts
+│       │   │   │   ├── navigation.spec.ts
+│       │   │   │   ├── pricing.spec.ts
+│       │   │   │   └── privacy.spec.ts
+│       │   │   ├── pages
+│       │   │   │   └── landing.page.ts
+│       │   │   ├── performance
+│       │   │   │   └── performance.spec.ts
+│       │   │   ├── responsive
+│       │   │   │   ├── mobile.spec.ts
+│       │   │   │   └── tablet.spec.ts
+│       │   │   └── setup
+│       │   │       ├── docker-setup.ts
+│       │   │       └── test-helpers.ts
+│       │   └── example.spec.ts
 │       └── tsconfig.json
 ├── bruno
 │   └── Famly
@@ -631,10 +675,18 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 ├── constitution.md
 ├── docker
 │   ├── compose.dev.yml
+│   ├── compose.test.yml
 │   └── scripts
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
+│   │   └── add-landing-page
+│   │       ├── design.md
+│   │       ├── proposal.md
+│   │       ├── specs
+│   │       │   └── landing-page
+│   │       │       └── spec.md
+│   │       └── tasks.md
 │   ├── project.md
 │   └── specs
 │       ├── auth
@@ -771,6 +823,6 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-168 directories, 563 files
+183 directories, 600 files
 ```
 <!-- TREE END -->
