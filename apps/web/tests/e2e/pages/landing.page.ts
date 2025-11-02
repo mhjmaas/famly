@@ -71,7 +71,7 @@ export class LandingPage {
    * Navigate to the landing page
    */
   async goto() {
-    await this.page.goto('/');
+    await this.page.goto('/en-US');
   }
 
   /**
@@ -85,7 +85,7 @@ export class LandingPage {
     };
 
     await linkMap[section].click();
-    await this.page.waitForURL(`**/#${section}`);
+    await this.page.waitForURL(`**/en-US#${section}`);
   }
 
   /**

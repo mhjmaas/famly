@@ -537,10 +537,12 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   └── window.svg
 │       ├── src
 │       │   ├── app
+│       │   │   ├── [lang]
+│       │   │   │   ├── layout.tsx
+│       │   │   │   └── page.tsx
 │       │   │   ├── favicon.ico
 │       │   │   ├── globals.css
-│       │   │   ├── layout.tsx
-│       │   │   └── page.tsx
+│       │   │   └── layout.tsx
 │       │   ├── components
 │       │   │   ├── landing
 │       │   │   │   ├── features.tsx
@@ -555,10 +557,19 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   │   └── ui
 │       │   │       ├── button.tsx
 │       │   │       └── card.tsx
+│       │   ├── dictionaries
+│       │   │   ├── en-US.json
+│       │   │   ├── index.ts
+│       │   │   └── nl-NL.json
+│       │   ├── i18n
+│       │   │   ├── config.ts
+│       │   │   └── types.ts
 │       │   ├── lib
 │       │   │   └── utils.ts
-│       │   └── static-data
-│       │       └── features.ts
+│       │   ├── proxy.ts
+│       │   ├── static-data
+│       │   │   └── features.ts
+│       │   └── types
 │       ├── tests
 │       │   ├── e2e
 │       │   │   ├── accessibility
@@ -829,7 +840,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-185 directories, 604 files
+189 directories, 611 files
 ```
 <!-- TREE END -->
 

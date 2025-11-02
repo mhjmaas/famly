@@ -88,18 +88,17 @@ test.describe('Landing Page - Accessibility', () => {
   test('should be keyboard navigable', async ({ page }) => {
     // Start from top
     await page.keyboard.press('Tab');
-    
+
     // Should be able to reach navigation
     await expect(landingPage.logoLink).toBeFocused();
-    
+
     // Continue tabbing through navigation
     await page.keyboard.press('Tab');
     await expect(landingPage.featuresLink).toBeFocused();
-    
+
     // Should be able to activate with Enter
     await page.keyboard.press('Enter');
-    await page.waitForTimeout(500);
-    expect(page.url()).toContain('#features');
+    await page.waitForURL('**/en-US#features');
   });
 
   test('should have proper form labels if forms exist', async ({ page }) => {

@@ -1,6 +1,10 @@
 # Proposal: Add Internationalization (i18n)
 
-## Objective
+## Why
+
+Implement Next.js native internationalization to support en-US and nl-NL locales across the entire web application, using sub-path routing and Accept-Language header detection.
+
+### Objective
 
 Implement Next.js native internationalization to support en-US and nl-NL locales across the entire web application, using sub-path routing and Accept-Language header detection.
 
@@ -13,7 +17,7 @@ The current web application is hardcoded in English, limiting accessibility for 
 - Uses sub-path routing (/en-US/*, /nl-NL/*) for SEO and stateless locale handling
 - Provides a scalable foundation for future locale additions
 
-## Proposed Solution
+## What Changes
 
 Implement internationalization using Next.js native patterns:
 

@@ -16,7 +16,20 @@ function getLocale(request: NextRequest): Locale {
   }
 
   const languages = new Negotiator({ headers }).languages();
-  const locale = match(languages, i18n.locales, i18n.defaultLocale);
+  const canonicalLanguages = languages.filter((language) => {
+    try {
+      return Intl.getCanonicalLocales(language).length > 0;
+    } catch {
+      return false;
+    }
+  });
+
+  const locale = match(
+    canonicalLanguages.length ? canonicalLanguages : [i18n.defaultLocale],
+    i18n.locales,
+    i18n.defaultLocale,
+  );
+
   return (i18n.locales.includes(locale as Locale) ? locale : i18n.defaultLocale) as Locale;
 }
 
