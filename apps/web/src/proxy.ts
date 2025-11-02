@@ -20,7 +20,7 @@ function getLocale(request: NextRequest): Locale {
   return (i18n.locales.includes(locale as Locale) ? locale : i18n.defaultLocale) as Locale;
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (
