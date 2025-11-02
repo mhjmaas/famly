@@ -23,6 +23,7 @@ export interface Task {
   completedAt?: Date; // Optional completion timestamp
   metadata?: {
     karma?: number; // Optional karma reward (1-1000)
+    claimId?: string; // Optional reward claim ID (links to reward claim being fulfilled)
   };
   createdBy: ObjectId;
   createdAt: Date;
@@ -48,6 +49,7 @@ export interface CreateTaskInput {
   assignment: TaskAssignment;
   metadata?: {
     karma?: number;
+    claimId?: string;
   };
 }
 
@@ -62,6 +64,7 @@ export interface UpdateTaskInput {
   completedAt?: Date | null;
   metadata?: {
     karma?: number;
+    claimId?: string;
   };
 }
 
@@ -79,6 +82,7 @@ export interface TaskDTO {
   completedAt?: string;
   metadata?: {
     karma?: number;
+    claimId?: string;
   };
   createdBy: string;
   createdAt: string;

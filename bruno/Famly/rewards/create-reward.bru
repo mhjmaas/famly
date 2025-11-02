@@ -1,0 +1,74 @@
+meta {
+  name: Create Reward
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/rewards
+  body: json
+  auth: inherit
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+    "name": "Movie Night",
+    "karmaCost": 50,
+    "description": "One movie night of their choice",
+    "imageUrl": "https://example.com/movie.png"
+  }
+}
+
+script:post-response {
+  try {
+    const body = res.body;
+
+    if (body?._id) {
+      bru.setEnvVar('currentRewardId', body._id);
+    }
+  } catch (error) {
+    console.log('Failed to persist reward ID: ' + error?.message);
+  }
+}
+
+docs {
+  # Create Reward
+  
+  Creates a new reward in the family. Only parents can create rewards.
+  
+  ## Authorization
+  - Requires authentication
+  - Must be parent role in the family
+  
+  ## Request Body
+  - `name` (string, required): Reward name (1-100 characters)
+  - `karmaCost` (number, required): Karma cost to claim (1-1000)
+  - `description` (string, optional): Reward description (max 500 characters)
+  - `imageUrl` (string, optional): URL to reward image (valid HTTP/HTTPS)
+  
+  ## Responses
+  - `201 Created`: Reward created successfully
+    - Returns: RewardDTO with _id, name, karmaCost, description, imageUrl, familyId, createdAt, etc.
+  - `400 Bad Request`: Validation error (invalid input)
+  - `401 Unauthorized`: Not authenticated
+  - `403 Forbidden`: Not a parent in this family
+  
+  ## Example Success Response (201)
+  ```json
+  {
+    "_id": "507f1f77bcf86cd799439011",
+    "familyId": "507f191e810c19729de860ea",
+    "name": "Movie Night",
+    "karmaCost": 50,
+    "description": "One movie night of their choice",
+    "imageUrl": "https://example.com/movie.png",
+    "createdBy": "507f1f77bcf86cd799439012",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-15T10:30:00Z"
+  }
+  ```
+}

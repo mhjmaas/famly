@@ -56,7 +56,7 @@ describe("E2E: /v1/families/:familyId/diary - Family Diary Authorization", () =>
 
     if (parent2Response.status !== 201) {
       throw new Error(
-        `Failed to add parent2: ${parent2Response.status} ${parent2Response.body.message}`,
+        `Failed to add parent2: ${parent2Response.status} ${parent2Response.body.error}`,
       );
     }
 

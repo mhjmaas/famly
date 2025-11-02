@@ -1,0 +1,76 @@
+meta {
+  name: Claim Reward
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/rewards/{{currentRewardId}}/claim
+  body: none
+  auth: inherit
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+docs {
+  # Claim Reward
+  
+  Creates a claim for a reward. Any family member can claim rewards if they have sufficient karma. An approval task is automatically created for parents to review.
+  
+  ## Authorization
+  - Requires authentication
+  - Must be a family member
+  - Member must have sufficient karma
+  
+  ## URL Parameters
+  - `reward_id` (string, required): The ID of the reward to claim
+  
+  ## Request Body
+  None
+  
+  ## Responses
+  - `201 Created`: Claim created successfully
+    - Returns: ClaimDTO with status="pending" and autoTaskId
+  - `400 Bad Request`: Validation error or insufficient karma
+    - Error: "Insufficient karma. Required: X, Available: Y"
+  - `401 Unauthorized`: Not authenticated
+  - `403 Forbidden`: Not a family member
+  - `404 Not Found`: Reward not found
+  - `409 Conflict`: Duplicate pending claim for this member and reward
+  
+  ## Example Success Response (201)
+  ```json
+  {
+    "_id": "507f1f77bcf86cd799439020",
+    "rewardId": "507f1f77bcf86cd799439011",
+    "familyId": "507f191e810c19729de860ea",
+    "memberId": "507f1f77bcf86cd799439015",
+    "status": "pending",
+    "autoTaskId": "507f1f77bcf86cd799439021",
+    "createdAt": "2024-01-15T11:00:00Z"
+  }
+  ```
+  
+  ## Example Error Response (400 - Insufficient Karma)
+  ```json
+  {
+    "message": "Insufficient karma. Required: 50, Available: 25"
+  }
+  ```
+  
+  ## Example Error Response (409 - Duplicate Claim)
+  ```json
+  {
+    "message": "Member already has a pending claim for this reward"
+  }
+  ```
+  
+  ## Notes
+  - Automatically creates an approval task assigned to all parents
+  - Task remains pending until a parent marks it complete
+  - Task completion triggers claim completion and karma deduction
+  - Only one pending claim per member per reward allowed
+  - Can reclaim after cancelling or completing previous claim
+}

@@ -1,0 +1,76 @@
+meta {
+  name: List Claims
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/claims
+  body: none
+  auth: inherit
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+docs {
+  # List Claims
+  
+  Retrieves all claims for a family. Any family member can list claims. Members see their own claims and parents can see claims from any family member.
+  
+  ## Authorization
+  - Requires authentication
+  - Must be a family member
+  
+  ## Query Parameters
+  None
+  
+  ## Responses
+  - `200 OK`: List of claims
+    - Returns: Array of ClaimDTO objects
+  - `401 Unauthorized`: Not authenticated
+  - `403 Forbidden`: Not a family member
+  
+  ## Example Success Response (200)
+  ```json
+  [
+    {
+      "_id": "507f1f77bcf86cd799439020",
+      "rewardId": "507f1f77bcf86cd799439011",
+      "familyId": "507f191e810c19729de860ea",
+      "memberId": "507f1f77bcf86cd799439015",
+      "status": "pending",
+      "autoTaskId": "507f1f77bcf86cd799439021",
+      "createdAt": "2024-01-15T11:00:00Z"
+    },
+    {
+      "_id": "507f1f77bcf86cd799439022",
+      "rewardId": "507f1f77bcf86cd799439011",
+      "familyId": "507f191e810c19729de860ea",
+      "memberId": "507f1f77bcf86cd799439015",
+      "status": "completed",
+      "autoTaskId": "507f1f77bcf86cd799439023",
+      "createdAt": "2024-01-15T10:00:00Z",
+      "completedAt": "2024-01-15T10:30:00Z"
+    },
+    {
+      "_id": "507f1f77bcf86cd799439024",
+      "rewardId": "507f1f77bcf86cd799439013",
+      "familyId": "507f191e810c19729de860ea",
+      "memberId": "507f1f77bcf86cd799439015",
+      "status": "cancelled",
+      "autoTaskId": "507f1f77bcf86cd799439025",
+      "createdAt": "2024-01-15T09:00:00Z",
+      "cancelledAt": "2024-01-15T09:45:00Z",
+      "cancelledBy": "507f1f77bcf86cd799439015"
+    }
+  ]
+  ```
+  
+  ## Notes
+  - Results include pending, completed, and cancelled claims
+  - Children see only their own claims
+  - Parents see all claims in their family
+  - Sort order typically by createdAt (newest first)
+}

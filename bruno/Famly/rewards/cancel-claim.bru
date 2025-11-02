@@ -1,0 +1,66 @@
+meta {
+  name: Cancel Claim
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/claims/{{currentClaimId}}
+  body: none
+  auth: inherit
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+docs {
+  # Cancel Claim
+  
+  Cancels a pending reward claim. Members can cancel their own claims. Parents can cancel any member's claim. The associated approval task is automatically deleted.
+  
+  ## Authorization
+  - Requires authentication
+  - Member can cancel own claim
+  - Parent can cancel any member's claim
+  
+  ## Path Parameters
+  - `claim_id`: The claim ID to cancel
+  
+  ## Responses
+  - `200 OK`: Claim cancelled successfully
+    - Returns: Updated ClaimDTO with status="cancelled"
+  - `401 Unauthorized`: Not authenticated
+  - `403 Forbidden`: Not authorized to cancel this claim
+  - `404 Not Found`: Claim not found
+  - `409 Conflict`: Claim is not pending (cannot cancel completed/cancelled claim)
+  
+  ## Example Success Response (200)
+  ```json
+  {
+    "_id": "507f1f77bcf86cd799439020",
+    "rewardId": "507f1f77bcf86cd799439011",
+    "familyId": "507f191e810c19729de860ea",
+    "memberId": "507f1f77bcf86cd799439015",
+    "status": "cancelled",
+    "autoTaskId": "507f1f77bcf86cd799439021",
+    "createdAt": "2024-01-15T11:00:00Z",
+    "cancelledAt": "2024-01-15T11:30:00Z",
+    "cancelledBy": "507f1f77bcf86cd799439015"
+  }
+  ```
+  
+  ## Example Error Response (409 - Not Pending)
+  ```json
+  {
+    "message": "Cannot cancel a completed claim. Only pending claims can be cancelled."
+  }
+  ```
+  
+  ## Notes
+  - Automatically deletes the associated approval task
+  - No karma is deducted (not completed)
+  - Cancelled claims cannot be re-cancelled
+  - After cancellation, member can create a new claim for the same reward
+  - Claim remains in database for audit trail
+}

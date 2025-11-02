@@ -196,6 +196,53 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   └── validators
 │   │   │   │   │       ├── add-family-member.validator.ts
 │   │   │   │   │       └── create-family.validator.ts
+│   │   │   │   ├── karma
+│   │   │   │   │   ├── README.md
+│   │   │   │   │   ├── domain
+│   │   │   │   │   │   └── karma.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── lib
+│   │   │   │   │   │   └── karma.mapper.ts
+│   │   │   │   │   ├── repositories
+│   │   │   │   │   │   └── karma.repository.ts
+│   │   │   │   │   ├── routes
+│   │   │   │   │   │   ├── get-balance.route.ts
+│   │   │   │   │   │   ├── get-history.route.ts
+│   │   │   │   │   │   ├── grant-karma.route.ts
+│   │   │   │   │   │   └── karma.router.ts
+│   │   │   │   │   ├── services
+│   │   │   │   │   │   └── karma.service.ts
+│   │   │   │   │   └── validators
+│   │   │   │   │       └── grant-karma.validator.ts
+│   │   │   │   ├── rewards
+│   │   │   │   │   ├── README.md
+│   │   │   │   │   ├── domain
+│   │   │   │   │   │   └── reward.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── lib
+│   │   │   │   │   │   └── reward.mapper.ts
+│   │   │   │   │   ├── repositories
+│   │   │   │   │   │   ├── claim.repository.ts
+│   │   │   │   │   │   ├── metadata.repository.ts
+│   │   │   │   │   │   └── reward.repository.ts
+│   │   │   │   │   ├── routes
+│   │   │   │   │   │   ├── cancel-claim.route.ts
+│   │   │   │   │   │   ├── claim-reward.route.ts
+│   │   │   │   │   │   ├── create-reward.route.ts
+│   │   │   │   │   │   ├── delete-reward.route.ts
+│   │   │   │   │   │   ├── get-reward.route.ts
+│   │   │   │   │   │   ├── list-claims.route.ts
+│   │   │   │   │   │   ├── list-rewards.route.ts
+│   │   │   │   │   │   ├── rewards.router.ts
+│   │   │   │   │   │   ├── toggle-favourite.route.ts
+│   │   │   │   │   │   └── update-reward.route.ts
+│   │   │   │   │   ├── services
+│   │   │   │   │   │   ├── claim.service.ts
+│   │   │   │   │   │   └── reward.service.ts
+│   │   │   │   │   └── validators
+│   │   │   │   │       ├── claim-reward.validator.ts
+│   │   │   │   │       ├── create-reward.validator.ts
+│   │   │   │   │       └── update-reward.validator.ts
 │   │   │   │   ├── shopping-lists
 │   │   │   │   │   ├── domain
 │   │   │   │   │   │   └── shopping-list.ts
@@ -225,6 +272,8 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │       ├── domain
 │   │   │   │       │   ├── task-schedule.ts
 │   │   │   │       │   └── task.ts
+│   │   │   │       ├── hooks
+│   │   │   │       │   └── task-completion.hook.ts
 │   │   │   │       ├── index.ts
 │   │   │   │       ├── lib
 │   │   │   │       │   ├── schedule-matcher.ts
@@ -322,6 +371,20 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   ├── test-data-factory.ts
 │   │   │   │   │   ├── test-scenarios.ts
 │   │   │   │   │   └── token-manager.ts
+│   │   │   │   ├── karma
+│   │   │   │   │   ├── authorization.e2e.test.ts
+│   │   │   │   │   ├── get-balance.e2e.test.ts
+│   │   │   │   │   ├── get-history.e2e.test.ts
+│   │   │   │   │   ├── grant-karma.e2e.test.ts
+│   │   │   │   │   └── task-integration.e2e.test.ts
+│   │   │   │   ├── rewards
+│   │   │   │   │   ├── authorization.e2e.test.ts
+│   │   │   │   │   ├── claim-cancellation.e2e.test.ts
+│   │   │   │   │   ├── claim-workflow.e2e.test.ts
+│   │   │   │   │   ├── edge-cases.e2e.test.ts
+│   │   │   │   │   ├── favourite.e2e.test.ts
+│   │   │   │   │   ├── insufficient-karma.e2e.test.ts
+│   │   │   │   │   └── reward-crud.e2e.test.ts
 │   │   │   │   ├── setup
 │   │   │   │   │   └── testcontainers-setup.ts
 │   │   │   │   ├── shopping-lists
@@ -382,8 +445,17 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │       │   ├── README.md
 │   │   │       │   ├── add-family-member.validator.test.ts
 │   │   │       │   └── create-family.validator.test.ts
+│   │   │       ├── karma
+│   │   │       │   ├── grant-karma.validator.test.ts
+│   │   │       │   ├── karma.mapper.test.ts
+│   │   │       │   ├── karma.repository.test.ts
+│   │   │       │   └── karma.service.test.ts
 │   │   │       ├── lib
 │   │   │       │   └── http-error.test.ts
+│   │   │       ├── rewards
+│   │   │       │   ├── claim.repository.test.ts
+│   │   │       │   ├── metadata.repository.test.ts
+│   │   │       │   └── reward.repository.test.ts
 │   │   │       ├── shopping-lists
 │   │   │       │   ├── add-item.validator.test.ts
 │   │   │       │   ├── create-list.validator.test.ts
@@ -394,6 +466,7 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │           ├── create-schedule.validator.test.ts
 │   │   │           ├── create-task.validator.test.ts
 │   │   │           ├── schedule-matcher.test.ts
+│   │   │           ├── task-completion.hook.test.ts
 │   │   │           ├── task-schedule.mapper.test.ts
 │   │   │           ├── task.mapper.test.ts
 │   │   │           ├── update-schedule.validator.test.ts
@@ -455,14 +528,30 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   ├── delete member.bru
 │       │   ├── folder.bru
 │       │   └── get all.bru
-│       ├── family-diary
+│       ├── family diary
 │       │   ├── create-entry.bru
 │       │   ├── delete-entry.bru
 │       │   ├── folder.bru
 │       │   ├── get-entry.bru
 │       │   ├── list-entries.bru
 │       │   └── update-entry.bru
-│       ├── shopping-lists
+│       ├── karma
+│       │   ├── folder.bru
+│       │   ├── get-balance.bru
+│       │   ├── get-history.bru
+│       │   └── grant-karma.bru
+│       ├── rewards
+│       │   ├── cancel-claim.bru
+│       │   ├── claim-reward.bru
+│       │   ├── create-reward.bru
+│       │   ├── delete-reward.bru
+│       │   ├── folder.bru
+│       │   ├── get-reward.bru
+│       │   ├── list-claims.bru
+│       │   ├── list-rewards.bru
+│       │   ├── toggle-favourite.bru
+│       │   └── update-reward.bru
+│       ├── shopping list
 │       │   ├── add item.bru
 │       │   ├── create list.bru
 │       │   ├── delete item.bru
@@ -475,6 +564,7 @@ Our core guiding principles are found in the `constitution.md` file.
 │       └── tasks
 │           ├── complete-task.bru
 │           ├── create-schedule.bru
+│           ├── create-task-with-karma.bru
 │           ├── create-task.bru
 │           ├── delete-schedule.bru
 │           ├── delete-task.bru
@@ -491,11 +581,13 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   └── add-chat-feature
+│   │   └── add-karma-rewards
 │   │       ├── design.md
 │   │       ├── proposal.md
 │   │       ├── specs
-│   │       │   └── chat
+│   │       │   ├── karma
+│   │       │   │   └── spec.md
+│   │       │   └── rewards
 │   │       │       └── spec.md
 │   │       └── tasks.md
 │   ├── project.md
@@ -507,6 +599,8 @@ Our core guiding principles are found in the `constitution.md` file.
 │       ├── diary
 │       │   └── spec.md
 │       ├── family
+│       │   └── spec.md
+│       ├── karma
 │       │   └── spec.md
 │       ├── shopping-lists
 │       │   └── spec.md
@@ -520,7 +614,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-111 directories, 369 files
+134 directories, 440 files
 ```
 <!-- TREE END -->
 

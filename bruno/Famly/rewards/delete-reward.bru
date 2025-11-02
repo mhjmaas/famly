@@ -1,0 +1,47 @@
+meta {
+  name: Delete Reward
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/v1/families/{{family_id}}/rewards/{{currentRewardId}}
+  body: none
+  auth: inherit
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+docs {
+  # Delete Reward
+  
+  Deletes a reward from the family. Only parents can delete rewards. Cannot delete rewards with pending claims.
+  
+  ## Authorization
+  - Requires authentication
+  - Must be parent role in the family
+  
+  ## Path Parameters
+  - `reward_id`: The reward ID to delete
+  
+  ## Responses
+  - `204 No Content`: Reward deleted successfully
+  - `401 Unauthorized`: Not authenticated
+  - `403 Forbidden`: Not a parent in this family
+  - `404 Not Found`: Reward not found
+  - `409 Conflict`: Reward has pending claims (cannot delete)
+  
+  ## Example Error Response (409)
+  ```json
+  {
+    "message": "Cannot delete reward with pending claims. Cancel or complete all claims first."
+  }
+  ```
+  
+  ## Notes
+  - Completed and cancelled claims do NOT block deletion
+  - Only pending claims prevent deletion
+  - Deleted rewards become inaccessible to all family members
+}

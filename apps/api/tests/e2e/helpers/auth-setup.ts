@@ -79,7 +79,7 @@ export async function registerTestUser(
 
   if (response.status !== 201) {
     throw new Error(
-      `Failed to register user: ${response.status} ${response.body.message}`,
+      `Failed to register user: ${response.status} ${response.body.error}`,
     );
   }
 
@@ -119,7 +119,7 @@ export async function loginTestUser(
 
   if (response.status !== 200) {
     throw new Error(
-      `Failed to login user: ${response.status} ${response.body.message}`,
+      `Failed to login user: ${response.status} ${response.body.error}`,
     );
   }
 
@@ -170,7 +170,7 @@ export async function setupTestFamily(
 
   if (familyResponse.status !== 201) {
     throw new Error(
-      `Failed to create family: ${familyResponse.status} ${familyResponse.body.message}`,
+      `Failed to create family: ${familyResponse.status} ${familyResponse.body.error}`,
     );
   }
 
@@ -229,7 +229,7 @@ export async function addChildMember(
 
   if (addMemberResponse.status !== 201) {
     throw new Error(
-      `Failed to add child member: ${addMemberResponse.status} ${addMemberResponse.body.message}`,
+      `Failed to add child member: ${addMemberResponse.status} ${addMemberResponse.body.error}`,
     );
   }
 

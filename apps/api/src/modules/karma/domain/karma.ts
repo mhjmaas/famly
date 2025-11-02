@@ -4,8 +4,9 @@ import type { ObjectId } from "mongodb";
  * Karma source types
  * - task_completion: Karma awarded for completing a task
  * - manual_grant: Karma manually granted by a parent
+ * - reward_redemption: Karma deducted for redeeming a reward
  */
-export type KarmaSource = "task_completion" | "manual_grant";
+export type KarmaSource = "task_completion" | "manual_grant" | "reward_redemption";
 
 /**
  * Member karma aggregate
@@ -28,12 +29,13 @@ export interface KarmaEvent {
   _id: ObjectId;
   familyId: ObjectId;
   userId: ObjectId;
-  amount: number; // Always > 0 (no negative karma in MVP)
+  amount: number; // Positive for additions, negative for deductions (e.g., -50 for reward_redemption)
   source: KarmaSource;
-  description: string; // e.g., "Completed task Wash dishes"
+  description: string; // e.g., "Completed task Wash dishes" or "Redeemed reward Extra screen time"
   metadata?: {
     taskId?: string; // For task_completion source
     grantedBy?: string; // For manual_grant source
+    claimId?: string; // For reward_redemption source
   };
   createdAt: Date;
 }
@@ -44,13 +46,25 @@ export interface KarmaEvent {
 export interface AwardKarmaInput {
   familyId: ObjectId;
   userId: ObjectId;
-  amount: number;
+  amount: number; // Positive for additions, negative for deductions
   source: KarmaSource;
   description: string;
   metadata?: {
     taskId?: string;
     grantedBy?: string;
+    claimId?: string;
   };
+}
+
+/**
+ * Input for deducting karma from a user
+ */
+export interface DeductKarmaInput {
+  familyId: ObjectId;
+  userId: ObjectId;
+  amount: number; // Positive number representing the deduction (e.g., 50 for 50 karma)
+  claimId: string; // Reference to the reward claim
+  rewardName: string; // Name of the reward being redeemed
 }
 
 /**

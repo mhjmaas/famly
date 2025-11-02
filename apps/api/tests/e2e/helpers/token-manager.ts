@@ -72,7 +72,7 @@ export class TokenManager {
 
     if (response.status !== 201) {
       throw new Error(
-        `Failed to create user: ${response.status} ${response.body.message}`,
+        `Failed to create user: ${response.status} ${response.body.error}`,
       );
     }
 
