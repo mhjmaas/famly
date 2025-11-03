@@ -110,7 +110,7 @@ export function SignInForm({ locale, dict, commonDict }: SignInFormProps) {
         <div className="text-sm text-center text-muted-foreground">
           {dict.cta.prompt}{" "}
           <Link
-            href={`/${locale}/get-started`}
+            href={`/${locale}/get-started?step=register`}
             className="text-primary hover:underline font-medium"
             data-testid="signin-get-started-link"
           >

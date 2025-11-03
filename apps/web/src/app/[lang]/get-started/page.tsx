@@ -6,12 +6,23 @@ import { i18n, type Locale } from "@/i18n/config";
 
 interface GetStartedPageProps {
   params: Promise<{ lang: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function GetStartedPage({ params }: GetStartedPageProps) {
+export default async function GetStartedPage({
+  params,
+  searchParams,
+}: GetStartedPageProps) {
   const { lang: rawLang } = await params;
   const lang = (isLocale(rawLang) ? rawLang : i18n.defaultLocale) as Locale;
   const dict = await getDictionary(lang);
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const stepParam = resolvedSearchParams.step;
+  const initialStep = Array.isArray(stepParam) ? stepParam[0] : stepParam;
+  const normalizedInitialStep =
+    initialStep === "register" || initialStep === "family"
+      ? (initialStep as "register" | "family")
+      : "choose";
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -21,6 +32,7 @@ export default async function GetStartedPage({ params }: GetStartedPageProps) {
           locale={lang}
           dict={dict.auth.getStarted}
           commonDict={dict.auth.common}
+          initialStep={normalizedInitialStep}
         />
       </main>
       <Footer

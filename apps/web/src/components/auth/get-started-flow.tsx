@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, ArrowRight, Check, Cloud, Server } from "lucide-react";
+import { AlertCircle, Check, Cloud, Server } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -17,7 +17,8 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import type { Locale } from "@/i18n/config";
 import type { DictionarySection } from "@/i18n/types";
-import { ApiError, createFamily, register } from "@/lib/api-client";
+import { ApiError, createFamily } from "@/lib/api-client";
+import { RegistrationForm } from "./registration-form";
 
 type DeploymentOption = "self-hosted" | "cloud" | null;
 
@@ -25,26 +26,23 @@ interface GetStartedFlowProps {
   locale: Locale;
   dict: DictionarySection<"auth">["getStarted"];
   commonDict: DictionarySection<"auth">["common"];
+  initialStep?: "choose" | "register" | "family";
 }
 
 export function GetStartedFlow({
   locale,
   dict,
   commonDict,
+  initialStep = "choose",
 }: GetStartedFlowProps) {
   const router = useRouter();
-  const [step, setStep] = useState<"choose" | "register" | "family">("choose");
+  const [step, setStep] = useState<"choose" | "register" | "family">(
+    initialStep,
+  );
   const [_deploymentOption, setDeploymentOption] =
     useState<DeploymentOption>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // Registration form state
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [birthdate, setBirthdate] = useState("");
 
   // Family form state
   const [familyName, setFamilyName] = useState("");
@@ -57,44 +55,6 @@ export function GetStartedFlow({
     } else {
       // For cloud, proceed to registration
       setStep("register");
-    }
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    // Validate password match
-    if (password !== confirmPassword) {
-      setError(dict.errors.passwordMismatch);
-      return;
-    }
-
-    // Validate birthdate
-    if (!birthdate) {
-      setError(dict.errors.birthdateRequired);
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      await register({
-        name,
-        email,
-        password,
-        birthdate,
-      });
-      // Registration successful, move to family creation
-      setStep("family");
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message || commonDict.unexpectedError);
-      } else {
-        setError(commonDict.unexpectedError);
-      }
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -208,114 +168,15 @@ export function GetStartedFlow({
       )}
 
       {step === "register" && (
-        <Card className="border-2" data-testid="register-card">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">
-              {dict.register.title}
-            </CardTitle>
-            <CardDescription>{dict.register.description}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleRegister} className="space-y-4">
-              {error && (
-                <Alert variant="destructive" data-testid="register-error">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              <div className="space-y-2">
-                <Label htmlFor="name">{dict.register.fields.name.label}</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder={dict.register.fields.name.placeholder}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  disabled={isLoading}
-                  required
-                  data-testid="register-name"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">
-                  {dict.register.fields.email.label}
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder={dict.register.fields.email.placeholder}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading}
-                  required
-                  data-testid="register-email"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="birthdate">
-                  {dict.register.fields.birthdate.label}
-                </Label>
-                <Input
-                  id="birthdate"
-                  type="date"
-                  value={birthdate}
-                  onChange={(e) => setBirthdate(e.target.value)}
-                  disabled={isLoading}
-                  required
-                  data-testid="register-birthdate"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">
-                  {dict.register.fields.password.label}
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder={dict.register.fields.password.placeholder}
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (error) setError("");
-                  }}
-                  disabled={isLoading}
-                  required
-                  minLength={8}
-                  data-testid="register-password"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">
-                  {dict.register.fields.confirmPassword.label}
-                </Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder={dict.register.fields.confirmPassword.placeholder}
-                  value={confirmPassword}
-                  onChange={(e) => {
-                    setConfirmPassword(e.target.value);
-                    if (error) setError("");
-                  }}
-                  disabled={isLoading}
-                  required
-                  data-testid="register-confirm-password"
-                />
-              </div>
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-                data-testid="register-submit"
-              >
-                {isLoading
-                  ? dict.register.button.loading
-                  : dict.register.button.idle}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+        <RegistrationForm
+          dict={dict}
+          commonDict={commonDict}
+          error={error}
+          setError={setError}
+          isLoading={isLoading}
+          setIsLoading={setIsLoading}
+          onSuccess={() => setStep("family")}
+        />
       )}
 
       {step === "family" && (
