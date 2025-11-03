@@ -1,5 +1,6 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import type { ActivityEventService } from "@modules/activity-events";
 import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import { ObjectId } from "mongodb";
@@ -17,6 +18,7 @@ export class KarmaService {
   constructor(
     private karmaRepository: KarmaRepository,
     private membershipRepository: FamilyMembershipRepository,
+    private activityEventService?: ActivityEventService,
   ) {}
 
   /**
@@ -69,6 +71,24 @@ export class KarmaService {
         userId: input.userId.toString(),
         amount: input.amount,
       });
+
+      // Record activity event for manual karma grants only
+      if (this.activityEventService && input.source === "manual_grant") {
+        try {
+          await this.activityEventService.recordEvent({
+            userId: input.userId,
+            type: "KARMA",
+            title: "Karma awarded",
+            description: input.description || `Received ${input.amount} karma`,
+            metadata: { karma: input.amount },
+          });
+        } catch (error) {
+          logger.error("Failed to record activity event for karma grant", {
+            eventId: karmaEvent._id.toString(),
+            error,
+          });
+        }
+      }
 
       return karmaEvent;
     } catch (error) {

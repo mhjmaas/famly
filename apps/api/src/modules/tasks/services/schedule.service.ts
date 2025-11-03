@@ -1,5 +1,6 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import type { ActivityEventService } from "@modules/activity-events";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type { ObjectId } from "mongodb";
 import type {
@@ -13,6 +14,7 @@ export class ScheduleService {
   constructor(
     private scheduleRepository: ScheduleRepository,
     private membershipRepository: FamilyMembershipRepository,
+    private activityEventService?: ActivityEventService, // Optional for activity tracking
   ) {}
 
   /**
@@ -45,6 +47,30 @@ export class ScheduleService {
         familyId: familyId.toString(),
         userId: userId.toString(),
       });
+
+      // Record activity event for schedule creation
+      if (this.activityEventService) {
+        try {
+          await this.activityEventService.recordEvent({
+            userId,
+            type: "TASK",
+            title: schedule.name,
+            description: schedule.description,
+            metadata: schedule.metadata?.karma
+              ? { karma: schedule.metadata.karma }
+              : undefined,
+          });
+        } catch (error) {
+          // Log error but don't fail schedule creation
+          logger.error(
+            "Failed to record activity event for schedule creation",
+            {
+              scheduleId: schedule._id.toString(),
+              error,
+            },
+          );
+        }
+      }
 
       return schedule;
     } catch (error) {

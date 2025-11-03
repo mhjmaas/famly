@@ -1,5 +1,6 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import type { ActivityEventService } from "@modules/activity-events";
 import { requireFamilyRole } from "@modules/auth/lib/require-family-role";
 import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
@@ -17,6 +18,7 @@ export class TaskService {
     private taskRepository: TaskRepository,
     private membershipRepository: FamilyMembershipRepository,
     private karmaService?: KarmaService, // Optional to avoid breaking existing instantiations
+    private activityEventService?: ActivityEventService, // Optional for activity tracking
   ) {
     this.hookRegistry = new TaskCompletionHookRegistry();
   }
@@ -63,6 +65,28 @@ export class TaskService {
         familyId: familyId.toString(),
         userId: userId.toString(),
       });
+
+      // Record activity event for non-recurring tasks only
+      // (tasks generated from schedules have scheduleId set)
+      if (this.activityEventService && !task.scheduleId) {
+        try {
+          await this.activityEventService.recordEvent({
+            userId,
+            type: "TASK",
+            title: task.name,
+            description: task.description,
+            metadata: task.metadata?.karma
+              ? { karma: task.metadata.karma }
+              : undefined,
+          });
+        } catch (error) {
+          // Log error but don't fail task creation
+          logger.error("Failed to record activity event for task creation", {
+            taskId: task._id.toString(),
+            error,
+          });
+        }
+      }
 
       return task;
     } catch (error) {

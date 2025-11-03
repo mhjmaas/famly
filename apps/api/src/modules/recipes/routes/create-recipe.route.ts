@@ -1,5 +1,9 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import {
+  ActivityEventRepository,
+  ActivityEventService,
+} from "@modules/activity-events";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
@@ -15,9 +19,14 @@ export function createRecipeRoute(): Router {
   const router = Router({ mergeParams: true });
   const recipeRepository = new RecipeRepository();
   const membershipRepository = new FamilyMembershipRepository();
+  const activityEventRepository = new ActivityEventRepository();
+  const activityEventService = new ActivityEventService(
+    activityEventRepository,
+  );
   const recipeService = new RecipeService(
     recipeRepository,
     membershipRepository,
+    activityEventService,
   );
 
   /**

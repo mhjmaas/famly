@@ -1,5 +1,6 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import type { ActivityEventService } from "@modules/activity-events";
 import { requireFamilyRole } from "@modules/auth/lib/require-family-role";
 import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
@@ -17,6 +18,7 @@ export class ShoppingListService {
   constructor(
     private shoppingListRepository: ShoppingListRepository,
     private membershipRepository: FamilyMembershipRepository,
+    private activityEventService?: ActivityEventService,
   ) {}
 
   /**
@@ -54,6 +56,26 @@ export class ShoppingListService {
         familyId: familyId.toString(),
         userId: userId.toString(),
       });
+
+      // Record activity event for shopping list creation
+      if (this.activityEventService) {
+        try {
+          await this.activityEventService.recordEvent({
+            userId,
+            type: "SHOPPING_LIST",
+            title: shoppingList.name,
+            description: `Created shopping list with ${shoppingList.items.length} items`,
+          });
+        } catch (error) {
+          logger.error(
+            "Failed to record activity event for shopping list creation",
+            {
+              listId: shoppingList._id.toString(),
+              error,
+            },
+          );
+        }
+      }
 
       return shoppingList;
     } catch (error) {

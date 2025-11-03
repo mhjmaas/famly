@@ -1,5 +1,10 @@
+import {
+  ActivityEventRepository,
+  ActivityEventService,
+} from "@modules/activity-events";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import { KarmaRepository, KarmaService } from "@modules/karma";
+import { ActivityEventHook } from "../hooks/activity-event.hook";
 import { TaskRepository } from "../repositories/task.repository";
 import { TaskService } from "./task.service";
 
@@ -20,11 +25,22 @@ export function getTaskService(): TaskService {
       membershipRepository,
     );
 
+    // Initialize activity event service
+    const activityEventRepository = new ActivityEventRepository();
+    const activityEventService = new ActivityEventService(
+      activityEventRepository,
+    );
+
     taskServiceInstance = new TaskService(
       taskRepository,
       membershipRepository,
       karmaService,
+      activityEventService,
     );
+
+    // Register activity event hook for task completion
+    const activityEventHook = new ActivityEventHook(activityEventService);
+    taskServiceInstance.registerCompletionHook(activityEventHook);
   }
 
   return taskServiceInstance;

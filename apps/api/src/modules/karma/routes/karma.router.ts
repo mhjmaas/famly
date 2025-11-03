@@ -1,3 +1,7 @@
+import {
+  ActivityEventRepository,
+  ActivityEventService,
+} from "@modules/activity-events";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import { Router } from "express";
@@ -20,7 +24,15 @@ export function createKarmaRouter(): Router {
   // Initialize dependencies
   const karmaRepository = new KarmaRepository();
   const membershipRepository = new FamilyMembershipRepository();
-  const karmaService = new KarmaService(karmaRepository, membershipRepository);
+  const activityEventRepository = new ActivityEventRepository();
+  const activityEventService = new ActivityEventService(
+    activityEventRepository,
+  );
+  const karmaService = new KarmaService(
+    karmaRepository,
+    membershipRepository,
+    activityEventService,
+  );
 
   // Apply authentication to all routes
   router.use(authenticate);
