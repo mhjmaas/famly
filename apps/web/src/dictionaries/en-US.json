@@ -312,5 +312,75 @@
   },
   "languageSelector": {
     "ariaLabel": "Switch language"
+  },
+  "dashboard": {
+    "navigation": {
+      "dashboard": "Dashboard",
+      "family": "Family",
+      "members": "Members",
+      "tasks": "Tasks",
+      "shoppingLists": "Shopping Lists",
+      "rewards": "Rewards",
+      "calendar": "Calendar",
+      "locations": "Locations",
+      "memories": "Memories",
+      "aiSettings": "AI Settings",
+      "personal": "Personal",
+      "diary": "Diary",
+      "chat": "Chat",
+      "settings": "Settings",
+      "soon": "Soon",
+      "karma": "{count} Karma"
+    },
+    "pages": {
+      "dashboard": {
+        "title": "Dashboard",
+        "placeholder": "Dashboard content coming soon"
+      },
+      "family": {
+        "title": "Family Members",
+        "placeholder": "Family members page coming soon"
+      },
+      "tasks": {
+        "title": "Tasks",
+        "placeholder": "Tasks page coming soon"
+      },
+      "shoppingLists": {
+        "title": "Shopping Lists",
+        "placeholder": "Shopping lists page coming soon"
+      },
+      "rewards": {
+        "title": "Rewards",
+        "placeholder": "Rewards page coming soon"
+      },
+      "calendar": {
+        "title": "Calendar",
+        "placeholder": "Calendar page coming soon"
+      },
+      "locations": {
+        "title": "Locations",
+        "placeholder": "Locations page coming soon"
+      },
+      "memories": {
+        "title": "Memories",
+        "placeholder": "Memories page coming soon"
+      },
+      "aiSettings": {
+        "title": "AI Settings",
+        "placeholder": "AI Settings page coming soon"
+      },
+      "diary": {
+        "title": "Diary",
+        "placeholder": "Diary page coming soon"
+      },
+      "chat": {
+        "title": "Chat",
+        "placeholder": "Chat page coming soon"
+      },
+      "settings": {
+        "title": "Settings",
+        "placeholder": "Settings page coming soon"
+      }
+    }
   }
 }
