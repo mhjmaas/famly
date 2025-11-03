@@ -739,16 +739,17 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   └── add-activity-events
+│   │   └── add-dashboard-navigation
+│   │       ├── design.md
 │   │       ├── proposal.md
 │   │       ├── specs
-│   │       │   ├── activity-events
-│   │       │   │   └── spec.md
-│   │       │   └── tasks
+│   │       │   └── web-dashboard
 │   │       │       └── spec.md
 │   │       └── tasks.md
 │   ├── project.md
 │   └── specs
+│       ├── activity-events
+│       │   └── spec.md
 │       ├── auth
 │       │   └── spec.md
 │       ├── chat
@@ -888,6 +889,6 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-206 directories, 642 files
+206 directories, 643 files
 ```
 <!-- TREE END -->

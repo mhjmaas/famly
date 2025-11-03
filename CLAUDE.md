@@ -739,12 +739,19 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   └── add-activity-events
+│   │   ├── add-activity-events
+│   │   │   ├── proposal.md
+│   │   │   ├── specs
+│   │   │   │   ├── activity-events
+│   │   │   │   │   └── spec.md
+│   │   │   │   └── tasks
+│   │   │   │       └── spec.md
+│   │   │   └── tasks.md
+│   │   └── add-dashboard-navigation
+│   │       ├── design.md
 │   │       ├── proposal.md
 │   │       ├── specs
-│   │       │   ├── activity-events
-│   │       │   │   └── spec.md
-│   │       │   └── tasks
+│   │       │   └── web-dashboard
 │   │       │       └── spec.md
 │   │       └── tasks.md
 │   ├── project.md
@@ -888,7 +895,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-206 directories, 642 files
+209 directories, 646 files
 ```
 <!-- TREE END -->
 
