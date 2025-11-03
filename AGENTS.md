@@ -561,7 +561,29 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   ├── app
 │       │   │   ├── [lang]
 │       │   │   │   ├── app
-│       │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── ai-settings
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── calendar
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── chat
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── diary
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── family
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── locations
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── memories
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── page.tsx
+│       │   │   │   │   ├── rewards
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── settings
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── shopping-lists
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   └── tasks
+│       │   │   │   │       └── page.tsx
 │       │   │   │   ├── get-started
 │       │   │   │   │   └── page.tsx
 │       │   │   │   ├── layout.tsx
@@ -584,15 +606,21 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   │   │   ├── pricing.tsx
 │       │   │   │   └── privacy.tsx
 │       │   │   ├── language-selector.tsx
+│       │   │   ├── layouts
+│       │   │   │   └── dashboard-layout.tsx
 │       │   │   ├── theme-provider.tsx
 │       │   │   ├── theme-toggle.tsx
 │       │   │   └── ui
 │       │   │       ├── alert.tsx
+│       │   │       ├── badge.tsx
 │       │   │       ├── button.tsx
 │       │   │       ├── card.tsx
+│       │   │       ├── collapsible.tsx
 │       │   │       ├── input.tsx
 │       │   │       ├── label.tsx
-│       │   │       └── progress.tsx
+│       │   │       ├── progress.tsx
+│       │   │       ├── scroll-area.tsx
+│       │   │       └── sheet.tsx
 │       │   ├── dictionaries
 │       │   │   ├── en-US.json
 │       │   │   ├── index.ts
@@ -611,6 +639,8 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   ├── e2e
 │       │   │   ├── accessibility
 │       │   │   │   └── a11y.spec.ts
+│       │   │   ├── app
+│       │   │   │   └── dashboard-navigation.spec.ts
 │       │   │   ├── auth
 │       │   │   │   ├── protected-routes.spec.ts
 │       │   │   │   ├── registration.spec.ts
@@ -628,6 +658,7 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   │   │   └── privacy.spec.ts
 │       │   │   ├── pages
 │       │   │   │   ├── auth.page.ts
+│       │   │   │   ├── dashboard.page.ts
 │       │   │   │   └── landing.page.ts
 │       │   │   ├── performance
 │       │   │   │   └── performance.spec.ts
@@ -739,11 +770,12 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   └── add-dashboard-navigation
-│   │       ├── design.md
+│   │   └── add-activity-events
 │   │       ├── proposal.md
 │   │       ├── specs
-│   │       │   └── web-dashboard
+│   │       │   ├── activity-events
+│   │       │   │   └── spec.md
+│   │       │   └── tasks
 │   │       │       └── spec.md
 │   │       └── tasks.md
 │   ├── project.md
@@ -770,7 +802,9 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   └── spec.md
 │       ├── tasks
 │       │   └── spec.md
-│       └── web-auth
+│       ├── web-auth
+│       │   └── spec.md
+│       └── web-dashboard
 │           └── spec.md
 ├── package.json
 ├── packages
@@ -889,6 +923,6 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-206 directories, 643 files
+221 directories, 662 files
 ```
 <!-- TREE END -->
