@@ -68,6 +68,21 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   ├── middleware
 │   │   │   │   └── error-handler.ts
 │   │   │   ├── modules
+│   │   │   │   ├── activity-events
+│   │   │   │   │   ├── domain
+│   │   │   │   │   │   └── activity-event.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── lib
+│   │   │   │   │   │   └── activity-event.mapper.ts
+│   │   │   │   │   ├── repositories
+│   │   │   │   │   │   └── activity-event.repository.ts
+│   │   │   │   │   ├── routes
+│   │   │   │   │   │   ├── activity-events.router.ts
+│   │   │   │   │   │   └── list-events.route.ts
+│   │   │   │   │   ├── services
+│   │   │   │   │   │   └── activity-event.service.ts
+│   │   │   │   │   └── validators
+│   │   │   │   │       └── list-events.validator.ts
 │   │   │   │   ├── auth
 │   │   │   │   │   ├── better-auth.ts
 │   │   │   │   │   ├── lib
@@ -305,6 +320,7 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │       │   ├── task-schedule.ts
 │   │   │   │       │   └── task.ts
 │   │   │   │       ├── hooks
+│   │   │   │       │   ├── activity-event.hook.ts
 │   │   │   │       │   └── task-completion.hook.ts
 │   │   │   │       ├── index.ts
 │   │   │   │       ├── lib
@@ -342,6 +358,9 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   └── server.ts
 │   │   ├── tests
 │   │   │   ├── e2e
+│   │   │   │   ├── activity-events
+│   │   │   │   │   ├── list-events.e2e.test.ts
+│   │   │   │   │   └── task-integration.e2e.test.ts
 │   │   │   │   ├── auth
 │   │   │   │   │   ├── login.e2e.test.ts
 │   │   │   │   │   ├── me.e2e.test.ts
@@ -455,6 +474,9 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   └── jest-setup.ts
 │   │   │   ├── tsconfig.json
 │   │   │   └── unit
+│   │   │       ├── activity-events
+│   │   │       │   ├── activity-event.mapper.test.ts
+│   │   │       │   └── activity-event.service.test.ts
 │   │   │       ├── auth
 │   │   │       │   ├── require-creator-ownership.test.ts
 │   │   │       │   └── require-family-role.test.ts
@@ -539,7 +561,29 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   ├── app
 │       │   │   ├── [lang]
 │       │   │   │   ├── app
-│       │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── ai-settings
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── calendar
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── chat
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── diary
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── family
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── locations
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── memories
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── page.tsx
+│       │   │   │   │   ├── rewards
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── settings
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── shopping-lists
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   └── tasks
+│       │   │   │   │       └── page.tsx
 │       │   │   │   ├── get-started
 │       │   │   │   │   └── page.tsx
 │       │   │   │   ├── layout.tsx
@@ -552,6 +596,7 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   ├── components
 │       │   │   ├── auth
 │       │   │   │   ├── get-started-flow.tsx
+│       │   │   │   ├── registration-form.tsx
 │       │   │   │   └── signin-form.tsx
 │       │   │   ├── landing
 │       │   │   │   ├── features.tsx
@@ -561,15 +606,21 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   │   │   ├── pricing.tsx
 │       │   │   │   └── privacy.tsx
 │       │   │   ├── language-selector.tsx
+│       │   │   ├── layouts
+│       │   │   │   └── dashboard-layout.tsx
 │       │   │   ├── theme-provider.tsx
 │       │   │   ├── theme-toggle.tsx
 │       │   │   └── ui
 │       │   │       ├── alert.tsx
+│       │   │       ├── badge.tsx
 │       │   │       ├── button.tsx
 │       │   │       ├── card.tsx
+│       │   │       ├── collapsible.tsx
 │       │   │       ├── input.tsx
 │       │   │       ├── label.tsx
-│       │   │       └── progress.tsx
+│       │   │       ├── progress.tsx
+│       │   │       ├── scroll-area.tsx
+│       │   │       └── sheet.tsx
 │       │   ├── dictionaries
 │       │   │   ├── en-US.json
 │       │   │   ├── index.ts
@@ -588,6 +639,8 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   ├── e2e
 │       │   │   ├── accessibility
 │       │   │   │   └── a11y.spec.ts
+│       │   │   ├── app
+│       │   │   │   └── dashboard-navigation.spec.ts
 │       │   │   ├── auth
 │       │   │   │   ├── protected-routes.spec.ts
 │       │   │   │   ├── registration.spec.ts
@@ -605,6 +658,7 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   │   │   └── privacy.spec.ts
 │       │   │   ├── pages
 │       │   │   │   ├── auth.page.ts
+│       │   │   │   ├── dashboard.page.ts
 │       │   │   │   └── landing.page.ts
 │       │   │   ├── performance
 │       │   │   │   └── performance.spec.ts
@@ -618,6 +672,8 @@ Our core guiding principles are found in the `constitution.md` file.
 │       └── tsconfig.json
 ├── bruno
 │   └── Famly
+│       ├── activity-events
+│       │   └── List Activity Events.bru
 │       ├── auth
 │       │   ├── folder.bru
 │       │   ├── login.bru
@@ -714,15 +770,10 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   └── add-auth-ui
-│   │       ├── design.md
-│   │       ├── proposal.md
-│   │       ├── specs
-│   │       │   └── web-auth
-│   │       │       └── spec.md
-│   │       └── tasks.md
 │   ├── project.md
 │   └── specs
+│       ├── activity-events
+│       │   └── spec.md
 │       ├── auth
 │       │   └── spec.md
 │       ├── chat
@@ -741,7 +792,11 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   └── spec.md
 │       ├── shopping-lists
 │       │   └── spec.md
-│       └── tasks
+│       ├── tasks
+│       │   └── spec.md
+│       ├── web-auth
+│       │   └── spec.md
+│       └── web-dashboard
 │           └── spec.md
 ├── package.json
 ├── packages
@@ -860,7 +915,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-194 directories, 626 files
+217 directories, 658 files
 ```
 <!-- TREE END -->
 

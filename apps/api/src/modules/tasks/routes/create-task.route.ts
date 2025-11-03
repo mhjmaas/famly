@@ -2,13 +2,11 @@ import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
-import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import { ObjectId } from "mongodb";
 import { toTaskDTO } from "../lib/task.mapper";
-import { TaskRepository } from "../repositories/task.repository";
-import { TaskService } from "../services/task.service";
+import { getTaskService } from "../services/task.service.instance";
 import { validateCreateTask } from "../validators/create-task.validator";
 
 /**
@@ -29,9 +27,7 @@ import { validateCreateTask } from "../validators/create-task.validator";
  */
 export function createTaskRoute(): Router {
   const router = Router({ mergeParams: true }); // CRITICAL: mergeParams to access :familyId from parent routers
-  const taskRepository = new TaskRepository();
-  const membershipRepository = new FamilyMembershipRepository();
-  const taskService = new TaskService(taskRepository, membershipRepository);
+  const taskService = getTaskService();
 
   router.post(
     "/",

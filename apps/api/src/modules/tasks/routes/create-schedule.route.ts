@@ -1,4 +1,8 @@
 import { HttpError } from "@lib/http-error";
+import {
+  ActivityEventRepository,
+  ActivityEventService,
+} from "@modules/activity-events";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
@@ -33,9 +37,14 @@ export function createScheduleRoute(): Router {
   const router = Router({ mergeParams: true });
   const scheduleRepository = new ScheduleRepository();
   const membershipRepository = new FamilyMembershipRepository();
+  const activityEventRepository = new ActivityEventRepository();
+  const activityEventService = new ActivityEventService(
+    activityEventRepository,
+  );
   const scheduleService = new ScheduleService(
     scheduleRepository,
     membershipRepository,
+    activityEventService,
   );
 
   router.post(

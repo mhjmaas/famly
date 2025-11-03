@@ -1,5 +1,9 @@
 import { getMongoClient } from "@infra/mongo/client";
 import { HttpError } from "@lib/http-error";
+import {
+  ActivityEventRepository,
+  ActivityEventService,
+} from "@modules/activity-events";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
@@ -79,6 +83,10 @@ export function claimRewardRoute(): Router {
           membershipRepository,
           karmaService,
         );
+        const activityEventRepository = new ActivityEventRepository();
+        const activityEventService = new ActivityEventService(
+          activityEventRepository,
+        );
 
         const claimService = new ClaimService(
           claimRepository,
@@ -86,6 +94,7 @@ export function claimRewardRoute(): Router {
           metadataRepository,
           karmaService,
           taskService,
+          activityEventService,
         );
 
         // Create claim

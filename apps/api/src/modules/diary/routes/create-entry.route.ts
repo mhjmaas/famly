@@ -1,4 +1,9 @@
 import { HttpError } from "@lib/http-error";
+import { logger } from "@lib/logger";
+import {
+  ActivityEventRepository,
+  ActivityEventService,
+} from "@modules/activity-events";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
@@ -24,6 +29,10 @@ import { validateCreateEntry } from "../validators/create-entry.validator";
 export function createEntryRoute(): Router {
   const router = Router();
   const diaryRepository = new DiaryRepository();
+  const activityEventRepository = new ActivityEventRepository();
+  const activityEventService = new ActivityEventService(
+    activityEventRepository,
+  );
 
   router.post(
     "/",
@@ -38,6 +47,21 @@ export function createEntryRoute(): Router {
         const userId = new ObjectId(req.user.id);
 
         const entry = await diaryRepository.createEntry(userId, req.body);
+
+        // Record activity event for diary entry creation
+        try {
+          await activityEventService.recordEvent({
+            userId,
+            type: "DIARY",
+            title: `Diary entry for ${req.body.date}`,
+            description: req.body.entry.substring(0, 100), // First 100 chars as preview
+          });
+        } catch (error) {
+          logger.error("Failed to record activity event for diary entry", {
+            userId: userId.toString(),
+            error,
+          });
+        }
 
         res.status(201).json(toDiaryEntryDTO(entry));
       } catch (error) {

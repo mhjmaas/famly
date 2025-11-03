@@ -1,5 +1,6 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import type { ActivityEventService } from "@modules/activity-events";
 import type { KarmaService } from "@modules/karma";
 import type { CreateTaskInput } from "@modules/tasks/domain/task";
 import type { TaskService } from "@modules/tasks/services/task.service";
@@ -21,6 +22,7 @@ export class ClaimService {
     private metadataRepository: MetadataRepository,
     private karmaService: KarmaService,
     private taskService: TaskService,
+    private activityEventService?: ActivityEventService,
   ) {}
 
   /**
@@ -125,6 +127,24 @@ export class ClaimService {
           rewardId: rewardId.toString(),
           taskId: createdTask._id.toString(),
         });
+
+        // Record activity event for reward claim
+        if (this.activityEventService) {
+          try {
+            await this.activityEventService.recordEvent({
+              userId: memberId,
+              type: "REWARD",
+              title: reward.name,
+              description: `Claimed reward for ${reward.karmaCost} karma`,
+              metadata: { karma: -reward.karmaCost },
+            });
+          } catch (error) {
+            logger.error("Failed to record activity event for reward claim", {
+              claimId: updatedClaim._id.toString(),
+              error,
+            });
+          }
+        }
 
         return toClaimDTO(updatedClaim);
       } catch (error) {

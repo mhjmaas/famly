@@ -1,4 +1,9 @@
 import { HttpError } from "@lib/http-error";
+import { logger } from "@lib/logger";
+import {
+  ActivityEventRepository,
+  ActivityEventService,
+} from "@modules/activity-events";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { authorizeFamilyRole } from "@modules/auth/middleware/authorize-family-role";
@@ -27,6 +32,10 @@ import { validateCreateEntry } from "../../validators/create-entry.validator";
 export function createFamilyDiaryCreateEntryRoute(): Router {
   const router = Router({ mergeParams: true }); // CRITICAL: mergeParams to access :familyId from parent routers
   const diaryRepository = new DiaryRepository();
+  const activityEventRepository = new ActivityEventRepository();
+  const activityEventService = new ActivityEventService(
+    activityEventRepository,
+  );
 
   router.post(
     "/",
@@ -54,6 +63,24 @@ export function createFamilyDiaryCreateEntryRoute(): Router {
           familyId,
           req.body,
         );
+
+        // Record activity event for family diary entry creation
+        try {
+          await activityEventService.recordEvent({
+            userId,
+            type: "FAMILY_DIARY",
+            title: `Family diary entry for ${req.body.date}`,
+            description: req.body.entry.substring(0, 100), // First 100 chars as preview
+          });
+        } catch (error) {
+          logger.error(
+            "Failed to record activity event for family diary entry",
+            {
+              userId: userId.toString(),
+              error,
+            },
+          );
+        }
 
         res.status(201).json(toDiaryEntryDTO(entry));
       } catch (error) {

@@ -1,5 +1,6 @@
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
+import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 
 interface AppPageProps {
   params: Promise<{ lang: string }>;
@@ -11,13 +12,16 @@ export default async function AppPage({ params }: AppPageProps) {
   const dict = await getDictionary(lang);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-foreground">
-          {dict.app.placeholderHeading}
+    <DashboardLayout dict={dict} lang={lang} title={dict.dashboard.pages.dashboard.title}>
+      <div className="flex flex-col gap-4">
+        <h1 className="text-3xl font-bold text-foreground">
+          {dict.dashboard.pages.dashboard.title}
         </h1>
+        <p className="text-muted-foreground">
+          {dict.dashboard.pages.dashboard.placeholder}
+        </p>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
 

@@ -1,0 +1,80 @@
+meta {
+  name: List Activity Events
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/v1/activity-events
+  body: none
+  auth: inherit
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+query {
+  ~startDate: 2024-01-01
+  ~endDate: 2024-12-31
+}
+
+docs {
+  # List Activity Events
+
+  Get all activity events for the authenticated user, sorted by most recent first (up to 100 events).
+
+  ## Query Parameters
+
+  - `startDate` (string, optional): Start date in YYYY-MM-DD format (inclusive)
+  - `endDate` (string, optional): End date in YYYY-MM-DD format (inclusive)
+
+  If neither startDate nor endDate is provided, all events are returned (up to 100 limit).
+
+  ## Response
+
+  Returns an array of activity events, sorted by createdAt (newest first).
+
+  Each activity event contains:
+  - `id`: Unique identifier
+  - `userId`: ID of the user
+  - `type`: Event type (TASK, SHOPPING_LIST, KARMA, RECIPE, DIARY, FAMILY_DIARY, REWARD)
+  - `title`: Event title
+  - `description`: Event description (nullable)
+  - `metadata`: Optional metadata object with karma value (nullable)
+  - `createdAt`: Creation timestamp (ISO 8601)
+
+  ## Examples
+
+  ### Task Created
+  ```json
+  {
+    "id": "507f1f77bcf86cd799439011",
+    "userId": "507f1f77bcf86cd799439012",
+    "type": "TASK",
+    "title": "Take out the trash",
+    "description": null,
+    "metadata": { "karma": 10 },
+    "createdAt": "2024-11-03T20:00:00.000Z"
+  }
+  ```
+
+  ### Task Completed
+  ```json
+  {
+    "id": "507f1f77bcf86cd799439013",
+    "userId": "507f1f77bcf86cd799439012",
+    "type": "TASK",
+    "title": "Take out the trash",
+    "description": "Completed Take out the trash",
+    "metadata": { "karma": 10 },
+    "createdAt": "2024-11-03T20:05:00.000Z"
+  }
+  ```
+
+  ## Status Codes
+
+  - `200`: Activity events retrieved successfully
+  - `400`: Invalid date format (must be YYYY-MM-DD)
+  - `401`: Unauthorized (missing or invalid token)
+}

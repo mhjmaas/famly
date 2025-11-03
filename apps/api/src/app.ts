@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type Express } from "express";
 import { getEnv } from "./config/env";
+import { activityEventsRouter } from "./modules/activity-events/routes/activity-events.router";
 import { createAuthRouter } from "./modules/auth/routes/auth.router";
 import { createChatRouter } from "./modules/chat";
 import { createMessageRoute } from "./modules/chat/routes/create-message.route";
@@ -66,6 +67,9 @@ export const createApp = (): Express => {
   // Message routes (requires authentication) - mounted at /v1/messages and /v1/search
   app.use("/v1", createMessageRoute());
   app.use("/v1/search", searchMessagesRoute());
+
+  // Activity events routes (requires authentication)
+  app.use("/v1/activity-events", activityEventsRouter());
 
   // Error handling middleware (last)
   app.use(errorHandler);

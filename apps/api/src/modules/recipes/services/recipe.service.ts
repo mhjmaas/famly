@@ -1,5 +1,6 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import type { ActivityEventService } from "@modules/activity-events";
 import { requireFamilyRole } from "@modules/auth/lib/require-family-role";
 import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
@@ -15,6 +16,7 @@ export class RecipeService {
   constructor(
     private recipeRepository: RecipeRepository,
     private membershipRepository: FamilyMembershipRepository,
+    private activityEventService?: ActivityEventService,
   ) {}
 
   /**
@@ -52,6 +54,23 @@ export class RecipeService {
         familyId: familyId.toString(),
         userId: userId.toString(),
       });
+
+      // Record activity event for recipe creation
+      if (this.activityEventService) {
+        try {
+          await this.activityEventService.recordEvent({
+            userId,
+            type: "RECIPE",
+            title: recipe.name,
+            description: recipe.description,
+          });
+        } catch (error) {
+          logger.error("Failed to record activity event for recipe creation", {
+            recipeId: recipe._id.toString(),
+            error,
+          });
+        }
+      }
 
       return recipe;
     } catch (error) {

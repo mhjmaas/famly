@@ -68,6 +68,21 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │   │   │   ├── middleware
 │   │   │   │   └── error-handler.ts
 │   │   │   ├── modules
+│   │   │   │   ├── activity-events
+│   │   │   │   │   ├── domain
+│   │   │   │   │   │   └── activity-event.ts
+│   │   │   │   │   ├── index.ts
+│   │   │   │   │   ├── lib
+│   │   │   │   │   │   └── activity-event.mapper.ts
+│   │   │   │   │   ├── repositories
+│   │   │   │   │   │   └── activity-event.repository.ts
+│   │   │   │   │   ├── routes
+│   │   │   │   │   │   ├── activity-events.router.ts
+│   │   │   │   │   │   └── list-events.route.ts
+│   │   │   │   │   ├── services
+│   │   │   │   │   │   └── activity-event.service.ts
+│   │   │   │   │   └── validators
+│   │   │   │   │       └── list-events.validator.ts
 │   │   │   │   ├── auth
 │   │   │   │   │   ├── better-auth.ts
 │   │   │   │   │   ├── lib
@@ -305,6 +320,7 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │   │   │   │       │   ├── task-schedule.ts
 │   │   │   │       │   └── task.ts
 │   │   │   │       ├── hooks
+│   │   │   │       │   ├── activity-event.hook.ts
 │   │   │   │       │   └── task-completion.hook.ts
 │   │   │   │       ├── index.ts
 │   │   │   │       ├── lib
@@ -342,6 +358,9 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │   │   │   └── server.ts
 │   │   ├── tests
 │   │   │   ├── e2e
+│   │   │   │   ├── activity-events
+│   │   │   │   │   ├── list-events.e2e.test.ts
+│   │   │   │   │   └── task-integration.e2e.test.ts
 │   │   │   │   ├── auth
 │   │   │   │   │   ├── login.e2e.test.ts
 │   │   │   │   │   ├── me.e2e.test.ts
@@ -455,6 +474,9 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │   │   │   │   └── jest-setup.ts
 │   │   │   ├── tsconfig.json
 │   │   │   └── unit
+│   │   │       ├── activity-events
+│   │   │       │   ├── activity-event.mapper.test.ts
+│   │   │       │   └── activity-event.service.test.ts
 │   │   │       ├── auth
 │   │   │       │   ├── require-creator-ownership.test.ts
 │   │   │       │   └── require-family-role.test.ts
@@ -552,6 +574,7 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   ├── components
 │       │   │   ├── auth
 │       │   │   │   ├── get-started-flow.tsx
+│       │   │   │   ├── registration-form.tsx
 │       │   │   │   └── signin-form.tsx
 │       │   │   ├── landing
 │       │   │   │   ├── features.tsx
@@ -589,6 +612,7 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   │   ├── accessibility
 │       │   │   │   └── a11y.spec.ts
 │       │   │   ├── auth
+│       │   │   │   ├── protected-routes.spec.ts
 │       │   │   │   ├── registration.spec.ts
 │       │   │   │   └── signin.spec.ts
 │       │   │   ├── global-setup.ts
@@ -617,6 +641,8 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       └── tsconfig.json
 ├── bruno
 │   └── Famly
+│       ├── activity-events
+│       │   └── List Activity Events.bru
 │       ├── auth
 │       │   ├── folder.bru
 │       │   ├── login.bru
@@ -713,15 +739,17 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   └── add-auth-ui
+│   │   └── add-dashboard-navigation
 │   │       ├── design.md
 │   │       ├── proposal.md
 │   │       ├── specs
-│   │       │   └── web-auth
+│   │       │   └── web-dashboard
 │   │       │       └── spec.md
 │   │       └── tasks.md
 │   ├── project.md
 │   └── specs
+│       ├── activity-events
+│       │   └── spec.md
 │       ├── auth
 │       │   └── spec.md
 │       ├── chat
@@ -740,7 +768,9 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   └── spec.md
 │       ├── shopping-lists
 │       │   └── spec.md
-│       └── tasks
+│       ├── tasks
+│       │   └── spec.md
+│       └── web-auth
 │           └── spec.md
 ├── package.json
 ├── packages
@@ -859,6 +889,6 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-194 directories, 625 files
+206 directories, 643 files
 ```
 <!-- TREE END -->
