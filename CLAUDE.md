@@ -561,7 +561,29 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   ├── app
 │       │   │   ├── [lang]
 │       │   │   │   ├── app
-│       │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── ai-settings
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── calendar
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── chat
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── diary
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── family
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── locations
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── memories
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── page.tsx
+│       │   │   │   │   ├── rewards
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── settings
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── shopping-lists
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   └── tasks
+│       │   │   │   │       └── page.tsx
 │       │   │   │   ├── get-started
 │       │   │   │   │   └── page.tsx
 │       │   │   │   ├── layout.tsx
@@ -584,15 +606,21 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   │   │   ├── pricing.tsx
 │       │   │   │   └── privacy.tsx
 │       │   │   ├── language-selector.tsx
+│       │   │   ├── layouts
+│       │   │   │   └── dashboard-layout.tsx
 │       │   │   ├── theme-provider.tsx
 │       │   │   ├── theme-toggle.tsx
 │       │   │   └── ui
 │       │   │       ├── alert.tsx
+│       │   │       ├── badge.tsx
 │       │   │       ├── button.tsx
 │       │   │       ├── card.tsx
+│       │   │       ├── collapsible.tsx
 │       │   │       ├── input.tsx
 │       │   │       ├── label.tsx
-│       │   │       └── progress.tsx
+│       │   │       ├── progress.tsx
+│       │   │       ├── scroll-area.tsx
+│       │   │       └── sheet.tsx
 │       │   ├── dictionaries
 │       │   │   ├── en-US.json
 │       │   │   ├── index.ts
@@ -611,6 +639,8 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   ├── e2e
 │       │   │   ├── accessibility
 │       │   │   │   └── a11y.spec.ts
+│       │   │   ├── app
+│       │   │   │   └── dashboard-navigation.spec.ts
 │       │   │   ├── auth
 │       │   │   │   ├── protected-routes.spec.ts
 │       │   │   │   ├── registration.spec.ts
@@ -628,6 +658,7 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   │   │   └── privacy.spec.ts
 │       │   │   ├── pages
 │       │   │   │   ├── auth.page.ts
+│       │   │   │   ├── dashboard.page.ts
 │       │   │   │   └── landing.page.ts
 │       │   │   ├── performance
 │       │   │   │   └── performance.spec.ts
@@ -739,23 +770,10 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   ├── add-activity-events
-│   │   │   ├── proposal.md
-│   │   │   ├── specs
-│   │   │   │   ├── activity-events
-│   │   │   │   │   └── spec.md
-│   │   │   │   └── tasks
-│   │   │   │       └── spec.md
-│   │   │   └── tasks.md
-│   │   └── add-dashboard-navigation
-│   │       ├── design.md
-│   │       ├── proposal.md
-│   │       ├── specs
-│   │       │   └── web-dashboard
-│   │       │       └── spec.md
-│   │       └── tasks.md
 │   ├── project.md
 │   └── specs
+│       ├── activity-events
+│       │   └── spec.md
 │       ├── auth
 │       │   └── spec.md
 │       ├── chat
@@ -776,7 +794,9 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   └── spec.md
 │       ├── tasks
 │       │   └── spec.md
-│       └── web-auth
+│       ├── web-auth
+│       │   └── spec.md
+│       └── web-dashboard
 │           └── spec.md
 ├── package.json
 ├── packages
@@ -895,7 +915,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-209 directories, 646 files
+217 directories, 658 files
 ```
 <!-- TREE END -->
 

@@ -312,5 +312,75 @@
   },
   "languageSelector": {
     "ariaLabel": "Wijzig taal"
+  },
+  "dashboard": {
+    "navigation": {
+      "dashboard": "Dashboard",
+      "family": "Gezin",
+      "members": "Leden",
+      "tasks": "Taken",
+      "shoppingLists": "Boodschappenlijsten",
+      "rewards": "Beloningen",
+      "calendar": "Agenda",
+      "locations": "Locaties",
+      "memories": "Herinneringen",
+      "aiSettings": "AI-instellingen",
+      "personal": "Persoonlijk",
+      "diary": "Dagboek",
+      "chat": "Chat",
+      "settings": "Instellingen",
+      "soon": "Binnenkort",
+      "karma": "{count} Karma"
+    },
+    "pages": {
+      "dashboard": {
+        "title": "Dashboard",
+        "placeholder": "Dashboard-inhoud verschijnt binnenkort"
+      },
+      "family": {
+        "title": "Gezinsleden",
+        "placeholder": "Pagina Gezinsleden verschijnt binnenkort"
+      },
+      "tasks": {
+        "title": "Taken",
+        "placeholder": "Takenpagina verschijnt binnenkort"
+      },
+      "shoppingLists": {
+        "title": "Boodschappenlijsten",
+        "placeholder": "Pagina Boodschappenlijsten verschijnt binnenkort"
+      },
+      "rewards": {
+        "title": "Beloningen",
+        "placeholder": "Pagina Beloningen verschijnt binnenkort"
+      },
+      "calendar": {
+        "title": "Agenda",
+        "placeholder": "Agendapagina verschijnt binnenkort"
+      },
+      "locations": {
+        "title": "Locaties",
+        "placeholder": "Pagina Locaties verschijnt binnenkort"
+      },
+      "memories": {
+        "title": "Herinneringen",
+        "placeholder": "Pagina Herinneringen verschijnt binnenkort"
+      },
+      "aiSettings": {
+        "title": "AI-instellingen",
+        "placeholder": "Pagina AI-instellingen verschijnt binnenkort"
+      },
+      "diary": {
+        "title": "Dagboek",
+        "placeholder": "Dagboekpagina verschijnt binnenkort"
+      },
+      "chat": {
+        "title": "Chat",
+        "placeholder": "Chatpagina verschijnt binnenkort"
+      },
+      "settings": {
+        "title": "Instellingen",
+        "placeholder": "Instellingenpagina verschijnt binnenkort"
+      }
+    }
   }
 }
