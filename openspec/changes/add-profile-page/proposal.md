@@ -4,7 +4,7 @@
 PROPOSED
 
 ## Problem
-Users currently have no way to view or manage their profile information, preferences, or activity history. The dashboard navigation shows hardcoded user data (name, karma) with a link to `/app/settings`, but that page only displays a placeholder. The reference design includes a comprehensive profile/settings page with user information, preferences (theme and language), and an activity timeline showing karma-earning and karma-spending events.
+Users currently have no way to view or manage their profile information, preferences, or activity history. The dashboard navigation shows hardcoded user data (name, karma) with a link to `/app/profile`, but that page only displays a placeholder. The reference design (located at `/app/settings` in the reference folder) includes a comprehensive profile page with user information, preferences (theme and language), and an activity timeline showing karma-earning and karma-spending events.
 
 ## Solution
 Implement a fully functional profile page that:

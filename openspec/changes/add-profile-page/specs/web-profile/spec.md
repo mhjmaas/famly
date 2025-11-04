@@ -3,6 +3,9 @@
 ## Purpose
 Provide authenticated users with a comprehensive profile page to view their information, manage preferences, and track their activity history within their family.
 
+## Implementation Path
+The profile page is implemented at `/app/profile`. Reference design implementation can be found at `/app/settings` in the reference folder.
+
 ## ADDED Requirements
 
 ### Requirement: User profile display
@@ -10,7 +13,7 @@ The web application MUST display authenticated user profile information includin
 
 #### Scenario: Profile page displays user information
 - **GIVEN** an authenticated user with name "John Doe", birthdate "1985-03-15", role "parent", and karma balance 245
-- **WHEN** the user navigates to `/app/settings`
+- **WHEN** the user navigates to `/app/profile`
 - **THEN** the page displays a profile card
 - **AND** the card shows an avatar with user initials "JD"
 - **AND** the card displays the user name "John Doe"

@@ -152,12 +152,12 @@ Tasks are organized in dependency order. Items marked with 🔄 can be worked in
 - [ ] Verify selective re-rendering (only updates when relevant state changes)
 - [ ] Verify all navigation e2e tests pass
 
-### 9. Implement settings page with profile view using Redux
+### 9. Implement profile page with profile view using Redux
 **Dependencies:** Tasks 2, 3, 6, 7
 **Validation:** Profile page displays real user data from Redux
 
 - [ ] Write failing e2e test for profile page rendering
-- [ ] Update `src/app/[lang]/app/settings/page.tsx` to be async
+- [ ] Update `src/app/[lang]/app/profile/page.tsx` to be async
 - [ ] Fetch activity events server-side with getActivityEvents()
 - [ ] Pass activity events to ProfileView component
 - [ ] Add error handling for failed events fetch
@@ -177,7 +177,7 @@ Tasks are organized in dependency order. Items marked with 🔄 can be worked in
 - [ ] Verify all profile page e2e tests pass
 
 ### 10. Implement preferences functionality
-**Dependencies:** Task 9 (Settings page)
+**Dependencies:** Task 9 (Profile page)
 **Validation:** Theme and language changes work correctly
 
 - [ ] Write failing e2e test for theme switching

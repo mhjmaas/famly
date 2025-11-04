@@ -30,7 +30,7 @@
         │                           │
         ▼                           ▼
 ┌──────────────────┐      ┌──────────────────┐
-│ Dashboard Nav    │      │  Settings Page   │
+│ Dashboard Nav    │      │  Profile Page    │
 │ - useAppSelector │      │  - useAppSelector│
 │ - selectUser     │      │  - selectKarma   │
 │ - selectKarma    │      │  - Server loads  │
@@ -43,7 +43,7 @@
    - Root layout fetches user data from `/v1/auth/me` server-side
    - Root layout fetches karma data from karma endpoint server-side
    - Passes serialized data as Redux store preloadedState
-   - Settings page fetches additional data (activity events) server-side
+   - Profile page fetches additional data (activity events) server-side
 
 2. **Client Side:**
    - Redux store hydrates with preloadedState from server
@@ -459,14 +459,14 @@ export function DashboardLayout({ children }) {
 }
 ```
 
-#### 4. Settings Page (Server Component with Client Islands)
+#### 4. Profile Page (Server Component with Client Islands)
 ```typescript
-// src/app/[lang]/app/settings/page.tsx
+// src/app/[lang]/app/profile/page.tsx
 
 import { getActivityEvents } from "@/lib/api-client"
 import { ProfileView } from "@/components/profile/profile-view"
 
-export default async function SettingsPage() {
+export default async function ProfilePage() {
   let activityEvents = []
 
   try {
