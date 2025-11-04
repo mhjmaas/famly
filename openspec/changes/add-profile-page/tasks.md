@@ -9,8 +9,8 @@ Tasks are organized in dependency order. Items marked with 🔄 can be worked in
 **Dependencies:** None
 **Validation:** Components render correctly in isolation
 
-- [ ] Run `npx shadcn@latest add avatar dropdown-menu dialog select`
-- [ ] Verify all components are properly installed in `src/components/ui/`
+- [x] Run `npx shadcn@latest add avatar dropdown-menu dialog select`
+- [x] Verify all components are properly installed in `src/components/ui/`
 - [ ] Create unit tests for Avatar component rendering and fallback
 - [ ] Create unit tests for DropdownMenu component interactions
 - [ ] Create unit tests for Dialog component open/close behavior
@@ -22,14 +22,14 @@ Tasks are organized in dependency order. Items marked with 🔄 can be worked in
 **Validation:** API client methods work with actual backend
 
 - [ ] Write failing unit tests for `getMe()` function
-- [ ] Implement `getMe()` function in `src/lib/api-client.ts`
-- [ ] Add TypeScript interfaces for `UserProfile` and `MeResponse`
+- [x] Implement `getMe()` function in `src/lib/api-client.ts`
+- [x] Add TypeScript interfaces for `UserProfile` and `MeResponse`
 - [ ] Write failing unit tests for `getKarmaBalance()` function
-- [ ] Implement `getKarmaBalance()` function
-- [ ] Add TypeScript interface for `KarmaBalance`
+- [x] Implement `getKarmaBalance()` function
+- [x] Add TypeScript interface for `KarmaBalance`
 - [ ] Write failing unit tests for `getActivityEvents()` function
-- [ ] Implement `getActivityEvents()` with optional date filters
-- [ ] Add TypeScript interface for `ActivityEvent`
+- [x] Implement `getActivityEvents()` with optional date filters
+- [x] Add TypeScript interface for `ActivityEvent`
 - [ ] Verify all tests pass
 - [ ] Test API client with actual backend endpoints
 
@@ -37,41 +37,41 @@ Tasks are organized in dependency order. Items marked with 🔄 can be worked in
 **Dependencies:** Task 2 (API client)
 **Validation:** Redux store provides user and karma data to components
 
-- [ ] Install dependencies: `pnpm add @reduxjs/toolkit react-redux`
-- [ ] Create `src/store/` directory
+- [x] Install dependencies: `pnpm add @reduxjs/toolkit react-redux`
+- [x] Create `src/store/` directory
 - [ ] Write failing unit tests for user slice
-- [ ] Create `src/store/slices/user.slice.ts`
-- [ ] Implement user slice with profile, isLoading, error state
-- [ ] Implement setUser, clearUser actions
-- [ ] Implement fetchUser async thunk
-- [ ] Implement user selectors (selectUser, selectUserLoading, selectCurrentFamily)
+- [x] Create `src/store/slices/user.slice.ts`
+- [x] Implement user slice with profile, isLoading, error state
+- [x] Implement setUser, clearUser actions
+- [x] Implement fetchUser async thunk
+- [x] Implement user selectors (selectUser, selectUserLoading, selectCurrentFamily)
 - [ ] Write failing unit tests for karma slice
-- [ ] Create `src/store/slices/karma.slice.ts`
-- [ ] Implement karma slice with balances map (userId → balance)
-- [ ] Implement setKarma, incrementKarma, decrementKarma actions
-- [ ] Implement fetchKarma async thunk
-- [ ] Implement karma selectors (selectKarmaBalance, selectKarmaLoading)
-- [ ] Create `src/store/store.ts` with makeStore function
-- [ ] Configure store with user and karma reducers
-- [ ] Add TypeScript types (RootState, AppDispatch, AppStore)
-- [ ] Create `src/store/hooks.ts` with typed hooks
-- [ ] Implement useAppDispatch, useAppSelector, useAppStore
-- [ ] Create `src/store/provider.tsx` StoreProvider component
-- [ ] Implement store initialization with preloadedState support
+- [x] Create `src/store/slices/karma.slice.ts`
+- [x] Implement karma slice with balances map (userId → balance)
+- [x] Implement setKarma, incrementKarma, decrementKarma actions
+- [x] Implement fetchKarma async thunk
+- [x] Implement karma selectors (selectKarmaBalance, selectKarmaLoading)
+- [x] Create `src/store/store.ts` with makeStore function
+- [x] Configure store with user and karma reducers
+- [x] Add TypeScript types (RootState, AppDispatch, AppStore)
+- [x] Create `src/store/hooks.ts` with typed hooks
+- [x] Implement useAppDispatch, useAppSelector, useAppStore
+- [x] Create `src/store/provider.tsx` StoreProvider component
+- [x] Implement store initialization with preloadedState support
 - [ ] Verify all Redux unit tests pass
 
 ### 4. 🔄 Add internationalization for profile page
 **Dependencies:** None
 **Validation:** Translations exist for all profile content
 
-- [ ] Add profile page translations to `src/dictionaries/en-US.json`
-- [ ] Add profile section with title, subtitle, karma
-- [ ] Add preferences section with language and theme labels
-- [ ] Add activity section with timeline labels
-- [ ] Add translations for activity event types
-- [ ] Add profile page translations to `src/dictionaries/nl-NL.json`
-- [ ] Mirror all English translations in Dutch
-- [ ] Verify translation keys are consistent across languages
+- [x] Add profile page translations to `src/dictionaries/en-US.json`
+- [x] Add profile section with title, subtitle, karma
+- [x] Add preferences section with language and theme labels
+- [x] Add activity section with timeline labels
+- [x] Add translations for activity event types
+- [x] Add profile page translations to `src/dictionaries/nl-NL.json`
+- [x] Mirror all English translations in Dutch
+- [x] Verify translation keys are consistent across languages
 - [ ] Test translations load correctly in both languages
 
 ### 5. Create activity timeline utility functions
@@ -79,37 +79,37 @@ Tasks are organized in dependency order. Items marked with 🔄 can be worked in
 **Validation:** Functions correctly group and format events
 
 - [ ] Write failing unit tests for `groupEventsByDate()` function
-- [ ] Create `src/lib/activity-utils.ts` file
-- [ ] Implement `groupEventsByDate()` function
+- [x] Create `src/lib/activity-utils.ts` file
+- [x] Implement `groupEventsByDate()` function
 - [ ] Write failing unit tests for `formatActivityDate()` function
-- [ ] Implement `formatActivityDate()` with locale support
+- [x] Implement `formatActivityDate()` with locale support
 - [ ] Write failing unit tests for `formatActivityTime()` function
-- [ ] Implement `formatActivityTime()` with locale support
+- [x] Implement `formatActivityTime()` with locale support
 - [ ] Write failing unit tests for `getActivityEventIcon()` function
-- [ ] Implement icon selection based on event type
+- [x] Implement icon selection based on event type
 - [ ] Write failing unit tests for `getActivityEventColor()` function
-- [ ] Implement color selection based on karma change
+- [x] Implement color selection based on karma change
 - [ ] Verify all utility function tests pass
 
 ### 6. Create profile page component structure
 **Dependencies:** Tasks 1, 4
 **Validation:** Components render with mock data
 
-- [ ] Create `src/components/profile/` directory
+- [x] Create `src/components/profile/` directory
 - [ ] Write failing tests for UserProfileCard component
-- [ ] Create `user-profile-card.tsx` component
-- [ ] Implement user info display (avatar, name, age, role, karma)
-- [ ] Add proper TypeScript types for props
+- [x] Create `user-profile-card.tsx` component
+- [x] Implement user info display (avatar, name, age, role, karma)
+- [x] Add proper TypeScript types for props
 - [ ] Write failing tests for PreferencesCard component
-- [ ] Create `preferences-card.tsx` component
-- [ ] Implement theme and language selector integration
+- [x] Create `preferences-card.tsx` component
+- [x] Implement theme and language selector integration
 - [ ] Write failing tests for ActivityTimeline component
-- [ ] Create `activity-timeline.tsx` component
-- [ ] Implement event grouping and rendering
-- [ ] Implement empty state for no events
+- [x] Create `activity-timeline.tsx` component
+- [x] Implement event grouping and rendering
+- [x] Implement empty state for no events
 - [ ] Write failing tests for ProfileView component
-- [ ] Create `profile-view.tsx` main component
-- [ ] Integrate all sub-components
+- [x] Create `profile-view.tsx` main component
+- [x] Integrate all sub-components
 - [ ] Verify all component unit tests pass
 - [ ] Test components render correctly with mock data
 
@@ -120,13 +120,14 @@ Tasks are organized in dependency order. Items marked with 🔄 can be worked in
 **Validation:** Redux store hydrates with server-side data
 
 - [ ] Write failing e2e test for authenticated user data loading
-- [ ] Update `src/app/[lang]/layout.tsx` to be async
-- [ ] Import cookies() from next/headers
-- [ ] Fetch user data from getMe() when session exists
-- [ ] Fetch karma data from getKarmaBalance() for current user
-- [ ] Build preloadedState object with user and karma slices
-- [ ] Wrap app children with StoreProvider passing preloadedState
-- [ ] Add error handling for failed fetches
+- [ ] Write failing e2e test for authenticated user data loading
+- [x] Update `src/app/[lang]/layout.tsx` to be async
+- [x] Import cookies() from next/headers
+- [x] Fetch user data from getMe() when session exists
+- [x] Fetch karma data from getKarmaBalance() for current user
+- [x] Build preloadedState object with user and karma slices
+- [x] Wrap app children with StoreProvider passing preloadedState
+- [x] Add error handling for failed fetches
 - [ ] Write failing e2e test for unauthenticated user handling
 - [ ] Verify empty preloadedState works correctly
 - [ ] Verify e2e tests pass
@@ -137,18 +138,18 @@ Tasks are organized in dependency order. Items marked with 🔄 can be worked in
 **Validation:** Navigation shows authenticated user info from Redux
 
 - [ ] Write failing e2e test for desktop nav user data display
-- [ ] Update `src/components/layouts/dashboard-layout.tsx` (already client component)
-- [ ] Import useAppSelector from '@/store/hooks'
-- [ ] Import selectUser, selectUserLoading from user slice
-- [ ] Import selectKarmaBalance from karma slice
-- [ ] Replace hardcoded name with useAppSelector(selectUser)
-- [ ] Replace hardcoded karma with useAppSelector(selectKarmaBalance(userId))
-- [ ] Calculate initials from user.name
-- [ ] Add loading state handling using selectUserLoading
+- [x] Update `src/components/layouts/dashboard-layout.tsx` (already client component)
+- [x] Import useAppSelector from '@/store/hooks'
+- [x] Import selectUser, selectUserLoading from user slice
+- [x] Import selectKarmaBalance from karma slice
+- [x] Replace hardcoded name with useAppSelector(selectUser)
+- [x] Replace hardcoded karma with useAppSelector(selectKarmaBalance(userId))
+- [x] Calculate initials from user.name
+- [x] Add loading state handling using selectUserLoading
 - [ ] Write failing e2e test for tablet nav user data display
-- [ ] Update tablet navigation to use Redux selectors
+- [x] Update tablet navigation to use Redux selectors
 - [ ] Write failing e2e test for mobile nav user data display
-- [ ] Update mobile navigation to use Redux selectors
+- [x] Update mobile navigation to use Redux selectors
 - [ ] Verify selective re-rendering (only updates when relevant state changes)
 - [ ] Verify all navigation e2e tests pass
 
@@ -157,23 +158,23 @@ Tasks are organized in dependency order. Items marked with 🔄 can be worked in
 **Validation:** Profile page displays real user data from Redux
 
 - [ ] Write failing e2e test for profile page rendering
-- [ ] Update `src/app/[lang]/app/profile/page.tsx` to be async
-- [ ] Fetch activity events server-side with getActivityEvents()
-- [ ] Pass activity events to ProfileView component
-- [ ] Add error handling for failed events fetch
-- [ ] Update ProfileView to use client component
-- [ ] Import useAppSelector from '@/store/hooks'
-- [ ] Import selectUser, selectUserLoading from user slice
-- [ ] Import selectKarmaBalance from karma slice
+- [x] Update `src/app/[lang]/app/profile/page.tsx` to be async
+- [x] Fetch activity events server-side with getActivityEvents()
+- [x] Pass activity events to ProfileView component
+- [x] Add error handling for failed events fetch
+- [x] Update ProfileView to use client component
+- [x] Import useAppSelector from '@/store/hooks'
+- [x] Import selectUser, selectUserLoading from user slice
+- [x] Import selectKarmaBalance from karma slice
 - [ ] Write failing e2e test for profile card display
-- [ ] Replace props with Redux selectors in ProfileView
-- [ ] Pass user and karma from Redux to UserProfileCard
+- [x] Replace props with Redux selectors in ProfileView
+- [x] Pass user and karma from Redux to UserProfileCard
 - [ ] Write failing e2e test for karma display
-- [ ] Verify karma loads from Redux store
+- [x] Verify karma loads from Redux store
 - [ ] Write failing e2e test for activity timeline
-- [ ] Verify activity events display correctly
+- [x] Verify activity events display correctly
 - [ ] Write failing e2e test for empty activity state
-- [ ] Verify empty state displays when no events
+- [x] Verify empty state displays when no events
 - [ ] Verify all profile page e2e tests pass
 
 ### 10. Implement preferences functionality
@@ -181,10 +182,10 @@ Tasks are organized in dependency order. Items marked with 🔄 can be worked in
 **Validation:** Theme and language changes work correctly
 
 - [ ] Write failing e2e test for theme switching
-- [ ] Verify ThemeToggle component works in preferences card
+- [x] Verify ThemeToggle component works in preferences card
 - [ ] Test theme persists across page reloads
 - [ ] Write failing e2e test for language switching
-- [ ] Verify LanguageSelector component works in preferences card
+- [x] Verify LanguageSelector component works in preferences card
 - [ ] Test language persists across page reloads
 - [ ] Test URL updates with new language locale
 - [ ] Verify all preferences e2e tests pass

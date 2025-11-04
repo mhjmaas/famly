@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { AuthPage } from "../pages/auth.page";
 import { waitForPageLoad } from "../setup/test-helpers";
+import { authenticateUser } from "../helpers/auth";
 
 test.describe("Authentication - Registration Flow", () => {
   let authPage: AuthPage;
@@ -92,21 +93,31 @@ test.describe("Authentication - Registration Flow", () => {
     await expect(authPage.registerCard).toBeVisible();
   });
 
-  test("should show error for duplicate email", async () => {
-    // Select cloud deployment
+  test("should show error for duplicate email", async ({ page }) => {
+    // First, create a user to ensure the email exists
+    const existingUser = await authenticateUser(page, {
+      emailPrefix: "duplicate",
+      name: "First User",
+    });
+
+    // Clear authentication so we can access the registration page
+    await page.context().clearCookies();
+
+    // Now try to register with the same email
+    await authPage.gotoGetStarted();
     await authPage.selectDeployment("cloud");
     await expect(authPage.registerCard).toBeVisible({ timeout: 2000 });
 
     // Fill in registration form with email that already exists
     await authPage.register({
       name: "Test User",
-      email: "existing@example.com",
+      email: existingUser.email,
       birthdate: "1990-01-01",
       password: "password123",
       confirmPassword: "password123",
     });
 
-    // Should show error (assuming backend returns error for duplicate email)
+    // Should show error for duplicate email
     await expect(authPage.registerError).toBeVisible({ timeout: 5000 });
   });
 
@@ -187,7 +198,7 @@ test.describe("Authentication - Registration Flow", () => {
 
     // Verify we're on the app page
     await expect(
-      page.getByRole("heading", { name: "App goes here" }),
+      page.getByRole("heading", { name: "Dashboard" }),
     ).toBeVisible();
   });
 
@@ -211,15 +222,8 @@ test.describe("Authentication - Registration Flow", () => {
   });
 
   test("should redirect authenticated users to app page", async ({ page }) => {
-    // Set a mock session cookie to simulate authenticated state
-    await page.context().addCookies([
-      {
-        name: "better-auth.session_token",
-        value: "mock-session-token",
-        domain: "localhost",
-        path: "/",
-      },
-    ]);
+    // Authenticate with real user session
+    await authenticateUser(page);
 
     // Navigate to get-started page
     await authPage.gotoGetStarted();

@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import type { ReactNode } from "react";
+import { cookies } from "next/headers";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { ThemeProvider } from "@/components/theme-provider";
+import { StoreProvider } from "@/store/provider";
+import type { RootState } from "@/store/store";
+import { getUserWithKarma } from "@/lib/dal";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
 
@@ -52,14 +57,57 @@ export default async function LocaleLayout({
   const { lang: rawLang } = await params;
   const lang = isLocale(rawLang) ? rawLang : (i18n.defaultLocale as Locale);
 
+  // Load initial Redux state server-side using Data Access Layer
+  let preloadedState: Partial<RootState> | undefined;
+
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get("better-auth.session_token");
+
+  // Only try to fetch user data if we have a session cookie
+  if (sessionCookie) {
+    try {
+      // Use DAL to fetch user and karma data
+      // The DAL handles caching, cookie forwarding, and error handling
+      const { user, karma } = await getUserWithKarma();
+
+      // Preload Redux state
+      preloadedState = {
+        user: {
+          profile: user,
+          isLoading: false,
+          error: null,
+        },
+        karma: {
+          balances: {
+            [user.id]: karma,
+          },
+          isLoading: false,
+          error: null,
+        },
+      };
+    } catch (error) {
+      // Check if this is a Next.js redirect (not an actual error)
+      if (isRedirectError(error)) {
+        // Re-throw redirect errors so Next.js can handle them
+        throw error;
+      }
+
+      // Log actual errors but continue rendering
+      console.error("Failed to load initial state:", error);
+      // Don't set preloadedState - render without user data
+    }
+  }
+
   return (
     <html lang={lang} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider defaultTheme="system" storageKey="famly-theme">
-          {children}
-        </ThemeProvider>
+        <StoreProvider preloadedState={preloadedState}>
+          <ThemeProvider defaultTheme="system" storageKey="famly-theme">
+            {children}
+          </ThemeProvider>
+        </StoreProvider>
       </body>
     </html>
   );

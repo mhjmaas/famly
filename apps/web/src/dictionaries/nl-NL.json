@@ -382,5 +382,28 @@
         "placeholder": "Instellingenpagina verschijnt binnenkort"
       }
     }
+  },
+  "profile": {
+    "title": "Profiel",
+    "subtitle": "Beheer je profiel en bekijk je activiteit",
+    "karma": "Karma",
+    "yearsOld": "jaar oud",
+    "parent": "Ouder",
+    "child": "Kind",
+    "preferences": {
+      "title": "Voorkeuren",
+      "subtitle": "Pas je app-ervaring aan",
+      "language": "Taal",
+      "languageDescription": "Kies je voorkeurstaal",
+      "theme": "Thema",
+      "themeDescription": "Kies je voorkeurs thema"
+    },
+    "activity": {
+      "title": "Activiteitentijdlijn",
+      "subtitle": "Je recente taken en beloningen",
+      "noEvents": "Nog geen activiteit",
+      "taskCompleted": "{taskName} voltooid",
+      "rewardClaimed": "Beloning opgehaald: {rewardName}"
+    }
   }
 }

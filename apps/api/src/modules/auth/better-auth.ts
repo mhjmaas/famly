@@ -123,10 +123,10 @@ function initAuth() {
     },
 
     advanced: {
-      // Use secure cookies in production
-      useSecureCookies: !settings.isDevelopment,
-      // Disable CSRF check in development
-      disableCSRFCheck: settings.isDevelopment,
+      // Use secure cookies in production only (not in dev or test)
+      useSecureCookies: settings.isProduction,
+      // Disable CSRF check in development and test
+      disableCSRFCheck: settings.isDevelopment || settings.isTest,
     },
   };
 

@@ -65,12 +65,13 @@ After thoroughly investigating state management options and analyzing the refere
 - Missing UI components: Avatar, DropdownMenu, Dialog, Select
 - Activity event type definitions and formatting
 - Internationalization for profile page content
+- Profile dropdown menu with "Edit Profile" and "Logout" options
+- Edit profile dialog with form fields for name, birthdate, and role
+- Logout functionality that clears Redux store and session cookies
 - Unit tests for slices, selectors, components, and formatters
 - E2E tests for profile page functionality
 
 ### Out of Scope
-- Edit profile functionality (will be addressed in future change)
-- Logout functionality (will be addressed in future change)
 - Photo upload (not in MVP)
 - Family switching UI (only one family per user in MVP)
 - Real-time activity updates (no WebSocket integration yet)

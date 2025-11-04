@@ -9,7 +9,7 @@ The profile page is implemented at `/app/profile`. Reference design implementati
 ## ADDED Requirements
 
 ### Requirement: User profile display
-The web application MUST display authenticated user profile information including personal details and karma balance.
+The web application MUST display authenticated user profile information including personal details and karma balance, with options to edit profile or logout.
 
 #### Scenario: Profile page displays user information
 - **GIVEN** an authenticated user with name "John Doe", birthdate "1985-03-15", role "parent", and karma balance 245
@@ -20,6 +20,14 @@ The web application MUST display authenticated user profile information includin
 - **AND** the card displays the calculated age from birthdate
 - **AND** the card displays a role badge showing "Parent"
 - **AND** the card displays karma balance "245 Karma" with a Sparkles icon
+- **AND** the card displays a dropdown menu trigger (three vertical dots icon)
+
+#### Scenario: Profile card dropdown menu displays options
+- **GIVEN** an authenticated user viewing the profile page
+- **WHEN** the user clicks the dropdown menu trigger (MoreVertical icon)
+- **THEN** a dropdown menu opens aligned to the right
+- **AND** the menu displays "Edit Profile" option with an Edit icon
+- **AND** the menu displays "Logout" option with a LogOut icon in destructive color
 
 #### Scenario: Profile page handles missing birthdate
 - **GIVEN** an authenticated user without a birthdate
@@ -39,6 +47,67 @@ The web application MUST display authenticated user profile information includin
 - **THEN** the karma balance is fetched from `/v1/families/:familyId/karma/balance/:userId`
 - **AND** the karma displays in the user profile card
 - **AND** loading state shows "—" while karma is being fetched
+
+### Requirement: Edit profile functionality
+The web application MUST allow users to edit their profile information through a dialog modal.
+
+#### Scenario: User opens edit profile dialog
+- **GIVEN** an authenticated user viewing the profile page
+- **WHEN** the user clicks "Edit Profile" from the dropdown menu
+- **THEN** a dialog modal opens with title "Edit Profile"
+- **AND** the dialog displays a description "Update your profile information"
+- **AND** the dialog contains an input field for "Name" pre-filled with current name
+- **AND** the dialog contains a date input field for "Birthdate" pre-filled with current birthdate
+- **AND** the dialog contains a select dropdown for "Role" pre-filled with current role
+- **AND** the dialog displays "Cancel" and "Save Changes" buttons
+
+#### Scenario: User edits profile information
+- **GIVEN** the edit profile dialog is open
+- **WHEN** the user changes the name field to "Jane Smith"
+- **AND** the user changes the birthdate to "1990-05-20"
+- **AND** the user changes the role to "child"
+- **AND** the user clicks "Save Changes"
+- **THEN** the profile updates are saved (API call to be implemented)
+- **AND** the dialog closes
+- **AND** the profile card reflects the updated information
+
+#### Scenario: User cancels profile edit
+- **GIVEN** the edit profile dialog is open with modified fields
+- **WHEN** the user clicks "Cancel" or closes the dialog
+- **THEN** the dialog closes without saving changes
+- **AND** the profile card displays original information
+
+#### Scenario: Save button is disabled for invalid data
+- **GIVEN** the edit profile dialog is open
+- **WHEN** the user clears the name field or birthdate field
+- **THEN** the "Save Changes" button is disabled
+- **AND** the user cannot save the profile with incomplete data
+
+### Requirement: Logout functionality
+The web application MUST allow users to logout and clear their session securely.
+
+#### Scenario: User initiates logout
+- **GIVEN** an authenticated user viewing the profile page
+- **WHEN** the user clicks "Logout" from the dropdown menu
+- **THEN** the Redux user state is cleared via clearUser() action
+- **AND** the session cookie is deleted via clearInvalidSession() server action
+- **AND** the user is redirected to "/signin" page
+- **AND** the user can no longer access authenticated routes
+
+#### Scenario: Logout handles errors gracefully
+- **GIVEN** an authenticated user initiating logout
+- **WHEN** the session cookie deletion fails
+- **THEN** an error is logged to the console
+- **AND** the Redux user state is still cleared
+- **AND** the user is still redirected to "/signin"
+- **AND** the application remains stable despite the error
+
+#### Scenario: Logout clears all user data from Redux
+- **GIVEN** an authenticated user with data in Redux store (user profile, karma, etc.)
+- **WHEN** the user logs out
+- **THEN** the user slice profile is set to null
+- **AND** the user slice error is cleared
+- **AND** the application treats the user as unauthenticated
 
 ### Requirement: User preferences management
 The web application MUST allow users to view and modify their theme and language preferences.

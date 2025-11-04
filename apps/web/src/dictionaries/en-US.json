@@ -382,5 +382,28 @@
         "placeholder": "Settings page coming soon"
       }
     }
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Manage your profile and view your activity",
+    "karma": "Karma",
+    "yearsOld": "years old",
+    "parent": "Parent",
+    "child": "Child",
+    "preferences": {
+      "title": "Preferences",
+      "subtitle": "Customize your app experience",
+      "language": "Language",
+      "languageDescription": "Choose your preferred language",
+      "theme": "Theme",
+      "themeDescription": "Choose your preferred theme"
+    },
+    "activity": {
+      "title": "Activity Timeline",
+      "subtitle": "Your recent tasks and rewards",
+      "noEvents": "No activity yet",
+      "taskCompleted": "Completed {taskName}",
+      "rewardClaimed": "Claimed reward: {rewardName}"
+    }
   }
 }

@@ -1,9 +1,5 @@
 "use client";
 
-import { AlertCircle } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +14,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Locale } from "@/i18n/config";
 import type { DictionarySection } from "@/i18n/types";
-import { ApiError, login } from "@/lib/api-client";
+import { ApiError, login, getMe, getKarmaBalance } from "@/lib/api-client";
+import { AlertCircle } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useAppDispatch } from "@/store/hooks";
+import { setUser } from "@/store/slices/user.slice";
+import { setKarma } from "@/store/slices/karma.slice";
 
 interface SignInFormProps {
   locale: Locale;
@@ -28,6 +31,7 @@ interface SignInFormProps {
 
 export function SignInForm({ locale, dict, commonDict }: SignInFormProps) {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -39,8 +43,23 @@ export function SignInForm({ locale, dict, commonDict }: SignInFormProps) {
     setIsLoading(true);
 
     try {
+      // Login
       await login({ email, password });
-      // Successful login - redirect to app
+
+      // Fetch user data and populate Redux store
+      const meResponse = await getMe();
+      dispatch(setUser(meResponse.user));
+
+      // Fetch karma balance if user has a family
+      if (meResponse.user.families?.[0]) {
+        const karmaData = await getKarmaBalance(
+          meResponse.user.families[0].familyId,
+          meResponse.user.id
+        );
+        dispatch(setKarma({ userId: meResponse.user.id, balance: karmaData.balance }));
+      }
+
+      // Redirect to app
       router.push(`/${locale}/app`);
     } catch (err) {
       if (err instanceof ApiError) {
