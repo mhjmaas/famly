@@ -7,7 +7,16 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
+    "includes": [
+      "**",
+      "!node_modules",
+      "!.next",
+      "!dist",
+      "!build",
+      "!*.spec.ts",
+      "!*.spec.tsx",
+      "!tests/e2e"
+    ]
   },
   "formatter": {
     "enabled": true,

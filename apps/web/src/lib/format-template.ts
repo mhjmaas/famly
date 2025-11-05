@@ -3,12 +3,12 @@ export function formatTemplate(
   values: Record<string, string | number>,
 ) {
   return template.replace(/\{(\w+)\}/g, (match, key) => {
-    const value = values[key]
+    const value = values[key];
 
     if (value === undefined || value === null) {
-      return match
+      return match;
     }
 
-    return String(value)
-  })
+    return String(value);
+  });
 }

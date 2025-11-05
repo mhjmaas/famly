@@ -1,5 +1,8 @@
 "use client";
 
+import { Edit, LogOut, MoreVertical, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,15 +23,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Edit, LogOut, MoreVertical, Sparkles } from "lucide-react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import type { Locale } from "@/i18n/config";
 import type { UserProfile } from "@/lib/api-client";
 import { updateProfile } from "@/lib/api-client";
+import { clearInvalidSession } from "@/lib/auth-actions";
 import { useAppDispatch } from "@/store/hooks";
 import { clearUser, setUser } from "@/store/slices/user.slice";
-import { clearInvalidSession } from "@/lib/auth-actions";
-import type { Locale } from "@/i18n/config";
 
 interface UserProfileCardProps {
   user: UserProfile;
@@ -83,7 +83,12 @@ function formatDateForInput(isoDate?: string): string {
   }
 }
 
-export function UserProfileCard({ user, karma, dict, lang }: UserProfileCardProps) {
+export function UserProfileCard({
+  user,
+  karma,
+  dict,
+  lang,
+}: UserProfileCardProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const age = calculateAge(user.birthdate);
@@ -159,19 +164,38 @@ export function UserProfileCard({ user, karma, dict, lang }: UserProfileCardProp
                 </AvatarFallback>
               </Avatar>
               <div className="space-y-2">
-                <h2 className="text-2xl font-bold" data-testid="profile-user-name">{user.name}</h2>
+                <h2
+                  className="text-2xl font-bold"
+                  data-testid="profile-user-name"
+                >
+                  {user.name}
+                </h2>
                 <div className="flex items-center gap-3">
                   {age !== null && (
-                    <p className="text-muted-foreground" data-testid="profile-user-age">
+                    <p
+                      className="text-muted-foreground"
+                      data-testid="profile-user-age"
+                    >
                       {age} {dict.yearsOld}
                     </p>
                   )}
-                  <Badge variant={role.toLowerCase() === "parent" ? "default" : "secondary"} data-testid="profile-user-role">
+                  <Badge
+                    variant={
+                      role.toLowerCase() === "parent" ? "default" : "secondary"
+                    }
+                    data-testid="profile-user-role"
+                  >
                     {role.toLowerCase() === "parent" ? dict.parent : dict.child}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2 text-primary" data-testid="profile-user-karma">
-                  <Sparkles className="h-5 w-5 fill-primary" aria-hidden="true" />
+                <div
+                  className="flex items-center gap-2 text-primary"
+                  data-testid="profile-user-karma"
+                >
+                  <Sparkles
+                    className="h-5 w-5 fill-primary"
+                    aria-hidden="true"
+                  />
                   <span className="font-semibold text-lg">
                     {karma} {dict.karma}
                   </span>
@@ -180,7 +204,12 @@ export function UserProfileCard({ user, karma, dict, lang }: UserProfileCardProp
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Profile menu" data-testid="profile-menu-button">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Profile menu"
+                  data-testid="profile-menu-button"
+                >
                   <MoreVertical className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -207,7 +236,9 @@ export function UserProfileCard({ user, karma, dict, lang }: UserProfileCardProp
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Profile</DialogTitle>
-            <DialogDescription>Update your profile information</DialogDescription>
+            <DialogDescription>
+              Update your profile information
+            </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
@@ -217,7 +248,9 @@ export function UserProfileCard({ user, karma, dict, lang }: UserProfileCardProp
                 id="edit-name"
                 placeholder="Enter name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
               />
             </div>
 
@@ -227,7 +260,9 @@ export function UserProfileCard({ user, karma, dict, lang }: UserProfileCardProp
                 id="edit-birthdate"
                 type="date"
                 value={formData.birthdate}
-                onChange={(e) => setFormData({ ...formData, birthdate: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, birthdate: e.target.value })
+                }
               />
             </div>
 
@@ -240,13 +275,18 @@ export function UserProfileCard({ user, karma, dict, lang }: UserProfileCardProp
                 className="bg-muted"
               />
               <p className="text-xs text-muted-foreground">
-                Role cannot be changed here. Contact a family admin to update your role.
+                Role cannot be changed here. Contact a family admin to update
+                your role.
               </p>
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditOpen(false)} disabled={isSaving}>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditOpen(false)}
+              disabled={isSaving}
+            >
               Cancel
             </Button>
             <Button

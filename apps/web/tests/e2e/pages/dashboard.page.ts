@@ -109,7 +109,6 @@ export class DashboardPage {
     await this.page.goto(`/${locale}/app/${page}`);
   }
 
-
   /**
    * Check if desktop sidebar is visible
    */
@@ -164,7 +163,9 @@ export class DashboardPage {
    * Check if current page is dashboard
    */
   async isOnDashboard(): Promise<boolean> {
-    return this.page.url().includes("/app") && !this.page.url().includes("/app/");
+    return (
+      this.page.url().includes("/app") && !this.page.url().includes("/app/")
+    );
   }
 
   /**

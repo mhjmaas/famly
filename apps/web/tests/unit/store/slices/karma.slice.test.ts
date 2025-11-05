@@ -1,12 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 import karmaReducer, {
-  setKarma,
-  incrementKarma,
   decrementKarma,
   fetchKarma,
+  incrementKarma,
   selectKarmaBalance,
-  selectKarmaLoading,
   selectKarmaError,
+  selectKarmaLoading,
+  setKarma,
 } from "@/store/slices/karma.slice";
 import type { RootState } from "@/store/store";
 

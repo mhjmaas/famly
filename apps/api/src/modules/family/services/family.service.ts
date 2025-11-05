@@ -167,6 +167,7 @@ export class FamilyService {
             email: input.email,
             password: input.password,
             name: input.name,
+            // @ts-expect-error - birthdate is a custom field added via additionalFields but not in signUpEmail types
             birthdate: input.birthdate,
           },
         });
@@ -383,10 +384,7 @@ export class FamilyService {
         throw HttpError.notFound("Member not found");
       }
 
-      if (
-        membership.role === FamilyRole.Parent &&
-        role === FamilyRole.Child
-      ) {
+      if (membership.role === FamilyRole.Parent && role === FamilyRole.Child) {
         const memberships =
           await this.membershipRepository.findByFamily(familyId);
         const parentCount = memberships.filter(
@@ -414,7 +412,9 @@ export class FamilyService {
         await this.membershipRepository.findByFamilyAndUser(familyId, memberId);
 
       if (!updatedMembership) {
-        throw HttpError.internalError("Failed to fetch updated membership");
+        throw HttpError.internalServerError(
+          "Failed to fetch updated membership",
+        );
       }
 
       logger.info("Member role updated successfully", {

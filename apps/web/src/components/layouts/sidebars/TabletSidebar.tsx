@@ -1,17 +1,22 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { LogoComponent } from "@/components/navigation/LogoComponent"
-import { UserProfileDisplay } from "@/components/profile/UserProfileDisplay"
-import { cn } from "@/lib/utils"
-import type { NavigationSection, Dictionary, NavigationItem as NavigationItemType, UserProfileData } from "@/types/dashboard-layout.types"
+import Link from "next/link";
+import { LogoComponent } from "@/components/navigation/LogoComponent";
+import { UserProfileDisplay } from "@/components/profile/UserProfileDisplay";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import type {
+  Dictionary,
+  NavigationItem as NavigationItemType,
+  NavigationSection,
+  UserProfileData,
+} from "@/types/dashboard-layout.types";
 
 interface TabletSidebarProps {
-  navigationSections: NavigationSection[]
-  pathname: string
-  dict: Dictionary
-  userProfile: UserProfileData
+  navigationSections: NavigationSection[];
+  pathname: string;
+  dict: Dictionary;
+  userProfile: UserProfileData;
 }
 
 export function TabletSidebar({
@@ -22,10 +27,10 @@ export function TabletSidebar({
 }: TabletSidebarProps) {
   const allItems = navigationSections.flatMap((section) => {
     if (section.type === "single") {
-      return [section as NavigationItemType]
+      return [section as NavigationItemType];
     }
-    return section.items || []
-  })
+    return section.items || [];
+  });
 
   return (
     <div className="flex flex-col h-full" data-testid="tablet-nav-content">
@@ -38,9 +43,9 @@ export function TabletSidebar({
       <ScrollArea className="flex-1 px-2 py-4">
         <nav className="space-y-1" data-testid="tablet-navigation">
           {allItems.map((item) => {
-            const itemHref = item.href
-            const isActive = itemHref === pathname
-            const isDisabled = item.disabled
+            const itemHref = item.href;
+            const isActive = itemHref === pathname;
+            const isDisabled = item.disabled;
 
             return (
               <Link
@@ -57,15 +62,20 @@ export function TabletSidebar({
                 title={dict.dashboard.navigation[item.name]}
               >
                 <item.icon className="h-5 w-5" />
-                {isDisabled && <span className="absolute -top-1 -right-1 w-2 h-2 bg-muted rounded-full" />}
+                {isDisabled && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-muted rounded-full" />
+                )}
               </Link>
-            )
+            );
           })}
         </nav>
       </ScrollArea>
 
       {/* User Info - Icon Only with Karma */}
-      <div className="p-3 border-t border-border" data-testid="tablet-user-profile">
+      <div
+        className="p-3 border-t border-border"
+        data-testid="tablet-user-profile"
+      >
         <UserProfileDisplay
           profile={userProfile}
           variant="icon"
@@ -73,5 +83,5 @@ export function TabletSidebar({
         />
       </div>
     </div>
-  )
+  );
 }

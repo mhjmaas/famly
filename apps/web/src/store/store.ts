@@ -1,6 +1,6 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import userReducer from "./slices/user.slice";
 import karmaReducer from "./slices/karma.slice";
+import userReducer from "./slices/user.slice";
 
 // Define the root reducer map with proper types
 const rootReducer = combineReducers({

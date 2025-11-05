@@ -99,7 +99,9 @@ export class TaskRepository {
     dueDateFrom?: Date,
     dueDateTo?: Date,
   ): Promise<Task[]> {
-    const query: Partial<Task> = { familyId };
+    // Use any for MongoDB filter to allow query operators like $gte and $lte
+    // biome-ignore lint/suspicious/noExplicitAny: MongoDB filter requires dynamic query operators
+    const query: any = { familyId };
 
     if (dueDateFrom || dueDateTo) {
       query.dueDate = {};
@@ -141,7 +143,7 @@ export class TaskRepository {
       updateFields.assignment = input.assignment;
     }
     if (input.completedAt !== undefined) {
-      updateFields.completedAt = input.completedAt;
+      updateFields.completedAt = input.completedAt ?? undefined;
     }
 
     const result = await this.collection.findOneAndUpdate(

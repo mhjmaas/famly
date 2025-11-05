@@ -1,18 +1,25 @@
-"use client"
+"use client";
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { ChevronDown } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { NavigationItem } from "./NavigationItem"
-import type { NavigationSection, Dictionary } from "@/types/dashboard-layout.types"
+import { ChevronDown } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
+import type {
+  Dictionary,
+  NavigationSection,
+} from "@/types/dashboard-layout.types";
+import { NavigationItem } from "./NavigationItem";
 
 interface SectionNavigationProps {
-  section: NavigationSection
-  isExpanded: boolean
-  pathWithoutLocale: string
-  dict: Dictionary
-  onToggleSection: (sectionName: string) => void
-  onNavigate?: () => void
+  section: NavigationSection;
+  isExpanded: boolean;
+  pathWithoutLocale: string;
+  dict: Dictionary;
+  onToggleSection: (sectionName: string) => void;
+  onNavigate?: () => void;
 }
 
 export function SectionNavigation({
@@ -23,7 +30,7 @@ export function SectionNavigation({
   onToggleSection,
   onNavigate,
 }: SectionNavigationProps) {
-  const testId = `nav-section-${section.name.replace(/([A-Z])/g, '-$1').toLowerCase()}`
+  const testId = `nav-section-${section.name.replace(/([A-Z])/g, "-$1").toLowerCase()}`;
 
   return (
     <Collapsible
@@ -32,7 +39,10 @@ export function SectionNavigation({
       onOpenChange={() => onToggleSection(section.name as string)}
       data-testid={testId}
     >
-      <CollapsibleTrigger className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-muted-foreground hover:bg-accent hover:text-accent-foreground w-full" data-testid={`${testId}-trigger`}>
+      <CollapsibleTrigger
+        className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-muted-foreground hover:bg-accent hover:text-accent-foreground w-full"
+        data-testid={`${testId}-trigger`}
+      >
         <section.icon className="h-5 w-5" />
         {dict.dashboard.navigation[section.name]}
         <ChevronDown
@@ -56,5 +66,5 @@ export function SectionNavigation({
         ))}
       </CollapsibleContent>
     </Collapsible>
-  )
+  );
 }

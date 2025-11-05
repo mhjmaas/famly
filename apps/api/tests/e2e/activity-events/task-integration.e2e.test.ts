@@ -172,8 +172,8 @@ describe("E2E: Activity Events - Task Integration", () => {
         .expect(200);
 
       // Verify completion event has correct description format
-      const completionEvent = eventsResponse.body.find(
-        (e: any) => e.description && e.description.startsWith("Completed"),
+      const completionEvent = eventsResponse.body.find((e: any) =>
+        e.description?.startsWith("Completed"),
       );
 
       expect(completionEvent).toBeDefined();

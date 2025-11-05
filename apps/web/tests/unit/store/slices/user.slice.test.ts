@@ -1,14 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
+import type { UserProfile } from "@/lib/api-client";
 import userReducer, {
-  setUser,
   clearUser,
   fetchUser,
-  selectUser,
-  selectUserLoading,
-  selectUserError,
   selectCurrentFamily,
+  selectUser,
+  selectUserError,
+  selectUserLoading,
+  setUser,
 } from "@/store/slices/user.slice";
-import type { UserProfile } from "@/lib/api-client";
 import type { RootState } from "@/store/store";
 
 // Mock the API client
@@ -237,7 +237,10 @@ describe("user.slice", () => {
       expect(store.getState().user.profile).toBeNull();
 
       // Fetch user successfully
-      mockedGetMe.mockResolvedValueOnce({ user: mockUserProfile, authType: "cookie" });
+      mockedGetMe.mockResolvedValueOnce({
+        user: mockUserProfile,
+        authType: "cookie",
+      });
       await store.dispatch(fetchUser());
       expect(store.getState().user.profile).toEqual(mockUserProfile);
       expect(store.getState().user.error).toBeNull();

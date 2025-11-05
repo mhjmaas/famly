@@ -1,7 +1,7 @@
-import { getDictionary } from "@/dictionaries";
-import { i18n, type Locale } from "@/i18n/config";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { ProfileView } from "@/components/profile/profile-view";
+import { getDictionary } from "@/dictionaries";
+import { i18n, type Locale } from "@/i18n/config";
 import { getUserActivityEvents } from "@/lib/dal";
 
 interface PageProps {
@@ -15,7 +15,11 @@ export default async function ProfilePage({ params }: PageProps) {
 
   // Fetch activity events using DAL
   // The DAL handles authentication verification and error handling
-  const activityEvents = await getUserActivityEvents(undefined, undefined, lang);
+  const activityEvents = await getUserActivityEvents(
+    undefined,
+    undefined,
+    lang,
+  );
 
   return (
     <DashboardLayout dict={dict} lang={lang} title={dict.profile.title}>

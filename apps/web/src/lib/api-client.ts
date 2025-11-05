@@ -1,7 +1,7 @@
 /**
  * API client for backend communication
  * Handles authentication, error handling, and cookie forwarding
- * 
+ *
  * Cookie handling:
  * - Client-side: Uses credentials: "include" to automatically send cookies
  * - Server-side: Pass cookie string via options.cookie parameter
@@ -77,8 +77,8 @@ async function apiClient<T>(
       const errorMessage =
         typeof errorData === "object" && errorData !== null
           ? (errorData as { message?: string }).message ||
-          (errorData as { error?: string }).error ||
-          "An error occurred"
+            (errorData as { error?: string }).error ||
+            "An error occurred"
           : String(errorData) || "An error occurred";
 
       throw new ApiError(errorMessage, response.status, errorData);

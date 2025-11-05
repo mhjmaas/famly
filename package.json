@@ -8,6 +8,7 @@
     "dev:web": "pnpm --filter web dev",
     "build:web": "pnpm --filter web build",
     "test:web": "pnpm --filter web test:e2e",
+    "test:unit:web": "pnpm --filter web test:unit",
     "lint:web": "pnpm --filter web lint",
     "format:web": "pnpm --filter web format",
     "dev:api": "pnpm --filter api dev",
@@ -15,16 +16,24 @@
     "lint:api": "pnpm --filter api lint",
     "format:api": "pnpm --filter api format",
     "test:api": "pnpm --filter api test",
+    "test:unit:api": "pnpm --filter api test:unit",
     "lint": "pnpm run lint:web && pnpm run lint:api",
     "format": "pnpm run format:web && pnpm run format:api",
+    "test:unit": "pnpm run test:unit:api && pnpm run test:unit:web",
+    "build": "pnpm run build:api && pnpm run build:web",
     "update:claude:tree": "bash scripts/update-claude-tree.sh",
     "claude": "pnpm run update:claude:tree && claude",
     "update:codex:tree": "bash scripts/update-codex-tree.sh",
-    "codex": "export CODEX_HOME=~/.codex && pnpm run update:codex:tree && codex"
+    "codex": "export CODEX_HOME=~/.codex && pnpm run update:codex:tree && codex",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
   "private": true,
   "license": "ISC",
-  "packageManager": "pnpm@10.7.1"
+  "packageManager": "pnpm@10.7.1",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6"
+  }
 }

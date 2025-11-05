@@ -43,8 +43,14 @@ export class ProfilePage {
     this.pageSubtitle = page.getByTestId("profile-subtitle");
 
     // Desktop preferences (in header, visible lg+)
-    this.desktopLanguageSelector = page.getByTestId("profile-desktop-preferences").getByRole("button").first();
-    this.desktopThemeToggle = page.getByTestId("profile-desktop-preferences").getByRole("button").last();
+    this.desktopLanguageSelector = page
+      .getByTestId("profile-desktop-preferences")
+      .getByRole("button")
+      .first();
+    this.desktopThemeToggle = page
+      .getByTestId("profile-desktop-preferences")
+      .getByRole("button")
+      .last();
 
     // User Profile Card
     this.profileCard = page.getByTestId("user-profile-card");
@@ -57,8 +63,14 @@ export class ProfilePage {
 
     // Preferences Card (mobile/tablet only, hidden lg+)
     this.preferencesCard = page.getByTestId("preferences-card");
-    this.mobileLanguageSelector = page.getByTestId("preference-language").getByRole("button").first();
-    this.mobileThemeToggle = page.getByTestId("preference-theme").getByRole("button").first();
+    this.mobileLanguageSelector = page
+      .getByTestId("preference-language")
+      .getByRole("button")
+      .first();
+    this.mobileThemeToggle = page
+      .getByTestId("preference-theme")
+      .getByRole("button")
+      .first();
 
     // Activity Timeline
     this.activityTimelineSection = page.getByTestId("activity-timeline");
@@ -200,7 +212,7 @@ export class ProfilePage {
         return html.classList.contains(theme);
       },
       expectedTheme,
-      { timeout: 3000 }
+      { timeout: 3000 },
     );
   }
 

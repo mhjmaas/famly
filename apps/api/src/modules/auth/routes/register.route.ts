@@ -51,6 +51,7 @@ export function createRegisterRoute(): Router {
             email,
             password,
             name,
+            // @ts-expect-error - birthdate is a custom field added via additionalFields but not in signUpEmail types
             birthdate, // Better-auth will handle the date field automatically
           },
           headers: fromNodeHeaders(req.headers),
@@ -59,7 +60,10 @@ export function createRegisterRoute(): Router {
 
         // Check HTTP status from Better Auth
         if (!result.ok) {
-          const errorData = await result.json();
+          const errorData = (await result.json()) as {
+            error?: string | { message?: string };
+            message?: string;
+          };
           const errorMsg =
             typeof errorData.error === "string"
               ? errorData.error
@@ -88,7 +92,21 @@ export function createRegisterRoute(): Router {
         }
 
         // Parse the response body
-        const data = await result.json();
+        const data = (await result.json()) as {
+          user?: {
+            id: string;
+            email: string;
+            name: string;
+            birthdate?: string | Date;
+            emailVerified: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+          };
+          token?: string;
+          session?: {
+            expiresAt?: string;
+          };
+        };
 
         // At this point result.ok is true, so we should have a user
         if (!data.user) {
@@ -106,7 +124,7 @@ export function createRegisterRoute(): Router {
               authorization: `Bearer ${sessionToken}`,
             },
           });
-          if (sessionData.user) {
+          if (sessionData?.user) {
             fullUser = sessionData.user;
           }
         } catch (error) {
@@ -120,6 +138,7 @@ export function createRegisterRoute(): Router {
         // Get JWT access token by calling the token endpoint with the session
         let accessToken: string | null = null;
         try {
+          // @ts-expect-error - getToken is not in the type definitions but exists at runtime via jwt plugin
           const tokenResult = await auth.api.getToken({
             headers: {
               authorization: `Bearer ${sessionToken}`,

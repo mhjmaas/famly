@@ -1,5 +1,9 @@
 "use client";
 
+import { AlertCircle } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,14 +18,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Locale } from "@/i18n/config";
 import type { DictionarySection } from "@/i18n/types";
-import { ApiError, login, getMe, getKarmaBalance } from "@/lib/api-client";
-import { AlertCircle } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { ApiError, getKarmaBalance, getMe, login } from "@/lib/api-client";
 import { useAppDispatch } from "@/store/hooks";
-import { setUser } from "@/store/slices/user.slice";
 import { setKarma } from "@/store/slices/karma.slice";
+import { setUser } from "@/store/slices/user.slice";
 
 interface SignInFormProps {
   locale: Locale;
@@ -54,9 +54,11 @@ export function SignInForm({ locale, dict, commonDict }: SignInFormProps) {
       if (meResponse.user.families?.[0]) {
         const karmaData = await getKarmaBalance(
           meResponse.user.families[0].familyId,
-          meResponse.user.id
+          meResponse.user.id,
         );
-        dispatch(setKarma({ userId: meResponse.user.id, balance: karmaData.balance }));
+        dispatch(
+          setKarma({ userId: meResponse.user.id, balance: karmaData.balance }),
+        );
       }
 
       // Redirect to app

@@ -61,33 +61,26 @@ export type PresencePingPayload = Record<string, never>;
  * Acknowledgment response types for client → server events
  */
 
-export interface RoomJoinAck extends Ack {
-  ok: true;
-}
+export type RoomJoinAck = { ok: true };
 
-export interface RoomLeaveAck extends Ack {
-  ok: true;
-}
+export type RoomLeaveAck = { ok: true };
 
-export interface MessageSendAck
-  extends Ack<{ clientId: string; serverId: string }> {
+export type MessageSendAck = {
   ok: true;
   data: {
     clientId: string;
     serverId: string;
   };
-}
+};
 
-export interface ReceiptReadAck extends Ack {
-  ok: true;
-}
+export type ReceiptReadAck = { ok: true };
 
-export interface PresencePingAck extends Ack<{ serverTime: string }> {
+export type PresencePingAck = {
   ok: true;
   data: {
     serverTime: string;
   };
-}
+};
 
 /**
  * Server → Client Events

@@ -58,7 +58,7 @@ export function createLoginRoute(): Router {
         }
 
         // Parse the response body
-        const data: {
+        const data = (await result.json()) as {
           user?: {
             id: string;
             email: string;
@@ -72,7 +72,7 @@ export function createLoginRoute(): Router {
           session?: {
             expiresAt?: string;
           };
-        } = await result.json();
+        };
 
         if (!data.user) {
           throw HttpError.unauthorized("Invalid email or password");
@@ -89,7 +89,7 @@ export function createLoginRoute(): Router {
               authorization: `Bearer ${sessionToken}`,
             },
           });
-          if (sessionData.user) {
+          if (sessionData?.user) {
             fullUser = sessionData.user;
           }
         } catch (error) {
@@ -103,6 +103,7 @@ export function createLoginRoute(): Router {
         // Get JWT access token by calling the token endpoint with the session
         let accessToken: string | null = null;
         try {
+          // @ts-expect-error - getToken is not in the type definitions but exists at runtime via jwt plugin
           const tokenResult = await auth.api.getToken({
             headers: {
               authorization: `Bearer ${sessionToken}`,
@@ -166,7 +167,7 @@ export function createLoginRoute(): Router {
       } catch (error) {
         // Handle better-auth errors
         if (error && typeof error === "object" && "status" in error) {
-          const authError = error as unknown;
+          const authError = error as { status?: number; message?: string };
           if (
             authError.status === 401 ||
             authError.message?.includes("Invalid")

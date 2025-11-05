@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import Link from "next/link"
+import Link from "next/link";
 
 interface LogoComponentProps {
-  showText?: boolean
-  onClick?: () => void
-  testId?: string
+  showText?: boolean;
+  onClick?: () => void;
+  testId?: string;
 }
 
 export function LogoComponent({
@@ -31,5 +31,5 @@ export function LogoComponent({
         </span>
       )}
     </Link>
-  )
+  );
 }

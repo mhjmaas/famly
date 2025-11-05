@@ -19,7 +19,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002";
  * Uses timestamp + random + process ID to avoid collisions across test runs and parallel workers
  */
 let userCounter = Date.now();
-let randomSuffix = Math.floor(Math.random() * 100000);
+const randomSuffix = Math.floor(Math.random() * 100000);
 const pid = process.pid;
 
 /**
