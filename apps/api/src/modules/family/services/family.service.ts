@@ -383,6 +383,21 @@ export class FamilyService {
         throw HttpError.notFound("Member not found");
       }
 
+      if (
+        membership.role === FamilyRole.Parent &&
+        role === FamilyRole.Child
+      ) {
+        const memberships =
+          await this.membershipRepository.findByFamily(familyId);
+        const parentCount = memberships.filter(
+          (member) => member.role === FamilyRole.Parent,
+        ).length;
+
+        if (parentCount <= 1) {
+          throw HttpError.conflict("Family must retain at least one parent");
+        }
+      }
+
       // 3. Update the role
       const updated = await this.membershipRepository.updateMemberRole(
         familyId,

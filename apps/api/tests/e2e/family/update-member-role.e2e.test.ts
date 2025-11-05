@@ -132,6 +132,45 @@ describe("PATCH /v1/families/:familyId/members/:memberId - Update Member Role", 
     });
   });
 
+  describe("guardrails", () => {
+    it("should prevent demoting the last parent to child role", async () => {
+      const timestamp = Date.now();
+      const parentRes = await request(baseUrl)
+        .post("/v1/auth/register")
+        .send({
+          email: `solo-parent-${timestamp}@example.com`,
+          password: "parentpass123",
+          name: "Solo Parent",
+          birthdate: "1980-01-15",
+        })
+        .expect(201);
+
+      const parentToken = parentRes.body.accessToken || parentRes.body.sessionToken;
+      const parentMemberId = parentRes.body.user?.id || parentRes.body.userId;
+
+      const familyRes = await request(baseUrl)
+        .post("/v1/families")
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({ name: "Solo Family" })
+        .expect(201);
+
+      const familyId = familyRes.body.familyId;
+
+      const downgradeRes = await request(baseUrl)
+        .patch(`/v1/families/${familyId}/members/${parentMemberId}`)
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({ role: FamilyRole.Child })
+        .expect(409);
+
+      expect(downgradeRes.body).toEqual(
+        expect.objectContaining({
+          error: "Family must retain at least one parent",
+          code: "CONFLICT",
+        }),
+      );
+    });
+  });
+
   describe("authorization", () => {
     it("should reject non-parent users from updating roles", async () => {
       // 1. Register parent and create family
