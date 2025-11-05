@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { AuthPage } from "../pages/auth.page";
 import { waitForPageLoad } from "../setup/test-helpers";
+import { authenticateUser } from "../helpers/auth";
 
 test.describe("Authentication - Sign In", () => {
   let authPage: AuthPage;
@@ -49,8 +50,8 @@ test.describe("Authentication - Sign In", () => {
     // Click the get started link
     await authPage.signInGetStartedLink.click();
 
-    // Should navigate to get-started page
-    await page.waitForURL("**/get-started", { timeout: 5000 });
+    // Should navigate to get-started page (may include query params)
+    await page.waitForURL("**/get-started**", { timeout: 5000 });
     expect(page.url()).toContain("/get-started");
   });
 
@@ -76,15 +77,8 @@ test.describe("Authentication - Sign In", () => {
   });
 
   test("should redirect authenticated users to app page", async ({ page }) => {
-    // Set a mock session cookie to simulate authenticated state
-    await page.context().addCookies([
-      {
-        name: "better-auth.session_token",
-        value: "mock-session-token",
-        domain: "localhost",
-        path: "/",
-      },
-    ]);
+    // Authenticate with real user session
+    await authenticateUser(page);
 
     // Navigate to signin page
     await authPage.gotoSignIn();

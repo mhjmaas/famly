@@ -43,6 +43,7 @@ export class DashboardPage {
   // Content area
   readonly mainContent: Locator;
   readonly pageContent: Locator;
+  readonly pageHeading: Locator;
 
   // User profile details
   readonly userName: Locator;
@@ -87,6 +88,7 @@ export class DashboardPage {
     // Content area
     this.mainContent = page.getByTestId("main-content");
     this.pageContent = page.getByTestId("page-content");
+    this.pageHeading = page.locator("h1");
 
     // User profile details
     this.userName = page.getByTestId("user-name");
@@ -107,19 +109,6 @@ export class DashboardPage {
     await this.page.goto(`/${locale}/app/${page}`);
   }
 
-  /**
-   * Set authentication cookie (mock session)
-   */
-  async setAuthCookie() {
-    await this.page.context().addCookies([
-      {
-        name: "better-auth.session_token",
-        value: "mock-session-token",
-        domain: "localhost",
-        path: "/",
-      },
-    ]);
-  }
 
   /**
    * Check if desktop sidebar is visible

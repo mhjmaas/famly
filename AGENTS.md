@@ -37,6 +37,9 @@ pnpm test && pnpm run lint
 ## Code Style
 TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 
+## Important notes
+We use NextJS 16. In NextJS middleware.ts is replaced by proxy.ts
+
 <!-- TREE START -->
 ```
 .
@@ -99,10 +102,12 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │   │   │   │   │   │   ├── auth.router.ts
 │   │   │   │   │   │   ├── login.route.ts
 │   │   │   │   │   │   ├── me.route.ts
-│   │   │   │   │   │   └── register.route.ts
+│   │   │   │   │   │   ├── register.route.ts
+│   │   │   │   │   │   └── update-profile.route.ts
 │   │   │   │   │   └── validators
 │   │   │   │   │       ├── login.validator.ts
-│   │   │   │   │       └── register.validator.ts
+│   │   │   │   │       ├── register.validator.ts
+│   │   │   │   │       └── update-profile.validator.ts
 │   │   │   │   ├── chat
 │   │   │   │   │   ├── API.md
 │   │   │   │   │   ├── domain
@@ -561,7 +566,31 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   ├── app
 │       │   │   ├── [lang]
 │       │   │   │   ├── app
-│       │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── ai-settings
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── calendar
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── chat
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── diary
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── family
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── locations
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── memories
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── page.tsx
+│       │   │   │   │   ├── profile
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── rewards
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── settings
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   ├── shopping-lists
+│       │   │   │   │   │   └── page.tsx
+│       │   │   │   │   └── tasks
+│       │   │   │   │       └── page.tsx
 │       │   │   │   ├── get-started
 │       │   │   │   │   └── page.tsx
 │       │   │   │   ├── layout.tsx
@@ -575,6 +604,7 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   │   ├── auth
 │       │   │   │   ├── get-started-flow.tsx
 │       │   │   │   ├── registration-form.tsx
+│       │   │   │   ├── session-guard.tsx
 │       │   │   │   └── signin-form.tsx
 │       │   │   ├── landing
 │       │   │   │   ├── features.tsx
@@ -584,15 +614,30 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   │   │   ├── pricing.tsx
 │       │   │   │   └── privacy.tsx
 │       │   │   ├── language-selector.tsx
+│       │   │   ├── layouts
+│       │   │   │   └── dashboard-layout.tsx
+│       │   │   ├── profile
+│       │   │   │   ├── activity-timeline.tsx
+│       │   │   │   ├── preferences-card.tsx
+│       │   │   │   ├── profile-view.tsx
+│       │   │   │   └── user-profile-card.tsx
 │       │   │   ├── theme-provider.tsx
 │       │   │   ├── theme-toggle.tsx
 │       │   │   └── ui
 │       │   │       ├── alert.tsx
+│       │   │       ├── avatar.tsx
+│       │   │       ├── badge.tsx
 │       │   │       ├── button.tsx
 │       │   │       ├── card.tsx
+│       │   │       ├── collapsible.tsx
+│       │   │       ├── dialog.tsx
+│       │   │       ├── dropdown-menu.tsx
 │       │   │       ├── input.tsx
 │       │   │       ├── label.tsx
-│       │   │       └── progress.tsx
+│       │   │       ├── progress.tsx
+│       │   │       ├── scroll-area.tsx
+│       │   │       ├── select.tsx
+│       │   │       └── sheet.tsx
 │       │   ├── dictionaries
 │       │   │   ├── en-US.json
 │       │   │   ├── index.ts
@@ -601,22 +646,39 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   │   ├── config.ts
 │       │   │   └── types.ts
 │       │   ├── lib
+│       │   │   ├── activity-utils.ts
 │       │   │   ├── api-client.ts
+│       │   │   ├── auth-actions.ts
+│       │   │   ├── dal.ts
+│       │   │   ├── format-template.ts
+│       │   │   ├── server-cookies.ts
 │       │   │   └── utils.ts
 │       │   ├── proxy.ts
 │       │   ├── static-data
 │       │   │   └── features.ts
+│       │   ├── store
+│       │   │   ├── hooks.ts
+│       │   │   ├── provider.tsx
+│       │   │   ├── slices
+│       │   │   │   ├── karma.slice.ts
+│       │   │   │   └── user.slice.ts
+│       │   │   └── store.ts
 │       │   └── types
 │       ├── tests
 │       │   ├── e2e
 │       │   │   ├── accessibility
 │       │   │   │   └── a11y.spec.ts
+│       │   │   ├── app
+│       │   │   │   ├── dashboard-navigation.spec.ts
+│       │   │   │   └── profile.spec.ts
 │       │   │   ├── auth
 │       │   │   │   ├── protected-routes.spec.ts
 │       │   │   │   ├── registration.spec.ts
 │       │   │   │   └── signin.spec.ts
 │       │   │   ├── global-setup.ts
 │       │   │   ├── global-teardown.ts
+│       │   │   ├── helpers
+│       │   │   │   └── auth.ts
 │       │   │   ├── landing
 │       │   │   │   ├── features.spec.ts
 │       │   │   │   ├── footer.spec.ts
@@ -628,7 +690,9 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   │   │   └── privacy.spec.ts
 │       │   │   ├── pages
 │       │   │   │   ├── auth.page.ts
-│       │   │   │   └── landing.page.ts
+│       │   │   │   ├── dashboard.page.ts
+│       │   │   │   ├── landing.page.ts
+│       │   │   │   └── profile.page.ts
 │       │   │   ├── performance
 │       │   │   │   └── performance.spec.ts
 │       │   │   ├── responsive
@@ -739,11 +803,11 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
-│   │   └── add-dashboard-navigation
+│   │   └── add-profile-page
 │   │       ├── design.md
 │   │       ├── proposal.md
 │   │       ├── specs
-│   │       │   └── web-dashboard
+│   │       │   └── web-profile
 │   │       │       └── spec.md
 │   │       └── tasks.md
 │   ├── project.md
@@ -770,7 +834,9 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
 │       │   └── spec.md
 │       ├── tasks
 │       │   └── spec.md
-│       └── web-auth
+│       ├── web-auth
+│       │   └── spec.md
+│       └── web-dashboard
 │           └── spec.md
 ├── package.json
 ├── packages
@@ -889,6 +955,6 @@ TypeScript 5.6 (Node.js 20 runtime): Follow standard conventions
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-206 directories, 643 files
+225 directories, 687 files
 ```
 <!-- TREE END -->

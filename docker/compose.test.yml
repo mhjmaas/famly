@@ -33,7 +33,7 @@ services:
       NODE_ENV: test
       PORT: 3001
       BETTER_AUTH_SECRET: test_better_auth_secret_min_32_chars_required_here_for_testing
-      BETTER_AUTH_URL: http://localhost:3002
+      BETTER_AUTH_URL: http://localhost:3001
     working_dir: /app/apps/api
     command: pnpm dev
     volumes:

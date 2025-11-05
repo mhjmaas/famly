@@ -4,6 +4,7 @@ import { getAuth } from "../better-auth";
 import { createLoginRoute } from "./login.route";
 import { createMeRoute } from "./me.route";
 import { createRegisterRoute } from "./register.route";
+import { createUpdateProfileRoute } from "./update-profile.route";
 
 export function createAuthRouter(): Router {
   const router = Router();
@@ -12,6 +13,7 @@ export function createAuthRouter(): Router {
   router.use(createRegisterRoute());
   router.use(createLoginRoute());
   router.use(createMeRoute());
+  router.use(createUpdateProfileRoute());
 
   // Mount Better Auth handler for all other endpoints:
   // - GET /token - Get new JWT access token

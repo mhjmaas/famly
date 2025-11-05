@@ -30,10 +30,9 @@ Our core guiding principles are found in the `constitution.md` file.
 - TypeScript 5.6 on Node.js 20 + Express 4, better-auth (bearer + JWT plugins), MongoDB Node driver, Zod, Winston (003-add-family-member)
 - MongoDB (`famly` database via `infra/mongo/client`) (003-add-family-member)
 
-## Recent Changes
-- 003-add-family-member
-- 002-add-family-management: Added TypeScript 5.6 (Node.js 20 runtime) + Express, better-auth (bearer + JWT plugins), MongoDB driver, Zod, Winston
-- 001-add-user-auth: Added TypeScript 5.6 (Node.js 20 runtime)
+
+## Important notes
+We use NextJS 16. In NextJS middleware.ts is replaced by proxy.ts
 
 ## Project Structure
 
@@ -99,10 +98,12 @@ Our core guiding principles are found in the `constitution.md` file.
 │   │   │   │   │   │   ├── auth.router.ts
 │   │   │   │   │   │   ├── login.route.ts
 │   │   │   │   │   │   ├── me.route.ts
-│   │   │   │   │   │   └── register.route.ts
+│   │   │   │   │   │   ├── register.route.ts
+│   │   │   │   │   │   └── update-profile.route.ts
 │   │   │   │   │   └── validators
 │   │   │   │   │       ├── login.validator.ts
-│   │   │   │   │       └── register.validator.ts
+│   │   │   │   │       ├── register.validator.ts
+│   │   │   │   │       └── update-profile.validator.ts
 │   │   │   │   ├── chat
 │   │   │   │   │   ├── API.md
 │   │   │   │   │   ├── domain
@@ -576,6 +577,8 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   │   │   │   ├── memories
 │       │   │   │   │   │   └── page.tsx
 │       │   │   │   │   ├── page.tsx
+│       │   │   │   │   ├── profile
+│       │   │   │   │   │   └── page.tsx
 │       │   │   │   │   ├── rewards
 │       │   │   │   │   │   └── page.tsx
 │       │   │   │   │   ├── settings
@@ -597,6 +600,7 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   │   ├── auth
 │       │   │   │   ├── get-started-flow.tsx
 │       │   │   │   ├── registration-form.tsx
+│       │   │   │   ├── session-guard.tsx
 │       │   │   │   └── signin-form.tsx
 │       │   │   ├── landing
 │       │   │   │   ├── features.tsx
@@ -608,18 +612,27 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   │   ├── language-selector.tsx
 │       │   │   ├── layouts
 │       │   │   │   └── dashboard-layout.tsx
+│       │   │   ├── profile
+│       │   │   │   ├── activity-timeline.tsx
+│       │   │   │   ├── preferences-card.tsx
+│       │   │   │   ├── profile-view.tsx
+│       │   │   │   └── user-profile-card.tsx
 │       │   │   ├── theme-provider.tsx
 │       │   │   ├── theme-toggle.tsx
 │       │   │   └── ui
 │       │   │       ├── alert.tsx
+│       │   │       ├── avatar.tsx
 │       │   │       ├── badge.tsx
 │       │   │       ├── button.tsx
 │       │   │       ├── card.tsx
 │       │   │       ├── collapsible.tsx
+│       │   │       ├── dialog.tsx
+│       │   │       ├── dropdown-menu.tsx
 │       │   │       ├── input.tsx
 │       │   │       ├── label.tsx
 │       │   │       ├── progress.tsx
 │       │   │       ├── scroll-area.tsx
+│       │   │       ├── select.tsx
 │       │   │       └── sheet.tsx
 │       │   ├── dictionaries
 │       │   │   ├── en-US.json
@@ -629,24 +642,39 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   │   ├── config.ts
 │       │   │   └── types.ts
 │       │   ├── lib
+│       │   │   ├── activity-utils.ts
 │       │   │   ├── api-client.ts
+│       │   │   ├── auth-actions.ts
+│       │   │   ├── dal.ts
+│       │   │   ├── format-template.ts
+│       │   │   ├── server-cookies.ts
 │       │   │   └── utils.ts
 │       │   ├── proxy.ts
 │       │   ├── static-data
 │       │   │   └── features.ts
+│       │   ├── store
+│       │   │   ├── hooks.ts
+│       │   │   ├── provider.tsx
+│       │   │   ├── slices
+│       │   │   │   ├── karma.slice.ts
+│       │   │   │   └── user.slice.ts
+│       │   │   └── store.ts
 │       │   └── types
 │       ├── tests
 │       │   ├── e2e
 │       │   │   ├── accessibility
 │       │   │   │   └── a11y.spec.ts
 │       │   │   ├── app
-│       │   │   │   └── dashboard-navigation.spec.ts
+│       │   │   │   ├── dashboard-navigation.spec.ts
+│       │   │   │   └── profile.spec.ts
 │       │   │   ├── auth
 │       │   │   │   ├── protected-routes.spec.ts
 │       │   │   │   ├── registration.spec.ts
 │       │   │   │   └── signin.spec.ts
 │       │   │   ├── global-setup.ts
 │       │   │   ├── global-teardown.ts
+│       │   │   ├── helpers
+│       │   │   │   └── auth.ts
 │       │   │   ├── landing
 │       │   │   │   ├── features.spec.ts
 │       │   │   │   ├── footer.spec.ts
@@ -659,7 +687,8 @@ Our core guiding principles are found in the `constitution.md` file.
 │       │   │   ├── pages
 │       │   │   │   ├── auth.page.ts
 │       │   │   │   ├── dashboard.page.ts
-│       │   │   │   └── landing.page.ts
+│       │   │   │   ├── landing.page.ts
+│       │   │   │   └── profile.page.ts
 │       │   │   ├── performance
 │       │   │   │   └── performance.spec.ts
 │       │   │   ├── responsive
@@ -770,6 +799,13 @@ Our core guiding principles are found in the `constitution.md` file.
 ├── openspec
 │   ├── AGENTS.md
 │   ├── changes
+│   │   └── add-profile-page
+│   │       ├── design.md
+│   │       ├── proposal.md
+│   │       ├── specs
+│   │       │   └── web-profile
+│   │       │       └── spec.md
+│   │       └── tasks.md
 │   ├── project.md
 │   └── specs
 │       ├── activity-events
@@ -915,7 +951,7 @@ Our core guiding principles are found in the `constitution.md` file.
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-217 directories, 658 files
+225 directories, 687 files
 ```
 <!-- TREE END -->
 

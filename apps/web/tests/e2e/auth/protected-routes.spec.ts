@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { waitForPageLoad } from "../setup/test-helpers";
+import { authenticateUser } from "../helpers/auth";
 
 test.describe("Authentication - Protected Routes", () => {
   test("should redirect unauthenticated users from /app to /signin", async ({
@@ -17,15 +18,8 @@ test.describe("Authentication - Protected Routes", () => {
   });
 
   test("should allow authenticated users to access /app", async ({ page }) => {
-    // Set a session cookie to simulate authenticated state
-    await page.context().addCookies([
-      {
-        name: "better-auth.session_token",
-        value: "mock-session-token",
-        domain: "localhost",
-        path: "/",
-      },
-    ]);
+    // Authenticate with real user session
+    await authenticateUser(page);
 
     // Navigate to protected route
     await page.goto("/en-US/app");
@@ -34,7 +28,7 @@ test.describe("Authentication - Protected Routes", () => {
     // Should be able to access the app page
     expect(page.url()).toContain("/app");
     await expect(
-      page.getByRole("heading", { name: "App goes here" }),
+      page.getByRole("heading", { name: "Dashboard" }),
     ).toBeVisible();
   });
 
@@ -52,15 +46,8 @@ test.describe("Authentication - Protected Routes", () => {
   test("should redirect from signin to app when already authenticated", async ({
     page,
   }) => {
-    // Set a session cookie to simulate authenticated state
-    await page.context().addCookies([
-      {
-        name: "better-auth.session_token",
-        value: "mock-session-token",
-        domain: "localhost",
-        path: "/",
-      },
-    ]);
+    // Authenticate with real user session
+    await authenticateUser(page);
 
     // Try to access signin page
     await page.goto("/en-US/signin");
@@ -73,15 +60,8 @@ test.describe("Authentication - Protected Routes", () => {
   test("should redirect from get-started to app when already authenticated", async ({
     page,
   }) => {
-    // Set a session cookie to simulate authenticated state
-    await page.context().addCookies([
-      {
-        name: "better-auth.session_token",
-        value: "mock-session-token",
-        domain: "localhost",
-        path: "/",
-      },
-    ]);
+    // Authenticate with real user session
+    await authenticateUser(page);
 
     // Try to access get-started page
     await page.goto("/en-US/get-started");
@@ -106,15 +86,8 @@ test.describe("Authentication - Protected Routes", () => {
   test("should allow authenticated users to access landing page", async ({
     page,
   }) => {
-    // Set a session cookie to simulate authenticated state
-    await page.context().addCookies([
-      {
-        name: "better-auth.session_token",
-        value: "mock-session-token",
-        domain: "localhost",
-        path: "/",
-      },
-    ]);
+    // Authenticate with real user session
+    await authenticateUser(page);
 
     // Navigate to landing page
     await page.goto("/en-US");
