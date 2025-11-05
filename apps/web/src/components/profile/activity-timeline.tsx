@@ -1,12 +1,12 @@
-import { Sparkles, TrendingUp, TrendingDown } from "lucide-react";
-import type { ActivityEvent } from "@/lib/api-client";
+import { Sparkles, TrendingDown, TrendingUp } from "lucide-react";
 import {
-  groupEventsByDate,
   formatActivityTime,
-  getActivityEventIcon,
-  getActivityEventColor,
   getActivityEventBgColor,
+  getActivityEventColor,
+  getActivityEventIcon,
+  groupEventsByDate,
 } from "@/lib/activity-utils";
+import type { ActivityEvent } from "@/lib/api-client";
 
 interface ActivityTimelineProps {
   events: ActivityEvent[];
@@ -24,10 +24,20 @@ export function ActivityTimeline({ events, dict }: ActivityTimelineProps) {
     return (
       <div className="space-y-4" data-testid="activity-timeline">
         <div>
-          <h2 className="text-xl font-semibold" data-testid="activity-title">{dict.title}</h2>
-          <p className="text-sm text-muted-foreground" data-testid="activity-subtitle">{dict.subtitle}</p>
+          <h2 className="text-xl font-semibold" data-testid="activity-title">
+            {dict.title}
+          </h2>
+          <p
+            className="text-sm text-muted-foreground"
+            data-testid="activity-subtitle"
+          >
+            {dict.subtitle}
+          </p>
         </div>
-        <div className="text-center py-12 text-muted-foreground" data-testid="activity-no-events">
+        <div
+          className="text-center py-12 text-muted-foreground"
+          data-testid="activity-no-events"
+        >
           {dict.noEvents}
         </div>
       </div>
@@ -37,13 +47,20 @@ export function ActivityTimeline({ events, dict }: ActivityTimelineProps) {
   return (
     <div className="space-y-4" data-testid="activity-timeline">
       <div>
-        <h2 className="text-xl font-semibold" data-testid="activity-title">{dict.title}</h2>
-        <p className="text-sm text-muted-foreground" data-testid="activity-subtitle">{dict.subtitle}</p>
+        <h2 className="text-xl font-semibold" data-testid="activity-title">
+          {dict.title}
+        </h2>
+        <p
+          className="text-sm text-muted-foreground"
+          data-testid="activity-subtitle"
+        >
+          {dict.subtitle}
+        </p>
       </div>
 
       <div className="space-y-6">
-        {eventGroups.map((group, groupIndex) => (
-          <div key={groupIndex} className="space-y-3">
+        {eventGroups.map((group) => (
+          <div key={group.date} className="space-y-3">
             {/* Date Header */}
             <div className="flex items-center gap-3 py-2">
               <div className="h-px bg-border flex-1" />
@@ -98,15 +115,24 @@ export function ActivityTimeline({ events, dict }: ActivityTimelineProps) {
                               className={`flex items-center gap-2 font-semibold text-base ${colorClass}`}
                             >
                               {karma > 0 ? (
-                                <TrendingUp className="h-5 w-5" aria-hidden="true" />
+                                <TrendingUp
+                                  className="h-5 w-5"
+                                  aria-hidden="true"
+                                />
                               ) : (
-                                <TrendingDown className="h-5 w-5" aria-hidden="true" />
+                                <TrendingDown
+                                  className="h-5 w-5"
+                                  aria-hidden="true"
+                                />
                               )}
                               <span>
                                 {karma > 0 ? "+" : ""}
                                 {karma}
                               </span>
-                              <Sparkles className="h-4 w-4" aria-hidden="true" />
+                              <Sparkles
+                                className="h-4 w-4"
+                                aria-hidden="true"
+                              />
                             </div>
                           )}
                         </div>

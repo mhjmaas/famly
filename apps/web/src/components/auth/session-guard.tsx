@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { clearInvalidSession } from "@/lib/auth-actions";
 
 /**
@@ -27,8 +27,10 @@ export function SessionGuard({
     if (isProtectedRoute) {
       // Case 1: Has session cookie but no user data (invalid/expired session)
       if (hasSessionCookie && !hasUserData) {
-        console.warn("Invalid session detected on protected route, clearing and redirecting");
-        
+        console.warn(
+          "Invalid session detected on protected route, clearing and redirecting",
+        );
+
         // Clear the invalid session cookie
         clearInvalidSession().then(() => {
           // Redirect to signin
@@ -37,7 +39,9 @@ export function SessionGuard({
       }
       // Case 2: No session cookie at all (logged out or never logged in)
       else if (!hasSessionCookie && !hasUserData) {
-        console.warn("No session found on protected route, redirecting to signin");
+        console.warn(
+          "No session found on protected route, redirecting to signin",
+        );
         router.push(`/${locale}/signin`);
       }
     }

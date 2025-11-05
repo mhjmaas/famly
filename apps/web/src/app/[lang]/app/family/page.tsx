@@ -1,6 +1,6 @@
+import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
-import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 
 interface PageProps {
   params: Promise<{ lang: string }>;
@@ -12,7 +12,11 @@ export default async function FamilyPage({ params }: PageProps) {
   const dict = await getDictionary(lang);
 
   return (
-    <DashboardLayout dict={dict} lang={lang} title={dict.dashboard.pages.family.title}>
+    <DashboardLayout
+      dict={dict}
+      lang={lang}
+      title={dict.dashboard.pages.family.title}
+    >
       <div className="flex flex-col gap-4">
         <h1 className="text-3xl font-bold text-foreground">
           {dict.dashboard.pages.family.title}

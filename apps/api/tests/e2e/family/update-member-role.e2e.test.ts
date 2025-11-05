@@ -29,7 +29,8 @@ describe("PATCH /v1/families/:familyId/members/:memberId - Update Member Role", 
         })
         .expect(201);
 
-      const parentToken = parentRes.body.accessToken || parentRes.body.sessionToken;
+      const parentToken =
+        parentRes.body.accessToken || parentRes.body.sessionToken;
 
       const familyRes = await request(baseUrl)
         .post("/v1/families")
@@ -91,7 +92,8 @@ describe("PATCH /v1/families/:familyId/members/:memberId - Update Member Role", 
         })
         .expect(201);
 
-      const parent1Token = parent1Res.body.accessToken || parent1Res.body.sessionToken;
+      const parent1Token =
+        parent1Res.body.accessToken || parent1Res.body.sessionToken;
 
       const familyRes = await request(baseUrl)
         .post("/v1/families")
@@ -145,7 +147,8 @@ describe("PATCH /v1/families/:familyId/members/:memberId - Update Member Role", 
         })
         .expect(201);
 
-      const parentToken = parentRes.body.accessToken || parentRes.body.sessionToken;
+      const parentToken =
+        parentRes.body.accessToken || parentRes.body.sessionToken;
       const parentMemberId = parentRes.body.user?.id || parentRes.body.userId;
 
       const familyRes = await request(baseUrl)
@@ -185,7 +188,8 @@ describe("PATCH /v1/families/:familyId/members/:memberId - Update Member Role", 
         })
         .expect(201);
 
-      const parentToken = parentRes.body.accessToken || parentRes.body.sessionToken;
+      const parentToken =
+        parentRes.body.accessToken || parentRes.body.sessionToken;
 
       const familyRes = await request(baseUrl)
         .post("/v1/families")
@@ -217,7 +221,8 @@ describe("PATCH /v1/families/:familyId/members/:memberId - Update Member Role", 
         })
         .expect(200);
 
-      const childToken = childLoginRes.body.accessToken || childLoginRes.body.sessionToken;
+      const childToken =
+        childLoginRes.body.accessToken || childLoginRes.body.sessionToken;
 
       // 4. Attempt to update parent's role as child (should fail)
       const parentMemberId = parentRes.body.user?.id || parentRes.body.userId;
@@ -244,7 +249,8 @@ describe("PATCH /v1/families/:familyId/members/:memberId - Update Member Role", 
         })
         .expect(201);
 
-      const parentToken = parentRes.body.accessToken || parentRes.body.sessionToken;
+      const parentToken =
+        parentRes.body.accessToken || parentRes.body.sessionToken;
 
       const familyRes = await request(baseUrl)
         .post("/v1/families")
@@ -290,7 +296,8 @@ describe("PATCH /v1/families/:familyId/members/:memberId - Update Member Role", 
         })
         .expect(201);
 
-      const parentToken = parentRes.body.accessToken || parentRes.body.sessionToken;
+      const parentToken =
+        parentRes.body.accessToken || parentRes.body.sessionToken;
 
       // 2. Create family to get valid family context
       await request(baseUrl)
@@ -325,7 +332,8 @@ describe("PATCH /v1/families/:familyId/members/:memberId - Update Member Role", 
         })
         .expect(201);
 
-      const parentToken = parentRes.body.accessToken || parentRes.body.sessionToken;
+      const parentToken =
+        parentRes.body.accessToken || parentRes.body.sessionToken;
 
       const familyRes = await request(baseUrl)
         .post("/v1/families")
@@ -358,7 +366,8 @@ describe("PATCH /v1/families/:familyId/members/:memberId - Update Member Role", 
         })
         .expect(201);
 
-      const parent1Token = parent1Res.body.accessToken || parent1Res.body.sessionToken;
+      const parent1Token =
+        parent1Res.body.accessToken || parent1Res.body.sessionToken;
 
       const family1Res = await request(baseUrl)
         .post("/v1/families")
@@ -379,7 +388,8 @@ describe("PATCH /v1/families/:familyId/members/:memberId - Update Member Role", 
         })
         .expect(201);
 
-      const parent2Token = parent2Res.body.accessToken || parent2Res.body.sessionToken;
+      const parent2Token =
+        parent2Res.body.accessToken || parent2Res.body.sessionToken;
       const parent2Id = parent2Res.body.user?.id || parent2Res.body.userId;
 
       await request(baseUrl)

@@ -1,21 +1,24 @@
-"use client"
+"use client";
 
-import { useRef } from "react"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { LogoComponent } from "@/components/navigation/LogoComponent"
-import { NavigationItem } from "@/components/navigation/NavigationItem"
-import { SectionNavigation } from "@/components/navigation/SectionNavigation"
-import { UserProfileDisplay } from "@/components/profile/UserProfileDisplay"
-import type { NavigationSection, Dictionary, UserProfileData } from "@/types/dashboard-layout.types"
+import { LogoComponent } from "@/components/navigation/LogoComponent";
+import { NavigationItem } from "@/components/navigation/NavigationItem";
+import { SectionNavigation } from "@/components/navigation/SectionNavigation";
+import { UserProfileDisplay } from "@/components/profile/UserProfileDisplay";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import type {
+  Dictionary,
+  NavigationSection,
+  UserProfileData,
+} from "@/types/dashboard-layout.types";
 
 interface DesktopSidebarProps {
-  navigationSections: NavigationSection[]
-  expandedSections: string[]
-  pathWithoutLocale: string
-  dict: Dictionary
-  userProfile: UserProfileData
-  onToggleSection: (sectionName: string) => void
-  navScrollRef?: React.Ref<HTMLDivElement>
+  navigationSections: NavigationSection[];
+  expandedSections: string[];
+  pathWithoutLocale: string;
+  dict: Dictionary;
+  userProfile: UserProfileData;
+  onToggleSection: (sectionName: string) => void;
+  navScrollRef?: React.Ref<HTMLDivElement>;
 }
 
 export function DesktopSidebar({
@@ -47,7 +50,7 @@ export function DesktopSidebar({
                   isActive={section.href === pathWithoutLocale}
                   dict={dict}
                 />
-              )
+              );
             }
 
             return (
@@ -59,13 +62,16 @@ export function DesktopSidebar({
                 dict={dict}
                 onToggleSection={onToggleSection}
               />
-            )
+            );
           })}
         </nav>
       </ScrollArea>
 
       {/* User Info */}
-      <div className="p-4 border-t border-border" data-testid="desktop-user-profile">
+      <div
+        className="p-4 border-t border-border"
+        data-testid="desktop-user-profile"
+      >
         <UserProfileDisplay
           profile={userProfile}
           variant="full"
@@ -73,5 +79,5 @@ export function DesktopSidebar({
         />
       </div>
     </div>
-  )
+  );
 }

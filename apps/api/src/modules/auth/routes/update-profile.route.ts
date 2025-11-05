@@ -42,17 +42,19 @@ export function createUpdateProfileRoute(): Router {
         // Validate request body
         const validation = updateProfileSchema.safeParse(req.body);
         if (!validation.success) {
-          return res.status(400).json({
+          res.status(400).json({
             error: "Validation failed",
             details: validation.error.format(),
           });
+          return;
         }
 
         const { name, birthdate }: UpdateProfileRequest = validation.data;
 
         // User is guaranteed to exist due to authenticate middleware
         if (!req.user) {
-          return res.status(500).json({ error: "User not found in request" });
+          res.status(500).json({ error: "User not found in request" });
+          return;
         }
 
         const db = getDb();
@@ -71,7 +73,8 @@ export function createUpdateProfileRoute(): Router {
         );
 
         if (updateResult.matchedCount === 0) {
-          return res.status(404).json({ error: "User not found" });
+          res.status(404).json({ error: "User not found" });
+          return;
         }
 
         // Fetch updated user
@@ -80,7 +83,8 @@ export function createUpdateProfileRoute(): Router {
         });
 
         if (!updatedUser) {
-          return res.status(500).json({ error: "Failed to fetch updated user" });
+          res.status(500).json({ error: "Failed to fetch updated user" });
+          return;
         }
 
         res.status(200).json({

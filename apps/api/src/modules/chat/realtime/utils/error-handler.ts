@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { Logger } from "@lib/logger";
+import type { Logger } from "winston";
 import type { Ack } from "../types";
 
 /**
@@ -67,15 +67,12 @@ export function handleEventError(
   const errorMessage = error instanceof Error ? error.message : String(error);
   const errorStack = error instanceof Error ? error.stack : undefined;
 
-  logger.error(
-    {
-      correlationId,
-      ...context,
-      error: errorMessage,
-      stack: errorStack,
-    },
-    `Event handler error in ${context.eventName}`,
-  );
+  logger.error(`Event handler error in ${context.eventName}`, {
+    correlationId,
+    ...context,
+    error: errorMessage,
+    stack: errorStack,
+  });
 
   return createErrorAck(
     errorCode,

@@ -160,17 +160,19 @@ export async function authenticate(
     req.authType = hasBearerToken ? "bearer-session" : "cookie";
 
     // Attach user and session to request
+    // Note: sessionData.user includes custom fields from customSession plugin
+    const userData = sessionData.user as typeof sessionData.user & {
+      birthdate?: string | Date;
+    };
     req.user = {
-      id: sessionData.user.id,
-      email: sessionData.user.email,
-      name: sessionData.user.name,
-      birthdate: sessionData.user.birthdate
-        ? new Date(sessionData.user.birthdate)
-        : undefined,
-      emailVerified: sessionData.user.emailVerified,
-      image: sessionData.user.image ?? undefined,
-      createdAt: new Date(sessionData.user.createdAt),
-      updatedAt: new Date(sessionData.user.updatedAt),
+      id: userData.id,
+      email: userData.email,
+      name: userData.name,
+      birthdate: userData.birthdate ? new Date(userData.birthdate) : undefined,
+      emailVerified: userData.emailVerified,
+      image: userData.image ?? undefined,
+      createdAt: new Date(userData.createdAt),
+      updatedAt: new Date(userData.updatedAt),
       families: req.user?.families,
     };
 

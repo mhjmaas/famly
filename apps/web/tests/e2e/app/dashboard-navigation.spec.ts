@@ -192,7 +192,9 @@ test.describe("Dashboard - Navigation", () => {
     await dashboardPage.navSettings.click();
 
     // Settings nav item may navigate to profile or settings depending on implementation
-    await expect(page).toHaveURL(/\/app\/(settings|profile)/, { timeout: 5000 });
+    await expect(page).toHaveURL(/\/app\/(settings|profile)/, {
+      timeout: 5000,
+    });
   });
 
   test("should display user profile information", async ({ page }) => {
@@ -217,10 +219,11 @@ test.describe("Dashboard - Navigation", () => {
     await expect(page).toHaveURL(initialUrl, { timeout: 5000 });
 
     // Check for 'Soon' badge - target the badge specifically
-    const soonBadge = page.getByTestId("nav-calendar").locator('[data-slot="badge"]');
+    const soonBadge = page
+      .getByTestId("nav-calendar")
+      .locator('[data-slot="badge"]');
     await expect(soonBadge).toContainText("Soon");
   });
-
 
   test("should highlight active navigation item", async ({ page }) => {
     await setViewport(page, "desktop");
@@ -233,7 +236,6 @@ test.describe("Dashboard - Navigation", () => {
     const tasksNav = dashboardPage.navTasks;
     await expect(tasksNav).toHaveClass(/bg-primary/);
   });
-
 
   test("should display content area with proper padding", async ({ page }) => {
     await setViewport(page, "desktop");

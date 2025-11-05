@@ -19,7 +19,11 @@ export function groupEventsByDate(events: ActivityEvent[]): EventGroup[] {
     if (!groups.has(date)) {
       groups.set(date, []);
     }
-    groups.get(date)!.push(event);
+
+    const foundGroup = groups.get(date);
+    if (foundGroup) {
+      foundGroup.push(event);
+    }
   }
 
   return Array.from(groups.entries())
@@ -58,9 +62,7 @@ export function formatActivityTime(timestamp: string): string {
 /**
  * Returns the appropriate icon for an activity event type
  */
-export function getActivityEventIcon(
-  type: ActivityEvent["type"],
-): LucideIcon {
+export function getActivityEventIcon(type: ActivityEvent["type"]): LucideIcon {
   switch (type) {
     case "TASK":
       return CheckCircle2;

@@ -17,11 +17,16 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import type { Locale } from "@/i18n/config";
 import type { DictionarySection } from "@/i18n/types";
-import { ApiError, createFamily, getMe, getKarmaBalance } from "@/lib/api-client";
-import { RegistrationForm } from "./registration-form";
+import {
+  ApiError,
+  createFamily,
+  getKarmaBalance,
+  getMe,
+} from "@/lib/api-client";
 import { useAppDispatch } from "@/store/hooks";
-import { setUser } from "@/store/slices/user.slice";
 import { setKarma } from "@/store/slices/karma.slice";
+import { setUser } from "@/store/slices/user.slice";
+import { RegistrationForm } from "./registration-form";
 
 type DeploymentOption = "self-hosted" | "cloud" | null;
 
@@ -79,9 +84,11 @@ export function GetStartedFlow({
       if (meResponse.user.families?.[0]) {
         const karmaData = await getKarmaBalance(
           meResponse.user.families[0].familyId,
-          meResponse.user.id
+          meResponse.user.id,
         );
-        dispatch(setKarma({ userId: meResponse.user.id, balance: karmaData.balance }));
+        dispatch(
+          setKarma({ userId: meResponse.user.id, balance: karmaData.balance }),
+        );
       }
 
       // Redirect to app

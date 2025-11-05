@@ -1,0 +1,38 @@
+#!/bin/sh
+# Husky pre-commit hook
+# Run linting and unit tests before committing
+
+echo "🔍 Running pre-commit checks..."
+
+# Run linting for both API and Web
+echo "📋 Linting API..."
+pnpm run lint:api
+if [ $? -ne 0 ]; then
+  echo "❌ API linting failed. Please fix the issues before committing."
+  exit 1
+fi
+
+echo "📋 Linting Web..."
+pnpm run lint:web
+if [ $? -ne 0 ]; then
+  echo "❌ Web linting failed. Please fix the issues before committing."
+  exit 1
+fi
+
+# Run unit tests for API
+echo "🧪 Running API unit tests..."
+pnpm run test:unit:api
+if [ $? -ne 0 ]; then
+  echo "❌ API unit tests failed. Please fix the tests before committing."
+  exit 1
+fi
+
+# Run unit tests for Web
+echo "🧪 Running Web unit tests..."
+pnpm run test:unit:web
+if [ $? -ne 0 ]; then
+  echo "❌ Web unit tests failed. Please fix the tests before committing."
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed!"

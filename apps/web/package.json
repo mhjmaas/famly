@@ -7,6 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "biome check",
+    "lint:write": "biome check --write",
     "format": "biome format --write",
     "test:unit": "jest",
     "test:unit:watch": "jest --watch",

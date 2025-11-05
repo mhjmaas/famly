@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import type { ReactNode } from "react";
-import { cookies } from "next/headers";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { Geist, Geist_Mono } from "next/font/google";
+import { cookies } from "next/headers";
+import type { ReactNode } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
-import { StoreProvider } from "@/store/provider";
-import type { RootState } from "@/store/store";
-import { getUserWithKarma } from "@/lib/dal";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
+import { getUserWithKarma } from "@/lib/dal";
+import { StoreProvider } from "@/store/provider";
+import type { RootState } from "@/store/store";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

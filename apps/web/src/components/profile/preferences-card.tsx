@@ -1,6 +1,6 @@
-import { Card, CardHeader } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageSelector } from "@/components/language-selector";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Card, CardHeader } from "@/components/ui/card";
 import type { Locale } from "@/i18n/config";
 
 interface PreferencesCardProps {
@@ -19,11 +19,21 @@ export function PreferencesCard({ lang, dict }: PreferencesCardProps) {
   return (
     <Card data-testid="preferences-card">
       <CardHeader>
-        <h3 className="text-lg font-semibold" data-testid="preferences-title">{dict.title}</h3>
-        <p className="text-sm text-muted-foreground" data-testid="preferences-subtitle">{dict.subtitle}</p>
+        <h3 className="text-lg font-semibold" data-testid="preferences-title">
+          {dict.title}
+        </h3>
+        <p
+          className="text-sm text-muted-foreground"
+          data-testid="preferences-subtitle"
+        >
+          {dict.subtitle}
+        </p>
       </CardHeader>
       <div className="px-6 pb-6 space-y-4">
-        <div className="flex items-center justify-between" data-testid="preference-language">
+        <div
+          className="flex items-center justify-between"
+          data-testid="preference-language"
+        >
           <div>
             <p className="font-medium">{dict.language}</p>
             <p className="text-sm text-muted-foreground">
@@ -32,7 +42,10 @@ export function PreferencesCard({ lang, dict }: PreferencesCardProps) {
           </div>
           <LanguageSelector lang={lang} ariaLabel={dict.language} />
         </div>
-        <div className="flex items-center justify-between" data-testid="preference-theme">
+        <div
+          className="flex items-center justify-between"
+          data-testid="preference-theme"
+        >
           <div>
             <p className="font-medium">{dict.theme}</p>
             <p className="text-sm text-muted-foreground">

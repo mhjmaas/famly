@@ -1,16 +1,20 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
-import type { NavigationItem as NavigationItemType, NavigationSection, Dictionary } from "@/types/dashboard-layout.types"
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import type {
+  Dictionary,
+  NavigationItem as NavigationItemType,
+  NavigationSection,
+} from "@/types/dashboard-layout.types";
 
 interface NavigationItemProps {
-  item: NavigationItemType | NavigationSection
-  isSingleItem?: boolean
-  isActive: boolean
-  dict: Dictionary
-  onNavigate?: () => void
+  item: NavigationItemType | NavigationSection;
+  isSingleItem?: boolean;
+  isActive: boolean;
+  dict: Dictionary;
+  onNavigate?: () => void;
 }
 
 export function NavigationItem({
@@ -20,10 +24,16 @@ export function NavigationItem({
   dict,
   onNavigate,
 }: NavigationItemProps) {
-  const itemName = isSingleItem ? (item as NavigationItemType).name : (item as NavigationSection).name
-  const itemHref = isSingleItem ? (item as NavigationItemType).href : (item as NavigationSection).href
-  const isDisabled = isSingleItem ? (item as NavigationItemType).disabled : false
-  const testId = `nav-${itemName.replace(/([A-Z])/g, '-$1').toLowerCase()}`
+  const itemName = isSingleItem
+    ? (item as NavigationItemType).name
+    : (item as NavigationSection).name;
+  const itemHref = isSingleItem
+    ? (item as NavigationItemType).href
+    : (item as NavigationSection).href;
+  const isDisabled = isSingleItem
+    ? (item as NavigationItemType).disabled
+    : false;
+  const testId = `nav-${itemName.replace(/([A-Z])/g, "-$1").toLowerCase()}`;
 
   return (
     <Link
@@ -39,9 +49,15 @@ export function NavigationItem({
       )}
       data-testid={testId}
     >
-      {item.icon && <item.icon className={isSingleItem ? "h-5 w-5" : "h-4 w-4"} />}
+      {item.icon && (
+        <item.icon className={isSingleItem ? "h-5 w-5" : "h-4 w-4"} />
+      )}
       <span>{dict.dashboard.navigation[itemName]}</span>
-      {isDisabled && <Badge variant="secondary" className="ml-auto text-xs">{dict.dashboard.navigation.soon}</Badge>}
+      {isDisabled && (
+        <Badge variant="secondary" className="ml-auto text-xs">
+          {dict.dashboard.navigation.soon}
+        </Badge>
+      )}
     </Link>
-  )
+  );
 }

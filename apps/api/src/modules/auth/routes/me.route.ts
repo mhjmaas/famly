@@ -29,7 +29,8 @@ export function createMeRoute(): Router {
       try {
         // User is guaranteed to exist due to authenticate middleware
         if (!req.user) {
-          return res.status(500).json({ error: "User not found in request" });
+          res.status(500).json({ error: "User not found in request" });
+          return;
         }
 
         res.status(200).json({

@@ -1,0 +1,23 @@
+#!/bin/sh
+# Husky pre-push hook
+# Run builds before pushing to ensure code compiles
+
+echo "🏗️  Running pre-push checks..."
+
+# Build API
+echo "🔨 Building API..."
+pnpm run build:api
+if [ $? -ne 0 ]; then
+  echo "❌ API build failed. Please fix the build errors before pushing."
+  exit 1
+fi
+
+# Build Web
+echo "🔨 Building Web..."
+pnpm run build:web
+if [ $? -ne 0 ]; then
+  echo "❌ Web build failed. Please fix the build errors before pushing."
+  exit 1
+fi
+
+echo "✅ Pre-push checks passed!"

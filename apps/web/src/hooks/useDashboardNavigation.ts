@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { useMemo } from "react"
-import type { NavigationSection } from "@/types/dashboard-layout.types"
 import {
-  CheckSquare,
-  Home,
-  MessageSquare,
-  Settings,
-  Users,
-  ShoppingCart,
-  Gift,
-  Calendar,
-  MapPin,
-  Camera,
   BookOpen,
   Bot,
-} from "lucide-react"
+  Calendar,
+  Camera,
+  CheckSquare,
+  Gift,
+  Home,
+  MapPin,
+  MessageSquare,
+  Settings,
+  ShoppingCart,
+  Users,
+} from "lucide-react";
+import { useMemo } from "react";
+import type { NavigationSection } from "@/types/dashboard-layout.types";
 
 const createNavigationSections = (): NavigationSection[] => [
   {
@@ -31,9 +31,18 @@ const createNavigationSections = (): NavigationSection[] => [
     items: [
       { name: "members", href: "/app/family", icon: Users },
       { name: "tasks", href: "/app/tasks", icon: CheckSquare },
-      { name: "shoppingLists", href: "/app/shopping-lists", icon: ShoppingCart },
+      {
+        name: "shoppingLists",
+        href: "/app/shopping-lists",
+        icon: ShoppingCart,
+      },
       { name: "rewards", href: "/app/rewards", icon: Gift },
-      { name: "calendar", href: "/app/calendar", icon: Calendar, disabled: true },
+      {
+        name: "calendar",
+        href: "/app/calendar",
+        icon: Calendar,
+        disabled: true,
+      },
       { name: "locations", href: "/app/locations", icon: MapPin },
       { name: "memories", href: "/app/memories", icon: Camera },
       { name: "aiSettings", href: "/app/ai-settings", icon: Bot },
@@ -49,10 +58,10 @@ const createNavigationSections = (): NavigationSection[] => [
       { name: "settings", href: "/app/profile", icon: Settings },
     ],
   },
-]
+];
 
 export function useDashboardNavigation() {
-  const navigationSections = useMemo(() => createNavigationSections(), [])
+  const navigationSections = useMemo(() => createNavigationSections(), []);
 
   const validSectionNames = useMemo(
     () =>
@@ -60,10 +69,10 @@ export function useDashboardNavigation() {
         .filter((section) => section.type === "section")
         .map((section) => section.name as string),
     [navigationSections],
-  )
+  );
 
   return {
     navigationSections,
     validSectionNames,
-  }
+  };
 }

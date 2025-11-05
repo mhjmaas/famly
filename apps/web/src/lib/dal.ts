@@ -8,20 +8,20 @@
  */
 
 import "server-only";
-import { cache } from "react";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { cache } from "react";
 import { i18n, type Locale } from "@/i18n/config";
 import {
-  getMe,
-  getKarmaBalance,
-  getActivityEvents,
-  ApiError,
-  type MeResponse,
-  type KarmaBalance,
   type ActivityEvent,
-  type UserProfile
+  ApiError,
+  getActivityEvents,
+  getKarmaBalance,
+  getMe,
+  type KarmaBalance,
+  type MeResponse,
+  type UserProfile,
 } from "./api-client";
 import { getCookieHeader } from "./server-cookies";
 
@@ -125,7 +125,7 @@ export const getUserKarma = cache(async (locale?: Locale): Promise<number> => {
     const karmaData: KarmaBalance = await getKarmaBalance(
       user.families[0].familyId,
       user.id,
-      cookieHeader
+      cookieHeader,
     );
 
     return karmaData.balance;
@@ -175,7 +175,7 @@ export const getUserActivityEvents = cache(
       console.warn("Failed to fetch activity events:", error);
       return [];
     }
-  }
+  },
 );
 
 /**
@@ -187,9 +187,7 @@ export const getUserActivityEvents = cache(
  * @returns Object containing user profile and karma balance
  */
 export const getUserWithKarma = cache(
-  async (
-    locale?: Locale,
-  ): Promise<{ user: UserProfile; karma: number }> => {
+  async (locale?: Locale): Promise<{ user: UserProfile; karma: number }> => {
     // Fetch both in parallel for better performance
     const [user, karma] = await Promise.all([
       getUser(locale),
@@ -197,5 +195,5 @@ export const getUserWithKarma = cache(
     ]);
 
     return { user, karma };
-  }
+  },
 );

@@ -1,7 +1,12 @@
-import { makeStore, type RootState, type AppStore, type AppDispatch } from "@/store/store";
-import { setUser } from "@/store/slices/user.slice";
-import { setKarma } from "@/store/slices/karma.slice";
 import type { UserProfile } from "@/lib/api-client";
+import { setKarma } from "@/store/slices/karma.slice";
+import { setUser } from "@/store/slices/user.slice";
+import {
+  type AppDispatch,
+  type AppStore,
+  makeStore,
+  type RootState,
+} from "@/store/store";
 
 describe("store", () => {
   let store: AppStore;
