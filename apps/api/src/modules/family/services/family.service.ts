@@ -10,6 +10,7 @@ import {
   type CreateFamilyResponse,
   FamilyRole,
   type ListFamiliesResponse,
+  type UpdateMemberRoleResponse,
 } from "../domain/family";
 import {
   normalizeFamilyName,
@@ -340,6 +341,85 @@ export class FamilyService {
         familyId: familyId.toString(),
         removedBy: removedBy.toString(),
         memberId: memberId.toString(),
+        error,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Update a member's role in a family
+   *
+   * @param familyId - The ID of the family
+   * @param memberId - The ID of the member whose role will be updated
+   * @param role - The new role (Parent or Child)
+   * @returns Update member role response
+   */
+  async updateMemberRole(
+    familyId: ObjectId,
+    memberId: ObjectId,
+    role: FamilyRole,
+  ): Promise<UpdateMemberRoleResponse> {
+    try {
+      logger.info("Updating member role", {
+        familyId: familyId.toString(),
+        memberId: memberId.toString(),
+        role,
+      });
+
+      // 1. Verify family exists
+      const family = await this.familyRepository.findById(familyId);
+      if (!family) {
+        throw HttpError.notFound("Family not found");
+      }
+
+      // 2. Verify membership exists
+      const membership = await this.membershipRepository.findByFamilyAndUser(
+        familyId,
+        memberId,
+      );
+
+      if (!membership) {
+        throw HttpError.notFound("Member not found");
+      }
+
+      // 3. Update the role
+      const updated = await this.membershipRepository.updateMemberRole(
+        familyId,
+        memberId,
+        role,
+      );
+
+      if (!updated) {
+        throw HttpError.notFound("Member not found");
+      }
+
+      // 4. Fetch updated membership to get updatedAt timestamp
+      const updatedMembership =
+        await this.membershipRepository.findByFamilyAndUser(familyId, memberId);
+
+      if (!updatedMembership) {
+        throw HttpError.internalError("Failed to fetch updated membership");
+      }
+
+      logger.info("Member role updated successfully", {
+        familyId: familyId.toString(),
+        memberId: memberId.toString(),
+        role,
+      });
+
+      // 5. Return response
+      return {
+        memberId: memberId.toString(),
+        familyId: familyId.toString(),
+        role: updatedMembership.role,
+        updatedAt: updatedMembership.updatedAt.toISOString(),
+      };
+    } catch (error) {
+      logger.error("Failed to update member role", {
+        familyId: familyId.toString(),
+        memberId: memberId.toString(),
+        role,
         error,
       });
       throw error;

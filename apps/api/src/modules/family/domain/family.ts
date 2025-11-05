@@ -83,3 +83,20 @@ export interface AddFamilyMemberResult {
   linkedAt: string; // ISO 8601 timestamp
   addedBy: string;
 }
+
+/**
+ * Update member role input payload
+ */
+export interface UpdateMemberRoleRequest {
+  role: FamilyRole;
+}
+
+/**
+ * Update member role response
+ */
+export interface UpdateMemberRoleResponse {
+  memberId: string;
+  familyId: string;
+  role: FamilyRole;
+  updatedAt: string; // ISO 8601 timestamp
+}
