@@ -611,8 +611,17 @@ We use NextJS 16. In NextJS middleware.ts is replaced by proxy.ts
 │       │   │   │   └── privacy.tsx
 │       │   │   ├── language-selector.tsx
 │       │   │   ├── layouts
-│       │   │   │   └── dashboard-layout.tsx
+│       │   │   │   ├── dashboard-layout.tsx
+│       │   │   │   └── sidebars
+│       │   │   │       ├── DesktopSidebar.tsx
+│       │   │   │       ├── MobileSidebar.tsx
+│       │   │   │       └── TabletSidebar.tsx
+│       │   │   ├── navigation
+│       │   │   │   ├── LogoComponent.tsx
+│       │   │   │   ├── NavigationItem.tsx
+│       │   │   │   └── SectionNavigation.tsx
 │       │   │   ├── profile
+│       │   │   │   ├── UserProfileDisplay.tsx
 │       │   │   │   ├── activity-timeline.tsx
 │       │   │   │   ├── preferences-card.tsx
 │       │   │   │   ├── profile-view.tsx
@@ -638,6 +647,9 @@ We use NextJS 16. In NextJS middleware.ts is replaced by proxy.ts
 │       │   │   ├── en-US.json
 │       │   │   ├── index.ts
 │       │   │   └── nl-NL.json
+│       │   ├── hooks
+│       │   │   ├── useDashboardNavigation.ts
+│       │   │   └── useUserProfile.ts
 │       │   ├── i18n
 │       │   │   ├── config.ts
 │       │   │   └── types.ts
@@ -660,6 +672,7 @@ We use NextJS 16. In NextJS middleware.ts is replaced by proxy.ts
 │       │   │   │   └── user.slice.ts
 │       │   │   └── store.ts
 │       │   └── types
+│       │       └── dashboard-layout.types.ts
 │       ├── tests
 │       │   ├── e2e
 │       │   │   ├── accessibility
@@ -951,7 +964,7 @@ We use NextJS 16. In NextJS middleware.ts is replaced by proxy.ts
     ├── update-claude-tree.sh
     └── update-codex-tree.sh
 
-225 directories, 687 files
+228 directories, 697 files
 ```
 <!-- TREE END -->
 
