@@ -339,7 +339,88 @@
       },
       "family": {
         "title": "Gezinsleden",
-        "placeholder": "Pagina Gezinsleden verschijnt binnenkort"
+        "description": "Beheer je gezinsleden",
+        "addMember": "Lid Toevoegen",
+        "emptyState": {
+          "title": "Nog geen gezinsleden",
+          "description": "Klik op 'Lid Toevoegen' om te beginnen"
+        },
+        "memberCard": {
+          "yearsOld": "jaar oud",
+          "karma": "Karma",
+          "roleParent": "Ouder",
+          "roleChild": "Kind",
+          "actions": {
+            "giveKarma": "Karma Geven",
+            "editRole": "Rol Bewerken",
+            "remove": "Verwijderen"
+          }
+        },
+        "editRoleDialog": {
+          "title": "Lidrol Bewerken",
+          "description": "Werk de rol van het lid in het gezin bij",
+          "currentRole": "Huidige rol",
+          "newRole": "Nieuwe rol",
+          "cancel": "Annuleren",
+          "save": "Wijzigingen Opslaan",
+          "success": "Lidrol succesvol bijgewerkt"
+        },
+        "removeDialog": {
+          "title": "Gezinslid Verwijderen",
+          "description": "Weet je zeker dat je {name} uit het gezin wilt verwijderen?",
+          "warning": "Deze actie kan niet ongedaan worden gemaakt.",
+          "lastParentError": "Kan de laatste ouder niet uit het gezin verwijderen",
+          "cancel": "Annuleren",
+          "confirm": "Lid Verwijderen",
+          "success": "Lid succesvol verwijderd"
+        },
+        "giveKarmaDialog": {
+          "title": "Karma Geven aan {name}",
+          "description": "Ken karma toe of trek karma af met een bericht waarin je uitlegt waarom",
+          "karmaType": "Karma Type",
+          "positive": "Positief (Toekennen)",
+          "negative": "Negatief (Aftrekken)",
+          "amount": "Bedrag",
+          "amountPlaceholder": "Voer karma bedrag in",
+          "message": "Bericht",
+          "messagePlaceholder": "Leg uit waarom je karma geeft of aftrekt...",
+          "messageRequired": "Bericht is verplicht",
+          "cancel": "Annuleren",
+          "submit": "Karma Geven",
+          "success": "Karma succesvol bijgewerkt"
+        },
+        "addMemberDialog": {
+          "title": "Gezinslid Toevoegen",
+          "description": "Voeg een nieuw lid toe aan je gezin",
+          "email": "E-mail",
+          "emailPlaceholder": "Voer e-mail in",
+          "password": "Wachtwoord",
+          "passwordPlaceholder": "Voer wachtwoord in",
+          "name": "Naam",
+          "namePlaceholder": "Voer naam in",
+          "birthdate": "Geboortedatum",
+          "birthdatePlaceholder": "Selecteer geboortedatum",
+          "role": "Rol",
+          "roleParent": "Ouder",
+          "roleChild": "Kind",
+          "cancel": "Annuleren",
+          "submit": "Lid Toevoegen",
+          "success": "Lid succesvol toegevoegd"
+        },
+        "errors": {
+          "loadFailed": "Kan gezinsleden niet laden",
+          "updateRoleFailed": "Kan lidrol niet bijwerken",
+          "removeFailed": "Kan lid niet verwijderen",
+          "grantKarmaFailed": "Kan karma niet toekennen",
+          "addMemberFailed": "Kan lid niet toevoegen",
+          "unauthorized": "Je hebt geen toestemming om deze actie uit te voeren",
+          "notFound": "Lid niet gevonden",
+          "invalidAmount": "Bedrag moet tussen 1 en 100.000 zijn",
+          "invalidEmail": "Voer een geldig e-mailadres in",
+          "passwordTooShort": "Wachtwoord moet minimaal 8 tekens zijn",
+          "invalidDate": "Voer een geldige datum in",
+          "futureDateNotAllowed": "Geboortedatum kan niet in de toekomst liggen"
+        }
       },
       "tasks": {
         "title": "Taken",

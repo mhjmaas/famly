@@ -101,7 +101,11 @@ test.describe("Landing Page - Full Page Integration", () => {
 
     // Should be able to activate links with Enter
     await page.keyboard.press("Enter");
-    await page.waitForTimeout(500);
+    // Wait for navigation to features section
+    await page.waitForFunction(
+      () => window.location.hash === "#features",
+      { timeout: 5000 }
+    );
     expect(page.url()).toContain("#features");
   });
 
@@ -114,18 +118,18 @@ test.describe("Landing Page - Full Page Integration", () => {
       }
     });
 
-    // Scroll through all sections
+    // Scroll through all sections - use simple timeout for scroll animations
     await landingPage.scrollToSection("features");
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300);
 
     await landingPage.scrollToSection("privacy");
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300);
 
     await landingPage.scrollToSection("pricing");
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300);
 
     await landingPage.scrollToSection("footer");
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300);
 
     // Should have no console errors
     expect(errors).toHaveLength(0);

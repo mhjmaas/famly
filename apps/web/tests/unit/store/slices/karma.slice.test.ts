@@ -151,7 +151,7 @@ describe("karma.slice", () => {
       mockedGetKarmaBalance.mockResolvedValueOnce({
         userId,
         familyId,
-        balance: mockBalance,
+        totalKarma: mockBalance,
         lastUpdated: "2024-01-01T00:00:00Z",
       });
 
@@ -261,7 +261,7 @@ describe("karma.slice", () => {
       mockedGetKarmaBalance.mockResolvedValueOnce({
         userId,
         familyId,
-        balance: 200,
+        totalKarma: 200,
         lastUpdated: "2024-01-01T00:00:00Z",
       });
       await store.dispatch(fetchKarma({ familyId, userId }));

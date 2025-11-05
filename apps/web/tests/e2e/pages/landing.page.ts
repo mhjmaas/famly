@@ -101,8 +101,12 @@ export class LandingPage {
    */
   async scrollPage(pixels: number) {
     await this.page.evaluate((px) => window.scrollTo(0, px), pixels);
-    // Wait for scroll effects to apply
-    await this.page.waitForTimeout(300);
+    // Wait for scroll to complete
+    await this.page.waitForFunction(
+      (targetPixels) => window.scrollY >= targetPixels - 10,
+      pixels,
+      { timeout: 5000 }
+    );
   }
 
   /**
@@ -127,7 +131,13 @@ export class LandingPage {
     };
 
     await buttonMap[theme].click();
-    await this.page.waitForTimeout(100); // Wait for theme to apply
+    // Wait for theme class to be applied to document
+    const isDark = theme === "dark";
+    await this.page.waitForFunction(
+      (dark) => document.documentElement.classList.contains(dark ? "dark" : "light"),
+      isDark,
+      { timeout: 2000 }
+    );
   }
 
   /**

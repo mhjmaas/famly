@@ -128,7 +128,7 @@ export const getUserKarma = cache(async (locale?: Locale): Promise<number> => {
       cookieHeader,
     );
 
-    return karmaData.balance;
+    return karmaData.totalKarma;
   } catch (error) {
     // Re-throw redirect errors (not actual errors)
     if (isRedirectError(error)) {

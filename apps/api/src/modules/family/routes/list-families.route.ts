@@ -1,3 +1,4 @@
+import { getDb } from "@infra/mongo/client";
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
@@ -64,7 +65,6 @@ export function createListFamiliesRoute(): Router {
           await membershipRepository.findByFamilyIds(familyIds);
 
         // Fetch user details for all members to include name and birthdate
-        const { getDb } = await import("@infra/mongo/client");
         const db = getDb();
         const usersCollection = db.collection("user");
 

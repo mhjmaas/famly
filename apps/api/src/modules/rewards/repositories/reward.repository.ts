@@ -1,5 +1,6 @@
 import { logger } from "@lib/logger";
-import type { MongoClient, ObjectId } from "mongodb";
+import type { MongoClient } from "mongodb";
+import { ObjectId } from "mongodb";
 import type {
   CreateRewardInput,
   Reward,
@@ -30,7 +31,7 @@ export class RewardRepository {
     const collection = this.getCollection();
 
     const reward: Reward = {
-      _id: new (await import("mongodb")).ObjectId(),
+      _id: new ObjectId(),
       familyId,
       name: input.name,
       description: input.description,

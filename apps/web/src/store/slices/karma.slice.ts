@@ -24,7 +24,7 @@ export const fetchKarma = createAsyncThunk(
   "karma/fetchKarma",
   async ({ familyId, userId }: { familyId: string; userId: string }) => {
     const response = await getKarmaBalance(familyId, userId);
-    return { userId, balance: response.balance };
+    return { userId, balance: response.totalKarma };
   },
 );
 

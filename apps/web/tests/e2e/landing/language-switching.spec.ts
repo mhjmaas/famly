@@ -11,7 +11,11 @@ test.describe("Landing Page - Language Switching", () => {
     await waitForPageLoad(page);
     // Scroll to footer to ensure language selector is visible
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(100);
+    // Wait for scroll to complete
+    await page.waitForFunction(
+      () => window.scrollY >= document.body.scrollHeight - window.innerHeight - 100,
+      { timeout: 5000 }
+    );
   });
 
   test("should switch from English to Dutch", async ({ page }) => {
@@ -59,7 +63,16 @@ test.describe("Landing Page - Language Switching", () => {
     // Scroll to features section (not at footer)
     const featuresSection = landingPage.featuresSection;
     await featuresSection.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(100);
+    // Wait for scroll to complete
+    await page.waitForFunction(
+      () => {
+        const element = document.querySelector('[data-section="features"]') || document.querySelector('section:nth-of-type(2)');
+        if (!element) return false;
+        const rect = element.getBoundingClientRect();
+        return rect.top <= window.innerHeight && rect.bottom >= 0;
+      },
+      { timeout: 5000 }
+    );
 
     // Verify we're scrolled down
     const scrollPosition = await page.evaluate(() => window.scrollY);
