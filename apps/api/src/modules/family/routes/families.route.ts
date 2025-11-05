@@ -10,6 +10,7 @@ import { createCreateFamilyRoute } from "./create-family.route";
 import { createGetMemberKarmaRoute } from "./get-member-karma.route";
 import { createListFamiliesRoute } from "./list-families.route";
 import { createRemoveMemberRoute } from "./remove-member.route";
+import { createUpdateMemberRoleRoute } from "./update-member-role.route";
 
 /**
  * Create families router with all family-related endpoints
@@ -18,6 +19,7 @@ import { createRemoveMemberRoute } from "./remove-member.route";
  * - POST /v1/families - Create a new family
  * - GET /v1/families - List families for authenticated user
  * - POST /v1/families/:familyId/members - Add a member to a family
+ * - PATCH /v1/families/:familyId/members/:memberId - Update a member's role
  * - DELETE /v1/families/:familyId/members/:memberId - Remove a member from a family
  * - GET/POST /v1/families/:familyId/diary/* - Family diary endpoints (mounted via createFamilyDiaryRouter)
  * - GET/POST /v1/families/:familyId/tasks/* - Tasks endpoints (mounted via createTasksRouter)
@@ -31,6 +33,7 @@ export function createFamiliesRouter(): Router {
   router.use(createCreateFamilyRoute());
   router.use(createListFamiliesRoute());
   router.use(createAddMemberRoute());
+  router.use(createUpdateMemberRoleRoute());
   router.use(createRemoveMemberRoute());
 
   // Mount family diary router for /:familyId/diary/* paths

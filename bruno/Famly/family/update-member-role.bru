@@ -1,0 +1,27 @@
+meta {
+  name: update member role
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/v1/families/:currentFamilyId/members/:otherUserId
+  body: json
+  auth: inherit
+}
+
+params:path {
+  currentFamilyId: {{currentFamilyId}}
+  otherUserId: {{otherUserId}}
+}
+
+body:json {
+  {
+    "role": "Parent"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

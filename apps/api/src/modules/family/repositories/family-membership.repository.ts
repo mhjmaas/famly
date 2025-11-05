@@ -121,6 +121,26 @@ export class FamilyMembershipRepository {
   }
 
   /**
+   * Update a member's role in a family
+   *
+   * @param familyId - The family ID
+   * @param userId - The user ID
+   * @param role - The new role (Parent or Child)
+   * @returns True if updated, false if not found
+   */
+  async updateMemberRole(
+    familyId: ObjectId,
+    userId: ObjectId,
+    role: FamilyRole,
+  ): Promise<boolean> {
+    const result = await this.collection.updateOne(
+      { familyId, userId },
+      { $set: { role, updatedAt: new Date() } },
+    );
+    return result.modifiedCount > 0;
+  }
+
+  /**
    * Delete a membership
    *
    * @param familyId - The family ID
