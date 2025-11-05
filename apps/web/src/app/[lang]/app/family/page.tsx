@@ -1,3 +1,4 @@
+import { FamilyView } from "@/components/family/family-view";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
@@ -17,14 +18,7 @@ export default async function FamilyPage({ params }: PageProps) {
       lang={lang}
       title={dict.dashboard.pages.family.title}
     >
-      <div className="flex flex-col gap-4">
-        <h1 className="text-3xl font-bold text-foreground">
-          {dict.dashboard.pages.family.title}
-        </h1>
-        <p className="text-muted-foreground">
-          {dict.dashboard.pages.family.placeholder}
-        </p>
-      </div>
+      <FamilyView dict={dict.dashboard} />
     </DashboardLayout>
   );
 }

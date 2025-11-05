@@ -7,7 +7,7 @@ This file lists the ordered implementation tasks for building the family managem
 ## Phase 1: API Client & Types (Foundation)
 
 ### Task 1.1: Add family API types to api-client.ts
-- [ ] **Description**: Define TypeScript interfaces for all family-related API requests and responses.
+- [x] **Description**: Define TypeScript interfaces for all family-related API requests and responses.
 
 **Files to modify**:
 - `apps/web/src/lib/api-client.ts`
@@ -29,7 +29,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 1.2: Implement family API client functions
-- [ ] **Description**: Add API client functions for all family operations.
+- [x] **Description**: Add API client functions for all family operations.
 
 **Files to modify**:
 - `apps/web/src/lib/api-client.ts`
@@ -53,7 +53,7 @@ This file lists the ordered implementation tasks for building the family managem
 ## Phase 2: Redux Slice (State Management)
 
 ### Task 2.1: Create family slice with initial state and reducers
-- [ ] **Description**: Set up the Redux slice for managing family state.
+- [x] **Description**: Set up the Redux slice for managing family state.
 
 **Files to create**:
 - `apps/web/src/store/slices/family.slice.ts`
@@ -74,7 +74,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 2.2: Implement fetchFamilies async thunk
-- [ ] **Description**: Add async thunk for fetching families with members.
+- [x] **Description**: Add async thunk for fetching families with members.
 
 **Files to modify**:
 - `apps/web/src/store/slices/family.slice.ts`
@@ -97,7 +97,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 2.3: Implement updateMemberRole async thunk
-- [ ] **Description**: Add async thunk for updating a member's role.
+- [x] **Description**: Add async thunk for updating a member's role.
 
 **Files to modify**:
 - `apps/web/src/store/slices/family.slice.ts`
@@ -119,7 +119,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 2.4: Implement removeFamilyMember async thunk
-- [ ] **Description**: Add async thunk for removing a member from the family.
+- [x] **Description**: Add async thunk for removing a member from the family.
 
 **Files to modify**:
 - `apps/web/src/store/slices/family.slice.ts`
@@ -141,7 +141,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 2.5: Implement grantMemberKarma async thunk
-- [ ] **Description**: Add async thunk for granting or deducting karma.
+- [x] **Description**: Add async thunk for granting or deducting karma.
 
 **Files to modify**:
 - `apps/web/src/store/slices/family.slice.ts`
@@ -163,7 +163,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 2.6: Implement addFamilyMember async thunk
-- [ ] **Description**: Add async thunk for adding a new family member.
+- [x] **Description**: Add async thunk for adding a new family member.
 
 **Files to modify**:
 - `apps/web/src/store/slices/family.slice.ts`
@@ -185,7 +185,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 2.7: Add family selectors
-- [ ] **Description**: Create selector functions for accessing family state.
+- [x] **Description**: Create selector functions for accessing family state.
 
 **Files to modify**:
 - `apps/web/src/store/slices/family.slice.ts`
@@ -207,7 +207,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 2.8: Register family reducer in store
-- [ ] **Description**: Add the family slice to the Redux store.
+- [x] **Description**: Add the family slice to the Redux store.
 
 **Files to modify**:
 - `apps/web/src/store/store.ts`
@@ -227,7 +227,7 @@ This file lists the ordered implementation tasks for building the family managem
 ## Phase 3: Unit Tests for Redux Slice
 
 ### Task 3.1: Write unit tests for family slice reducers
-- [ ] **Description**: Test synchronous reducers and initial state.
+- [x] **Description**: Test synchronous reducers and initial state.
 
 **Files to create**:
 - `apps/web/tests/unit/store/family.slice.test.ts`
@@ -247,7 +247,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 3.2: Write unit tests for fetchFamilies thunk
-- [ ] **Description**: Test the fetchFamilies async thunk.
+- [x] **Description**: Test the fetchFamilies async thunk.
 
 **Files to modify**:
 - `apps/web/tests/unit/store/family.slice.test.ts`
@@ -267,7 +267,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 3.3: Write unit tests for updateMemberRole thunk
-- [ ] **Description**: Test the updateMemberRole async thunk.
+- [x] **Description**: Test the updateMemberRole async thunk.
 
 **Files to modify**:
 - `apps/web/tests/unit/store/family.slice.test.ts`
@@ -287,7 +287,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 3.4: Write unit tests for removeFamilyMember thunk
-- [ ] **Description**: Test the removeFamilyMember async thunk.
+- [x] **Description**: Test the removeFamilyMember async thunk.
 
 **Files to modify**:
 - `apps/web/tests/unit/store/family.slice.test.ts`
@@ -307,7 +307,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 3.5: Write unit tests for grantMemberKarma thunk
-- [ ] **Description**: Test the grantMemberKarma async thunk.
+- [x] **Description**: Test the grantMemberKarma async thunk.
 
 **Files to modify**:
 - `apps/web/tests/unit/store/family.slice.test.ts`
@@ -329,7 +329,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 3.6: Write unit tests for addFamilyMember thunk
-- [ ] **Description**: Test the addFamilyMember async thunk.
+- [x] **Description**: Test the addFamilyMember async thunk.
 
 **Files to modify**:
 - `apps/web/tests/unit/store/family.slice.test.ts`
@@ -350,7 +350,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 3.7: Write unit tests for family selectors
-- [ ] **Description**: Test all selector functions.
+- [x] **Description**: Test all selector functions.
 
 **Files to modify**:
 - `apps/web/tests/unit/store/family.slice.test.ts`
@@ -375,7 +375,7 @@ This file lists the ordered implementation tasks for building the family managem
 ## Phase 4: UI Components
 
 ### Task 4.1: Create utility functions for member display
-- [ ] **Description**: Implement helper functions used across components.
+- [x] **Description**: Implement helper functions used across components.
 
 **Files to create**:
 - `apps/web/src/lib/family-utils.ts`
@@ -400,7 +400,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 4.2: Create FamilyMemberCard component
-- [ ] **Description**: Build the member card component that displays individual member details.
+- [x] **Description**: Build the member card component that displays individual member details.
 
 **Files to create**:
 - `apps/web/src/components/family/family-member-card.tsx`
@@ -430,7 +430,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 4.3: Create EditRoleDialog component
-- [ ] **Description**: Build the dialog for editing a member's role.
+- [x] **Description**: Build the dialog for editing a member's role.
 
 **Files to create**:
 - `apps/web/src/components/family/edit-role-dialog.tsx`
@@ -459,7 +459,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 4.4: Create RemoveMemberDialog component
-- [ ] **Description**: Build the AlertDialog for confirming member removal.
+- [x] **Description**: Build the AlertDialog for confirming member removal.
 
 **Files to create**:
 - `apps/web/src/components/family/remove-member-dialog.tsx`
@@ -487,7 +487,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 4.5: Create GiveKarmaDialog component
-- [ ] **Description**: Build the dialog for granting/deducting karma.
+- [x] **Description**: Build the dialog for granting/deducting karma.
 
 **Files to create**:
 - `apps/web/src/components/family/give-karma-dialog.tsx`
@@ -521,7 +521,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 4.6: Create AddMemberDialog component
-- [ ] **Description**: Build the dialog for adding a new family member.
+- [x] **Description**: Build the dialog for adding a new family member.
 
 **Files to create**:
 - `apps/web/src/components/family/add-member-dialog.tsx`
@@ -558,7 +558,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 4.7: Create FamilyView component
-- [ ] **Description**: Build the main view component that orchestrates all family functionality.
+- [x] **Description**: Build the main view component that orchestrates all family functionality.
 
 **Files to create**:
 - `apps/web/src/components/family/family-view.tsx`
@@ -597,7 +597,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 4.8: Update FamilyPage to use FamilyView
-- [ ] **Description**: Connect the FamilyView component to the page.
+- [x] **Description**: Connect the FamilyView component to the page.
 
 **Files to modify**:
 - `apps/web/src/app/[lang]/app/family/page.tsx`
@@ -622,7 +622,7 @@ This file lists the ordered implementation tasks for building the family managem
 ## Phase 5: Internationalization
 
 ### Task 5.1: Add English dictionary entries
-- [ ] **Description**: Add all family page text to the English dictionary.
+- [x] **Description**: Add all family page text to the English dictionary.
 
 **Files to modify**:
 - `apps/web/src/dictionaries/en-US.json`
@@ -640,7 +640,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 5.2: Add Dutch dictionary entries
-- [ ] **Description**: Add all family page text to the Dutch dictionary.
+- [x] **Description**: Add all family page text to the Dutch dictionary.
 
 **Files to modify**:
 - `apps/web/src/dictionaries/nl-NL.json`
@@ -660,7 +660,7 @@ This file lists the ordered implementation tasks for building the family managem
 ## Phase 6: E2E Tests
 
 ### Task 6.1: Create E2E test setup helpers
-- [ ] **Description**: Set up test data factories and helper functions for family E2E tests.
+- [x] **Description**: Set up test data factories and helper functions for family E2E tests.
 
 **Files to modify**:
 - `apps/web/tests/e2e/helpers/test-data-factory.ts` (or create if doesn't exist)
@@ -680,7 +680,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 6.2: Write E2E test for displaying family members
-- [ ] **Description**: Test that family members are displayed correctly.
+- [x] **Description**: Test that family members are displayed correctly.
 
 **Files to create**:
 - `apps/web/tests/e2e/app/family.spec.ts`
@@ -701,7 +701,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 6.3: Write E2E test for updating member role
-- [ ] **Description**: Test the role update workflow.
+- [x] **Description**: Test the role update workflow.
 
 **Files to modify**:
 - `apps/web/tests/e2e/app/family.spec.ts`
@@ -726,7 +726,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 6.4: Write E2E test for role update authorization
-- [ ] **Description**: Test that child users cannot update roles.
+- [x] **Description**: Test that child users cannot update roles.
 
 **Files to modify**:
 - `apps/web/tests/e2e/app/family.spec.ts`
@@ -745,7 +745,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 6.5: Write E2E test for removing member
-- [ ] **Description**: Test the member removal workflow.
+- [x] **Description**: Test the member removal workflow.
 
 **Files to modify**:
 - `apps/web/tests/e2e/app/family.spec.ts`
@@ -771,7 +771,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 6.6: Write E2E test for last parent protection
-- [ ] **Description**: Test that the last parent cannot be removed.
+- [x] **Description**: Test that the last parent cannot be removed.
 
 **Files to modify**:
 - `apps/web/tests/e2e/app/family.spec.ts`
@@ -794,7 +794,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 6.7: Write E2E test for granting positive karma
-- [ ] **Description**: Test the karma grant workflow with positive amount.
+- [x] **Description**: Test the karma grant workflow with positive amount.
 
 **Files to modify**:
 - `apps/web/tests/e2e/app/family.spec.ts`
@@ -822,7 +822,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 6.8: Write E2E test for deducting karma (negative)
-- [ ] **Description**: Test the karma deduction workflow with negative amount.
+- [x] **Description**: Test the karma deduction workflow with negative amount.
 
 **Files to modify**:
 - `apps/web/tests/e2e/app/family.spec.ts`
@@ -849,7 +849,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 6.9: Write E2E test for karma validation errors
-- [ ] **Description**: Test that karma validation works correctly.
+- [x] **Description**: Test that karma validation works correctly.
 
 **Files to modify**:
 - `apps/web/tests/e2e/app/family.spec.ts`
@@ -871,7 +871,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 6.10: Write E2E test for adding new member
-- [ ] **Description**: Test the add member workflow.
+- [x] **Description**: Test the add member workflow.
 
 **Files to modify**:
 - `apps/web/tests/e2e/app/family.spec.ts`
@@ -901,7 +901,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 6.11: Write E2E test for add member validation errors
-- [ ] **Description**: Test that add member form validation works correctly.
+- [x] **Description**: Test that add member form validation works correctly.
 
 **Files to modify**:
 - `apps/web/tests/e2e/app/family.spec.ts`
@@ -926,7 +926,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 6.12: Write E2E test for empty state
-- [ ] **Description**: Test the empty state display when no members.
+- [x] **Description**: Test the empty state display when no members.
 
 **Files to modify**:
 - `apps/web/tests/e2e/app/family.spec.ts`
@@ -947,7 +947,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 6.13: Write E2E test for responsive layouts
-- [ ] **Description**: Test that the grid layout adapts to different viewport sizes.
+- [x] **Description**: Test that the grid layout adapts to different viewport sizes.
 
 **Files to modify**:
 - `apps/web/tests/e2e/app/family.spec.ts`
@@ -979,7 +979,7 @@ This file lists the ordered implementation tasks for building the family managem
 ## Phase 7: Final Integration & Validation
 
 ### Task 7.1: Manual testing of complete workflow
-- [ ] **Description**: Perform manual QA of the entire family page feature.
+- [x] **Description**: Perform manual QA of the entire family page feature.
 
 **Steps**:
 1. Log in as parent user
@@ -1006,7 +1006,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 7.2: Run all unit tests
-- [ ] **Description**: Verify all unit tests pass.
+- [x] **Description**: Verify all unit tests pass.
 
 **Steps**:
 1. Run `pnpm test:unit` in the web app
@@ -1022,7 +1022,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 7.3: Run all E2E tests
-- [ ] **Description**: Verify all E2E tests pass.
+- [x] **Description**: Verify all E2E tests pass.
 
 **Steps**:
 1. Run `pnpm test:e2e:web` to execute Playwright tests
@@ -1039,7 +1039,7 @@ This file lists the ordered implementation tasks for building the family managem
 ---
 
 ### Task 7.4: Code review and refinement
-- [ ] **Description**: Review all code for quality, consistency, and best practices.
+- [x] **Description**: Review all code for quality, consistency, and best practices.
 
 **Steps**:
 1. Review all new files for code style consistency

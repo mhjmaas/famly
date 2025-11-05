@@ -7,6 +7,27 @@
  * - Server-side: Pass cookie string via options.cookie parameter
  */
 
+import type {
+  ActivityEvent,
+  AddFamilyMemberRequest,
+  AddFamilyMemberResponse,
+  ApiClientOptions,
+  AuthResponse,
+  CreateFamilyRequest,
+  CreateFamilyResponse,
+  FamilyWithMembers,
+  GrantKarmaRequest,
+  GrantKarmaResponse,
+  KarmaBalance,
+  LoginRequest,
+  MeResponse,
+  RegisterRequest,
+  UpdateMemberRoleRequest,
+  UpdateMemberRoleResponse,
+  UpdateProfileRequest,
+  UpdateProfileResponse,
+} from "@/types/api.types";
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export class ApiError extends Error {
@@ -25,17 +46,6 @@ export class ApiError extends Error {
   isAuthError(): boolean {
     return this.status === 401;
   }
-}
-
-interface ApiClientOptions {
-  method?: string;
-  body?: unknown;
-  headers?: Record<string, string>;
-  /**
-   * Server-side only: Cookie string to forward (from Next.js cookies())
-   * Format: "name1=value1; name2=value2"
-   */
-  cookie?: string;
 }
 
 async function apiClient<T>(
@@ -100,40 +110,11 @@ async function apiClient<T>(
 
 // Authentication API
 
-export interface LoginRequest {
-  email: string;
-  password: string;
-  rememberMe?: boolean;
-}
-
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  name: string;
-  birthdate: string; // ISO 8601 format YYYY-MM-DD
-}
-
-export interface AuthResponse {
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    birthdate?: string;
-    emailVerified: boolean;
-    createdAt: string;
-    updatedAt: string;
-    families?: Array<{
-      id: string;
-      name: string;
-      role: string;
-    }>;
-  };
-  session: {
-    expiresAt: string;
-  };
-  accessToken: string | null;
-  sessionToken: string | null;
-}
+export type {
+  AuthResponse,
+  LoginRequest,
+  RegisterRequest,
+} from "@/types/api.types";
 
 export async function login(data: LoginRequest): Promise<AuthResponse> {
   return apiClient<AuthResponse>("/v1/auth/login", {
@@ -151,17 +132,18 @@ export async function register(data: RegisterRequest): Promise<AuthResponse> {
 
 // Family API
 
-export interface CreateFamilyRequest {
-  name: string;
-}
-
-export interface CreateFamilyResponse {
-  id: string;
-  name: string;
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export type {
+  AddFamilyMemberRequest,
+  AddFamilyMemberResponse,
+  CreateFamilyRequest,
+  CreateFamilyResponse,
+  FamilyMember,
+  FamilyWithMembers,
+  GrantKarmaRequest,
+  GrantKarmaResponse,
+  UpdateMemberRoleRequest,
+  UpdateMemberRoleResponse,
+} from "@/types/api.types";
 
 export async function createFamily(
   data: CreateFamilyRequest,
@@ -172,40 +154,67 @@ export async function createFamily(
   });
 }
 
+export async function getFamilies(): Promise<FamilyWithMembers[]> {
+  return apiClient<FamilyWithMembers[]>("/v1/families");
+}
+
+export async function updateMemberRole(
+  familyId: string,
+  memberId: string,
+  data: UpdateMemberRoleRequest,
+): Promise<UpdateMemberRoleResponse> {
+  return apiClient<UpdateMemberRoleResponse>(
+    `/v1/families/${familyId}/members/${memberId}`,
+    {
+      method: "PATCH",
+      body: data,
+    },
+  );
+}
+
+export async function removeMember(
+  familyId: string,
+  memberId: string,
+): Promise<void> {
+  return apiClient<void>(`/v1/families/${familyId}/members/${memberId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function grantKarma(
+  familyId: string,
+  data: GrantKarmaRequest,
+): Promise<GrantKarmaResponse> {
+  return apiClient<GrantKarmaResponse>(`/v1/families/${familyId}/karma/grant`, {
+    method: "POST",
+    body: data,
+  });
+}
+
+export async function addFamilyMember(
+  familyId: string,
+  data: AddFamilyMemberRequest,
+): Promise<AddFamilyMemberResponse> {
+  return apiClient<AddFamilyMemberResponse>(
+    `/v1/families/${familyId}/members`,
+    {
+      method: "POST",
+      body: data,
+    },
+  );
+}
+
 // Profile API
 
-export interface UserProfile {
-  id: string;
-  email: string;
-  name: string;
-  birthdate?: string;
-  emailVerified: boolean;
-  createdAt: string;
-  updatedAt: string;
-  families: Array<{
-    familyId: string;
-    name: string;
-    role: string;
-    linkedAt: string;
-  }>;
-}
-
-export interface MeResponse {
-  user: UserProfile;
-  authType: "cookie" | "bearer-jwt" | "bearer-session";
-}
+export type {
+  MeResponse,
+  UpdateProfileRequest,
+  UpdateProfileResponse,
+  UserProfile,
+} from "@/types/api.types";
 
 export async function getMe(cookie?: string): Promise<MeResponse> {
   return apiClient<MeResponse>("/v1/auth/me", { cookie });
-}
-
-export interface UpdateProfileRequest {
-  name: string;
-  birthdate: string; // ISO 8601 format YYYY-MM-DD
-}
-
-export interface UpdateProfileResponse {
-  user: UserProfile;
 }
 
 export async function updateProfile(
@@ -219,12 +228,7 @@ export async function updateProfile(
 
 // Karma API
 
-export interface KarmaBalance {
-  userId: string;
-  familyId: string;
-  balance: number;
-  lastUpdated: string;
-}
+export type { KarmaBalance } from "@/types/api.types";
 
 export async function getKarmaBalance(
   familyId: string,
@@ -239,26 +243,10 @@ export async function getKarmaBalance(
 
 // Activity Events API
 
-export type ActivityEventType =
-  | "TASK"
-  | "SHOPPING_LIST"
-  | "KARMA"
-  | "RECIPE"
-  | "DIARY"
-  | "FAMILY_DIARY"
-  | "REWARD";
-
-export interface ActivityEvent {
-  id: string;
-  userId: string;
-  type: ActivityEventType;
-  title: string;
-  description: string | null;
-  metadata: {
-    karma?: number;
-  } | null;
-  createdAt: string; // ISO 8601 timestamp
-}
+export type {
+  ActivityEvent,
+  ActivityEventType,
+} from "@/types/api.types";
 
 export async function getActivityEvents(
   startDate?: string,

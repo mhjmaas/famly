@@ -87,7 +87,10 @@ export function GetStartedFlow({
           meResponse.user.id,
         );
         dispatch(
-          setKarma({ userId: meResponse.user.id, balance: karmaData.balance }),
+          setKarma({
+            userId: meResponse.user.id,
+            balance: karmaData.totalKarma,
+          }),
         );
       }
 

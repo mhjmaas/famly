@@ -1,5 +1,6 @@
 import { logger } from "@lib/logger";
-import type { MongoClient, ObjectId } from "mongodb";
+import type { MongoClient } from "mongodb";
+import { ObjectId } from "mongodb";
 import type { ClaimStatus, RewardClaim } from "../domain/reward";
 
 /**
@@ -26,7 +27,7 @@ export class ClaimRepository {
     const collection = this.getCollection();
 
     const claim: RewardClaim = {
-      _id: new (await import("mongodb")).ObjectId(),
+      _id: new ObjectId(),
       rewardId,
       familyId,
       memberId,

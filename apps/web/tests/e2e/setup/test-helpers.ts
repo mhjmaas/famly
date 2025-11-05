@@ -43,8 +43,17 @@ export async function scrollIntoView(
     }
   }, selector);
 
-  // Wait for scroll to complete
-  await page.waitForTimeout(500);
+  // Wait for scroll to complete by checking if element is in viewport
+  await page.waitForFunction(
+    (sel) => {
+      const element = document.querySelector(sel);
+      if (!element) return false;
+      const rect = element.getBoundingClientRect();
+      return rect.top <= window.innerHeight && rect.bottom >= 0;
+    },
+    selector,
+    { timeout: 5000 }
+  );
 }
 
 /**

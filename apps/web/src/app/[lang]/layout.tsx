@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
 import { getUserWithKarma } from "@/lib/dal";
@@ -106,6 +107,7 @@ export default async function LocaleLayout({
         <StoreProvider preloadedState={preloadedState}>
           <ThemeProvider defaultTheme="system" storageKey="famly-theme">
             {children}
+            <Toaster />
           </ThemeProvider>
         </StoreProvider>
       </body>

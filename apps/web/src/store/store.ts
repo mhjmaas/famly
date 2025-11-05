@@ -1,4 +1,5 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import familyReducer from "./slices/family.slice";
 import karmaReducer from "./slices/karma.slice";
 import userReducer from "./slices/user.slice";
 
@@ -6,6 +7,7 @@ import userReducer from "./slices/user.slice";
 const rootReducer = combineReducers({
   user: userReducer,
   karma: karmaReducer,
+  family: familyReducer,
 });
 
 // Infer RootState from the rootReducer

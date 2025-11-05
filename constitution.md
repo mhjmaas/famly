@@ -131,6 +131,7 @@ Projects MUST maintain:
 - Type safety where applicable (TypeScript strict mode enabled)
 - Zero linting errors at merge time
 - Automated formatting on save or pre-commit
+- E2E tests in the Web apps use pageObjects and use getByTestId for locators.
 
 ### Documentation Requirements
 

@@ -339,7 +339,88 @@
       },
       "family": {
         "title": "Family Members",
-        "placeholder": "Family members page coming soon"
+        "description": "Manage your family members",
+        "addMember": "Add Member",
+        "emptyState": {
+          "title": "No family members yet",
+          "description": "Click 'Add Member' to get started"
+        },
+        "memberCard": {
+          "yearsOld": "years old",
+          "karma": "Karma",
+          "roleParent": "Parent",
+          "roleChild": "Child",
+          "actions": {
+            "giveKarma": "Give Karma",
+            "editRole": "Edit Role",
+            "remove": "Remove"
+          }
+        },
+        "editRoleDialog": {
+          "title": "Edit Member Role",
+          "description": "Update the member's role in the family",
+          "currentRole": "Current role",
+          "newRole": "New role",
+          "cancel": "Cancel",
+          "save": "Save Changes",
+          "success": "Member role updated successfully"
+        },
+        "removeDialog": {
+          "title": "Remove Family Member",
+          "description": "Are you sure you want to remove {name} from the family?",
+          "warning": "This action cannot be undone.",
+          "lastParentError": "Cannot remove the last parent from the family",
+          "cancel": "Cancel",
+          "confirm": "Remove Member",
+          "success": "Member removed successfully"
+        },
+        "giveKarmaDialog": {
+          "title": "Give Karma to {name}",
+          "description": "Award or deduct karma with a message explaining why",
+          "karmaType": "Karma Type",
+          "positive": "Positive (Award)",
+          "negative": "Negative (Deduct)",
+          "amount": "Amount",
+          "amountPlaceholder": "Enter karma amount",
+          "message": "Message",
+          "messagePlaceholder": "Explain why you're giving or deducting karma...",
+          "messageRequired": "Message is required",
+          "cancel": "Cancel",
+          "submit": "Give Karma",
+          "success": "Karma updated successfully"
+        },
+        "addMemberDialog": {
+          "title": "Add Family Member",
+          "description": "Add a new member to your family",
+          "email": "Email",
+          "emailPlaceholder": "Enter email",
+          "password": "Password",
+          "passwordPlaceholder": "Enter password",
+          "name": "Name",
+          "namePlaceholder": "Enter name",
+          "birthdate": "Birthdate",
+          "birthdatePlaceholder": "Select birthdate",
+          "role": "Role",
+          "roleParent": "Parent",
+          "roleChild": "Child",
+          "cancel": "Cancel",
+          "submit": "Add Member",
+          "success": "Member added successfully"
+        },
+        "errors": {
+          "loadFailed": "Failed to load family members",
+          "updateRoleFailed": "Failed to update member role",
+          "removeFailed": "Failed to remove member",
+          "grantKarmaFailed": "Failed to grant karma",
+          "addMemberFailed": "Failed to add member",
+          "unauthorized": "You don't have permission to perform this action",
+          "notFound": "Member not found",
+          "invalidAmount": "Amount must be between 1 and 100,000",
+          "invalidEmail": "Please enter a valid email address",
+          "passwordTooShort": "Password must be at least 8 characters",
+          "invalidDate": "Please enter a valid date",
+          "futureDateNotAllowed": "Birthdate cannot be in the future"
+        }
       },
       "tasks": {
         "title": "Tasks",

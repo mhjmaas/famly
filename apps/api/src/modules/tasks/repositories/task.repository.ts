@@ -1,6 +1,6 @@
 import { getDb } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
-import { type Collection, ObjectId } from "mongodb";
+import { type Collection, ObjectId, type UpdateFilter } from "mongodb";
 import type { CreateTaskInput, Task, UpdateTaskInput } from "../domain/task";
 
 export class TaskRepository {
@@ -126,29 +126,43 @@ export class TaskRepository {
     taskId: ObjectId,
     input: UpdateTaskInput,
   ): Promise<Task | null> {
-    const updateFields: Partial<Task> = {
+    const setFields: Partial<Task> = {
       updatedAt: new Date(),
     };
 
+    const unsetFields: Partial<Record<keyof Task, "" | 1>> = {};
+
     if (input.name !== undefined) {
-      updateFields.name = input.name;
+      setFields.name = input.name;
     }
     if (input.description !== undefined) {
-      updateFields.description = input.description;
+      setFields.description = input.description;
     }
     if (input.dueDate !== undefined) {
-      updateFields.dueDate = input.dueDate;
+      setFields.dueDate = input.dueDate;
     }
     if (input.assignment !== undefined) {
-      updateFields.assignment = input.assignment;
+      setFields.assignment = input.assignment;
     }
     if (input.completedAt !== undefined) {
-      updateFields.completedAt = input.completedAt ?? undefined;
+      if (input.completedAt === null) {
+        unsetFields.completedAt = "";
+      } else {
+        setFields.completedAt = input.completedAt;
+      }
+    }
+
+    const updateDoc: UpdateFilter<Task> = {
+      $set: setFields,
+    };
+
+    if (Object.keys(unsetFields).length > 0) {
+      updateDoc.$unset = unsetFields;
     }
 
     const result = await this.collection.findOneAndUpdate(
       { _id: taskId },
-      { $set: updateFields },
+      updateDoc,
       { returnDocument: "after" },
     );
 

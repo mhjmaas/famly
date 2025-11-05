@@ -27,6 +27,7 @@ import type { Locale } from "@/i18n/config";
 import type { UserProfile } from "@/lib/api-client";
 import { updateProfile } from "@/lib/api-client";
 import { clearInvalidSession } from "@/lib/auth-actions";
+import { calculateAge } from "@/lib/family-utils";
 import { useAppDispatch } from "@/store/hooks";
 import { clearUser, setUser } from "@/store/slices/user.slice";
 
@@ -40,21 +41,6 @@ interface UserProfileCardProps {
     child: string;
   };
   lang: Locale;
-}
-
-function calculateAge(birthdate?: string): number | null {
-  if (!birthdate) return null;
-
-  const today = new Date();
-  const birth = new Date(birthdate);
-  let age = today.getFullYear() - birth.getFullYear();
-  const monthDiff = today.getMonth() - birth.getMonth();
-
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--;
-  }
-
-  return age;
 }
 
 function getInitials(name: string): string {
@@ -91,7 +77,7 @@ export function UserProfileCard({
 }: UserProfileCardProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const age = calculateAge(user.birthdate);
+  const age = user.birthdate ? calculateAge(user.birthdate) : null;
   const role = user.families?.[0]?.role || "Parent";
 
   const [isEditOpen, setIsEditOpen] = useState(false);
