@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev:web": "pnpm --filter web dev",
     "build:web": "pnpm --filter web build",
+    "test:web": "pnpm --filter web test:e2e",
     "lint:web": "pnpm --filter web lint",
     "format:web": "pnpm --filter web format",
     "dev:api": "pnpm --filter api dev",

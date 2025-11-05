@@ -15,7 +15,7 @@ export default async function ProfilePage({ params }: PageProps) {
 
   // Fetch activity events using DAL
   // The DAL handles authentication verification and error handling
-  const activityEvents = await getUserActivityEvents();
+  const activityEvents = await getUserActivityEvents(undefined, undefined, lang);
 
   return (
     <DashboardLayout dict={dict} lang={lang} title={dict.profile.title}>

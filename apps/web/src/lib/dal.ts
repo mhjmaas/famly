@@ -12,6 +12,7 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { i18n, type Locale } from "@/i18n/config";
 import {
   getMe,
   getKarmaBalance,
@@ -24,6 +25,21 @@ import {
 } from "./api-client";
 import { getCookieHeader } from "./server-cookies";
 
+const supportedLocales = new Set<string>(i18n.locales);
+
+function normalizeLocale(locale?: string): Locale {
+  if (locale && supportedLocales.has(locale)) {
+    return locale as Locale;
+  }
+
+  return i18n.defaultLocale as Locale;
+}
+
+function getSigninPath(locale?: string) {
+  const normalized = normalizeLocale(locale);
+  return `/${normalized}/signin`;
+}
+
 /**
  * Session verification
  *
@@ -33,12 +49,12 @@ import { getCookieHeader } from "./server-cookies";
  * @returns Session information including cookie value
  * @throws Redirects to signin if no valid session
  */
-export const verifySession = cache(async () => {
+export const verifySession = cache(async (locale?: Locale) => {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get("better-auth.session_token");
 
   if (!sessionCookie?.value) {
-    redirect("/en-US/signin");
+    redirect(getSigninPath(locale));
   }
 
   return {
@@ -66,9 +82,9 @@ const getCookieHeaderCached = cache(async () => {
  * @returns User profile data
  * @throws Redirects to signin if authentication fails
  */
-export const getUser = cache(async (): Promise<UserProfile> => {
+export const getUser = cache(async (locale?: Locale): Promise<UserProfile> => {
   // Verify session exists (optimistic check)
-  await verifySession();
+  await verifySession(locale);
 
   try {
     // Forward cookies to backend for validation
@@ -80,7 +96,7 @@ export const getUser = cache(async (): Promise<UserProfile> => {
     // Handle authentication errors
     if (error instanceof ApiError && error.isAuthError()) {
       // Session cookie exists but is invalid - redirect to signin
-      redirect("/en-US/signin");
+      redirect(getSigninPath(locale));
     }
 
     // Re-throw other errors
@@ -96,9 +112,9 @@ export const getUser = cache(async (): Promise<UserProfile> => {
  *
  * @returns Karma balance number
  */
-export const getUserKarma = cache(async (): Promise<number> => {
+export const getUserKarma = cache(async (locale?: Locale): Promise<number> => {
   try {
-    const user = await getUser();
+    const user = await getUser(locale);
 
     // User must have at least one family to have karma
     if (!user.families?.[0]?.familyId) {
@@ -136,10 +152,14 @@ export const getUserKarma = cache(async (): Promise<number> => {
  * @returns Array of activity events
  */
 export const getUserActivityEvents = cache(
-  async (startDate?: string, endDate?: string): Promise<ActivityEvent[]> => {
+  async (
+    startDate?: string,
+    endDate?: string,
+    locale?: Locale,
+  ): Promise<ActivityEvent[]> => {
     try {
       // Verify session exists
-      await verifySession();
+      await verifySession(locale);
 
       const cookieHeader = await getCookieHeaderCached();
       const events = await getActivityEvents(startDate, endDate, cookieHeader);
@@ -167,11 +187,13 @@ export const getUserActivityEvents = cache(
  * @returns Object containing user profile and karma balance
  */
 export const getUserWithKarma = cache(
-  async (): Promise<{ user: UserProfile; karma: number }> => {
+  async (
+    locale?: Locale,
+  ): Promise<{ user: UserProfile; karma: number }> => {
     // Fetch both in parallel for better performance
     const [user, karma] = await Promise.all([
-      getUser(),
-      getUserKarma(),
+      getUser(locale),
+      getUserKarma(locale),
     ]);
 
     return { user, karma };

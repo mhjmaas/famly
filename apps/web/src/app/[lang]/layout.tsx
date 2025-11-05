@@ -68,7 +68,7 @@ export default async function LocaleLayout({
     try {
       // Use DAL to fetch user and karma data
       // The DAL handles caching, cookie forwarding, and error handling
-      const { user, karma } = await getUserWithKarma();
+      const { user, karma } = await getUserWithKarma(lang);
 
       // Preload Redux state
       preloadedState = {

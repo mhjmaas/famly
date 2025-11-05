@@ -28,6 +28,7 @@ import { updateProfile } from "@/lib/api-client";
 import { useAppDispatch } from "@/store/hooks";
 import { clearUser, setUser } from "@/store/slices/user.slice";
 import { clearInvalidSession } from "@/lib/auth-actions";
+import type { Locale } from "@/i18n/config";
 
 interface UserProfileCardProps {
   user: UserProfile;
@@ -38,6 +39,7 @@ interface UserProfileCardProps {
     parent: string;
     child: string;
   };
+  lang: Locale;
 }
 
 function calculateAge(birthdate?: string): number | null {
@@ -73,15 +75,15 @@ function formatDateForInput(isoDate?: string): string {
   try {
     const date = new Date(isoDate);
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   } catch {
     return "";
   }
 }
 
-export function UserProfileCard({ user, karma, dict }: UserProfileCardProps) {
+export function UserProfileCard({ user, karma, dict, lang }: UserProfileCardProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const age = calculateAge(user.birthdate);
@@ -137,11 +139,11 @@ export function UserProfileCard({ user, karma, dict }: UserProfileCardProps) {
       await clearInvalidSession();
 
       // Redirect to signin
-      router.push("/signin");
+      router.push(`/${lang}/signin`);
     } catch (error) {
       console.error("Logout failed:", error);
       // Still redirect even if cookie clearing fails
-      router.push("/signin");
+      router.push(`/${lang}/signin`);
     }
   };
 

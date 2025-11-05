@@ -83,6 +83,7 @@ export function ProfileView({ lang, initialEvents, dict }: ProfileViewProps) {
                     parent: dict.parent,
                     child: dict.child,
                 }}
+                lang={lang}
             />
 
             {/* Preferences Card */}
