@@ -244,6 +244,149 @@ describe("E2E: Task-Karma Integration", () => {
 
       expect(historyResponse.body.events).toHaveLength(2);
     });
+
+    it("should deduct karma when task with karma metadata is uncompleted", async () => {
+      testCounter++;
+      const { familyId, parentToken, childToken, childUserId } =
+        await setupFamilyWithMembers(baseUrl, testCounter);
+
+      // Create a task with karma reward
+      const createTaskResponse = await request(baseUrl)
+        .post(`/v1/families/${familyId}/tasks`)
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({
+          name: "Clean your room",
+          description: "Make your bed and organize toys",
+          dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          assignment: {
+            type: "member",
+            memberId: childUserId,
+          },
+          metadata: {
+            karma: 25,
+          },
+        })
+        .expect(201);
+
+      const taskId = createTaskResponse.body._id;
+
+      // Complete the task
+      await request(baseUrl)
+        .patch(`/v1/families/${familyId}/tasks/${taskId}`)
+        .set("Authorization", `Bearer ${childToken}`)
+        .send({
+          completedAt: new Date().toISOString(),
+        })
+        .expect(200);
+
+      // Verify karma was awarded
+      let karmaResponse = await request(baseUrl)
+        .get(`/v1/families/${familyId}/karma/balance/${childUserId}`)
+        .set("Authorization", `Bearer ${childToken}`)
+        .expect(200);
+
+      expect(karmaResponse.body.totalKarma).toBe(25);
+
+      // Uncomplete the task (set completedAt to null)
+      await request(baseUrl)
+        .patch(`/v1/families/${familyId}/tasks/${taskId}`)
+        .set("Authorization", `Bearer ${childToken}`)
+        .send({
+          completedAt: null,
+        })
+        .expect(200);
+
+      // Verify karma was deducted
+      karmaResponse = await request(baseUrl)
+        .get(`/v1/families/${familyId}/karma/balance/${childUserId}`)
+        .set("Authorization", `Bearer ${childToken}`)
+        .expect(200);
+
+      expect(karmaResponse.body.totalKarma).toBe(0);
+
+      // Verify both karma events were created
+      const historyResponse = await request(baseUrl)
+        .get(`/v1/families/${familyId}/karma/history/${childUserId}`)
+        .set("Authorization", `Bearer ${childToken}`)
+        .expect(200);
+
+      expect(historyResponse.body.events).toHaveLength(2);
+
+      // First event (most recent) should be the deduction
+      expect(historyResponse.body.events[0]).toMatchObject({
+        amount: -25,
+        source: "task_uncomplete",
+        description: 'Uncompleted task "Clean your room"',
+        metadata: {
+          taskId,
+        },
+      });
+
+      // Second event should be the original award
+      expect(historyResponse.body.events[1]).toMatchObject({
+        amount: 25,
+        source: "task_completion",
+        description: 'Completed task "Clean your room"',
+        metadata: {
+          taskId,
+        },
+      });
+    });
+
+    it("should not deduct karma when uncompleting task without karma metadata", async () => {
+      testCounter++;
+      const { familyId, parentToken, childToken, childUserId } =
+        await setupFamilyWithMembers(baseUrl, testCounter);
+
+      // Create a task without karma reward
+      const createTaskResponse = await request(baseUrl)
+        .post(`/v1/families/${familyId}/tasks`)
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({
+          name: "Simple task",
+          dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          assignment: {
+            type: "member",
+            memberId: childUserId,
+          },
+        })
+        .expect(201);
+
+      const taskId = createTaskResponse.body._id;
+
+      // Complete the task
+      await request(baseUrl)
+        .patch(`/v1/families/${familyId}/tasks/${taskId}`)
+        .set("Authorization", `Bearer ${childToken}`)
+        .send({
+          completedAt: new Date().toISOString(),
+        })
+        .expect(200);
+
+      // Uncomplete the task
+      await request(baseUrl)
+        .patch(`/v1/families/${familyId}/tasks/${taskId}`)
+        .set("Authorization", `Bearer ${childToken}`)
+        .send({
+          completedAt: null,
+        })
+        .expect(200);
+
+      // Verify no karma events were created
+      const karmaResponse = await request(baseUrl)
+        .get(`/v1/families/${familyId}/karma/balance/${childUserId}`)
+        .set("Authorization", `Bearer ${childToken}`)
+        .expect(200);
+
+      expect(karmaResponse.body.totalKarma).toBe(0);
+
+      const historyResponse = await request(baseUrl)
+        .get(`/v1/families/${familyId}/karma/history/${childUserId}`)
+        .set("Authorization", `Bearer ${childToken}`)
+        .expect(200);
+
+      expect(historyResponse.body.events).toHaveLength(0);
+    });
   });
 
   describe("Task Schedule with Karma Metadata", () => {

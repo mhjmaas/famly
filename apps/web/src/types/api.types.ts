@@ -184,3 +184,107 @@ export interface ApiClientOptions {
    */
   cookie?: string;
 }
+
+// ============= Tasks Types =============
+
+export type TaskAssignment =
+  | { type: "unassigned" }
+  | { type: "member"; memberId: string }
+  | { type: "role"; role: "parent" | "child" };
+
+export interface Task {
+  _id: string;
+  familyId: string;
+  name: string;
+  description?: string;
+  dueDate?: string; // ISO 8601
+  assignment: TaskAssignment;
+  completedAt?: string; // ISO 8601
+  scheduleId?: string;
+  metadata?: {
+    karma?: number;
+  };
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TaskSchedule {
+  _id: string;
+  familyId: string;
+  name: string;
+  description?: string;
+  assignment: TaskAssignment;
+  schedule: {
+    daysOfWeek: number[]; // 0-6 (Sun-Sat)
+    weeklyInterval: number; // 1-4
+    startDate: string;
+    endDate?: string;
+  };
+  timeOfDay?: string; // HH:mm
+  metadata?: {
+    karma?: number;
+  };
+  lastGeneratedDate?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTaskRequest {
+  name: string;
+  description?: string;
+  dueDate?: string;
+  assignment: TaskAssignment;
+  metadata?: {
+    karma?: number;
+  };
+}
+
+export interface UpdateTaskRequest {
+  name?: string;
+  description?: string;
+  dueDate?: string;
+  assignment?: TaskAssignment;
+  completedAt?: string | null;
+  metadata?: {
+    karma?: number;
+  };
+}
+
+export interface CreateScheduleRequest {
+  name: string;
+  description?: string;
+  assignment: TaskAssignment;
+  schedule: {
+    daysOfWeek: number[];
+    weeklyInterval: number;
+    startDate: string;
+    endDate?: string;
+  };
+  timeOfDay?: string;
+  metadata?: {
+    karma?: number;
+  };
+}
+
+export interface UpdateScheduleRequest {
+  name?: string;
+  description?: string;
+  assignment?: TaskAssignment;
+  schedule?: {
+    daysOfWeek?: number[];
+    weeklyInterval?: number;
+    startDate?: string;
+    endDate?: string;
+  };
+  timeOfDay?: string;
+  metadata?: {
+    karma?: number;
+  };
+}
+
+export interface TaskQueryParams {
+  dueDateFrom?: string;
+  dueDateTo?: string;
+}

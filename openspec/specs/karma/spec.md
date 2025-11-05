@@ -173,10 +173,12 @@ The system MUST automatically award karma to the user who completes a task if th
 - **THEN** no karma event is created
 - **AND** the member's karma total remains unchanged
 
-#### Scenario: No karma on task uncomplete
-- **GIVEN** a completed task that previously awarded karma
+#### Scenario: Deduct karma on task uncomplete
+- **GIVEN** a completed task that previously awarded karma with `metadata.karma: 10`
 - **WHEN** a family member sets `completedAt: null` (marks it incomplete)
-- **THEN** no karma is deducted (karma is not reversed)
+- **THEN** the system creates a karma event with `amount: -10`, `source: 'task_uncomplete'`, and description indicating karma reversal
+- **AND** the member's karma total is decremented by 10
+- **AND** the event metadata includes the task ID
 
 #### Scenario: Task completion succeeds even if karma grant fails
 - **GIVEN** a task with karma metadata

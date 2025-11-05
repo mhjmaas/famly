@@ -151,6 +151,9 @@ export class TaskRepository {
         setFields.completedAt = input.completedAt;
       }
     }
+    if (input.metadata !== undefined) {
+      setFields.metadata = input.metadata;
+    }
 
     const updateDoc: UpdateFilter<Task> = {
       $set: setFields,
