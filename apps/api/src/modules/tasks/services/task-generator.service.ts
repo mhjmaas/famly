@@ -170,196 +170,25 @@ export class TaskGeneratorService {
   }
 
   /**
-   * Generate missed tasks during system startup
-   * This is called when the system starts to ensure tasks are created for any
-   * days that were missed due to system downtime or crashes
+   * Generate today's tasks during system startup
+   * This is called when the system starts to ensure today has a task if needed.
+   * It does NOT backfill missed tasks - only one active task per schedule should exist.
    */
   async generateMissedTasksOnStartup(): Promise<void> {
     try {
-      logger.info("Starting missed task generation on startup");
+      logger.info("Starting task generation on startup");
 
       // Get today's date in UTC
       const today = new Date();
       today.setUTCHours(0, 0, 0, 0);
 
-      // Find all active schedules
-      const activeSchedules =
-        await this.scheduleRepository.findActiveSchedules(today);
+      // Simply delegate to generateTasksForDate with today
+      // This ensures the same "one active task per schedule" behavior
+      await this.generateTasksForDate(today);
 
-      logger.debug("Found active schedules for startup task generation", {
-        count: activeSchedules.length,
-      });
-
-      let tasksCreated = 0;
-      let tasksSkipped = 0;
-
-      // Process each schedule
-      for (const schedule of activeSchedules) {
-        try {
-          // Calculate the date range to check for missed tasks
-          // Start from the day after lastGeneratedDate, or from startDate if no lastGeneratedDate
-          let startDate: Date;
-          if (schedule.lastGeneratedDate) {
-            startDate = new Date(schedule.lastGeneratedDate);
-            startDate.setUTCHours(0, 0, 0, 0);
-            // Start from the day after lastGeneratedDate
-            startDate.setUTCDate(startDate.getUTCDate() + 1);
-          } else {
-            startDate = new Date(schedule.schedule.startDate);
-            startDate.setUTCHours(0, 0, 0, 0);
-          }
-
-          // Check dates from start date to today (inclusive)
-          const currentDate = new Date(startDate);
-
-          logger.debug("Processing schedule for date range", {
-            scheduleId: schedule._id.toString(),
-            scheduleName: schedule.name,
-            startDate: startDate.toISOString(),
-            today: today.toISOString(),
-            lastGeneratedDate: schedule.lastGeneratedDate?.toISOString(),
-          });
-
-          while (currentDate <= today) {
-            try {
-              // Check if this schedule should generate a task for this date
-              const shouldGenerate = shouldGenerateForDate(
-                schedule.schedule,
-                currentDate,
-                schedule.lastGeneratedDate,
-              );
-
-              logger.debug("Checking if should generate task", {
-                scheduleId: schedule._id.toString(),
-                currentDate: currentDate.toISOString(),
-                shouldGenerate,
-                dayOfWeek: currentDate.getUTCDay(),
-                scheduleDays: schedule.schedule.daysOfWeek,
-              });
-
-              if (shouldGenerate) {
-                // Check for duplicate task (idempotency)
-                const existingTask =
-                  await this.taskRepository.findTaskByScheduleAndDate(
-                    schedule._id,
-                    currentDate,
-                  );
-
-                if (!existingTask) {
-                  // Clean up incomplete tasks from previous runs before generating new one
-                  const incompleteTasks =
-                    await this.taskRepository.findIncompleteTasksBySchedule(
-                      schedule._id,
-                    );
-
-                  if (incompleteTasks.length > 0) {
-                    const taskIds = incompleteTasks.map((task) => task._id);
-                    const deletedCount =
-                      await this.taskRepository.deleteTasksByIds(taskIds);
-
-                    logger.info(
-                      "Cleaned up incomplete tasks before generating new task",
-                      {
-                        scheduleId: schedule._id.toString(),
-                        scheduleName: schedule.name,
-                        deletedCount,
-                        taskIds: taskIds.map((id) => id.toString()),
-                      },
-                    );
-                  }
-
-                  // Calculate due date with time of day (use UTC to avoid timezone issues)
-                  let dueDate: Date | undefined;
-                  if (schedule.timeOfDay) {
-                    const [hours, minutes] = schedule.timeOfDay
-                      .split(":")
-                      .map(Number);
-                    dueDate = new Date(
-                      Date.UTC(
-                        currentDate.getUTCFullYear(),
-                        currentDate.getUTCMonth(),
-                        currentDate.getUTCDate(),
-                        hours,
-                        minutes,
-                      ),
-                    );
-                  } else {
-                    // Default to end of day (21:00 UTC) if no time specified
-                    dueDate = new Date(
-                      Date.UTC(
-                        currentDate.getUTCFullYear(),
-                        currentDate.getUTCMonth(),
-                        currentDate.getUTCDate(),
-                        21,
-                        0,
-                      ),
-                    );
-                  }
-
-                  // Create task from schedule
-                  await this.taskRepository.createTask(
-                    schedule.familyId,
-                    {
-                      name: schedule.name,
-                      description: schedule.description,
-                      dueDate,
-                      assignment: schedule.assignment,
-                    },
-                    schedule.createdBy,
-                    schedule._id, // Link to schedule
-                  );
-
-                  logger.info("Missed task created on startup", {
-                    scheduleId: schedule._id.toString(),
-                    scheduleName: schedule.name,
-                    dueDate: dueDate.toISOString(),
-                    missedDate: currentDate.toISOString(),
-                  });
-
-                  tasksCreated++;
-                } else {
-                  tasksSkipped++;
-                }
-              } else {
-                tasksSkipped++;
-              }
-            } catch (error) {
-              logger.error(
-                "Failed to process date for missed task generation",
-                {
-                  scheduleId: schedule._id.toString(),
-                  date: currentDate.toISOString(),
-                  error,
-                },
-              );
-            }
-
-            // Move to next day
-            currentDate.setUTCDate(currentDate.getUTCDate() + 1);
-          }
-
-          // Update last generated date to today
-          await this.scheduleRepository.updateLastGeneratedDate(
-            schedule._id,
-            today,
-          );
-        } catch (error) {
-          logger.error("Failed to generate missed tasks for schedule", {
-            scheduleId: schedule._id.toString(),
-            scheduleName: schedule.name,
-            error,
-          });
-          // Continue processing other schedules even if one fails
-        }
-      }
-
-      logger.info("Missed task generation on startup completed", {
-        schedulesProcessed: activeSchedules.length,
-        tasksCreated,
-        tasksSkipped,
-      });
+      logger.info("Task generation on startup completed");
     } catch (error) {
-      logger.error("Missed task generation on startup failed", {
+      logger.error("Task generation on startup failed", {
         error,
       });
       throw error;

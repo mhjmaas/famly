@@ -273,8 +273,8 @@ describe("TaskGeneratorService - Cleanup Functionality", () => {
     });
   });
 
-  describe("generateMissedTasksOnStartup with cleanup", () => {
-    it("should delete incomplete tasks when generating missed tasks", async () => {
+  describe("generateMissedTasksOnStartup - one active task per schedule", () => {
+    it("should only generate today's task, maintaining one active task per schedule", async () => {
       const today = new Date();
       today.setUTCHours(0, 0, 0, 0);
 
@@ -286,14 +286,12 @@ describe("TaskGeneratorService - Cleanup Functionality", () => {
         _id: scheduleId,
         familyId,
         name: "Daily Task",
-
         assignment: { type: "unassigned" },
         schedule: {
           daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
           weeklyInterval: 1,
           startDate: today,
         },
-
         createdBy: userId,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -304,7 +302,6 @@ describe("TaskGeneratorService - Cleanup Functionality", () => {
           _id: new ObjectId(),
           familyId,
           name: "Daily Task",
-
           dueDate: new Date(today.getTime() - 86400000),
           assignment: { type: "unassigned" },
           scheduleId,
@@ -327,13 +324,12 @@ describe("TaskGeneratorService - Cleanup Functionality", () => {
         _id: new ObjectId(),
         familyId,
         name: "Daily Task",
-
         dueDate: new Date(
           Date.UTC(
             today.getUTCFullYear(),
             today.getUTCMonth(),
             today.getUTCDate(),
-            23,
+            21,
             0,
           ),
         ),
@@ -348,7 +344,7 @@ describe("TaskGeneratorService - Cleanup Functionality", () => {
       // Execute
       await taskGeneratorService.generateMissedTasksOnStartup();
 
-      // Verify cleanup was called
+      // Verify old incomplete task was deleted
       expect(
         mockTaskRepository.findIncompleteTasksBySchedule,
       ).toHaveBeenCalledWith(scheduleId);
@@ -356,8 +352,161 @@ describe("TaskGeneratorService - Cleanup Functionality", () => {
         incompleteTasks[0]._id,
       ]);
 
-      // Verify new task was created
+      // Verify only ONE task was created (for today)
       expect(mockTaskRepository.createTask).toHaveBeenCalledTimes(1);
+
+      // Verify lastGeneratedDate was updated
+      expect(
+        mockScheduleRepository.updateLastGeneratedDate,
+      ).toHaveBeenCalledWith(scheduleId, today);
+    });
+
+    it("should not backfill missed days when system was offline", async () => {
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+
+      const eightDaysAgo = new Date(today);
+      eightDaysAgo.setUTCDate(eightDaysAgo.getUTCDate() - 8);
+
+      const scheduleId = new ObjectId();
+      const familyId = new ObjectId();
+      const userId = new ObjectId();
+
+      const mockSchedule: TaskSchedule = {
+        _id: scheduleId,
+        familyId,
+        name: "Weekly Task",
+        assignment: { type: "unassigned" },
+        schedule: {
+          daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // Every day
+          weeklyInterval: 1, // But only once per week
+          startDate: eightDaysAgo,
+        },
+        lastGeneratedDate: eightDaysAgo, // Last generated 8 days ago (more than 1 week)
+        createdBy: userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      // Setup mocks
+      mockScheduleRepository.findActiveSchedules.mockResolvedValue([
+        mockSchedule,
+      ]);
+      mockTaskRepository.findTaskByScheduleAndDate.mockResolvedValue(null);
+      mockTaskRepository.findIncompleteTasksBySchedule.mockResolvedValue([]);
+      mockTaskRepository.createTask.mockResolvedValue({
+        _id: new ObjectId(),
+        familyId,
+        name: "Weekly Task",
+        dueDate: new Date(),
+        assignment: { type: "unassigned" },
+        scheduleId,
+        createdBy: userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      mockScheduleRepository.updateLastGeneratedDate.mockResolvedValue();
+
+      // Execute
+      await taskGeneratorService.generateMissedTasksOnStartup();
+
+      // Verify only ONE task was created (for today), NOT multiple tasks for the missed days
+      // Even though 8 days have passed, we only generate for today
+      expect(mockTaskRepository.createTask).toHaveBeenCalledTimes(1);
+
+      // Verify lastGeneratedDate was updated to today
+      expect(
+        mockScheduleRepository.updateLastGeneratedDate,
+      ).toHaveBeenCalledWith(scheduleId, today);
+    });
+
+    it("should maintain one active task per schedule for multiple schedules", async () => {
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+
+      const schedule1Id = new ObjectId();
+      const schedule2Id = new ObjectId();
+      const familyId = new ObjectId();
+      const userId = new ObjectId();
+
+      // Daily schedule - will generate today
+      const dailySchedule: TaskSchedule = {
+        _id: schedule1Id,
+        familyId,
+        name: "Daily Task",
+        assignment: { type: "unassigned" },
+        schedule: {
+          daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // Every day
+          weeklyInterval: 1,
+          startDate: today,
+        },
+        lastGeneratedDate: undefined, // First time
+        createdBy: userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      // Weekly schedule - also will generate today since it's the first time
+      const weeklySchedule: TaskSchedule = {
+        _id: schedule2Id,
+        familyId,
+        name: "Weekly Task",
+        assignment: { type: "unassigned" },
+        schedule: {
+          daysOfWeek: [0, 1, 2, 3, 4, 5, 6], // Every day of week
+          weeklyInterval: 1,
+          startDate: today,
+        },
+        lastGeneratedDate: undefined, // First time
+        createdBy: userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      // Setup mocks
+      mockScheduleRepository.findActiveSchedules.mockResolvedValue([
+        dailySchedule,
+        weeklySchedule,
+      ]);
+      mockTaskRepository.findTaskByScheduleAndDate.mockResolvedValue(null);
+      mockTaskRepository.findIncompleteTasksBySchedule.mockResolvedValue([]);
+      mockTaskRepository.createTask.mockResolvedValue({
+        _id: new ObjectId(),
+        familyId,
+        name: "Task",
+        dueDate: new Date(),
+        assignment: { type: "unassigned" },
+        scheduleId: new ObjectId(),
+        createdBy: userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      mockScheduleRepository.updateLastGeneratedDate.mockResolvedValue();
+
+      // Execute
+      await taskGeneratorService.generateMissedTasksOnStartup();
+
+      // Each schedule should have cleanup checked
+      expect(
+        mockTaskRepository.findIncompleteTasksBySchedule,
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        mockTaskRepository.findIncompleteTasksBySchedule,
+      ).toHaveBeenCalledWith(schedule1Id);
+      expect(
+        mockTaskRepository.findIncompleteTasksBySchedule,
+      ).toHaveBeenCalledWith(schedule2Id);
+
+      // Both schedules should generate ONE task each for today
+      expect(mockTaskRepository.createTask).toHaveBeenCalledTimes(2);
+
+      // Both should have lastGeneratedDate updated
+      expect(
+        mockScheduleRepository.updateLastGeneratedDate,
+      ).toHaveBeenCalledWith(schedule1Id, today);
+      expect(
+        mockScheduleRepository.updateLastGeneratedDate,
+      ).toHaveBeenCalledWith(schedule2Id, today);
     });
   });
 });
