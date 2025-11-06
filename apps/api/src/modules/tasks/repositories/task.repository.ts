@@ -125,6 +125,7 @@ export class TaskRepository {
   async updateTask(
     taskId: ObjectId,
     input: UpdateTaskInput,
+    completedBy?: ObjectId | null,
   ): Promise<Task | null> {
     const setFields: Partial<Task> = {
       updatedAt: new Date(),
@@ -147,9 +148,16 @@ export class TaskRepository {
     if (input.completedAt !== undefined) {
       if (input.completedAt === null) {
         unsetFields.completedAt = "";
+        unsetFields.completedBy = "";
       } else {
         setFields.completedAt = input.completedAt;
+        if (completedBy) {
+          setFields.completedBy = completedBy;
+        }
       }
+    }
+    if (input.metadata !== undefined) {
+      setFields.metadata = input.metadata;
     }
 
     const updateDoc: UpdateFilter<Task> = {

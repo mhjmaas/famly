@@ -141,6 +141,18 @@ describe("E2E: PATCH /v1/families/:familyId/tasks/:taskId", () => {
       );
     });
 
+    it("should update task metadata (karma)", async () => {
+      const response = await request(baseUrl)
+        .patch(`/v1/families/${familyId}/tasks/${taskId}`)
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({
+          metadata: { karma: 50 },
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.metadata).toEqual({ karma: 50 });
+    });
+
     it("should mark task as complete by setting completedAt", async () => {
       const completedAt = "2025-01-16T15:30:00Z";
       const response = await request(baseUrl)

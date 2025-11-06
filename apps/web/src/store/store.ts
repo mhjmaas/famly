@@ -1,6 +1,7 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import familyReducer from "./slices/family.slice";
 import karmaReducer from "./slices/karma.slice";
+import tasksReducer from "./slices/tasks.slice";
 import userReducer from "./slices/user.slice";
 
 // Define the root reducer map with proper types
@@ -8,6 +9,7 @@ const rootReducer = combineReducers({
   user: userReducer,
   karma: karmaReducer,
   family: familyReducer,
+  tasks: tasksReducer,
 });
 
 // Infer RootState from the rootReducer
