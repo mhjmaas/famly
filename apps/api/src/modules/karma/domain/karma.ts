@@ -3,11 +3,13 @@ import type { ObjectId } from "mongodb";
 /**
  * Karma source types
  * - task_completion: Karma awarded for completing a task
+ * - task_uncomplete: Karma deducted for uncompleting a task
  * - manual_grant: Karma manually granted by a parent
  * - reward_redemption: Karma deducted for redeeming a reward
  */
 export type KarmaSource =
   | "task_completion"
+  | "task_uncomplete"
   | "manual_grant"
   | "reward_redemption";
 

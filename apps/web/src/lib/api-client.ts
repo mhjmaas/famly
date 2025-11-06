@@ -15,6 +15,8 @@ import type {
   AuthResponse,
   CreateFamilyRequest,
   CreateFamilyResponse,
+  CreateScheduleRequest,
+  CreateTaskRequest,
   FamilyWithMembers,
   GrantKarmaRequest,
   GrantKarmaResponse,
@@ -22,10 +24,15 @@ import type {
   LoginRequest,
   MeResponse,
   RegisterRequest,
+  Task,
+  TaskQueryParams,
+  TaskSchedule,
   UpdateMemberRoleRequest,
   UpdateMemberRoleResponse,
   UpdateProfileRequest,
   UpdateProfileResponse,
+  UpdateScheduleRequest,
+  UpdateTaskRequest,
 } from "@/types/api.types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -154,8 +161,10 @@ export async function createFamily(
   });
 }
 
-export async function getFamilies(): Promise<FamilyWithMembers[]> {
-  return apiClient<FamilyWithMembers[]>("/v1/families");
+export async function getFamilies(
+  cookie?: string,
+): Promise<FamilyWithMembers[]> {
+  return apiClient<FamilyWithMembers[]>("/v1/families", { cookie });
 }
 
 export async function updateMemberRole(
@@ -261,4 +270,128 @@ export async function getActivityEvents(
   const endpoint = `/v1/activity-events${queryString ? `?${queryString}` : ""}`;
 
   return apiClient<ActivityEvent[]>(endpoint, { cookie });
+}
+
+// ============= Tasks API =============
+
+export type {
+  CreateScheduleRequest,
+  CreateTaskRequest,
+  Task,
+  TaskAssignment,
+  TaskQueryParams,
+  TaskSchedule,
+  UpdateScheduleRequest,
+  UpdateTaskRequest,
+} from "@/types/api.types";
+
+export async function getTasks(
+  familyId: string,
+  params?: TaskQueryParams,
+  cookie?: string,
+): Promise<Task[]> {
+  const queryParams = new URLSearchParams();
+  if (params?.dueDateFrom) queryParams.set("dueDateFrom", params.dueDateFrom);
+  if (params?.dueDateTo) queryParams.set("dueDateTo", params.dueDateTo);
+
+  const queryString = queryParams.toString();
+  const endpoint = `/v1/families/${familyId}/tasks${queryString ? `?${queryString}` : ""}`;
+
+  return apiClient<Task[]>(endpoint, { cookie });
+}
+
+export async function getTask(
+  familyId: string,
+  taskId: string,
+  cookie?: string,
+): Promise<Task> {
+  return apiClient<Task>(`/v1/families/${familyId}/tasks/${taskId}`, {
+    cookie,
+  });
+}
+
+export async function createTask(
+  familyId: string,
+  data: CreateTaskRequest,
+): Promise<Task> {
+  return apiClient<Task>(`/v1/families/${familyId}/tasks`, {
+    method: "POST",
+    body: data,
+  });
+}
+
+export async function updateTask(
+  familyId: string,
+  taskId: string,
+  data: UpdateTaskRequest,
+): Promise<Task> {
+  return apiClient<Task>(`/v1/families/${familyId}/tasks/${taskId}`, {
+    method: "PATCH",
+    body: data,
+  });
+}
+
+export async function deleteTask(
+  familyId: string,
+  taskId: string,
+): Promise<void> {
+  return apiClient<void>(`/v1/families/${familyId}/tasks/${taskId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function getSchedules(
+  familyId: string,
+  cookie?: string,
+): Promise<TaskSchedule[]> {
+  return apiClient<TaskSchedule[]>(`/v1/families/${familyId}/tasks/schedules`, {
+    cookie,
+  });
+}
+
+export async function getSchedule(
+  familyId: string,
+  scheduleId: string,
+  cookie?: string,
+): Promise<TaskSchedule> {
+  return apiClient<TaskSchedule>(
+    `/v1/families/${familyId}/tasks/schedules/${scheduleId}`,
+    { cookie },
+  );
+}
+
+export async function createSchedule(
+  familyId: string,
+  data: CreateScheduleRequest,
+): Promise<TaskSchedule> {
+  return apiClient<TaskSchedule>(`/v1/families/${familyId}/tasks/schedules`, {
+    method: "POST",
+    body: data,
+  });
+}
+
+export async function updateSchedule(
+  familyId: string,
+  scheduleId: string,
+  data: UpdateScheduleRequest,
+): Promise<TaskSchedule> {
+  return apiClient<TaskSchedule>(
+    `/v1/families/${familyId}/tasks/schedules/${scheduleId}`,
+    {
+      method: "PATCH",
+      body: data,
+    },
+  );
+}
+
+export async function deleteSchedule(
+  familyId: string,
+  scheduleId: string,
+): Promise<void> {
+  return apiClient<void>(
+    `/v1/families/${familyId}/tasks/schedules/${scheduleId}`,
+    {
+      method: "DELETE",
+    },
+  );
 }

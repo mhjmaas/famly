@@ -224,8 +224,14 @@ export class TaskService {
         throw HttpError.forbidden("Task does not belong to this family");
       }
 
-      // Update the task
-      const updatedTask = await this.taskRepository.updateTask(taskId, input);
+      // Update the task, passing userId if task is being completed
+      const completedBy =
+        input.completedAt && !existingTask.completedAt ? userId : undefined;
+      const updatedTask = await this.taskRepository.updateTask(
+        taskId,
+        input,
+        completedBy,
+      );
 
       if (!updatedTask) {
         throw HttpError.notFound("Task not found");
@@ -260,6 +266,43 @@ export class TaskService {
             error,
           });
           // Don't throw - task completion should succeed even if karma fails
+        }
+      }
+
+      // Deduct karma if task was just uncompleted (set back to incomplete) and has karma metadata
+      if (
+        input.completedAt === null &&
+        existingTask.completedAt &&
+        updatedTask.metadata?.karma &&
+        this.karmaService
+      ) {
+        // Use completedBy from existing task to deduct karma from the correct user
+        const karmaRecipient = existingTask.completedBy || userId;
+
+        try {
+          await this.karmaService.awardKarma({
+            familyId: updatedTask.familyId,
+            userId: karmaRecipient,
+            amount: -updatedTask.metadata.karma, // Negative to deduct
+            source: "task_uncomplete",
+            description: `Uncompleted task "${updatedTask.name}"`,
+            metadata: { taskId: taskId.toString() },
+          });
+
+          logger.info("Karma deducted for task uncomplete", {
+            taskId: taskId.toString(),
+            originalCompletedBy: karmaRecipient.toString(),
+            triggeredBy: userId.toString(),
+            karma: updatedTask.metadata.karma,
+          });
+        } catch (error) {
+          logger.error("Failed to deduct karma for task uncomplete", {
+            taskId: taskId.toString(),
+            originalCompletedBy: karmaRecipient.toString(),
+            triggeredBy: userId.toString(),
+            error,
+          });
+          // Don't throw - task uncomplete should succeed even if karma fails
         }
       }
 
