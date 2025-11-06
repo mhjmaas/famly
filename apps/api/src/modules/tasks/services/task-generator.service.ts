@@ -68,23 +68,51 @@ export class TaskGeneratorService {
             continue;
           }
 
-          // Calculate due date with time of day
+          // Clean up incomplete tasks from previous runs before generating new one
+          const incompleteTasks =
+            await this.taskRepository.findIncompleteTasksBySchedule(
+              schedule._id,
+            );
+
+          if (incompleteTasks.length > 0) {
+            const taskIds = incompleteTasks.map((task) => task._id);
+            const deletedCount =
+              await this.taskRepository.deleteTasksByIds(taskIds);
+
+            logger.info(
+              "Cleaned up incomplete tasks before generating new task",
+              {
+                scheduleId: schedule._id.toString(),
+                scheduleName: schedule.name,
+                deletedCount,
+                taskIds: taskIds.map((id) => id.toString()),
+              },
+            );
+          }
+
+          // Calculate due date with time of day (use UTC to avoid timezone issues)
           let dueDate: Date | undefined;
           if (schedule.timeOfDay) {
             const [hours, minutes] = schedule.timeOfDay.split(":").map(Number);
             dueDate = new Date(
-              date.getFullYear(),
-              date.getMonth(),
-              date.getDate(),
-              hours,
-              minutes,
+              Date.UTC(
+                date.getUTCFullYear(),
+                date.getUTCMonth(),
+                date.getUTCDate(),
+                hours,
+                minutes,
+              ),
             );
           } else {
-            // Default to midnight if no time specified
+            // Default to end of day (21:00 UTC) if no time specified
             dueDate = new Date(
-              date.getFullYear(),
-              date.getMonth(),
-              date.getDate(),
+              Date.UTC(
+                date.getUTCFullYear(),
+                date.getUTCMonth(),
+                date.getUTCDate(),
+                21,
+                0,
+              ),
             );
           }
 
@@ -169,17 +197,30 @@ export class TaskGeneratorService {
       for (const schedule of activeSchedules) {
         try {
           // Calculate the date range to check for missed tasks
-          // Start from the schedule's start date or lastGeneratedDate (whichever is later)
-          const startDate = schedule.lastGeneratedDate
-            ? new Date(schedule.lastGeneratedDate)
-            : new Date(schedule.schedule.startDate);
+          // Start from the day after lastGeneratedDate, or from startDate if no lastGeneratedDate
+          let startDate: Date;
+          if (schedule.lastGeneratedDate) {
+            startDate = new Date(schedule.lastGeneratedDate);
+            startDate.setUTCHours(0, 0, 0, 0);
+            // Start from the day after lastGeneratedDate
+            startDate.setUTCDate(startDate.getUTCDate() + 1);
+          } else {
+            startDate = new Date(schedule.schedule.startDate);
+            startDate.setUTCHours(0, 0, 0, 0);
+          }
 
-          // Normalize to start of day
-          startDate.setUTCHours(0, 0, 0, 0);
-
-          // Check dates from start date to today (exclusive)
+          // Check dates from start date to today (inclusive)
           const currentDate = new Date(startDate);
-          while (currentDate < today) {
+
+          logger.debug("Processing schedule for date range", {
+            scheduleId: schedule._id.toString(),
+            scheduleName: schedule.name,
+            startDate: startDate.toISOString(),
+            today: today.toISOString(),
+            lastGeneratedDate: schedule.lastGeneratedDate?.toISOString(),
+          });
+
+          while (currentDate <= today) {
             try {
               // Check if this schedule should generate a task for this date
               const shouldGenerate = shouldGenerateForDate(
@@ -187,6 +228,14 @@ export class TaskGeneratorService {
                 currentDate,
                 schedule.lastGeneratedDate,
               );
+
+              logger.debug("Checking if should generate task", {
+                scheduleId: schedule._id.toString(),
+                currentDate: currentDate.toISOString(),
+                shouldGenerate,
+                dayOfWeek: currentDate.getUTCDay(),
+                scheduleDays: schedule.schedule.daysOfWeek,
+              });
 
               if (shouldGenerate) {
                 // Check for duplicate task (idempotency)
@@ -197,25 +246,53 @@ export class TaskGeneratorService {
                   );
 
                 if (!existingTask) {
-                  // Calculate due date with time of day
+                  // Clean up incomplete tasks from previous runs before generating new one
+                  const incompleteTasks =
+                    await this.taskRepository.findIncompleteTasksBySchedule(
+                      schedule._id,
+                    );
+
+                  if (incompleteTasks.length > 0) {
+                    const taskIds = incompleteTasks.map((task) => task._id);
+                    const deletedCount =
+                      await this.taskRepository.deleteTasksByIds(taskIds);
+
+                    logger.info(
+                      "Cleaned up incomplete tasks before generating new task",
+                      {
+                        scheduleId: schedule._id.toString(),
+                        scheduleName: schedule.name,
+                        deletedCount,
+                        taskIds: taskIds.map((id) => id.toString()),
+                      },
+                    );
+                  }
+
+                  // Calculate due date with time of day (use UTC to avoid timezone issues)
                   let dueDate: Date | undefined;
                   if (schedule.timeOfDay) {
                     const [hours, minutes] = schedule.timeOfDay
                       .split(":")
                       .map(Number);
                     dueDate = new Date(
-                      currentDate.getFullYear(),
-                      currentDate.getMonth(),
-                      currentDate.getDate(),
-                      hours,
-                      minutes,
+                      Date.UTC(
+                        currentDate.getUTCFullYear(),
+                        currentDate.getUTCMonth(),
+                        currentDate.getUTCDate(),
+                        hours,
+                        minutes,
+                      ),
                     );
                   } else {
-                    // Default to midnight if no time specified
+                    // Default to end of day (21:00 UTC) if no time specified
                     dueDate = new Date(
-                      currentDate.getFullYear(),
-                      currentDate.getMonth(),
-                      currentDate.getDate(),
+                      Date.UTC(
+                        currentDate.getUTCFullYear(),
+                        currentDate.getUTCMonth(),
+                        currentDate.getUTCDate(),
+                        21,
+                        0,
+                      ),
                     );
                   }
 

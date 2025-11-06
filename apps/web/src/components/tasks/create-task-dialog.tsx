@@ -139,6 +139,13 @@ export function CreateTaskDialog({
                 dayMap={dayMap}
                 weekFrequency={weekFrequency}
                 setWeekFrequency={setWeekFrequency}
+                showDescription={showDescription}
+                setShowDescription={setShowDescription}
+                showAssignment={showAssignment}
+                setShowAssignment={setShowAssignment}
+                showKarma={showKarma}
+                setShowKarma={setShowKarma}
+                familyMembers={familyMembers}
                 dict={dict}
               />
             </TabsContent>

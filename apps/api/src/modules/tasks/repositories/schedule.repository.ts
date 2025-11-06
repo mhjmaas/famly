@@ -87,11 +87,17 @@ export class ScheduleRepository {
    * Active = startDate <= today AND (no endDate OR endDate >= today)
    */
   async findActiveSchedules(date: Date): Promise<TaskSchedule[]> {
-    // Normalize date to start of day
+    // Normalize date to start of day (use UTC to avoid timezone issues)
     const startOfDay = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
+      Date.UTC(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        0,
+        0,
+        0,
+        0,
+      ),
     );
 
     return this.collection
