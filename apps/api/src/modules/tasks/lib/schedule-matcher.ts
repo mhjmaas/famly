@@ -51,16 +51,16 @@ export function isWithinDateRange(
   startDate: Date,
   endDate?: Date,
 ): boolean {
-  // Normalize dates to start of day for comparison
+  // Normalize dates to start of day for comparison (use UTC to avoid timezone issues)
   const dateOnly = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
   );
   const startOnly = new Date(
-    startDate.getFullYear(),
-    startDate.getMonth(),
-    startDate.getDate(),
+    Date.UTC(
+      startDate.getUTCFullYear(),
+      startDate.getUTCMonth(),
+      startDate.getUTCDate(),
+    ),
   );
 
   // Check if date is before start
@@ -71,9 +71,11 @@ export function isWithinDateRange(
   // Check if date is after end (if end date exists)
   if (endDate) {
     const endOnly = new Date(
-      endDate.getFullYear(),
-      endDate.getMonth(),
-      endDate.getDate(),
+      Date.UTC(
+        endDate.getUTCFullYear(),
+        endDate.getUTCMonth(),
+        endDate.getUTCDate(),
+      ),
     );
     if (dateOnly > endOnly) {
       return false;

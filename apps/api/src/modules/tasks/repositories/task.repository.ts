@@ -192,20 +192,28 @@ export class TaskRepository {
     scheduleId: ObjectId,
     date: Date,
   ): Promise<Task | null> {
-    // Normalize date to start of day for comparison
+    // Normalize date to start of day for comparison (use UTC to avoid timezone issues)
     const startOfDay = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
+      Date.UTC(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        0,
+        0,
+        0,
+        0,
+      ),
     );
     const endOfDay = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      23,
-      59,
-      59,
-      999,
+      Date.UTC(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        23,
+        59,
+        59,
+        999,
+      ),
     );
 
     return this.collection.findOne({
@@ -215,5 +223,35 @@ export class TaskRepository {
         $lte: endOfDay,
       },
     });
+  }
+
+  /**
+   * Find all incomplete tasks for a schedule
+   * Incomplete = tasks without a completedAt timestamp
+   */
+  async findIncompleteTasksBySchedule(scheduleId: ObjectId): Promise<Task[]> {
+    return this.collection
+      .find({
+        scheduleId,
+        completedAt: { $exists: false },
+      })
+      .sort({ dueDate: 1 })
+      .toArray();
+  }
+
+  /**
+   * Delete multiple tasks by their IDs
+   * Returns the count of deleted tasks
+   */
+  async deleteTasksByIds(taskIds: ObjectId[]): Promise<number> {
+    if (taskIds.length === 0) {
+      return 0;
+    }
+
+    const result = await this.collection.deleteMany({
+      _id: { $in: taskIds },
+    });
+
+    return result.deletedCount;
   }
 }

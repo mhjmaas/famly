@@ -7,7 +7,7 @@ import { TaskGeneratorService } from "../services/task-generator.service";
 let cronJob: CronJob | null = null;
 
 /**
- * Start the task generation cron job
+ * Start the task generation cron job and generate missed tasks on startup
  * Runs daily at 00:05 UTC
  */
 export function startTaskScheduler(): void {
@@ -24,6 +24,13 @@ export function startTaskScheduler(): void {
       taskRepository,
       scheduleRepository,
     );
+
+    // Generate missed tasks on startup first
+    logger.info("Generating missed tasks on startup...");
+    taskGeneratorService.generateMissedTasksOnStartup().catch((error) => {
+      logger.error("Failed to generate missed tasks on startup", { error });
+      // Don't throw here - continue with cron job even if startup generation fails
+    });
 
     // Create cron job: runs at 00:05 UTC daily
     // Format: second minute hour day month dayOfWeek

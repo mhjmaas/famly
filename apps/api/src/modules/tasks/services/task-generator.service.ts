@@ -68,23 +68,51 @@ export class TaskGeneratorService {
             continue;
           }
 
-          // Calculate due date with time of day
+          // Clean up incomplete tasks from previous runs before generating new one
+          const incompleteTasks =
+            await this.taskRepository.findIncompleteTasksBySchedule(
+              schedule._id,
+            );
+
+          if (incompleteTasks.length > 0) {
+            const taskIds = incompleteTasks.map((task) => task._id);
+            const deletedCount =
+              await this.taskRepository.deleteTasksByIds(taskIds);
+
+            logger.info(
+              "Cleaned up incomplete tasks before generating new task",
+              {
+                scheduleId: schedule._id.toString(),
+                scheduleName: schedule.name,
+                deletedCount,
+                taskIds: taskIds.map((id) => id.toString()),
+              },
+            );
+          }
+
+          // Calculate due date with time of day (use UTC to avoid timezone issues)
           let dueDate: Date | undefined;
           if (schedule.timeOfDay) {
             const [hours, minutes] = schedule.timeOfDay.split(":").map(Number);
             dueDate = new Date(
-              date.getFullYear(),
-              date.getMonth(),
-              date.getDate(),
-              hours,
-              minutes,
+              Date.UTC(
+                date.getUTCFullYear(),
+                date.getUTCMonth(),
+                date.getUTCDate(),
+                hours,
+                minutes,
+              ),
             );
           } else {
-            // Default to midnight if no time specified
+            // Default to end of day (21:00 UTC) if no time specified
             dueDate = new Date(
-              date.getFullYear(),
-              date.getMonth(),
-              date.getDate(),
+              Date.UTC(
+                date.getUTCFullYear(),
+                date.getUTCMonth(),
+                date.getUTCDate(),
+                21,
+                0,
+              ),
             );
           }
 
@@ -135,6 +163,32 @@ export class TaskGeneratorService {
     } catch (error) {
       logger.error("Task generation failed", {
         date: date.toISOString(),
+        error,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Generate today's tasks during system startup
+   * This is called when the system starts to ensure today has a task if needed.
+   * It does NOT backfill missed tasks - only one active task per schedule should exist.
+   */
+  async generateMissedTasksOnStartup(): Promise<void> {
+    try {
+      logger.info("Starting task generation on startup");
+
+      // Get today's date in UTC
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+
+      // Simply delegate to generateTasksForDate with today
+      // This ensures the same "one active task per schedule" behavior
+      await this.generateTasksForDate(today);
+
+      logger.info("Task generation on startup completed");
+    } catch (error) {
+      logger.error("Task generation on startup failed", {
         error,
       });
       throw error;
