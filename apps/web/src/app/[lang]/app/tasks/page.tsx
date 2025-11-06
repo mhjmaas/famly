@@ -7,6 +7,9 @@ import { i18n, type Locale } from "@/i18n/config";
 import { getFamilies, getMe } from "@/lib/api-client";
 import type { MeResponse } from "@/types/api.types";
 
+// Force dynamic rendering since we use cookies
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ lang: string }>;
 }
@@ -32,11 +35,27 @@ export default async function TasksPage({ params }: PageProps) {
 
   // Get family data
   const families = await getFamilies(cookieString);
-  if (families.length === 0) {
-    redirect(`/${lang}/get-started`);
-  }
-
   const family = families[0];
+
+  // If no family, show a message to create one
+  if (!family) {
+    return (
+      <DashboardLayout
+        dict={dict}
+        lang={lang}
+        title={dict.dashboard.pages.tasks.title}
+      >
+        <div className="flex flex-col gap-4">
+          <h1 className="text-3xl font-bold text-foreground">
+            {dict.dashboard.pages.tasks.title}
+          </h1>
+          <p className="text-muted-foreground">
+            {dict.dashboard.pages.tasks.emptyState.default}
+          </p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout
