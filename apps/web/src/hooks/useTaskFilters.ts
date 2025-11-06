@@ -1,6 +1,6 @@
 import { useMemo } from "react";
+import type { FilterType } from "@/components/tasks/TaskFilters";
 import type { Task } from "@/types/api.types";
-import type { FilterType } from "../TaskFilters";
 
 interface UseTaskFiltersParams {
   tasks: Task[];
