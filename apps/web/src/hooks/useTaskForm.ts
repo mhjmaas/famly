@@ -1,12 +1,12 @@
 import { format } from "date-fns";
 import { useState } from "react";
 import { toast } from "sonner";
-import type { AppDispatch } from "@/store";
 import {
   createSchedule,
   createTask,
   updateTask,
 } from "@/store/slices/tasks.slice";
+import type { AppDispatch } from "@/store/store";
 import type { Task } from "@/types/api.types";
 
 export interface TaskFormData {
