@@ -21,6 +21,7 @@ export interface Task {
   assignment: TaskAssignment;
   scheduleId?: ObjectId; // Reference if generated from schedule
   completedAt?: Date; // Optional completion timestamp
+  completedBy?: ObjectId; // User who completed the task (for karma tracking)
   metadata?: {
     karma?: number; // Optional karma reward (1-1000)
     claimId?: string; // Optional reward claim ID (links to reward claim being fulfilled)
@@ -80,6 +81,7 @@ export interface TaskDTO {
   assignment: TaskAssignment;
   scheduleId?: string;
   completedAt?: string;
+  completedBy?: string;
   metadata?: {
     karma?: number;
     claimId?: string;
