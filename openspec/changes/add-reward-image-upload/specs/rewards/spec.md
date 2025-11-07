@@ -8,8 +8,9 @@ Parents MUST be able to upload image files for rewards, which are stored in S3-c
 #### Scenario: Upload image successfully
 - **GIVEN** an authenticated parent in a family
 - **WHEN** they POST to `/v1/families/{familyId}/rewards/upload-image` with a valid image file (JPEG, PNG, GIF, or WebP) under 5MB
-- **THEN** the API responds with HTTP 200 and returns `{ "imageUrl": "http://minio:9000/famly-rewards/family-id/uuid.ext" }`
+- **THEN** the API responds with HTTP 200 and returns `{ "imageUrl": "/api/images/family-id/uuid.ext" }`
 - **AND** the image is stored in the MinIO bucket at path `{familyId}/{uuid}.{ext}`
+- **AND** the returned URL is a relative path that can be accessed through the web application proxy
 
 #### Scenario: Reject file exceeding size limit
 - **GIVEN** an authenticated parent
@@ -52,11 +53,13 @@ Parents MUST be able to upload image files for rewards, which are stored in S3-c
 - **THEN** the image is stored at path `familyA/{uuid}.{ext}` in the bucket
 - **AND** images from different families are isolated by path prefix
 
-#### Scenario: Return publicly accessible URL
+#### Scenario: Return proxy URL format
 - **GIVEN** an authenticated parent successfully uploads an image
 - **WHEN** the API returns the imageUrl
-- **THEN** the URL is publicly accessible without authentication (images are not sensitive)
+- **THEN** the URL is in the format `/api/images/{familyId}/{filename}`
+- **AND** the URL is a relative path that works from any network location
 - **AND** the URL can be used directly in the `imageUrl` field when creating or updating rewards
+- **AND** the image is accessible through the web application's proxy endpoint
 
 ## MODIFIED Requirements
 
@@ -79,6 +82,6 @@ The system MUST enforce field length, type, and format constraints for all rewar
 
 #### Scenario: Validate uploaded image URLs
 - **GIVEN** an authenticated parent
-- **WHEN** they create or update a reward with an imageUrl from the upload endpoint (MinIO URL)
-- **THEN** the URL is validated as a valid HTTP(S) URL and accepted
+- **WHEN** they create or update a reward with an imageUrl from the upload endpoint (proxy path format)
+- **THEN** the URL is validated as either a full HTTP(S) URL or a relative path starting with `/api/images/`
 - **AND** URLs must not exceed 500 characters

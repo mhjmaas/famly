@@ -2,6 +2,40 @@
 
 ## ADDED Requirements
 
+### Requirement: Image Proxy API
+The web application MUST provide a Next.js API route that proxies image requests from clients to MinIO storage.
+
+#### Scenario: Fetch image through proxy
+- **GIVEN** an image stored in MinIO at path `family-123/reward-uuid.jpg`
+- **WHEN** a client requests GET `/api/images/family-123/reward-uuid.jpg`
+- **THEN** the API route fetches the image from MinIO using S3 GetObjectCommand
+- **AND** streams the image data to the client response
+- **AND** sets Content-Type header based on file extension (e.g., `image/jpeg`)
+- **AND** sets cache headers: `Cache-Control: public, max-age=31536000, immutable`
+
+#### Scenario: Handle missing image
+- **GIVEN** a client requests an image that does not exist in MinIO
+- **WHEN** GET `/api/images/family-123/nonexistent.jpg` is called
+- **THEN** the API responds with HTTP 404 Not Found
+
+#### Scenario: Handle S3 errors
+- **GIVEN** MinIO is unavailable or returns an error
+- **WHEN** a client requests an image
+- **THEN** the API responds with HTTP 500 Internal Server Error
+- **AND** logs the error for debugging
+
+#### Scenario: Serve images from any network location
+- **GIVEN** a user accessing the web app from a remote location (not localhost)
+- **WHEN** they view a reward with an uploaded image at `/api/images/family-123/reward-uuid.jpg`
+- **THEN** the image loads successfully through the proxy
+- **AND** the user does not need direct access to MinIO
+
+#### Scenario: Cache images in browser
+- **GIVEN** a client has fetched an image through the proxy
+- **WHEN** the same image is requested again
+- **THEN** the browser uses the cached version (based on Cache-Control header)
+- **AND** no additional request is made to the server
+
 ### Requirement: Image Upload UI
 Parents MUST be able to upload images directly through the reward dialog using a file picker, with preview and validation feedback.
 

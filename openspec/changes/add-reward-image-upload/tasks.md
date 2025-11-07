@@ -46,7 +46,7 @@
   - Generate UUID filename with preserved extension
   - Construct S3 key: `{familyId}/{uuid}.{ext}`
   - Upload to MinIO using `PutObjectCommand`
-  - Return public URL: `http://${MINIO_ENDPOINT}/${BUCKET}/${key}`
+  - Return relative URL: `/api/images/${familyId}/${uuid}.${ext}`
 - [ ] Add file validation helpers: `validateFileType`, `validateFileSize`
 - [ ] Export service functions
 
@@ -97,15 +97,37 @@
 
 ## 3. Frontend Implementation
 
-### 3.1 Update API Client
+### 3.1 Install Frontend Dependencies
+- [ ] Install `@aws-sdk/client-s3` in `apps/web` (for proxy route)
+- [ ] Update `package.json` and run `pnpm install`
+
+### 3.2 Create Image Proxy API Route
+- [ ] Create `apps/web/src/app/api/images/[...path]/route.ts`
+- [ ] Implement GET handler:
+  - Parse `familyId` and `filename` from path params
+  - Construct S3 key: `{familyId}/{filename}`
+  - Initialize S3Client with MinIO config from env
+  - Use `GetObjectCommand` to fetch image from MinIO
+  - Stream image data to response
+  - Set proper Content-Type header based on file extension
+  - Set cache headers: `Cache-Control: public, max-age=31536000, immutable`
+- [ ] Add error handling for missing images (404)
+- [ ] Add error handling for S3 failures (500)
+
+### 3.3 Configure Web Environment
+- [ ] Add MinIO environment variables to `apps/web/.env.example`
+- [ ] Add MinIO environment variables to web service in `docker/compose.dev.yml`
+- [ ] Add MinIO environment variables to web service in `docker/compose.test.yml`
+
+### 3.4 Update API Client
 - [ ] Add `uploadRewardImage` function to `apps/web/src/lib/api-client.ts`
   - Accept `File` object and `familyId`
   - Create `FormData` with file
   - POST to `/v1/families/{familyId}/rewards/upload-image`
-  - Return `imageUrl` from response
+  - Return `imageUrl` from response (will be `/api/images/...`)
 - [ ] Export new function
 
-### 3.2 Update Redux Store
+### 3.5 Update Redux Store
 - [ ] Add `uploadRewardImage` async thunk to `apps/web/src/store/slices/rewards.slice.ts`
   - Accept `{ file: File, familyId: string }`
   - Call API client `uploadRewardImage`
@@ -121,7 +143,23 @@
   - Use returned URL in reward update payload
 - [ ] Add image upload error state to slice
 
-### 3.3 Update Reward Dialog Component
+### 3.6 Add Translations
+- [ ] Add to `apps/web/src/dictionaries/en-US.json`:
+  ```json
+  "dashboard.pages.rewards.dialog.fields.image.label": "Image",
+  "dashboard.pages.rewards.dialog.fields.image.uploadButton": "Upload Image",
+  "dashboard.pages.rewards.dialog.fields.image.orLabel": "or provide URL",
+  "dashboard.pages.rewards.dialog.fields.image.uploading": "Uploading...",
+  "dashboard.pages.rewards.dialog.fields.image.preview": "Image preview",
+  "dashboard.pages.rewards.dialog.fields.image.remove": "Remove image",
+  "dashboard.pages.rewards.dialog.fields.image.errors.fileSize": "File size must be less than 5MB",
+  "dashboard.pages.rewards.dialog.fields.image.errors.fileType": "Only JPEG, PNG, GIF, and WebP images are allowed",
+  "dashboard.pages.rewards.dialog.fields.image.errors.uploadFailed": "Failed to upload image"
+  ```
+- [ ] Add Dutch translations to `apps/web/src/dictionaries/nl-NL.json` for all keys above
+- [ ] Use translation keys in RewardDialog component via `dict` prop
+
+### 3.7 Update Reward Dialog Component
 - [ ] Update `apps/web/src/components/rewards/RewardDialog.tsx`
   - Add state: `selectedFile: File | null`, `imagePreview: string | null`, `uploadError: string | null`
   - Add file input element (hidden) with `accept="image/jpeg,image/png,image/gif,image/webp"`
@@ -141,23 +179,7 @@
   - Display upload errors in Alert component
   - Show "Uploading..." text on submit button during upload
 
-### 3.4 Add Translations
-- [ ] Add to `apps/web/src/dictionaries/en-US.json`:
-  ```json
-  "dashboard.pages.rewards.dialog.fields.image.label": "Image",
-  "dashboard.pages.rewards.dialog.fields.image.uploadButton": "Upload Image",
-  "dashboard.pages.rewards.dialog.fields.image.orLabel": "or provide URL",
-  "dashboard.pages.rewards.dialog.fields.image.uploading": "Uploading...",
-  "dashboard.pages.rewards.dialog.fields.image.preview": "Image preview",
-  "dashboard.pages.rewards.dialog.fields.image.remove": "Remove image",
-  "dashboard.pages.rewards.dialog.fields.image.errors.fileSize": "File size must be less than 5MB",
-  "dashboard.pages.rewards.dialog.fields.image.errors.fileType": "Only JPEG, PNG, GIF, and WebP images are allowed",
-  "dashboard.pages.rewards.dialog.fields.image.errors.uploadFailed": "Failed to upload image"
-  ```
-- [ ] Add Dutch translations to `apps/web/src/dictionaries/nl-NL.json` for all keys above
-- [ ] Use translation keys in RewardDialog component via `dict` prop
-
-### 3.5 Write Frontend Unit Tests
+### 3.8 Write Frontend Unit Tests
 - [ ] Update `apps/web/tests/unit/store/slices/rewards.slice.test.ts`
   - Test `uploadRewardImage` thunk (success, error)
   - Test `createReward` with image file upload
@@ -165,7 +187,7 @@
   - Test error state for upload failures
 - [ ] Run unit tests: `pnpm --filter web test:unit`
 
-### 3.6 Write Frontend E2E Tests
+### 3.9 Write Frontend E2E Tests
 - [ ] Update `apps/web/tests/e2e/pages/rewards.page.ts`
   - Add locators: `uploadImageButton`, `fileInput`, `imagePreview`, `removeImageButton`, `uploadError`
   - Add helper: `uploadImage(filePath: string)`

@@ -33,16 +33,23 @@ Body:
 **Response**:
 ```json
 {
-  "imageUrl": "http://localhost:9000/famly-rewards/family-123/reward-uuid.jpg"
+  "imageUrl": "/api/images/family-123/reward-uuid.jpg"
 }
 ```
 
 ### Storage Strategy
 - Bucket: `famly-rewards`
-- Path pattern: `{familyId}/{uuid}.{ext}`
+- S3 Path pattern: `{familyId}/{uuid}.{ext}`
+- Database stores: `/api/images/{familyId}/{uuid}.{ext}` (relative path)
 - UUID v4 for unique filenames
 - Preserve original file extension
-- Public-read access (images are not sensitive)
+- Images served through Next.js API proxy (not direct MinIO URLs)
+
+**Rationale**:
+- Storing relative paths makes the system portable across environments
+- Users can access images from anywhere (not just localhost)
+- Next.js API route proxies requests to MinIO internally
+- Can add authentication, caching, or optimization later without changing stored URLs
 
 ### Validation
 - File size limit: 5MB
@@ -60,6 +67,29 @@ Body:
 - AWS SDK works seamlessly with MinIO's S3 compatibility
 - UUID prevents filename conflicts and information leakage
 
+## Image Proxy Design
+
+### Next.js API Route
+Create `/api/images/[...path]/route.ts` to proxy image requests to MinIO:
+
+```typescript
+GET /api/images/{familyId}/{filename}
+```
+
+**Implementation**:
+- Parse `familyId` and `filename` from path params
+- Construct MinIO S3 key: `{familyId}/{filename}`
+- Fetch image from MinIO using `GetObjectCommand`
+- Stream response to client with proper Content-Type headers
+- Set cache headers for browser caching
+
+**Benefits**:
+- Works from any network location
+- Hides MinIO internal URLs
+- Single public domain for all resources
+- Can add access control later if needed
+- Can add image optimization in future
+
 ## Frontend Design
 
 ### UI Components
@@ -68,7 +98,7 @@ Use shadcn components for consistency:
 - `Button` for upload trigger
 - `Label` for file input label
 - `Alert` for upload errors
-- Native `<img>` tag for preview
+- Native `<img>` tag for preview (uses `/api/images/*` URLs)
 
 ### Upload Flow
 1. User clicks "Upload Image" button in RewardDialog
@@ -175,6 +205,13 @@ Add to both `en-US.json` and `nl-NL.json`:
 ### Environment Variables
 ```env
 # API (.env)
+MINIO_ENDPOINT=minio:9000
+MINIO_ACCESS_KEY=famly-dev-access
+MINIO_SECRET_KEY=famly-dev-secret-min-32-chars
+MINIO_BUCKET=famly-rewards
+MINIO_USE_SSL=false
+
+# Web (.env)
 MINIO_ENDPOINT=minio:9000
 MINIO_ACCESS_KEY=famly-dev-access
 MINIO_SECRET_KEY=famly-dev-secret-min-32-chars
