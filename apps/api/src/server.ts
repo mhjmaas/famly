@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { ensureBucketExists } from "@infra/minio/client";
 import { connectMongo, disconnectMongo } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
 import { createSocketServer } from "@modules/chat/realtime/socket-server";
@@ -31,6 +32,11 @@ async function start() {
   logger.info("Connecting to MongoDB...");
   await connectMongo();
   logger.info("MongoDB connected successfully");
+
+  // Initialize MinIO bucket
+  logger.info("Initializing MinIO bucket...");
+  await ensureBucketExists();
+  logger.info("MinIO bucket initialized successfully");
 
   // Initialize chat module indexes
   logger.info("Initializing chat module indexes...");
@@ -138,5 +144,6 @@ start().catch((error) => {
   if (error instanceof Error && error.stack) {
     logger.error("Stack trace:", error.stack);
   }
+  console.log(error);
   process.exit(1);
 });

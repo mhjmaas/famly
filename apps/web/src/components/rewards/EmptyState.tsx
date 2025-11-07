@@ -24,7 +24,11 @@ export function EmptyState({ userRole, onCreateClick, dict }: EmptyStateProps) {
             : t.emptyState.childDescription}
         </p>
         {userRole === "parent" && (
-          <Button onClick={onCreateClick} className="gap-2">
+          <Button
+            onClick={onCreateClick}
+            className="gap-2"
+            data-testid="empty-state-create-button"
+          >
             <Plus className="h-4 w-4" />
             {t.emptyState.createButton}
           </Button>

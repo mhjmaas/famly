@@ -22,6 +22,21 @@ const envSchema = z.object({
     .url()
     .default("http://localhost:3000")
     .describe("Frontend client URL for CORS"),
+  MINIO_ENDPOINT: z.string().min(1).describe("MinIO endpoint (host:port)"),
+  MINIO_ACCESS_KEY: z.string().min(1).describe("MinIO access key"),
+  MINIO_SECRET_KEY: z
+    .string()
+    .min(8)
+    .describe("MinIO secret key (min 8 chars)"),
+  MINIO_BUCKET: z
+    .string()
+    .min(1)
+    .describe("MinIO bucket name for reward images"),
+  MINIO_USE_SSL: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((val) => val === "true")
+    .describe("Whether to use SSL for MinIO connection"),
 });
 
 type Env = z.infer<typeof envSchema>;
@@ -40,6 +55,11 @@ export function getEnv(): Env {
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
     CLIENT_URL: process.env.CLIENT_URL,
+    MINIO_ENDPOINT: process.env.MINIO_ENDPOINT,
+    MINIO_ACCESS_KEY: process.env.MINIO_ACCESS_KEY,
+    MINIO_SECRET_KEY: process.env.MINIO_SECRET_KEY,
+    MINIO_BUCKET: process.env.MINIO_BUCKET,
+    MINIO_USE_SSL: process.env.MINIO_USE_SSL,
   };
 
   try {

@@ -18,6 +18,24 @@ services:
       timeout: 3s
       retries: 5
 
+  minio-test:
+    image: minio/minio:latest
+    container_name: famly-minio-test
+    ports:
+      - '9002:9000'  # API (different port to avoid conflict)
+      - '9003:9001'  # Console
+    environment:
+      MINIO_ROOT_USER: famly-test-access
+      MINIO_ROOT_PASSWORD: famly-test-secret-min-32-chars
+    command: server /data --console-address ":9001"
+    tmpfs:
+      - /data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   api-test:
     build:
       context: ..
@@ -28,12 +46,19 @@ services:
     depends_on:
       mongo-test:
         condition: service_healthy
+      minio-test:
+        condition: service_healthy
     environment:
       MONGODB_URI: mongodb://mongo-test:27017/famly_test
       NODE_ENV: test
       PORT: 3001
       BETTER_AUTH_SECRET: test_better_auth_secret_min_32_chars_required_here_for_testing
       BETTER_AUTH_URL: http://localhost:3001
+      MINIO_ENDPOINT: minio-test:9000
+      MINIO_ACCESS_KEY: famly-test-access
+      MINIO_SECRET_KEY: famly-test-secret-min-32-chars
+      MINIO_BUCKET: famly-rewards-test
+      MINIO_USE_SSL: "false"
     working_dir: /app/apps/api
     command: pnpm dev
     volumes:

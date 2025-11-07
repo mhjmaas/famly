@@ -22,6 +22,7 @@ body:json {
   {
     "name": "Pasta Carbonara",
     "description": "Classic Roman pasta with eggs, cheese, and bacon",
+    "durationMinutes": 35,
     "steps": [
       "Cook pasta until al dente",
       "Make sauce with eggs and cheese",
@@ -40,6 +41,7 @@ docs {
 
   - `name` (string, required): Recipe name (1-200 characters)
   - `description` (string, required): Recipe description (1-2000 characters)
+  - `durationMinutes` (number, optional): Estimated prep+cook time in whole minutes (1-1440)
   - `steps` (array, required): Array of cooking steps (minimum 1, each 1-500 characters)
   - `tags` (array, optional): Array of tags (max 20 tags, each 1-50 characters)
 
@@ -50,6 +52,7 @@ docs {
   - `familyId`: ID of the family
   - `name`: Recipe name
   - `description`: Recipe description
+  - `durationMinutes`: Estimated duration in minutes (only when provided)
   - `steps`: Array of cooking steps
   - `tags`: Array of tags
   - `createdBy`: ID of the user who created it

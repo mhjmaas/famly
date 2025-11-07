@@ -3,74 +3,74 @@
 ## 1. Infrastructure Setup
 
 ### 1.1 Add MinIO to Docker Compose
-- [ ] Add MinIO service to `docker/compose.dev.yml`
+- [x] Add MinIO service to `docker/compose.dev.yml`
   - Image: `minio/minio:latest`
   - Ports: 9000 (API), 9001 (console)
   - Environment: `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`
   - Command: `server /data --console-address ":9001"`
   - Volume: `minio-data:/data`
   - Healthcheck: `mc ready local`
-- [ ] Add MinIO volume definition to compose file
-- [ ] Add MinIO to `docker/compose.test.yml` with same configuration
-- [ ] Document MinIO access credentials in `.env.example`
+- [x] Add MinIO volume definition to compose file
+- [x] Add MinIO to `docker/compose.test.yml` with same configuration
+- [x] Document MinIO access credentials in `.env.example`
 
 ### 1.2 Configure MinIO Client
-- [ ] Add MinIO environment variables to API `.env.example`:
+- [x] Add MinIO environment variables to API `.env.example`:
   - `MINIO_ENDPOINT=minio:9000`
   - `MINIO_ACCESS_KEY=famly-dev-access`
   - `MINIO_SECRET_KEY=famly-dev-secret-min-32-chars`
   - `MINIO_BUCKET=famly-rewards`
   - `MINIO_USE_SSL=false`
-- [ ] Update API Docker Compose service to include MinIO dependency
-- [ ] Add MinIO environment variables to API service in compose files
+- [x] Update API Docker Compose service to include MinIO dependency
+- [x] Add MinIO environment variables to API service in compose files
 
 ## 2. Backend Implementation
 
 ### 2.1 Install Dependencies
-- [ ] Install `@aws-sdk/client-s3` in `apps/api`
-- [ ] Install `multer` in `apps/api`
-- [ ] Install `@types/multer` as dev dependency
-- [ ] Install `uuid` in `apps/api`
-- [ ] Update `package.json` and run `pnpm install`
+- [x] Install `@aws-sdk/client-s3` in `apps/api`
+- [x] Install `multer` in `apps/api`
+- [x] Install `@types/multer` as dev dependency
+- [x] Install `uuid` in `apps/api`
+- [x] Update `package.json` and run `pnpm install`
 
 ### 2.2 Create MinIO Client Module
-- [ ] Create `apps/api/src/infra/minio/client.ts`
-- [ ] Initialize S3Client with MinIO configuration from env
-- [ ] Create `ensureBucketExists` function to create bucket if needed
-- [ ] Export configured S3Client instance
-- [ ] Add bucket creation on app startup in `app.ts`
+- [x] Create `apps/api/src/infra/minio/client.ts`
+- [x] Initialize S3Client with MinIO configuration from env
+- [x] Create `ensureBucketExists` function to create bucket if needed
+- [x] Export configured S3Client instance
+- [x] Add bucket creation on app startup in `app.ts`
 
 ### 2.3 Create File Upload Service
-- [ ] Create `apps/api/src/modules/rewards/services/upload.service.ts`
-- [ ] Implement `uploadRewardImage(file, familyId)` function
+- [x] Create `apps/api/src/modules/rewards/services/upload.service.ts`
+- [x] Implement `uploadRewardImage(file, familyId)` function
   - Generate UUID filename with preserved extension
   - Construct S3 key: `{familyId}/{uuid}.{ext}`
   - Upload to MinIO using `PutObjectCommand`
   - Return relative URL: `/api/images/${familyId}/${uuid}.${ext}`
-- [ ] Add file validation helpers: `validateFileType`, `validateFileSize`
-- [ ] Export service functions
+- [x] Add file validation helpers: `validateFileType`, `validateFileSize`
+- [x] Export service functions
 
 ### 2.4 Create Upload Endpoint
-- [ ] Create `apps/api/src/modules/rewards/routes/upload-image.route.ts`
-- [ ] Configure multer middleware with:
+- [x] Create `apps/api/src/modules/rewards/routes/upload-image.route.ts`
+- [x] Configure multer middleware with:
   - Memory storage
   - File size limit: 5MB
   - File filter: JPEG, PNG, GIF, WebP only
-- [ ] Implement POST handler:
+- [x] Implement POST handler:
   - Validate parent role and family membership
   - Call `uploadRewardImage` service
   - Return `{ imageUrl: string }`
-- [ ] Add error handling for validation and upload failures
-- [ ] Register route in rewards router
+- [x] Add error handling for validation and upload failures
+- [x] Register route in rewards router
 
 ### 2.5 Update Validators
-- [ ] Update `apps/api/src/modules/rewards/validators/create-reward.validator.ts`
+- [x] Update `apps/api/src/modules/rewards/validators/create-reward.validator.ts`
   - Ensure imageUrl validation accepts MinIO URLs
-- [ ] Update `apps/api/src/modules/rewards/validators/update-reward.validator.ts`
+- [x] Update `apps/api/src/modules/rewards/validators/update-reward.validator.ts`
   - Ensure imageUrl validation accepts MinIO URLs
 
 ### 2.6 Write Backend Unit Tests
-- [ ] Create `apps/api/tests/unit/rewards/upload.service.test.ts`
+- [x] Create `apps/api/tests/unit/rewards/upload.service.test.ts`
   - Test successful upload
   - Test filename generation (UUID format)
   - Test file extension preservation
@@ -84,7 +84,7 @@
 - [ ] Run unit tests: `pnpm --filter api test:unit`
 
 ### 2.7 Write Backend E2E Tests
-- [ ] Create `apps/api/tests/e2e/rewards/upload-image.e2e.test.ts`
+- [x] Create `apps/api/tests/e2e/rewards/upload-image.e2e.test.ts`
   - Test successful image upload
   - Test file size exceeds limit
   - Test invalid file type
@@ -98,12 +98,12 @@
 ## 3. Frontend Implementation
 
 ### 3.1 Install Frontend Dependencies
-- [ ] Install `@aws-sdk/client-s3` in `apps/web` (for proxy route)
-- [ ] Update `package.json` and run `pnpm install`
+- [x] Install `@aws-sdk/client-s3` in `apps/web` (for proxy route)
+- [x] Update `package.json` and run `pnpm install`
 
 ### 3.2 Create Image Proxy API Route
-- [ ] Create `apps/web/src/app/api/images/[...path]/route.ts`
-- [ ] Implement GET handler:
+- [x] Create `apps/web/src/app/api/images/[...path]/route.ts`
+- [x] Implement GET handler:
   - Parse `familyId` and `filename` from path params
   - Construct S3 key: `{familyId}/{filename}`
   - Initialize S3Client with MinIO config from env
@@ -111,40 +111,40 @@
   - Stream image data to response
   - Set proper Content-Type header based on file extension
   - Set cache headers: `Cache-Control: public, max-age=31536000, immutable`
-- [ ] Add error handling for missing images (404)
-- [ ] Add error handling for S3 failures (500)
+- [x] Add error handling for missing images (404)
+- [x] Add error handling for S3 failures (500)
 
 ### 3.3 Configure Web Environment
-- [ ] Add MinIO environment variables to `apps/web/.env.example`
-- [ ] Add MinIO environment variables to web service in `docker/compose.dev.yml`
-- [ ] Add MinIO environment variables to web service in `docker/compose.test.yml`
+- [x] Add MinIO environment variables to `apps/web/.env.example`
+- [x] Add MinIO environment variables to web service in `docker/compose.dev.yml`
+- [x] Add MinIO environment variables to web service in `docker/compose.test.yml`
 
 ### 3.4 Update API Client
-- [ ] Add `uploadRewardImage` function to `apps/web/src/lib/api-client.ts`
+- [x] Add `uploadRewardImage` function to `apps/web/src/lib/api-client.ts`
   - Accept `File` object and `familyId`
   - Create `FormData` with file
   - POST to `/v1/families/{familyId}/rewards/upload-image`
   - Return `imageUrl` from response (will be `/api/images/...`)
-- [ ] Export new function
+- [x] Export new function
 
 ### 3.5 Update Redux Store
-- [ ] Add `uploadRewardImage` async thunk to `apps/web/src/store/slices/rewards.slice.ts`
+- [x] Add `uploadRewardImage` async thunk to `apps/web/src/store/slices/rewards.slice.ts`
   - Accept `{ file: File, familyId: string }`
   - Call API client `uploadRewardImage`
   - Handle loading and error states
   - Return `imageUrl` on success
-- [ ] Update `createReward` thunk to support image file upload:
+- [x] Update `createReward` thunk to support image file upload:
   - Add optional `imageFile: File` to parameters
   - If `imageFile` present, call `uploadRewardImage` first
   - Use returned URL in reward creation payload
-- [ ] Update `updateReward` thunk to support image file upload:
+- [x] Update `updateReward` thunk to support image file upload:
   - Add optional `imageFile: File` to parameters
   - If `imageFile` present, call `uploadRewardImage` first
   - Use returned URL in reward update payload
-- [ ] Add image upload error state to slice
+- [x] Add image upload error state to slice
 
 ### 3.6 Add Translations
-- [ ] Add to `apps/web/src/dictionaries/en-US.json`:
+- [x] Add to `apps/web/src/dictionaries/en-US.json`:
   ```json
   "dashboard.pages.rewards.dialog.fields.image.label": "Image",
   "dashboard.pages.rewards.dialog.fields.image.uploadButton": "Upload Image",
@@ -156,11 +156,11 @@
   "dashboard.pages.rewards.dialog.fields.image.errors.fileType": "Only JPEG, PNG, GIF, and WebP images are allowed",
   "dashboard.pages.rewards.dialog.fields.image.errors.uploadFailed": "Failed to upload image"
   ```
-- [ ] Add Dutch translations to `apps/web/src/dictionaries/nl-NL.json` for all keys above
-- [ ] Use translation keys in RewardDialog component via `dict` prop
+- [x] Add Dutch translations to `apps/web/src/dictionaries/nl-NL.json` for all keys above
+- [x] Use translation keys in RewardDialog component via `dict` prop
 
 ### 3.7 Update Reward Dialog Component
-- [ ] Update `apps/web/src/components/rewards/RewardDialog.tsx`
+- [x] Update `apps/web/src/components/rewards/RewardDialog.tsx`
   - Add state: `selectedFile: File | null`, `imagePreview: string | null`, `uploadError: string | null`
   - Add file input element (hidden) with `accept="image/jpeg,image/png,image/gif,image/webp"`
   - Add "Upload Image" Button that triggers file input click
@@ -180,7 +180,7 @@
   - Show "Uploading..." text on submit button during upload
 
 ### 3.8 Write Frontend Unit Tests
-- [ ] Update `apps/web/tests/unit/store/slices/rewards.slice.test.ts`
+- [x] Update `apps/web/tests/unit/store/slices/rewards.slice.test.ts`
   - Test `uploadRewardImage` thunk (success, error)
   - Test `createReward` with image file upload
   - Test `updateReward` with image file upload
@@ -188,14 +188,15 @@
 - [ ] Run unit tests: `pnpm --filter web test:unit`
 
 ### 3.9 Write Frontend E2E Tests
-- [ ] Update `apps/web/tests/e2e/pages/rewards.page.ts`
+- [x] Update `apps/web/tests/e2e/pages/rewards.page.ts`
   - Add locators: `uploadImageButton`, `fileInput`, `imagePreview`, `removeImageButton`, `uploadError`
   - Add helper: `uploadImage(filePath: string)`
   - Add helper: `removeUploadedImage()`
   - Add helper: `getUploadError(): string`
-- [ ] Create test fixtures: `apps/web/tests/fixtures/test-image-small.jpg` (< 100KB)
-- [ ] Create test fixtures: `apps/web/tests/fixtures/test-image-large.jpg` (> 5MB, for error testing)
-- [ ] Update `apps/web/tests/e2e/app/rewards.spec.ts`
+- [ ] Create test fixtures: `apps/web/tests/fixtures/test-image.png` (< 100KB)
+- [ ] Create test fixtures: `apps/web/tests/fixtures/test-image-large.png` (> 5MB, for error testing)
+- [ ] Create test fixtures: `apps/web/tests/fixtures/test-document.pdf` (for invalid type testing)
+- [x] Update `apps/web/tests/e2e/app/rewards.spec.ts`
   - Test: Upload image on reward creation
   - Test: Upload image on reward edit
   - Test: File size validation error
@@ -208,10 +209,10 @@
 ## 4. Testing & Validation
 
 ### 4.1 Integration Testing
-- [ ] Start full stack with `docker compose -f docker/compose.dev.yml up`
-- [ ] Verify MinIO console accessible at `http://localhost:9001`
-- [ ] Verify API connects to MinIO on startup
-- [ ] Manually test upload flow:
+- [x] Start full stack with `docker compose -f docker/compose.dev.yml up`
+- [x] Verify MinIO console accessible at `http://localhost:9001`
+- [x] Verify API connects to MinIO on startup
+- [x] Manually test upload flow:
   - Create reward with uploaded image
   - Verify image stored in MinIO bucket
   - Verify image displays in reward card

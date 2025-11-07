@@ -89,6 +89,21 @@ describe("RecipeRepository", () => {
       expect(result.tags).toEqual([]);
     });
 
+    it("should persist duration when provided", async () => {
+      mockCollection.insertOne.mockResolvedValue({});
+
+      const input = {
+        name: "Timed Recipe",
+        description: "Needs 30 minutes",
+        steps: ["Step"],
+        durationMinutes: 30,
+      };
+
+      const result = await repository.create(familyId, input, userId);
+
+      expect(result.durationMinutes).toBe(30);
+    });
+
     it("should set timestamps on creation", async () => {
       mockCollection.insertOne.mockResolvedValue({});
 
@@ -350,6 +365,31 @@ describe("RecipeRepository", () => {
 
       const updateCall = mockCollection.findOneAndUpdate.mock.calls[0];
       expect(updateCall[1].$set).toHaveProperty("tags", newTags);
+    });
+
+    it("should set duration when provided", async () => {
+      const recipeId = new ObjectId();
+      mockCollection.findOneAndUpdate.mockResolvedValue({
+        _id: recipeId,
+      });
+
+      await repository.update(familyId, recipeId, { durationMinutes: 25 });
+
+      const updateCall = mockCollection.findOneAndUpdate.mock.calls[0];
+      expect(updateCall[1].$set).toHaveProperty("durationMinutes", 25);
+      expect(updateCall[1].$unset).toBeUndefined();
+    });
+
+    it("should unset duration when null provided", async () => {
+      const recipeId = new ObjectId();
+      mockCollection.findOneAndUpdate.mockResolvedValue({
+        _id: recipeId,
+      });
+
+      await repository.update(familyId, recipeId, { durationMinutes: null });
+
+      const updateCall = mockCollection.findOneAndUpdate.mock.calls[0];
+      expect(updateCall[1].$unset).toHaveProperty("durationMinutes", "");
     });
   });
 

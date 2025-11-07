@@ -9,6 +9,7 @@ import { listClaimsRoute } from "./list-claims.route";
 import { listRewardsRoute } from "./list-rewards.route";
 import { toggleFavouriteRoute } from "./toggle-favourite.route";
 import { updateRewardRoute } from "./update-reward.route";
+import { uploadImageRoute } from "./upload-image.route";
 
 /**
  * Main rewards router
@@ -22,6 +23,7 @@ export function rewardsRouter(): Router {
   const router = Router({ mergeParams: true });
 
   // Reward routes - order matters! More specific paths before parameterized ones
+  router.use(uploadImageRoute()); // POST /rewards/upload-image
   router.use(createRewardRoute()); // POST /rewards
   router.use(listRewardsRoute()); // GET /rewards
   router.use(claimRewardRoute()); // POST /rewards/:rewardId/claim

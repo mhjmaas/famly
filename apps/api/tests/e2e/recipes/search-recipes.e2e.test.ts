@@ -207,6 +207,31 @@ describe("E2E: POST /v1/families/:familyId/recipes/search", () => {
         expect(recipe.updatedAt).toBeDefined();
       }
     });
+
+    it("should include duration in search results when set", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Quick Soup",
+          description: "Takes 20 minutes",
+          steps: ["Boil", "Serve"],
+          durationMinutes: 20,
+        });
+
+      const response = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes/search`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({ query: "Quick" });
+
+      expect(response.status).toBe(200);
+      const recipe = response.body.recipes.find(
+        (r: any) => r.name === "Quick Soup",
+      );
+      expect(recipe?.durationMinutes).toBe(20);
+    });
   });
 
   describe("Validation", () => {

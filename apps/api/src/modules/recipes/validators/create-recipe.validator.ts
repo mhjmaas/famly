@@ -11,6 +11,12 @@ export const createRecipeSchema = z.object({
     .string()
     .min(1, "Description is required")
     .max(2000, "Description must not exceed 2000 characters"),
+  durationMinutes: z
+    .number()
+    .int("Duration must be a whole number of minutes")
+    .min(1, "Duration must be at least 1 minute")
+    .max(1440, "Duration must not exceed 1440 minutes")
+    .optional(),
   steps: z
     .array(
       z

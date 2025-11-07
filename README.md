@@ -10,6 +10,11 @@ Famly is a comprehensive family organization app designed to streamline task man
 docker run --name mongodb-famly -d -p 27017:27017 mongo
 ```
 
+### Start minio
+```bash
+docker run --name minio-famly -d -p 9000:9000 -p 9001:9001 -e "MINIO_ROOT_USER=your-access-key" -e "MINIO_ROOT_PASSWORD=your-secret-key" minio/minio server /data --console-address ":9001"
+```
+
 ### Start API
 
 ```bash

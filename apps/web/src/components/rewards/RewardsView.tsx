@@ -73,10 +73,13 @@ export function RewardsView({
     setDialogOpen(true);
   };
 
-  const handleDialogSubmit = async (data: CreateRewardRequest) => {
+  const handleDialogSubmit = async (
+    data: CreateRewardRequest,
+    imageFile?: File,
+  ) => {
     try {
       if (dialogMode === "create") {
-        await dispatch(createReward({ familyId, data })).unwrap();
+        await dispatch(createReward({ familyId, data, imageFile })).unwrap();
         toast.success("Reward created successfully");
       } else if (editingReward) {
         await dispatch(
@@ -84,6 +87,7 @@ export function RewardsView({
             familyId,
             rewardId: editingReward._id,
             data,
+            imageFile,
           }),
         ).unwrap();
         toast.success("Reward updated successfully");
@@ -178,7 +182,11 @@ export function RewardsView({
           <p className="text-muted-foreground">{t.description}</p>
         </div>
         {userRole === "parent" && (
-          <Button onClick={handleCreateClick} className="gap-2">
+          <Button
+            onClick={handleCreateClick}
+            className="gap-2"
+            data-testid="create-reward-button"
+          >
             <Plus className="h-4 w-4" />
             {t.actions.createButton}
           </Button>

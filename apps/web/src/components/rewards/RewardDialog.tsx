@@ -1,5 +1,5 @@
-import { Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Plus, Upload, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,7 +18,7 @@ interface RewardDialogProps {
   isOpen: boolean;
   mode: "create" | "edit";
   reward?: Reward;
-  onSubmit: (data: CreateRewardRequest) => void;
+  onSubmit: (data: CreateRewardRequest, imageFile?: File) => void;
   onClose: () => void;
   dict: any;
 }
@@ -37,6 +37,10 @@ export function RewardDialog({
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [showDescription, setShowDescription] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Sync form state when reward changes (for edit mode)
   useEffect(() => {
@@ -56,6 +60,47 @@ export function RewardDialog({
     }
   }, [reward]);
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      setUploadError(t.fields.image.errors.fileType);
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError(t.fields.image.errors.fileSize);
+      return;
+    }
+
+    // Clear any previous errors
+    setUploadError(null);
+
+    // Set the file and generate preview
+    setSelectedFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+
+    // Clear URL input when file is selected
+    setImageUrl("");
+  };
+
+  const handleRemoveFile = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setSelectedFile(null);
+    setImagePreview(null);
+    setUploadError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -66,7 +111,7 @@ export function RewardDialog({
       imageUrl: imageUrl || undefined,
     };
 
-    onSubmit(data);
+    onSubmit(data, selectedFile || undefined);
     handleClose();
   };
 
@@ -76,6 +121,7 @@ export function RewardDialog({
     setDescription("");
     setImageUrl("");
     setShowDescription(false);
+    handleRemoveFile();
     onClose();
   };
 
@@ -121,18 +167,81 @@ export function RewardDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="imageUrl">{t.fields.imageUrl.label}</Label>
-              <Input
-                id="imageUrl"
-                type="url"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder={t.fields.imageUrl.placeholder}
-                data-testid="reward-image-input"
+              <Label>{t.fields.image.label}</Label>
+
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                onChange={handleFileSelect}
+                className="hidden"
+                data-testid="reward-file-input"
               />
-              <p className="text-xs text-muted-foreground">
-                {t.fields.imageUrl.help}
-              </p>
+
+              {/* Upload button or preview */}
+              {!imagePreview ? (
+                <div className="space-y-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full gap-2"
+                    data-testid="reward-upload-button"
+                  >
+                    <Upload className="h-4 w-4" />
+                    {t.fields.image.uploadButton}
+                  </Button>
+
+                  {/* "or provide URL" label */}
+                  <div className="text-center text-sm text-muted-foreground">
+                    {t.fields.image.orLabel}
+                  </div>
+
+                  {/* URL input */}
+                  <Input
+                    id="imageUrl"
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder={t.fields.image.urlPlaceholder}
+                    disabled={!!selectedFile}
+                    data-testid="reward-image-url-input"
+                  />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {/* Image preview */}
+                  <div className="relative inline-block">
+                    <img
+                      src={imagePreview}
+                      alt={t.fields.image.preview}
+                      className="max-h-48 rounded-md border"
+                      data-testid="reward-image-preview"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -right-2 -top-2 h-6 w-6 rounded-full"
+                      onClick={handleRemoveFile}
+                      data-testid="reward-remove-image-button"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Upload error */}
+              {uploadError && (
+                <p
+                  className="text-sm text-destructive"
+                  data-testid="reward-upload-error"
+                >
+                  {uploadError}
+                </p>
+              )}
             </div>
 
             {!showDescription ? (
@@ -141,6 +250,7 @@ export function RewardDialog({
                 variant="ghost"
                 className="gap-2 text-muted-foreground hover:text-foreground"
                 onClick={() => setShowDescription(true)}
+                data-testid="reward-description-toggle"
               >
                 <Plus className="h-4 w-4" />
                 {t.fields.description.addButton}

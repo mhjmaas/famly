@@ -65,14 +65,19 @@ export function validateCreateReward(input: unknown): CreateRewardInput {
       );
     }
 
-    // Validate URL format
-    try {
-      const url = new URL(data.imageUrl);
-      if (!["http:", "https:"].includes(url.protocol)) {
-        throw new Error("Invalid protocol");
+    // Validate URL format - accept either full HTTP(S) URLs or relative paths from upload
+    const isRelativePath = data.imageUrl.startsWith("/api/images/");
+    if (!isRelativePath) {
+      try {
+        const url = new URL(data.imageUrl);
+        if (!["http:", "https:"].includes(url.protocol)) {
+          throw new Error("Invalid protocol");
+        }
+      } catch {
+        throw HttpError.badRequest(
+          "Reward imageUrl must be a valid HTTP(S) URL or a relative path starting with /api/images/",
+        );
       }
-    } catch {
-      throw HttpError.badRequest("Reward imageUrl must be a valid HTTP(S) URL");
     }
   }
 

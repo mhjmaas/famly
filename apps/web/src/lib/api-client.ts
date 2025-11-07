@@ -468,6 +468,40 @@ export async function toggleRewardFavourite(
   );
 }
 
+/**
+ * Upload an image file for a reward
+ * @param familyId - The family ID
+ * @param file - The image file to upload
+ * @returns The relative URL to access the uploaded image
+ */
+export async function uploadRewardImage(
+  familyId: string,
+  file: File,
+): Promise<{ imageUrl: string }> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(
+    `${API_BASE_URL}/v1/families/${familyId}/rewards/upload-image`,
+    {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage =
+      typeof errorData === "object" && errorData !== null
+        ? (errorData as { error?: string }).error || "Upload failed"
+        : "Upload failed";
+    throw new ApiError(errorMessage, response.status, errorData);
+  }
+
+  return response.json();
+}
+
 // ============= Claims API =============
 
 export async function getClaims(

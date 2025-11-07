@@ -606,10 +606,19 @@
               "placeholder": "bijv., 50",
               "required": "verplicht"
             },
-            "imageUrl": {
-              "label": "Afbeeldings-URL",
-              "placeholder": "https://voorbeeld.com/afbeelding.jpg (optioneel)",
-              "help": "Laat leeg om automatisch een placeholder te genereren op basis van de beloningsnaam"
+            "image": {
+              "label": "Afbeelding",
+              "uploadButton": "Afbeelding Uploaden",
+              "orLabel": "of geef URL op",
+              "urlPlaceholder": "https://voorbeeld.com/afbeelding.jpg (optioneel)",
+              "uploading": "Uploaden...",
+              "preview": "Afbeeldingsvoorbeeld",
+              "remove": "Afbeelding verwijderen",
+              "errors": {
+                "fileSize": "Bestandsgrootte moet kleiner zijn dan 5MB",
+                "fileType": "Alleen JPEG, PNG, GIF en WebP afbeeldingen zijn toegestaan",
+                "uploadFailed": "Afbeelding uploaden mislukt"
+              }
             },
             "description": {
               "label": "Beschrijving",

@@ -6,6 +6,7 @@ export interface Recipe {
   familyId: ObjectId;
   name: string;
   description: string;
+  durationMinutes?: number;
   steps: string[];
   tags: string[];
   createdBy: ObjectId;
@@ -17,6 +18,7 @@ export interface Recipe {
 export interface CreateRecipeInput {
   name: string;
   description: string;
+  durationMinutes?: number;
   steps: string[];
   tags?: string[];
 }
@@ -24,6 +26,7 @@ export interface CreateRecipeInput {
 export interface UpdateRecipeInput {
   name?: string;
   description?: string;
+  durationMinutes?: number | null;
   steps?: string[];
   tags?: string[];
 }
@@ -34,6 +37,7 @@ export interface RecipeDTO {
   familyId: string;
   name: string;
   description: string;
+  durationMinutes?: number;
   steps: string[];
   tags: string[];
   createdBy: string;

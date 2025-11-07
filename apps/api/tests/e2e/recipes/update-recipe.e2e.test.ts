@@ -195,6 +195,53 @@ describe("E2E: PATCH /v1/families/:familyId/recipes/:recipeId", () => {
       expect(response.status).toBe(200);
       expect(response.body.updatedAt).not.toBe(originalUpdatedAt);
     });
+
+    it("should update recipe duration", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      const createResponse = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Recipe",
+          description: "Desc",
+          steps: ["Step"],
+        });
+
+      const recipeId = createResponse.body._id;
+
+      const response = await request(baseUrl)
+        .patch(`/v1/families/${family.familyId}/recipes/${recipeId}`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({ durationMinutes: 75 });
+
+      expect(response.status).toBe(200);
+      expect(response.body.durationMinutes).toBe(75);
+    });
+
+    it("should clear recipe duration when null sent", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      const createResponse = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Recipe",
+          description: "Desc",
+          steps: ["Step"],
+          durationMinutes: 30,
+        });
+
+      const recipeId = createResponse.body._id;
+
+      const response = await request(baseUrl)
+        .patch(`/v1/families/${family.familyId}/recipes/${recipeId}`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({ durationMinutes: null });
+
+      expect(response.status).toBe(200);
+      expect(response.body).not.toHaveProperty("durationMinutes");
+    });
   });
 
   describe("Validation", () => {
@@ -282,6 +329,63 @@ describe("E2E: PATCH /v1/families/:familyId/recipes/:recipeId", () => {
         .patch(`/v1/families/${family.familyId}/recipes/${recipeId}`)
         .set("Authorization", `Bearer ${family.token}`)
         .send({ tags: Array(21).fill("tag") });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should reject duration below minimum", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+      const recipe = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Recipe",
+          description: "Desc",
+          steps: ["Step"],
+        });
+
+      const response = await request(baseUrl)
+        .patch(`/v1/families/${family.familyId}/recipes/${recipe.body._id}`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({ durationMinutes: 0 });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should reject duration above maximum", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+      const recipe = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Recipe",
+          description: "Desc",
+          steps: ["Step"],
+        });
+
+      const response = await request(baseUrl)
+        .patch(`/v1/families/${family.familyId}/recipes/${recipe.body._id}`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({ durationMinutes: 2000 });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should reject non-integer duration", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+      const recipe = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Recipe",
+          description: "Desc",
+          steps: ["Step"],
+        });
+
+      const response = await request(baseUrl)
+        .patch(`/v1/families/${family.familyId}/recipes/${recipe.body._id}`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({ durationMinutes: 10.5 });
 
       expect(response.status).toBe(400);
     });

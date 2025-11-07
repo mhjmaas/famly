@@ -113,6 +113,30 @@ describe("E2E: GET /v1/families/:familyId/recipes", () => {
         expect(current.getTime()).toBeGreaterThanOrEqual(next.getTime());
       }
     });
+
+    it("should include duration when present", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Timed Recipe",
+          description: "Has duration",
+          steps: ["Step"],
+          durationMinutes: 60,
+        });
+
+      const response = await request(baseUrl)
+        .get(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`);
+
+      expect(response.status).toBe(200);
+      const recipeWithDuration = response.body.recipes.find(
+        (r: any) => r.durationMinutes === 60,
+      );
+      expect(recipeWithDuration).toBeDefined();
+    });
   });
 
   describe("Pagination", () => {
