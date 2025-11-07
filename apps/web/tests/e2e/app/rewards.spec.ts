@@ -5,6 +5,7 @@ import {
     switchUser,
 } from "../helpers/auth";
 import { RewardsPage } from "../pages/rewards.page";
+import { TasksPage } from "../pages/tasks.page";
 import { setViewport, waitForPageLoad } from "../setup/test-helpers";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002";
@@ -283,13 +284,13 @@ test.describe("Rewards Page", () => {
                         Authorization: `Bearer ${parentUser.sessionToken}`,
                     },
                     body: JSON.stringify({
-                        memberId: parentUser.userId,
+                        userId: parentUser.userId,
                         amount: 10,
                         reason: "Test karma",
                     }),
                 },
             );
-            await grantResponse.json();
+            const response = await grantResponse.json();
 
             // Then create a reward via API with very low karma cost
             await createRewardViaApi(parentUser, {
@@ -311,7 +312,7 @@ test.describe("Rewards Page", () => {
             await expect(rewardsPage.claimSheet).not.toBeVisible();
         });
 
-        test("should claim a reward successfully", async ({ page }) => {
+        test("should claim a reward successfully and complete full workflow", async ({ page }) => {
             // Grant karma to user FIRST
             const grantResponse = await fetch(
                 `${API_URL}/v1/families/${parentUser.familyId}/karma/grant`,
@@ -322,7 +323,7 @@ test.describe("Rewards Page", () => {
                         Authorization: `Bearer ${parentUser.sessionToken}`,
                     },
                     body: JSON.stringify({
-                        memberId: parentUser.userId,
+                        userId: parentUser.userId,
                         amount: 10,
                         reason: "Test karma",
                     }),
@@ -345,18 +346,56 @@ test.describe("Rewards Page", () => {
             await claimButton.click();
             await expect(rewardsPage.claimSheet).toBeVisible();
 
-            const claimResponse = page.waitForResponse(
-                (response) =>
-                    response.url().includes(`/v1/families/${parentUser.familyId}/claims`) &&
-                    response.request().method() === "POST",
-            );
-
             await rewardsPage.claimConfirmButton.click();
-            await claimResponse;
+
+            await expect(rewardsPage.claimSheet).not.toBeVisible();
 
             // Verify pending status
             const isPending = await rewardsPage.isRewardPending(0);
             expect(isPending).toBe(true);
+
+            // Navigate to tasks page to verify task was created
+            const tasksPage = new TasksPage(page);
+            await tasksPage.gotoTasks("en-US");
+            await waitForPageLoad(page);
+
+            // Wait for tasks to load and verify task card exists
+            await tasksPage.taskCards.first().waitFor({ state: "visible", timeout: 10000 });
+
+            // Verify task name contains the reward name and parent's name
+            const taskName = await tasksPage.getTaskName(0);
+            expect(taskName).toContain("Claim Test");
+            expect(taskName).toContain("Parent Rewards User");
+
+            // Complete the task
+            const completeResponse = page.waitForResponse(
+                (response) =>
+                    response.url().includes(`/v1/families/${parentUser.familyId}/tasks/`) &&
+                    response.request().method() === "PATCH",
+            );
+            await tasksPage.toggleTaskCompletion(0);
+            await completeResponse;
+
+            // Verify task is marked as completed
+            await expect(tasksPage.taskCompleteToggles.nth(0)).toHaveAttribute(
+                "data-state",
+                "checked",
+            );
+
+            // Navigate back to rewards page
+            await rewardsPage.gotoRewards("en-US");
+            await waitForPageLoad(page);
+            await rewardsPage.rewardCards.first().waitFor({ state: "visible" });
+
+            // Verify reward is claimable again (no longer pending)
+            const isStillPending = await rewardsPage.isRewardPending(0);
+            expect(isStillPending).toBe(false);
+
+            // Verify claim count shows "1x claimed"
+            const rewardCard = rewardsPage.rewardCards.first();
+            const claimCountText = await rewardCard.textContent();
+            expect(claimCountText).toContain("1");
+            expect(claimCountText?.toLowerCase()).toMatch(/claimed|claim/);
         });
     });
 
@@ -474,7 +513,7 @@ test.describe("Rewards Page - Child User", () => {
         expect(isFavouritedAfter).toBe(!isFavouritedBefore);
     });
 
-    test("should allow child to claim rewards with sufficient karma", async ({ page }) => {
+    test("should allow child to claim rewards and verify task creation", async ({ page }) => {
         // Grant karma to child BEFORE they view the page
         const grantResponse = await fetch(
             `${API_URL}/v1/families/${childUser.familyId}/karma/grant`,
@@ -485,7 +524,7 @@ test.describe("Rewards Page - Child User", () => {
                     Authorization: `Bearer ${parentUser.sessionToken}`,
                 },
                 body: JSON.stringify({
-                    memberId: childUser.userId,
+                    userId: childUser.userId,
                     amount: 20,
                     reason: "Test karma for child",
                 }),
@@ -501,5 +540,32 @@ test.describe("Rewards Page - Child User", () => {
         await claimButton.waitFor({ state: "visible" });
         await claimButton.click();
         await expect(rewardsPage.claimSheet).toBeVisible();
+
+        // Confirm the claim
+        await rewardsPage.claimConfirmButton.click();
+
+        // Verify the claim sheet is invisible (closed)
+        await expect(rewardsPage.claimSheet).not.toBeVisible();
+
+        // Verify the reward shows as pending
+        const isPending = await rewardsPage.isRewardPending(0);
+        expect(isPending).toBe(true);
+
+        // Navigate to tasks page to verify task was created
+        const tasksPage = new TasksPage(page);
+        await tasksPage.gotoTasks("en-US");
+        await waitForPageLoad(page);
+
+        // Wait for tasks to load and verify task card exists
+        await tasksPage.taskCards.first().waitFor({ state: "visible", timeout: 10000 });
+
+        // Verify task name contains the reward name and child's name
+        const taskName = await tasksPage.getTaskName(0);
+        expect(taskName).toContain("Child Test Reward");
+        expect(taskName).toContain("Child User");
+
+        // Verify task is assigned to parents (child can see it but shouldn't be able to complete it themselves)
+        const assignment = await tasksPage.getTaskAssignment(0);
+        expect(assignment?.toLowerCase()).toContain("parent");
     });
 });
