@@ -509,4 +509,97 @@ describe("TaskGeneratorService - Cleanup Functionality", () => {
       ).toHaveBeenCalledWith(schedule2Id, today);
     });
   });
+
+  describe("generateTaskForSchedule", () => {
+    it("creates a task immediately when schedule applies to the current date", async () => {
+      const today = new Date();
+      const scheduleId = new ObjectId();
+      const familyId = new ObjectId();
+      const userId = new ObjectId();
+
+      const schedule: TaskSchedule = {
+        _id: scheduleId,
+        familyId,
+        name: "Immediate Task",
+        description: "Do the dishes",
+        assignment: { type: "unassigned" },
+        schedule: {
+          daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+          weeklyInterval: 1,
+          startDate: new Date(today.getTime() - 86400000),
+        },
+        timeOfDay: "07:30",
+        metadata: { karma: 15 },
+        createdBy: userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockTaskRepository.findTaskByScheduleAndDate.mockResolvedValue(null);
+      mockTaskRepository.findIncompleteTasksBySchedule.mockResolvedValue([]);
+      mockTaskRepository.createTask.mockResolvedValue({
+        _id: new ObjectId(),
+        familyId,
+        name: schedule.name,
+        assignment: schedule.assignment,
+        dueDate: new Date(),
+        scheduleId,
+        createdBy: userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      mockScheduleRepository.updateLastGeneratedDate.mockResolvedValue();
+
+      const created = await taskGeneratorService.generateTaskForSchedule(
+        schedule,
+        today,
+      );
+
+      expect(created).toBe(true);
+      expect(mockTaskRepository.createTask).toHaveBeenCalledTimes(1);
+      const createArgs = mockTaskRepository.createTask.mock.calls[0][1];
+      expect(createArgs).toMatchObject({
+        description: schedule.description,
+        assignment: schedule.assignment,
+        metadata: schedule.metadata,
+      });
+      expect(
+        mockScheduleRepository.updateLastGeneratedDate,
+      ).toHaveBeenCalledWith(scheduleId, today);
+    });
+
+    it("skips task creation when schedule is outside its start date", async () => {
+      const today = new Date();
+      const futureStart = new Date(today.getTime() + 7 * 86400000);
+
+      const schedule: TaskSchedule = {
+        _id: new ObjectId(),
+        familyId: new ObjectId(),
+        name: "Future Only",
+        assignment: { type: "unassigned" },
+        schedule: {
+          daysOfWeek: [futureStart.getDay()],
+          weeklyInterval: 1,
+          startDate: futureStart,
+        },
+        createdBy: new ObjectId(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockTaskRepository.findTaskByScheduleAndDate.mockResolvedValue(null);
+      mockTaskRepository.findIncompleteTasksBySchedule.mockResolvedValue([]);
+
+      const created = await taskGeneratorService.generateTaskForSchedule(
+        schedule,
+        today,
+      );
+
+      expect(created).toBe(false);
+      expect(mockTaskRepository.createTask).not.toHaveBeenCalled();
+      expect(
+        mockScheduleRepository.updateLastGeneratedDate,
+      ).not.toHaveBeenCalled();
+    });
+  });
 });

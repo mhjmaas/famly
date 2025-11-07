@@ -12,6 +12,8 @@ describe("TaskGeneratorService", () => {
   beforeEach(() => {
     mockTaskRepository = {
       findTaskByScheduleAndDate: jest.fn(),
+      findIncompleteTasksBySchedule: jest.fn(),
+      deleteTasksByIds: jest.fn(),
       createTask: jest.fn(),
     } as any;
 

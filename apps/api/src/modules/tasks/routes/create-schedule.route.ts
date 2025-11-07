@@ -11,7 +11,9 @@ import { Router } from "express";
 import { ObjectId } from "mongodb";
 import { toTaskScheduleDTO } from "../lib/task-schedule.mapper";
 import { ScheduleRepository } from "../repositories/schedule.repository";
+import { TaskRepository } from "../repositories/task.repository";
 import { ScheduleService } from "../services/schedule.service";
+import { TaskGeneratorService } from "../services/task-generator.service";
 import { validateCreateSchedule } from "../validators/create-schedule.validator";
 
 /**
@@ -41,10 +43,16 @@ export function createScheduleRoute(): Router {
   const activityEventService = new ActivityEventService(
     activityEventRepository,
   );
+  const taskRepository = new TaskRepository();
+  const taskGeneratorService = new TaskGeneratorService(
+    taskRepository,
+    scheduleRepository,
+  );
   const scheduleService = new ScheduleService(
     scheduleRepository,
     membershipRepository,
     activityEventService,
+    taskGeneratorService,
   );
 
   router.post(

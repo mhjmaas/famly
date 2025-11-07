@@ -93,6 +93,8 @@ export interface RewardDTO {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  claimCount?: number;
+  isFavourite?: boolean;
 }
 
 /**
@@ -118,7 +120,7 @@ export interface ClaimDTO {
  */
 export interface RewardDetailsDTO extends RewardDTO {
   /** Whether current member has marked as favourite */
-  memberFavourite: boolean;
+  isFavourite: boolean;
   /** Total number of times current member has claimed this reward */
   claimCount: number;
   /** Total number of times any member has claimed this reward */

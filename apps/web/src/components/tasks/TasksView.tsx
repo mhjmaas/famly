@@ -174,6 +174,7 @@ export function TasksView({
             taskId: task._id,
             userId,
             karma: task.metadata?.karma,
+            isRewardClaim: !!task.metadata?.claimId,
           }),
         ).unwrap();
 
@@ -194,6 +195,7 @@ export function TasksView({
             taskId: task._id,
             userId,
             karma: task.metadata?.karma,
+            isRewardClaim: !!task.metadata?.claimId,
           }),
         ).unwrap();
         toast.success(dict.dashboard.pages.tasks.complete.reopen);

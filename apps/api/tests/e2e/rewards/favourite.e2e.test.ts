@@ -47,7 +47,7 @@ describe("E2E: Reward Favourite Functionality", () => {
         });
 
       expect(favouriteResponse.status).toBe(200);
-      expect(favouriteResponse.body).toHaveProperty("memberFavourite", true);
+      expect(favouriteResponse.body).toHaveProperty("isFavourite", true);
     });
 
     it("should member unmark reward as favourite", async () => {
@@ -89,7 +89,7 @@ describe("E2E: Reward Favourite Functionality", () => {
         });
 
       expect(unmarkResponse.status).toBe(200);
-      expect(unmarkResponse.body).toHaveProperty("memberFavourite", false);
+      expect(unmarkResponse.body).toHaveProperty("isFavourite", false);
     });
 
     it("should toggle favourite on/off multiple times", async () => {
@@ -121,7 +121,7 @@ describe("E2E: Reward Favourite Functionality", () => {
         });
 
       expect(toggleOnResponse.status).toBe(200);
-      expect(toggleOnResponse.body.memberFavourite).toBe(true);
+      expect(toggleOnResponse.body.isFavourite).toBe(true);
 
       // Second toggle: off
       const toggleOffResponse = await request(baseUrl)
@@ -132,7 +132,7 @@ describe("E2E: Reward Favourite Functionality", () => {
         });
 
       expect(toggleOffResponse.status).toBe(200);
-      expect(toggleOffResponse.body.memberFavourite).toBe(false);
+      expect(toggleOffResponse.body.isFavourite).toBe(false);
 
       // Third toggle: on again
       const toggleOnAgainResponse = await request(baseUrl)
@@ -143,7 +143,7 @@ describe("E2E: Reward Favourite Functionality", () => {
         });
 
       expect(toggleOnAgainResponse.status).toBe(200);
-      expect(toggleOnAgainResponse.body.memberFavourite).toBe(true);
+      expect(toggleOnAgainResponse.body.isFavourite).toBe(true);
     });
   });
 
@@ -179,7 +179,7 @@ describe("E2E: Reward Favourite Functionality", () => {
         });
 
       expect(child1FavResponse.status).toBe(200);
-      expect(child1FavResponse.body.memberFavourite).toBe(true);
+      expect(child1FavResponse.body.isFavourite).toBe(true);
 
       // Child 2 does NOT mark as favourite
       const child2FavResponse = await request(baseUrl)
@@ -190,7 +190,7 @@ describe("E2E: Reward Favourite Functionality", () => {
         });
 
       expect(child2FavResponse.status).toBe(200);
-      expect(child2FavResponse.body.memberFavourite).toBe(false);
+      expect(child2FavResponse.body.isFavourite).toBe(false);
 
       // Get reward as child 1 - should show as favourite
       const child1GetResponse = await request(baseUrl)
@@ -198,7 +198,7 @@ describe("E2E: Reward Favourite Functionality", () => {
         .set("Authorization", `Bearer ${child1Token}`);
 
       if (child1GetResponse.status === 200) {
-        expect(child1GetResponse.body.memberFavourite).toBe(true);
+        expect(child1GetResponse.body.isFavourite).toBe(true);
       }
 
       // Get reward as child 2 - should NOT show as favourite
@@ -207,7 +207,7 @@ describe("E2E: Reward Favourite Functionality", () => {
         .set("Authorization", `Bearer ${child2Token}`);
 
       if (child2GetResponse.status === 200) {
-        expect(child2GetResponse.body.memberFavourite).toBe(false);
+        expect(child2GetResponse.body.isFavourite).toBe(false);
       }
     });
   });
@@ -249,7 +249,7 @@ describe("E2E: Reward Favourite Functionality", () => {
         .set("Authorization", `Bearer ${childToken}`);
 
       if (firstGetResponse.status === 200) {
-        expect(firstGetResponse.body.memberFavourite).toBe(true);
+        expect(firstGetResponse.body.isFavourite).toBe(true);
       }
 
       // Get reward again - favourite should still be set
@@ -258,7 +258,7 @@ describe("E2E: Reward Favourite Functionality", () => {
         .set("Authorization", `Bearer ${childToken}`);
 
       if (secondGetResponse.status === 200) {
-        expect(secondGetResponse.body.memberFavourite).toBe(true);
+        expect(secondGetResponse.body.isFavourite).toBe(true);
       }
 
       // List all rewards - favourite status should appear
@@ -270,7 +270,7 @@ describe("E2E: Reward Favourite Functionality", () => {
         const reward = listResponse.body.find((r: any) => r._id === rewardId);
         if (reward) {
           // Verify reward has favourite info in list
-          expect(reward).toHaveProperty("memberFavourite");
+          expect(reward).toHaveProperty("isFavourite");
         }
       }
     });
@@ -322,7 +322,7 @@ describe("E2E: Reward Favourite Functionality", () => {
         .set("Authorization", `Bearer ${childToken}`);
 
       if (getResponse.status === 200) {
-        expect(getResponse.body.memberFavourite).toBe(true);
+        expect(getResponse.body.isFavourite).toBe(true);
       }
     });
   });

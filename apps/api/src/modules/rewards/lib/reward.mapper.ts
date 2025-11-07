@@ -56,8 +56,8 @@ export function toClaimDTO(claim: RewardClaim): ClaimDTO {
 export function toRewardDetailsDTO(
   reward: Reward,
   metadata: {
-    memberClaimCount: number;
-    memberFavourite: boolean;
+    claimCount: number;
+    isFavourite: boolean;
     totalClaimCount: number;
     totalFavouriteCount: number;
   },
@@ -72,8 +72,8 @@ export function toRewardDetailsDTO(
     createdBy: reward.createdBy.toString(),
     createdAt: reward.createdAt.toISOString(),
     updatedAt: reward.updatedAt.toISOString(),
-    memberFavourite: metadata.memberFavourite,
-    claimCount: metadata.memberClaimCount,
+    isFavourite: metadata.isFavourite,
+    claimCount: metadata.claimCount,
     totalClaimCount: metadata.totalClaimCount,
     totalFavouriteCount: metadata.totalFavouriteCount,
   };

@@ -1,4 +1,5 @@
 import { logger } from "@lib/logger";
+import type { TaskSchedule } from "../domain/task";
 import { shouldGenerateForDate } from "../lib/schedule-matcher";
 import type { ScheduleRepository } from "../repositories/schedule.repository";
 import type { TaskRepository } from "../repositories/task.repository";
@@ -8,6 +9,26 @@ export class TaskGeneratorService {
     private taskRepository: TaskRepository,
     private scheduleRepository: ScheduleRepository,
   ) {}
+
+  /**
+   * Generates a task immediately for a specific schedule.
+   * Used when a schedule is created so families see the first task right away.
+   */
+  async generateTaskForSchedule(
+    schedule: TaskSchedule,
+    date: Date = new Date(),
+  ): Promise<boolean> {
+    try {
+      return await this.processSchedule(schedule, date);
+    } catch (error) {
+      logger.error("Failed to generate task for schedule", {
+        scheduleId: schedule._id.toString(),
+        scheduleName: schedule.name,
+        error,
+      });
+      throw error;
+    }
+  }
 
   /**
    * Generate tasks for a specific date based on active schedules
@@ -34,116 +55,12 @@ export class TaskGeneratorService {
       // Process each schedule
       for (const schedule of activeSchedules) {
         try {
-          // Check if this schedule should generate a task for this date
-          const shouldGenerate = shouldGenerateForDate(
-            schedule.schedule,
-            date,
-            schedule.lastGeneratedDate,
-          );
-
-          if (!shouldGenerate) {
-            logger.debug("Skipping schedule - criteria not met", {
-              scheduleId: schedule._id.toString(),
-              scheduleName: schedule.name,
-              date: date.toISOString(),
-            });
-            tasksSkipped++;
-            continue;
-          }
-
-          // Check for duplicate task (idempotency)
-          const existingTask =
-            await this.taskRepository.findTaskByScheduleAndDate(
-              schedule._id,
-              date,
-            );
-
-          if (existingTask) {
-            logger.debug("Task already exists for schedule and date", {
-              scheduleId: schedule._id.toString(),
-              taskId: existingTask._id.toString(),
-              date: date.toISOString(),
-            });
-            tasksSkipped++;
-            continue;
-          }
-
-          // Clean up incomplete tasks from previous runs before generating new one
-          const incompleteTasks =
-            await this.taskRepository.findIncompleteTasksBySchedule(
-              schedule._id,
-            );
-
-          if (incompleteTasks.length > 0) {
-            const taskIds = incompleteTasks.map((task) => task._id);
-            const deletedCount =
-              await this.taskRepository.deleteTasksByIds(taskIds);
-
-            logger.info(
-              "Cleaned up incomplete tasks before generating new task",
-              {
-                scheduleId: schedule._id.toString(),
-                scheduleName: schedule.name,
-                deletedCount,
-                taskIds: taskIds.map((id) => id.toString()),
-              },
-            );
-          }
-
-          // Calculate due date with time of day (use UTC to avoid timezone issues)
-          let dueDate: Date | undefined;
-          if (schedule.timeOfDay) {
-            const [hours, minutes] = schedule.timeOfDay.split(":").map(Number);
-            dueDate = new Date(
-              Date.UTC(
-                date.getUTCFullYear(),
-                date.getUTCMonth(),
-                date.getUTCDate(),
-                hours,
-                minutes,
-              ),
-            );
+          const created = await this.processSchedule(schedule, date);
+          if (created) {
+            tasksCreated++;
           } else {
-            // Default to end of day (21:00 UTC) if no time specified
-            dueDate = new Date(
-              Date.UTC(
-                date.getUTCFullYear(),
-                date.getUTCMonth(),
-                date.getUTCDate(),
-                21,
-                0,
-              ),
-            );
+            tasksSkipped++;
           }
-
-          // Create task from schedule
-          const task = await this.taskRepository.createTask(
-            schedule.familyId,
-            {
-              name: schedule.name,
-              description: schedule.description,
-              dueDate,
-              assignment: schedule.assignment,
-            },
-            schedule.createdBy,
-            schedule._id, // Link to schedule
-          );
-
-          // Update last generated date
-          await this.scheduleRepository.updateLastGeneratedDate(
-            schedule._id,
-            date,
-          );
-
-          logger.info("Task generated from schedule", {
-            taskId: task._id.toString(),
-            scheduleId: schedule._id.toString(),
-            scheduleName: schedule.name,
-            familyId: schedule.familyId.toString(),
-            dueDate: dueDate.toISOString(),
-          });
-
-          tasksCreated++;
         } catch (error) {
           logger.error("Failed to generate task from schedule", {
             scheduleId: schedule._id.toString(),
@@ -193,5 +110,117 @@ export class TaskGeneratorService {
       });
       throw error;
     }
+  }
+
+  private async processSchedule(
+    schedule: TaskSchedule,
+    date: Date,
+  ): Promise<boolean> {
+    // Check if this schedule should generate a task for this date
+    const shouldGenerate = shouldGenerateForDate(
+      schedule.schedule,
+      date,
+      schedule.lastGeneratedDate,
+    );
+
+    if (!shouldGenerate) {
+      logger.debug("Skipping schedule - criteria not met", {
+        scheduleId: schedule._id.toString(),
+        scheduleName: schedule.name,
+        date: date.toISOString(),
+      });
+      return false;
+    }
+
+    // Check for duplicate task (idempotency)
+    const existingTask = await this.taskRepository.findTaskByScheduleAndDate(
+      schedule._id,
+      date,
+    );
+
+    if (existingTask) {
+      logger.debug("Task already exists for schedule and date", {
+        scheduleId: schedule._id.toString(),
+        taskId: existingTask._id.toString(),
+        date: date.toISOString(),
+      });
+      return false;
+    }
+
+    await this.cleanupIncompleteTasks(schedule);
+
+    const dueDate = this.buildDueDate(date, schedule.timeOfDay);
+
+    // Create task from schedule
+    const task = await this.taskRepository.createTask(
+      schedule.familyId,
+      {
+        name: schedule.name,
+        description: schedule.description,
+        dueDate,
+        assignment: schedule.assignment,
+        metadata: schedule.metadata,
+      },
+      schedule.createdBy,
+      schedule._id, // Link to schedule
+    );
+
+    // Update last generated date
+    await this.scheduleRepository.updateLastGeneratedDate(schedule._id, date);
+
+    logger.info("Task generated from schedule", {
+      taskId: task._id.toString(),
+      scheduleId: schedule._id.toString(),
+      scheduleName: schedule.name,
+      familyId: schedule.familyId.toString(),
+      dueDate: dueDate.toISOString(),
+    });
+
+    return true;
+  }
+
+  private async cleanupIncompleteTasks(schedule: TaskSchedule): Promise<void> {
+    const incompleteTasks =
+      await this.taskRepository.findIncompleteTasksBySchedule(schedule._id);
+
+    if (incompleteTasks.length === 0) {
+      return;
+    }
+
+    const taskIds = incompleteTasks.map((task) => task._id);
+    const deletedCount = await this.taskRepository.deleteTasksByIds(taskIds);
+
+    logger.info("Cleaned up incomplete tasks before generating new task", {
+      scheduleId: schedule._id.toString(),
+      scheduleName: schedule.name,
+      deletedCount,
+      taskIds: taskIds.map((id) => id.toString()),
+    });
+  }
+
+  private buildDueDate(date: Date, timeOfDay?: string): Date {
+    if (timeOfDay) {
+      const [hours, minutes] = timeOfDay.split(":").map(Number);
+      return new Date(
+        Date.UTC(
+          date.getUTCFullYear(),
+          date.getUTCMonth(),
+          date.getUTCDate(),
+          hours,
+          minutes,
+        ),
+      );
+    }
+
+    // Default to end of day (21:00 UTC) if no time specified
+    return new Date(
+      Date.UTC(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        21,
+        0,
+      ),
+    );
   }
 }
