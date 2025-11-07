@@ -1,3 +1,4 @@
+import { getDb } from "@infra/mongo/client";
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import type { ActivityEventService } from "@modules/activity-events";
@@ -90,9 +91,16 @@ export class ClaimService {
 
       // Step 5: Auto-create approval task for parents
       try {
+        // Get member name from better-auth user collection
+        // Note: memberId is the userId in better-auth
+        const db = getDb();
+        const usersCollection = db.collection("user");
+        const user = await usersCollection.findOne({ _id: memberId });
+        const memberName = user?.name || "Unknown member";
+
         const taskInput: CreateTaskInput = {
-          name: `Provide reward: ${reward.name}`,
-          description: `This will deduct ${reward.karmaCost} karma from ${memberId}. Reward: ${reward.name}`,
+          name: `Provide reward: ${reward.name} for ${memberName}`,
+          description: `This will deduct ${reward.karmaCost} karma points. Reward: ${reward.name}`,
           assignment: { type: "role", role: "parent" },
           metadata: { claimId: claim._id.toString() },
         };
@@ -209,10 +217,14 @@ export class ClaimService {
       // Step 3: Delete the auto-task if it exists
       if (claim.autoTaskId) {
         try {
-          // Note: We don't have direct task delete, so we just log here
-          // In the integration, the task service should support deletion
-          logger.debug("Auto-task would be deleted here", {
+          await this.taskService.deleteTask(
+            claim.familyId,
+            claim.autoTaskId,
+            cancelledBy,
+          );
+          logger.debug("Auto-task deleted for cancelled claim", {
             taskId: claim.autoTaskId.toString(),
+            claimId: claimId.toString(),
           });
         } catch (error) {
           // Log the error but don't fail the cancellation

@@ -167,6 +167,51 @@ describe("E2E: POST /v1/families/:familyId/tasks/schedules", () => {
       expect(response.body.assignment.type).toBe("member");
       expect(response.body.assignment.memberId).toBeDefined();
     });
+
+    it("should immediately generate a task when schedule is already active", async () => {
+      const yesterday = new Date();
+      yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+
+      const scheduleResponse = await request(baseUrl)
+        .post(`/v1/families/${familyId}/tasks/schedules`)
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({
+          name: "Daily Dishes",
+          description: "Keep the kitchen clean",
+          assignment: { type: "role", role: "child" },
+          schedule: {
+            daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
+            weeklyInterval: 1,
+            startDate: yesterday.toISOString(),
+          },
+          timeOfDay: "08:30",
+          metadata: {
+            karma: 25,
+          },
+        });
+
+      expect(scheduleResponse.status).toBe(201);
+
+      const tasksResponse = await request(baseUrl)
+        .get(`/v1/families/${familyId}/tasks`)
+        .set("Authorization", `Bearer ${authToken}`);
+
+      expect(tasksResponse.status).toBe(200);
+      expect(Array.isArray(tasksResponse.body)).toBe(true);
+
+      const generatedTasks = tasksResponse.body.filter(
+        (task: any) => task.scheduleId === scheduleResponse.body._id,
+      );
+
+      expect(generatedTasks.length).toBe(1);
+      expect(generatedTasks[0].dueDate).toContain("08:30:00.000Z");
+      expect(generatedTasks[0].description).toBe("Keep the kitchen clean");
+      expect(generatedTasks[0].assignment).toEqual({
+        type: "role",
+        role: "child",
+      });
+      expect(generatedTasks[0].metadata).toEqual({ karma: 25 });
+    });
   });
 
   describe("Validation Errors", () => {

@@ -16,7 +16,9 @@ import type {
   UpdateTaskRequest,
 } from "@/types/api.types";
 import type { RootState } from "../store";
-import { decrementKarma, incrementKarma } from "./karma.slice";
+import { fetchClaims } from "./claims.slice";
+import { decrementKarma, fetchKarma, incrementKarma } from "./karma.slice";
+import { fetchRewards } from "./rewards.slice";
 
 interface TasksState {
   tasks: Task[];
@@ -76,19 +78,27 @@ export const completeTask = createAsyncThunk(
       taskId,
       userId,
       karma,
+      isRewardClaim,
     }: {
       familyId: string;
       taskId: string;
       userId: string;
       karma?: number;
+      isRewardClaim?: boolean;
     },
     { dispatch },
   ) => {
     const completedAt = new Date().toISOString();
     const task = await apiUpdateTask(familyId, taskId, { completedAt });
 
-    // Update karma if task has karma metadata
-    if (karma && karma > 0) {
+    // If this is a reward claim task, refresh related data from server
+    // (karma is deducted from the claimer, claim count is updated, claim status changes)
+    if (isRewardClaim) {
+      dispatch(fetchKarma({ familyId, userId }));
+      dispatch(fetchRewards(familyId));
+      dispatch(fetchClaims(familyId));
+    } else if (karma && karma > 0) {
+      // Regular task with karma reward - increment immediately
       dispatch(incrementKarma({ userId, amount: karma }));
     }
 
@@ -104,18 +114,26 @@ export const reopenTask = createAsyncThunk(
       taskId,
       userId,
       karma,
+      isRewardClaim,
     }: {
       familyId: string;
       taskId: string;
       userId: string;
       karma?: number;
+      isRewardClaim?: boolean;
     },
     { dispatch },
   ) => {
     const task = await apiUpdateTask(familyId, taskId, { completedAt: null });
 
-    // Deduct karma if task had karma metadata
-    if (karma && karma > 0) {
+    // If this is a reward claim task, refresh related data from server
+    // (karma is re-credited to the claimer, claim count is decremented, claim status reverts)
+    if (isRewardClaim) {
+      dispatch(fetchKarma({ familyId, userId }));
+      dispatch(fetchRewards(familyId));
+      dispatch(fetchClaims(familyId));
+    } else if (karma && karma > 0) {
+      // Regular task - deduct karma that was previously awarded
       dispatch(decrementKarma({ userId, amount: karma }));
     }
 

@@ -1,4 +1,11 @@
-import { Edit, MoreVertical, Repeat, Trash2, User } from "lucide-react";
+import {
+  Edit,
+  MoreVertical,
+  Repeat,
+  Sparkles,
+  Trash2,
+  User,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -107,15 +114,13 @@ export function TaskCard({
                     className="flex items-center gap-2 text-base font-semibold"
                     data-testid="task-karma"
                   >
-                    <span
+                    <Sparkles
                       className={`h-5 w-5 ${
                         task.completedAt
                           ? "text-muted-foreground"
                           : "text-primary fill-current"
                       }`}
-                    >
-                      ✨
-                    </span>
+                    />
                     <span
                       className={
                         task.completedAt

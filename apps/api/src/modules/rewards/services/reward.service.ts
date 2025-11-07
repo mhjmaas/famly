@@ -93,8 +93,8 @@ export class RewardService {
 
           return {
             ...toRewardDTO(reward),
-            memberFavourite: metadata?.isFavourite ?? false,
-            memberClaimCount: metadata?.claimCount ?? 0,
+            isFavourite: metadata?.isFavourite ?? false,
+            claimCount: metadata?.claimCount ?? 0,
           };
         }),
       );
@@ -148,8 +148,8 @@ export class RewardService {
         await this.metadataRepository.getTotalFavouriteCount(rewardId);
 
       return toRewardDetailsDTO(reward, {
-        memberClaimCount: metadata?.claimCount ?? 0,
-        memberFavourite: metadata?.isFavourite ?? false,
+        claimCount: metadata?.claimCount ?? 0,
+        isFavourite: metadata?.isFavourite ?? false,
         totalClaimCount,
         totalFavouriteCount,
       });

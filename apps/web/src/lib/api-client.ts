@@ -13,8 +13,10 @@ import type {
   AddFamilyMemberResponse,
   ApiClientOptions,
   AuthResponse,
+  Claim,
   CreateFamilyRequest,
   CreateFamilyResponse,
+  CreateRewardRequest,
   CreateScheduleRequest,
   CreateTaskRequest,
   FamilyWithMembers,
@@ -24,6 +26,7 @@ import type {
   LoginRequest,
   MeResponse,
   RegisterRequest,
+  Reward,
   Task,
   TaskQueryParams,
   TaskSchedule,
@@ -31,6 +34,7 @@ import type {
   UpdateMemberRoleResponse,
   UpdateProfileRequest,
   UpdateProfileResponse,
+  UpdateRewardRequest,
   UpdateScheduleRequest,
   UpdateTaskRequest,
 } from "@/types/api.types";
@@ -394,4 +398,113 @@ export async function deleteSchedule(
       method: "DELETE",
     },
   );
+}
+
+// ============= Rewards API =============
+
+export type {
+  Claim,
+  CreateRewardRequest,
+  Reward,
+  UpdateRewardRequest,
+} from "@/types/api.types";
+
+export async function getRewards(
+  familyId: string,
+  cookie?: string,
+): Promise<Reward[]> {
+  return apiClient<Reward[]>(`/v1/families/${familyId}/rewards`, { cookie });
+}
+
+export async function createReward(
+  familyId: string,
+  data: CreateRewardRequest,
+  cookie?: string,
+): Promise<Reward> {
+  return apiClient<Reward>(`/v1/families/${familyId}/rewards`, {
+    method: "POST",
+    body: data,
+    cookie,
+  });
+}
+
+export async function updateReward(
+  familyId: string,
+  rewardId: string,
+  data: UpdateRewardRequest,
+  cookie?: string,
+): Promise<Reward> {
+  return apiClient<Reward>(`/v1/families/${familyId}/rewards/${rewardId}`, {
+    method: "PATCH",
+    body: data,
+    cookie,
+  });
+}
+
+export async function deleteReward(
+  familyId: string,
+  rewardId: string,
+  cookie?: string,
+): Promise<void> {
+  return apiClient<void>(`/v1/families/${familyId}/rewards/${rewardId}`, {
+    method: "DELETE",
+    cookie,
+  });
+}
+
+export async function toggleRewardFavourite(
+  familyId: string,
+  rewardId: string,
+  isFavourite: boolean,
+  cookie?: string,
+): Promise<void> {
+  return apiClient<void>(
+    `/v1/families/${familyId}/rewards/${rewardId}/favourite`,
+    {
+      method: "POST",
+      body: { isFavourite },
+      cookie,
+    },
+  );
+}
+
+// ============= Claims API =============
+
+export async function getClaims(
+  familyId: string,
+  status?: "pending" | "completed" | "cancelled",
+  cookie?: string,
+): Promise<Claim[]> {
+  const params = new URLSearchParams();
+  if (status) params.set("status", status);
+
+  const queryString = params.toString();
+  const endpoint = `/v1/families/${familyId}/claims${queryString ? `?${queryString}` : ""}`;
+
+  return apiClient<Claim[]>(endpoint, { cookie });
+}
+
+export async function claimReward(
+  familyId: string,
+  rewardId: string,
+  cookie?: string,
+): Promise<Claim> {
+  return apiClient<Claim>(
+    `/v1/families/${familyId}/rewards/${rewardId}/claim`,
+    {
+      method: "POST",
+      cookie,
+    },
+  );
+}
+
+export async function cancelClaim(
+  familyId: string,
+  claimId: string,
+  cookie?: string,
+): Promise<Claim> {
+  return apiClient<Claim>(`/v1/families/${familyId}/claims/${claimId}`, {
+    method: "DELETE",
+    cookie,
+  });
 }

@@ -203,6 +203,7 @@ export interface Task {
   scheduleId?: string;
   metadata?: {
     karma?: number;
+    claimId?: string;
   };
   createdBy: string;
   createdAt: string;
@@ -287,4 +288,53 @@ export interface UpdateScheduleRequest {
 export interface TaskQueryParams {
   dueDateFrom?: string;
   dueDateTo?: string;
+}
+
+// ============= Rewards Types =============
+
+export interface Reward {
+  _id: string;
+  familyId: string;
+  name: string;
+  karmaCost: number;
+  description?: string;
+  imageUrl?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  // Metadata (computed per user)
+  claimCount?: number;
+  isFavourite?: boolean;
+}
+
+export interface Claim {
+  _id: string;
+  familyId: string;
+  rewardId: string;
+  memberId: string;
+  status: "pending" | "completed" | "cancelled";
+  karmaCost: number;
+  autoTaskId?: string;
+  createdAt: string;
+  completedAt?: string;
+  completedBy?: string;
+  cancelledAt?: string;
+  cancelledBy?: string;
+  // Populated fields
+  reward?: Reward;
+  member?: FamilyMember;
+}
+
+export interface CreateRewardRequest {
+  name: string;
+  karmaCost: number;
+  description?: string;
+  imageUrl?: string;
+}
+
+export interface UpdateRewardRequest {
+  name?: string;
+  karmaCost?: number;
+  description?: string | null;
+  imageUrl?: string | null;
 }

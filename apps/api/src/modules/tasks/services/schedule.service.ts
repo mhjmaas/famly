@@ -9,12 +9,14 @@ import type {
   UpdateScheduleInput,
 } from "../domain/task";
 import type { ScheduleRepository } from "../repositories/schedule.repository";
+import type { TaskGeneratorService } from "./task-generator.service";
 
 export class ScheduleService {
   constructor(
     private scheduleRepository: ScheduleRepository,
     private membershipRepository: FamilyMembershipRepository,
     private activityEventService?: ActivityEventService, // Optional for activity tracking
+    private taskGeneratorService?: TaskGeneratorService,
   ) {}
 
   /**
@@ -69,6 +71,21 @@ export class ScheduleService {
               error,
             },
           );
+        }
+      }
+
+      if (this.taskGeneratorService) {
+        try {
+          await this.taskGeneratorService.generateTaskForSchedule(
+            schedule,
+            new Date(),
+          );
+        } catch (error) {
+          logger.error("Failed to generate initial task for new schedule", {
+            scheduleId: schedule._id.toString(),
+            familyId: familyId.toString(),
+            error,
+          });
         }
       }
 

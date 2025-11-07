@@ -30,13 +30,47 @@ export function matchesWeeklyInterval(
     return true;
   }
 
-  // Calculate weeks difference
-  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-  const timeDiff = currentDate.getTime() - lastGenerated.getTime();
-  const weeksDiff = Math.floor(timeDiff / msPerWeek);
+  // Normalize dates to start of day in UTC for comparison
+  const lastGeneratedDay = new Date(
+    Date.UTC(
+      lastGenerated.getUTCFullYear(),
+      lastGenerated.getUTCMonth(),
+      lastGenerated.getUTCDate(),
+    ),
+  );
+  const currentDay = new Date(
+    Date.UTC(
+      currentDate.getUTCFullYear(),
+      currentDate.getUTCMonth(),
+      currentDate.getUTCDate(),
+    ),
+  );
 
-  // Check if enough weeks have passed
-  return weeksDiff >= interval;
+  // If it's the same day, don't generate again
+  if (lastGeneratedDay.getTime() === currentDay.getTime()) {
+    return false;
+  }
+
+  // Calculate the number of days between the two dates
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const daysDiff = Math.floor(
+    (currentDay.getTime() - lastGeneratedDay.getTime()) / msPerDay,
+  );
+
+  // Check if enough time has passed based on interval
+  // For interval 1: any day after last generation is valid
+  // For interval 2: need at least 2 weeks (14 days) since last generation
+  // For interval 3: need at least 3 weeks (21 days) since last generation
+  // For interval 4: need at least 4 weeks (28 days) since last generation
+
+  if (interval === 1) {
+    // Weekly schedule: any day after last generation
+    return daysDiff > 0;
+  }
+
+  // Multi-week intervals: need at least N full weeks
+  const requiredDays = interval * 7;
+  return daysDiff >= requiredDays;
 }
 
 /**

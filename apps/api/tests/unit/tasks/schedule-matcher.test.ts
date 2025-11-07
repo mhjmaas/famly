@@ -40,9 +40,21 @@ describe("Schedule Matcher", () => {
       expect(matchesWeeklyInterval(lastGenerated, currentDate, 1)).toBe(true);
     });
 
-    it("should return false for weekly interval (1) when less than 1 week apart", () => {
+    it("should return true for weekly interval (1) when 1 day apart (daily tasks)", () => {
+      const lastGenerated = new Date("2025-01-06");
+      const currentDate = new Date("2025-01-07"); // Next day
+      expect(matchesWeeklyInterval(lastGenerated, currentDate, 1)).toBe(true);
+    });
+
+    it("should return true for weekly interval (1) when multiple days apart", () => {
       const lastGenerated = new Date("2025-01-06");
       const currentDate = new Date("2025-01-10"); // 4 days later
+      expect(matchesWeeklyInterval(lastGenerated, currentDate, 1)).toBe(true);
+    });
+
+    it("should return false for weekly interval (1) when same day", () => {
+      const lastGenerated = new Date("2025-01-06T10:00:00Z");
+      const currentDate = new Date("2025-01-06T15:00:00Z"); // Same day, different time
       expect(matchesWeeklyInterval(lastGenerated, currentDate, 1)).toBe(false);
     });
 
@@ -54,7 +66,13 @@ describe("Schedule Matcher", () => {
 
     it("should return false for biweekly interval (2) when only 1 week apart", () => {
       const lastGenerated = new Date("2025-01-06");
-      const currentDate = new Date("2025-01-13"); // 1 week later
+      const currentDate = new Date("2025-01-13"); // 1 week later (7 days, need 14)
+      expect(matchesWeeklyInterval(lastGenerated, currentDate, 2)).toBe(false);
+    });
+
+    it("should return false for biweekly interval (2) when 13 days apart", () => {
+      const lastGenerated = new Date("2025-01-06");
+      const currentDate = new Date("2025-01-19"); // 13 days later (just under 2 weeks)
       expect(matchesWeeklyInterval(lastGenerated, currentDate, 2)).toBe(false);
     });
 
@@ -64,10 +82,34 @@ describe("Schedule Matcher", () => {
       expect(matchesWeeklyInterval(lastGenerated, currentDate, 3)).toBe(true);
     });
 
+    it("should return false for 3-week interval when only 2 weeks apart", () => {
+      const lastGenerated = new Date("2025-01-06");
+      const currentDate = new Date("2025-01-20"); // 2 weeks later (14 days, need 21)
+      expect(matchesWeeklyInterval(lastGenerated, currentDate, 3)).toBe(false);
+    });
+
+    it("should return false for 3-week interval when 20 days apart", () => {
+      const lastGenerated = new Date("2025-01-06");
+      const currentDate = new Date("2025-01-26"); // 20 days later (just under 3 weeks)
+      expect(matchesWeeklyInterval(lastGenerated, currentDate, 3)).toBe(false);
+    });
+
     it("should return true for 4-week interval when exactly 4 weeks apart", () => {
       const lastGenerated = new Date("2025-01-06");
       const currentDate = new Date("2025-02-03"); // 4 weeks later
       expect(matchesWeeklyInterval(lastGenerated, currentDate, 4)).toBe(true);
+    });
+
+    it("should return false for 4-week interval when only 3 weeks apart", () => {
+      const lastGenerated = new Date("2025-01-06");
+      const currentDate = new Date("2025-01-27"); // 3 weeks later (21 days, need 28)
+      expect(matchesWeeklyInterval(lastGenerated, currentDate, 4)).toBe(false);
+    });
+
+    it("should return false for 4-week interval when 27 days apart", () => {
+      const lastGenerated = new Date("2025-01-06");
+      const currentDate = new Date("2025-02-02"); // 27 days later (just under 4 weeks)
+      expect(matchesWeeklyInterval(lastGenerated, currentDate, 4)).toBe(false);
     });
 
     it("should return true when no last generated date (first run)", () => {
@@ -211,17 +253,17 @@ describe("Schedule Matcher", () => {
       const lastGenerated = new Date("2025-01-06"); // Monday
 
       expect(
+        shouldGenerateForDate(schedule, new Date("2025-01-08"), lastGenerated),
+      ).toBe(true); // Wednesday (2 days later)
+      expect(
+        shouldGenerateForDate(schedule, new Date("2025-01-10"), lastGenerated),
+      ).toBe(true); // Friday (4 days later)
+      expect(
         shouldGenerateForDate(schedule, new Date("2025-01-13"), lastGenerated),
-      ).toBe(true); // Monday
-      expect(
-        shouldGenerateForDate(schedule, new Date("2025-01-15"), lastGenerated),
-      ).toBe(true); // Wednesday
-      expect(
-        shouldGenerateForDate(schedule, new Date("2025-01-17"), lastGenerated),
-      ).toBe(true); // Friday
+      ).toBe(true); // Monday (7 days later)
       expect(
         shouldGenerateForDate(schedule, new Date("2025-01-14"), lastGenerated),
-      ).toBe(false); // Tuesday
+      ).toBe(false); // Tuesday (not in daysOfWeek)
     });
 
     it("should handle biweekly schedule correctly", () => {
@@ -234,10 +276,10 @@ describe("Schedule Matcher", () => {
 
       expect(
         shouldGenerateForDate(schedule, new Date("2025-01-13"), lastGenerated),
-      ).toBe(false); // 1 week later
+      ).toBe(false); // 1 week later (7 days, need 14)
       expect(
         shouldGenerateForDate(schedule, new Date("2025-01-20"), lastGenerated),
-      ).toBe(true); // 2 weeks later
+      ).toBe(true); // 2 weeks later (14 days = exactly 2 weeks)
     });
 
     it("should respect endDate boundary", () => {
