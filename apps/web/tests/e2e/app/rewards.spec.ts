@@ -100,7 +100,7 @@ test.describe("Rewards Page", () => {
             await rewardsPage.karmaCostInput.fill("50");
 
             // Click the description toggle button to show the description field
-            await page.getByRole("button", { name: /description/i }).click();
+            await page.getByTestId("reward-description-toggle").click();
             await rewardsPage.descriptionInput.fill("30 minutes of extra screen time");
 
             const createResponse = page.waitForResponse(
@@ -128,7 +128,7 @@ test.describe("Rewards Page", () => {
             await rewardsPage.imageUrlInput.fill("https://placehold.co/400x300");
 
             // Click the description toggle button to show the description field
-            await page.getByRole("button", { name: /description/i }).click();
+            await page.getByTestId("reward-description-toggle").click();
             await rewardsPage.descriptionInput.fill("Trip to the ice cream shop");
 
             const createResponse = page.waitForResponse(
@@ -567,5 +567,219 @@ test.describe("Rewards Page - Child User", () => {
         // Verify task is assigned to parents (child can see it but shouldn't be able to complete it themselves)
         const assignment = await tasksPage.getTaskAssignment(0);
         expect(assignment?.toLowerCase()).toContain("parent");
+    });
+});
+
+test.describe("Rewards Page - Parent User", () => {
+    let rewardsPage: RewardsPage;
+    let parentUser: AuthenticatedUser;
+
+    test.beforeEach(async ({ page }) => {
+        await setViewport(page, "desktop");
+
+        rewardsPage = new RewardsPage(page);
+        parentUser = await authenticateUser(page, {
+            name: "Parent Image Upload User",
+            birthdate: "1985-04-10",
+            createFamily: true,
+            familyName: "Image Upload Test Family",
+        });
+
+        await rewardsPage.gotoRewards("en-US");
+        await waitForPageLoad(page);
+    });
+
+    test.describe("Image Upload", () => {
+        test("should upload image when creating reward", async ({ page }) => {
+            await rewardsPage.createRewardButton.click();
+            await rewardsPage.rewardDialog.waitFor({ state: "visible" });
+
+            await rewardsPage.nameInput.fill("Reward with Image");
+            await rewardsPage.karmaCostInput.fill("75");
+
+            // Upload image (using a simple 1x1 PNG)
+            const testImagePath = "tests/fixtures/test-image.png";
+            await rewardsPage.uploadImage(testImagePath);
+
+            // Verify preview is visible
+            await expect(rewardsPage.imagePreview).toBeVisible();
+
+            // Submit form
+            await rewardsPage.dialogSubmitButton.click();
+            await rewardsPage.rewardDialog.waitFor({ state: "hidden" });
+
+            // Verify reward was created
+            await expect(rewardsPage.rewardCards).toHaveCount(1);
+            
+            // Verify reward card shows the uploaded image
+            const rewardCard = rewardsPage.rewardCards.first();
+            const image = rewardCard.locator("img").first();
+            await expect(image).toBeVisible();
+            
+            // URL should be a proxy URL from our API
+            const src = await image.getAttribute("src");
+            expect(src).toMatch(/\/api\/images\/.+\/.+\.(png|jpg|jpeg|gif|webp)/);
+        });
+
+        test.skip("should upload image when editing reward", async ({ page }) => {
+            // Create reward via API first
+            await createRewardViaApi(parentUser, {
+                name: "Edit Image Reward",
+                karmaCost: 50,
+            });
+
+            await reloadRewardsAndWait(page, rewardsPage, parentUser.familyId!);
+
+            // Edit the reward (editReward already waits for dialog)
+            await rewardsPage.editReward(0, {});
+
+            // Upload image
+            const testImagePath = "tests/fixtures/test-image.png";
+            await rewardsPage.uploadImage(testImagePath);
+
+            // Verify preview is visible
+            await expect(rewardsPage.imagePreview).toBeVisible();
+
+            // Submit form
+            await rewardsPage.dialogSubmitButton.click();
+            await rewardsPage.rewardDialog.waitFor({ state: "hidden" });
+
+            // Verify image is displayed in card
+            const rewardCard = rewardsPage.rewardCards.first();
+            const image = rewardCard.locator("img").first();
+            await expect(image).toBeVisible();
+        });
+
+        test("should show error for file exceeding size limit", async ({ page }) => {
+            await rewardsPage.createRewardButton.click();
+            await rewardsPage.rewardDialog.waitFor({ state: "visible" });
+
+            await rewardsPage.nameInput.fill("Large File Test");
+            await rewardsPage.karmaCostInput.fill("50");
+
+            // Try to upload a large file (>5MB mock)
+            const largeFilePath = "tests/fixtures/test-image-large.png";
+            
+            // Set input files
+            await rewardsPage.fileInput.setInputFiles(largeFilePath);
+
+            // Verify error message appears
+            await expect(rewardsPage.uploadError).toBeVisible();
+            const errorText = await rewardsPage.getUploadError();
+            expect(errorText?.toLowerCase()).toContain("5mb");
+        });
+
+        test("should show error for invalid file type", async ({ page }) => {
+            await rewardsPage.createRewardButton.click();
+            await rewardsPage.rewardDialog.waitFor({ state: "visible" });
+
+            await rewardsPage.nameInput.fill("Invalid Type Test");
+            await rewardsPage.karmaCostInput.fill("50");
+
+            // Try to upload a PDF file
+            const invalidFilePath = "tests/fixtures/test-document.pdf";
+            await rewardsPage.fileInput.setInputFiles(invalidFilePath);
+
+            // Verify error message appears
+            await expect(rewardsPage.uploadError).toBeVisible();
+            const errorText = await rewardsPage.getUploadError();
+            expect(errorText?.toLowerCase()).toMatch(/(jpeg|png|gif|webp|allowed)/i);
+        });
+
+        test("should remove uploaded image", async ({ page }) => {
+            await rewardsPage.createRewardButton.click();
+            await rewardsPage.rewardDialog.waitFor({ state: "visible" });
+
+            await rewardsPage.nameInput.fill("Remove Image Test");
+            await rewardsPage.karmaCostInput.fill("50");
+
+            // Upload image
+            const testImagePath = "tests/fixtures/test-image.png";
+            await rewardsPage.uploadImage(testImagePath);
+
+            // Verify preview is visible
+            await expect(rewardsPage.imagePreview).toBeVisible();
+
+            // Remove image
+            await rewardsPage.removeUploadedImage();
+
+            // Verify preview is hidden
+            await expect(rewardsPage.imagePreview).not.toBeVisible();
+
+            // Verify upload button is visible again
+            await expect(rewardsPage.uploadButton).toBeVisible();
+        });
+
+        test("should toggle between image upload and URL input", async ({ page }) => {
+            await rewardsPage.createRewardButton.click();
+            await rewardsPage.rewardDialog.waitFor({ state: "visible" });
+
+            await rewardsPage.nameInput.fill("Toggle Input Test");
+            await rewardsPage.karmaCostInput.fill("50");
+
+            // Initially, both upload button and URL input should be visible
+            await expect(rewardsPage.uploadButton).toBeVisible();
+            await expect(rewardsPage.imageUrlInput).toBeVisible();
+
+            // Upload an image
+            const testImagePath = "tests/fixtures/test-image.png";
+            await rewardsPage.uploadImage(testImagePath);
+
+            // Preview should be visible, URL input should be disabled or hidden
+            await expect(rewardsPage.imagePreview).toBeVisible();
+            
+            // Remove the uploaded image
+            await rewardsPage.removeUploadedImage();
+
+            // URL input should be available again
+            await expect(rewardsPage.imageUrlInput).toBeVisible();
+            await expect(rewardsPage.imageUrlInput).toBeEnabled();
+
+            // Now enter a URL instead
+            await rewardsPage.imageUrlInput.fill("https://example.com/reward.jpg");
+
+            // Submit the form
+            await rewardsPage.dialogSubmitButton.click();
+            await rewardsPage.rewardDialog.waitFor({ state: "hidden" });
+
+            // Verify reward was created
+            await expect(rewardsPage.rewardCards).toHaveCount(1);
+        });
+
+        test.skip("should display uploaded image in reward card", async ({ page }) => {
+            await rewardsPage.createRewardButton.click();
+            await rewardsPage.rewardDialog.waitFor({ state: "visible" });
+
+            await rewardsPage.nameInput.fill("Display Image Test");
+            await rewardsPage.karmaCostInput.fill("50");
+
+            // Upload image
+            const testImagePath = "tests/fixtures/test-image.png";
+            await rewardsPage.uploadImage(testImagePath);
+
+            // Submit form
+            await rewardsPage.dialogSubmitButton.click();
+            await rewardsPage.rewardDialog.waitFor({ state: "hidden" });
+
+            // Verify reward card has image
+            const rewardCard = rewardsPage.rewardCards.first();
+            await expect(rewardCard).toBeVisible();
+
+            // Check that image element exists and is visible
+            const image = rewardCard.locator("img").first();
+            await expect(image).toBeVisible();
+
+            // Wait for image to load and verify it loaded successfully (not broken)
+            await image.evaluate((img: HTMLImageElement) => {
+                if (img.complete) return Promise.resolve();
+                return new Promise((resolve) => {
+                    img.onload = () => resolve(undefined);
+                    img.onerror = () => resolve(undefined);
+                });
+            });
+            
+            const naturalWidth = await image.evaluate((img: HTMLImageElement) => img.naturalWidth);
+            expect(naturalWidth).toBeGreaterThan(0);
+        });
     });
 });

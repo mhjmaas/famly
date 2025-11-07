@@ -1,6 +1,7 @@
 import { isHttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import type { NextFunction, Request, Response } from "express";
+import multer from "multer";
 
 export interface ErrorResponse {
   error: string;
@@ -35,6 +36,23 @@ export function errorHandler(
       error: "Invalid JSON",
       code: "BAD_REQUEST",
     };
+    res.status(400).json(response);
+    return;
+  }
+
+  if (err instanceof multer.MulterError) {
+    const response: ErrorResponse = {
+      error: "File upload error",
+      code: "FILE_UPLOAD_ERROR",
+    };
+
+    if (err.code === "LIMIT_FILE_SIZE") {
+      response.error = "File size must be less than 5MB";
+      response.code = "FILE_TOO_LARGE";
+      res.status(413).json(response);
+      return;
+    }
+
     res.status(400).json(response);
     return;
   }

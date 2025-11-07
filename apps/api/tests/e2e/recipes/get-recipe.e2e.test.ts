@@ -76,6 +76,29 @@ describe("E2E: GET /v1/families/:familyId/recipes/:recipeId", () => {
       expect(response.body.createdAt).toBeDefined();
       expect(response.body.updatedAt).toBeDefined();
     });
+
+    it("should return duration when recipe has it", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      const createResponse = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Timer",
+          description: "Has duration",
+          steps: ["Step"],
+          durationMinutes: 25,
+        });
+
+      const recipeId = createResponse.body._id;
+
+      const response = await request(baseUrl)
+        .get(`/v1/families/${family.familyId}/recipes/${recipeId}`)
+        .set("Authorization", `Bearer ${family.token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.durationMinutes).toBe(25);
+    });
   });
 
   describe("Error Cases", () => {

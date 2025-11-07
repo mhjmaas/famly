@@ -606,10 +606,19 @@
               "placeholder": "e.g., 50",
               "required": "required"
             },
-            "imageUrl": {
-              "label": "Image URL",
-              "placeholder": "https://example.com/image.jpg (optional)",
-              "help": "Leave empty to auto-generate a placeholder based on the reward name"
+            "image": {
+              "label": "Image",
+              "uploadButton": "Upload Image",
+              "orLabel": "or provide URL",
+              "urlPlaceholder": "https://example.com/image.jpg (optional)",
+              "uploading": "Uploading...",
+              "preview": "Image preview",
+              "remove": "Remove image",
+              "errors": {
+                "fileSize": "File size must be less than 5MB",
+                "fileType": "Only JPEG, PNG, GIF, and WebP images are allowed",
+                "uploadFailed": "Failed to upload image"
+              }
             },
             "description": {
               "label": "Description",

@@ -154,6 +154,43 @@ describe("Recipe Mapper", () => {
       expect(dto.tags).toEqual(tags);
       expect(dto.tags).toHaveLength(4);
     });
+
+    it("should include duration when present", () => {
+      const recipe: Recipe = {
+        _id: new ObjectId(),
+        familyId: new ObjectId(),
+        name: "Timer Recipe",
+        description: "Has duration",
+        durationMinutes: 45,
+        steps: ["Bake"],
+        tags: [],
+        createdBy: new ObjectId(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const dto = toRecipeDTO(recipe);
+
+      expect(dto.durationMinutes).toBe(45);
+    });
+
+    it("should omit duration when not provided", () => {
+      const recipe: Recipe = {
+        _id: new ObjectId(),
+        familyId: new ObjectId(),
+        name: "No Timer",
+        description: "No duration",
+        steps: ["Mix"],
+        tags: [],
+        createdBy: new ObjectId(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const dto = toRecipeDTO(recipe);
+
+      expect(dto).not.toHaveProperty("durationMinutes");
+    });
   });
 
   describe("toRecipeDTOArray", () => {

@@ -61,6 +61,10 @@ export class RecipeRepository {
       updatedAt: now,
     };
 
+    if (typeof input.durationMinutes === "number") {
+      recipe.durationMinutes = input.durationMinutes;
+    }
+
     await this.collection.insertOne(recipe);
 
     return recipe;
@@ -143,6 +147,7 @@ export class RecipeRepository {
     const updateFields: Partial<Recipe> = {
       updatedAt: new Date(),
     };
+    const unsetFields: Record<string, "" | 1> = {};
 
     if (input.name !== undefined) {
       updateFields.name = input.name;
@@ -156,10 +161,26 @@ export class RecipeRepository {
     if (input.tags !== undefined) {
       updateFields.tags = input.tags;
     }
+    if (input.durationMinutes !== undefined) {
+      if (input.durationMinutes === null) {
+        unsetFields.durationMinutes = "";
+      } else {
+        updateFields.durationMinutes = input.durationMinutes;
+      }
+    }
+
+    const updateOperations: {
+      $set: Partial<Recipe>;
+      $unset?: Record<string, "" | 1>;
+    } = { $set: updateFields };
+
+    if (Object.keys(unsetFields).length > 0) {
+      updateOperations.$unset = unsetFields;
+    }
 
     const result = await this.collection.findOneAndUpdate(
       { _id: recipeId, familyId },
-      { $set: updateFields },
+      updateOperations,
       { returnDocument: "after" },
     );
 

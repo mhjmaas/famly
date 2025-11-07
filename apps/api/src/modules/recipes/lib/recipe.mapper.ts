@@ -1,7 +1,7 @@
 import type { Recipe, RecipeDTO } from "../domain/recipe";
 
 export function toRecipeDTO(recipe: Recipe): RecipeDTO {
-  return {
+  const dto: RecipeDTO = {
     _id: recipe._id.toString(),
     familyId: recipe.familyId.toString(),
     name: recipe.name,
@@ -12,6 +12,12 @@ export function toRecipeDTO(recipe: Recipe): RecipeDTO {
     createdAt: recipe.createdAt.toISOString(),
     updatedAt: recipe.updatedAt.toISOString(),
   };
+
+  if (typeof recipe.durationMinutes === "number") {
+    dto.durationMinutes = recipe.durationMinutes;
+  }
+
+  return dto;
 }
 
 export function toRecipeDTOArray(recipes: Recipe[]): RecipeDTO[] {

@@ -21,7 +21,8 @@ auth:bearer {
 
 body:json {
   {
-    "name": "Updated Recipe Name"
+    "name": "Updated Recipe Name",
+    "durationMinutes": 45
   }
 }
 
@@ -38,6 +39,7 @@ docs {
 
   - `name` (string, optional): Recipe name (1-200 characters)
   - `description` (string, optional): Recipe description (1-2000 characters)
+  - `durationMinutes` (number|null, optional): Whole minutes between 1 and 1440, or `null` to clear the stored duration
   - `steps` (array, optional): Array of cooking steps (minimum 1 if provided, each 1-500 characters)
   - `tags` (array, optional): Array of tags (max 20 tags, each 1-50 characters)
 
@@ -48,6 +50,7 @@ docs {
   - `familyId`: ID of the family
   - `name`: Recipe name
   - `description`: Recipe description
+  - `durationMinutes`: Estimated duration (only when set)
   - `steps`: Array of cooking steps
   - `tags`: Array of tags
   - `createdBy`: ID of the user who created it

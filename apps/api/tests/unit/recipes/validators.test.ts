@@ -217,6 +217,51 @@ describe("Recipe Validators", () => {
         expect(result.tags).toBeUndefined();
       });
     });
+
+    describe("durationMinutes validation", () => {
+      it("should accept valid duration", () => {
+        const result = createRecipeSchema.parse({
+          name: "Recipe",
+          description: "Desc",
+          steps: ["Step"],
+          durationMinutes: 90,
+        });
+        expect(result.durationMinutes).toBe(90);
+      });
+
+      it("should reject duration below minimum", () => {
+        expect(() =>
+          createRecipeSchema.parse({
+            name: "Recipe",
+            description: "Desc",
+            steps: ["Step"],
+            durationMinutes: 0,
+          }),
+        ).toThrow();
+      });
+
+      it("should reject duration above maximum", () => {
+        expect(() =>
+          createRecipeSchema.parse({
+            name: "Recipe",
+            description: "Desc",
+            steps: ["Step"],
+            durationMinutes: 1441,
+          }),
+        ).toThrow();
+      });
+
+      it("should reject non-integer duration", () => {
+        expect(() =>
+          createRecipeSchema.parse({
+            name: "Recipe",
+            description: "Desc",
+            steps: ["Step"],
+            durationMinutes: 12.5,
+          }),
+        ).toThrow();
+      });
+    });
   });
 
   describe("updateRecipeSchema", () => {
@@ -290,6 +335,28 @@ describe("Recipe Validators", () => {
     it("should allow partial empty object", () => {
       const result = updateRecipeSchema.parse({});
       expect(result).toEqual({});
+    });
+
+    it("should accept duration update", () => {
+      const result = updateRecipeSchema.parse({
+        durationMinutes: 30,
+      });
+      expect(result.durationMinutes).toBe(30);
+    });
+
+    it("should allow clearing duration with null", () => {
+      const result = updateRecipeSchema.parse({
+        durationMinutes: null,
+      });
+      expect(result.durationMinutes).toBeNull();
+    });
+
+    it("should reject invalid duration", () => {
+      expect(() =>
+        updateRecipeSchema.parse({
+          durationMinutes: 0,
+        }),
+      ).toThrow();
     });
   });
 

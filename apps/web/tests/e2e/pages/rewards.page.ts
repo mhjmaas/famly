@@ -40,6 +40,11 @@ export class RewardsPage {
   readonly karmaCostInput: Locator;
   readonly descriptionInput: Locator;
   readonly imageUrlInput: Locator;
+  readonly fileInput: Locator;
+  readonly uploadButton: Locator;
+  readonly imagePreview: Locator;
+  readonly removeImageButton: Locator;
+  readonly uploadError: Locator;
   readonly dialogCancelButton: Locator;
   readonly dialogSubmitButton: Locator;
 
@@ -54,16 +59,14 @@ export class RewardsPage {
     // Header
     this.pageTitle = page.locator("h1").first();
     this.pageDescription = page.locator("p").first();
-    this.createRewardButton = page.getByRole("button", {
-      name: /new reward|nieuwe beloning/i,
-    });
+    this.createRewardButton = page.getByTestId("create-reward-button");
 
     // Karma balance
     this.karmaBalanceCard = page.getByTestId("karma-balance-card");
 
     // Empty state
     this.emptyState = page.getByTestId("rewards-empty");
-    this.emptyStateCreateButton = this.emptyState.getByRole("button");
+    this.emptyStateCreateButton = this.emptyState.getByTestId("empty-state-create-button");
 
     // Rewards grid
     this.rewardsGrid = page.getByTestId("rewards-grid");
@@ -79,7 +82,12 @@ export class RewardsPage {
     this.nameInput = page.getByTestId("reward-name-input");
     this.karmaCostInput = page.getByTestId("reward-karma-input");
     this.descriptionInput = page.getByTestId("reward-description-input");
-    this.imageUrlInput = page.getByTestId("reward-image-input");
+    this.imageUrlInput = page.getByTestId("reward-image-url-input");
+    this.fileInput = page.getByTestId("reward-file-input");
+    this.uploadButton = page.getByTestId("reward-upload-button");
+    this.imagePreview = page.getByTestId("reward-image-preview");
+    this.removeImageButton = page.getByTestId("reward-remove-image-button");
+    this.uploadError = page.getByTestId("reward-upload-error");
     this.dialogCancelButton = this.rewardDialog.getByRole("button", {
       name: /cancel|annuleren/i,
     });
@@ -223,5 +231,39 @@ export class RewardsPage {
     const card = this.rewardCards.nth(rewardIndex);
     const progressBar = card.locator('[role="progressbar"]');
     return await progressBar.isVisible();
+  }
+
+  /**
+   * Upload an image file via file input
+   */
+  async uploadImage(filePath: string): Promise<void> {
+    await this.fileInput.setInputFiles(filePath);
+    // Wait for preview to appear
+    await this.imagePreview.waitFor({ state: "visible" });
+  }
+
+  /**
+   * Remove uploaded image
+   */
+  async removeUploadedImage(): Promise<void> {
+    await this.removeImageButton.click();
+    await this.imagePreview.waitFor({ state: "hidden" });
+  }
+
+  /**
+   * Get upload error message
+   */
+  async getUploadError(): Promise<string | null> {
+    if (!(await this.uploadError.isVisible())) {
+      return null;
+    }
+    return await this.uploadError.textContent();
+  }
+
+  /**
+   * Check if image preview is visible
+   */
+  async hasImagePreview(): Promise<boolean> {
+    return await this.imagePreview.isVisible();
   }
 }

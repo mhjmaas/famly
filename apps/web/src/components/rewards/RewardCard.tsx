@@ -21,6 +21,7 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import type { Reward } from "@/types/api.types";
 import { CancelClaimButton } from "./CancelClaimButton";
+import { RewardImage } from "./RewardImage";
 
 interface RewardCardProps {
   reward: Reward;
@@ -62,22 +63,13 @@ export function RewardCard({
     ? Math.min((userKarma / reward.karmaCost) * 100, 100)
     : 0;
 
-  // Determine image URL with fallback
-  const imageUrl =
-    reward.imageUrl ||
-    `/placeholder.svg?height=200&width=300&query=${encodeURIComponent(reward.name)}`;
-
   return (
     <Card
       className="overflow-hidden hover:shadow-lg transition-shadow"
       data-testid="reward-card"
     >
       <div className="relative aspect-video w-full overflow-hidden bg-muted">
-        <img
-          src={imageUrl}
-          alt={reward.name}
-          className="object-cover w-full h-full"
-        />
+        <RewardImage imageUrl={reward.imageUrl} name={reward.name} />
         <div className="absolute top-2 left-2 right-2 flex justify-between">
           <Button
             variant="secondary"

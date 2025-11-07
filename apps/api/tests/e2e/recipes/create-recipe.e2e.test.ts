@@ -75,6 +75,23 @@ describe("E2E: POST /v1/families/:familyId/recipes", () => {
       expect(response.status).toBe(201);
       expect(response.body.steps).toEqual(steps);
     });
+
+    it("should create recipe with duration", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      const response = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Quick Salad",
+          description: "Takes 15 minutes",
+          steps: ["Chop", "Mix"],
+          durationMinutes: 15,
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.durationMinutes).toBe(15);
+    });
   });
 
   describe("Validation - Name", () => {
@@ -117,6 +134,56 @@ describe("E2E: POST /v1/families/:familyId/recipes", () => {
           name: "a".repeat(201),
           description: "Too long name",
           steps: ["Step"],
+        });
+
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe("Validation - Duration", () => {
+    it("should reject duration below 1 minute", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      const response = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Bad Duration",
+          description: "Invalid",
+          steps: ["Step"],
+          durationMinutes: 0,
+        });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should reject duration above 1440 minutes", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      const response = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Too Long",
+          description: "Invalid",
+          steps: ["Step"],
+          durationMinutes: 2000,
+        });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should reject non-integer duration", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      const response = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Float Duration",
+          description: "Invalid",
+          steps: ["Step"],
+          durationMinutes: 12.5,
         });
 
       expect(response.status).toBe(400);

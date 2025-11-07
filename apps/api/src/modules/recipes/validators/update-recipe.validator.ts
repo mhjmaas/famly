@@ -13,6 +13,16 @@ export const updateRecipeSchema = z.object({
     .min(1, "Description cannot be empty")
     .max(2000, "Description must not exceed 2000 characters")
     .optional(),
+  durationMinutes: z
+    .union([
+      z
+        .number()
+        .int("Duration must be a whole number of minutes")
+        .min(1, "Duration must be at least 1 minute")
+        .max(1440, "Duration must not exceed 1440 minutes"),
+      z.null(),
+    ])
+    .optional(),
   steps: z
     .array(
       z
