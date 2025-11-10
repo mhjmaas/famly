@@ -34,24 +34,26 @@ export function TaskFilters({
   const t = dict.dashboard.pages.tasks;
 
   return (
-    <TabsList className="hidden md:inline-flex" data-testid="tasks-filters">
-      <TabsTrigger value="my-tasks" data-testid="tasks-filter-my">
-        {t.filters.myTasks}
-        <TabBadge count={taskCounts.myTasks} />
-      </TabsTrigger>
-      <TabsTrigger value="all" data-testid="tasks-filter-all">
-        {t.filters.all}
-        <TabBadge count={taskCounts.all} />
-      </TabsTrigger>
-      <TabsTrigger value="active" data-testid="tasks-filter-active">
-        {t.filters.active}
-        <TabBadge count={taskCounts.active} />
-      </TabsTrigger>
-      <TabsTrigger value="completed" data-testid="tasks-filter-completed">
-        {t.filters.completed}
-        <TabBadge count={taskCounts.completed} />
-      </TabsTrigger>
-    </TabsList>
+    <div className="hidden w-full md:flex md:justify-center">
+      <TabsList data-testid="tasks-filters">
+        <TabsTrigger value="my-tasks" data-testid="tasks-filter-my">
+          {t.filters.myTasks}
+          <TabBadge count={taskCounts.myTasks} />
+        </TabsTrigger>
+        <TabsTrigger value="all" data-testid="tasks-filter-all">
+          {t.filters.all}
+          <TabBadge count={taskCounts.all} />
+        </TabsTrigger>
+        <TabsTrigger value="active" data-testid="tasks-filter-active">
+          {t.filters.active}
+          <TabBadge count={taskCounts.active} />
+        </TabsTrigger>
+        <TabsTrigger value="completed" data-testid="tasks-filter-completed">
+          {t.filters.completed}
+          <TabBadge count={taskCounts.completed} />
+        </TabsTrigger>
+      </TabsList>
+    </div>
   );
 }
 
