@@ -79,7 +79,7 @@ export function RegistrationForm({
 
   return (
     <Card className="border-2" data-testid="register-card">
-      <CardHeader>
+      <CardHeader className="items-center text-center">
         <CardTitle className="text-2xl font-bold">
           {dict.register.title}
         </CardTitle>
