@@ -25,8 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Locale } from "@/i18n/config";
 import type { UserProfile } from "@/lib/api-client";
-import { updateProfile } from "@/lib/api-client";
-import { clearInvalidSession } from "@/lib/auth-actions";
+import { logout, updateProfile } from "@/lib/api-client";
 import { calculateAge } from "@/lib/family-utils";
 import { useAppDispatch } from "@/store/hooks";
 import { clearUser, setUser } from "@/store/slices/user.slice";
@@ -123,17 +122,18 @@ export function UserProfileCard({
 
   const handleLogout = async () => {
     try {
+      // Call the logout API endpoint to invalidate session server-side
+      await logout();
+
       // Clear Redux store
       dispatch(clearUser());
-
-      // Clear session cookie
-      await clearInvalidSession();
 
       // Redirect to signin
       router.push(`/${lang}/signin`);
     } catch (error) {
       console.error("Logout failed:", error);
-      // Still redirect even if cookie clearing fails
+      // Clear Redux store and redirect even if API call fails
+      dispatch(clearUser());
       router.push(`/${lang}/signin`);
     }
   };
