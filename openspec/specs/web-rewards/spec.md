@@ -138,215 +138,130 @@ Family members MUST be able to view and cancel their pending claims while parent
 - **AND** the button is disabled
 
 ### Requirement: Reward Management (Parent Only)
-Parents MUST be able to create, update, and delete rewards through dialog forms with validation.
+Parents MUST be able to create, update, and delete rewards through dialog forms with validation, including image upload support.
 
-#### Scenario: Open create reward dialog
-- **GIVEN** an authenticated parent on the rewards page
-- **WHEN** they click "New Reward" button in the header
-- **THEN** a dialog opens with title "Create New Reward"
-- **AND** shows form fields: name (required), karma cost (required), image URL (optional), description (optional)
-- **AND** description field is initially hidden with "+ Description" button shown
+#### Scenario: Create reward with uploaded image
+- **GIVEN** a parent has uploaded an image via the file picker
+- **AND** filled in name "Ice Cream Trip" and karma cost "100"
+- **WHEN** they click "Create Reward"
+- **THEN** the image is uploaded to MinIO first
+- **AND** the reward is created with the returned imageUrl
+- **AND** the reward card displays the uploaded image
 
-#### Scenario: Create reward with required fields only
+#### Scenario: Create reward form shows upload option
 - **GIVEN** the create reward dialog is open
-- **WHEN** the parent fills in name "Extra Screen Time" and karma cost "50"
-- **AND** clicks "Create Reward"
-- **THEN** the API endpoint POST `/v1/families/{familyId}/rewards` is called
-- **AND** the new reward appears in the grid
-- **AND** the dialog closes
+- **WHEN** viewing the image input section
+- **THEN** the dialog shows both "Upload Image" button and "or provide URL" label with URL input
+- **AND** the parent can choose either method
 
-#### Scenario: Create reward with all fields
-- **GIVEN** the create reward dialog is open
-- **WHEN** the parent fills name, karma cost, clicks "+ Description", fills description, and fills image URL
-- **AND** clicks "Create Reward"
-- **THEN** the reward is created with all fields
-- **AND** the reward card displays the custom image
-
-#### Scenario: Validate required fields on create
-- **GIVEN** the create reward dialog is open
-- **WHEN** the parent clicks "Create Reward" without filling name or karma cost
-- **THEN** the form prevents submission
-- **AND** validation errors are shown for missing fields
-
-#### Scenario: Open edit reward dialog
-- **GIVEN** a parent viewing a reward card
-- **WHEN** they click the menu (three dots)
-- **AND** click "Edit"
-- **THEN** a dialog opens with title "Edit Reward"
-- **AND** the form fields are pre-filled with current reward values
-- **AND** description field is shown if reward has description
-
-#### Scenario: Update reward fields
-- **GIVEN** the edit reward dialog is open with existing reward data
-- **WHEN** the parent changes the name and karma cost
+#### Scenario: Update reward with new uploaded image
+- **GIVEN** the edit reward dialog is open for a reward with an existing image URL
+- **WHEN** the parent uploads a new image file
 - **AND** clicks "Update Reward"
-- **THEN** the API endpoint PATCH `/v1/families/{familyId}/rewards/{rewardId}` is called
-- **AND** the reward card updates with new values
-- **AND** the dialog closes
-
-#### Scenario: Delete reward
-- **GIVEN** a parent viewing a reward card with no pending claims
-- **WHEN** they click the menu
-- **AND** click "Delete"
-- **THEN** the API endpoint DELETE `/v1/families/{familyId}/rewards/{rewardId}` is called
-- **AND** the reward is removed from the grid
-
-#### Scenario: Cannot delete reward with pending claims
-- **GIVEN** a reward has one or more pending claims
-- **WHEN** a parent attempts to delete it
-- **THEN** the API responds with 409 Conflict
-- **AND** an error message is displayed to the parent
-- **AND** the reward remains in the grid
-
-#### Scenario: Child cannot access reward management
-- **GIVEN** an authenticated child on the rewards page
-- **WHEN** viewing reward cards
-- **THEN** the "New Reward" button is not displayed
-- **AND** reward card dropdown menus do not show "Edit" or "Delete" options
+- **THEN** the new image is uploaded first
+- **AND** the reward is updated with the new imageUrl
+- **AND** the old image remains in storage (no cleanup in this change)
 
 ### Requirement: State Management
-The rewards page MUST use Redux for state management with slices for rewards and claims, coordinated with karma state.
+The rewards page MUST use Redux for state management with slices for rewards and claims, coordinated with karma state, including image upload state.
 
-#### Scenario: Fetch rewards on page load
-- **GIVEN** the rewards page component mounts
-- **WHEN** useEffect runs on mount
-- **THEN** the Redux thunk `fetchRewards(familyId)` is dispatched
-- **AND** the API GET `/v1/families/{familyId}/rewards` is called
-- **AND** the Redux rewards slice state is updated with fetched rewards
-- **AND** loading state transitions: false → true → false
+#### Scenario: Redux action for image upload
+- **GIVEN** the rewards Redux slice
+- **WHEN** creating or updating a reward with an uploaded image
+- **THEN** a new async thunk `uploadRewardImage` is dispatched
+- **AND** the thunk accepts `File` object and `familyId`
+- **AND** the thunk returns the imageUrl from the API response
+- **AND** loading state is tracked during upload
 
-#### Scenario: Fetch claims on page load
-- **GIVEN** the rewards page component mounts
-- **WHEN** useEffect runs on mount
-- **THEN** the Redux thunk `fetchClaims(familyId)` is dispatched
-- **AND** the API GET `/v1/families/{familyId}/claims` is called
-- **AND** the Redux claims slice state is updated with fetched claims
-
-#### Scenario: Optimistic favourite toggle
-- **GIVEN** a user clicks the favourite button on a reward
-- **WHEN** the Redux thunk `toggleFavourite` is dispatched
-- **THEN** the Redux state immediately updates the favourite status
-- **AND** the heart icon updates immediately
-- **AND** the API call is made in the background
-- **AND** if the API call fails, the state is reverted and error shown
-
-#### Scenario: Optimistic reward creation
-- **GIVEN** a parent submits the create reward form
-- **WHEN** the Redux thunk `createReward` is dispatched
-- **THEN** a temporary reward is added to Redux state immediately
-- **AND** the reward appears in the grid
-- **AND** the API response updates the temporary reward with real ID and timestamps
-
-#### Scenario: Handle API errors gracefully
-- **GIVEN** any Redux thunk makes an API call
-- **WHEN** the API responds with an error
+#### Scenario: Image upload error handling in Redux
+- **GIVEN** the image upload thunk is dispatched
+- **WHEN** the API call fails
 - **THEN** the Redux error state is updated with error message
-- **AND** a toast or error notification is shown to the user
-- **AND** optimistic updates are reverted if applicable
+- **AND** the error is propagated to the component
+- **AND** the user sees an error notification
 
 ### Requirement: Internationalization
-All text content on the rewards page MUST be translated and support both English (en-US) and Dutch (nl-NL) locales.
+All text content on the rewards page MUST be translated and support both English (en-US) and Dutch (nl-NL) locales, including new image upload UI text.
 
-#### Scenario: Display rewards page in English
+#### Scenario: Image upload UI translations in English
 - **GIVEN** the user's locale is set to "en-US"
-- **WHEN** the rewards page loads
-- **THEN** all text is displayed in English
-- **AND** the page title shows "Rewards"
-- **AND** the karma balance shows "Your Available Karma"
-- **AND** buttons show English text ("Claim", "New Reward", etc.)
+- **WHEN** viewing the reward dialog image section
+- **THEN** the "Upload Image" button displays in English
+- **AND** the "or provide URL" label displays in English
+- **AND** the "Image preview" alt text displays in English
+- **AND** the "Remove image" button displays in English
+- **AND** all error messages display in English
 
-#### Scenario: Display rewards page in Dutch
+#### Scenario: Image upload UI translations in Dutch
 - **GIVEN** the user's locale is set to "nl-NL"
-- **WHEN** the rewards page loads
-- **THEN** all text is displayed in Dutch
-- **AND** the page title shows Dutch translation
-- **AND** all labels, buttons, and messages use Dutch translations
+- **WHEN** viewing the reward dialog image section
+- **THEN** all image upload UI text displays in Dutch
+- **AND** error messages display in Dutch
+- **AND** all labels and buttons use Dutch translations
 
-#### Scenario: All translation keys exist
-- **GIVEN** the rewards page implementation
-- **WHEN** rendering any text content
-- **THEN** every text string is retrieved from the dictionary using a translation key
-- **AND** no hardcoded English strings exist in components
+#### Scenario: All new translation keys exist
+- **GIVEN** the image upload feature implementation
+- **WHEN** rendering image upload UI
+- **THEN** translation keys exist for: "Upload Image", "or provide URL", "Image preview", "Remove image", "Uploading...", "File size must be less than 5MB", "Only JPEG, PNG, GIF, and WebP images are allowed", "Failed to upload image"
+- **AND** all keys have values in both en-US.json and nl-NL.json
 
 ### Requirement: End-to-End Testing
-The rewards page MUST have comprehensive E2E tests using Playwright with page object pattern and data-testid attributes.
+The rewards page MUST have comprehensive E2E tests using Playwright with page object pattern and data-testid attributes, including image upload workflows.
 
-#### Scenario: E2E test for viewing rewards
-- **GIVEN** a test user with test data in the database
-- **WHEN** the E2E test navigates to the rewards page
-- **THEN** the test verifies rewards are displayed
-- **AND** verifies karma balance is shown
-- **AND** verifies reward cards have correct data
-
-#### Scenario: E2E test for claiming reward
-- **GIVEN** a test user with sufficient karma
-- **WHEN** the test clicks "Claim" on a reward
-- **AND** confirms in the claim sheet
-- **THEN** the test verifies the claim button updates to "Pending"
-- **AND** verifies the API call was made
-- **AND** verifies the claim appears in the claims list
-
-#### Scenario: E2E test for favouriting reward
-- **GIVEN** the E2E test has navigated to rewards page
-- **WHEN** the test clicks the heart icon on a reward
-- **THEN** the test verifies the heart fills with color
-- **AND** verifies the progress bar appears
-- **AND** verifies the API was called
-
-#### Scenario: E2E test for parent creating reward
+#### Scenario: E2E test for uploading image on reward creation
 - **GIVEN** a test parent user
-- **WHEN** the test clicks "New Reward"
-- **AND** fills the form and submits
-- **THEN** the test verifies the new reward appears in the grid
-- **AND** verifies it has the correct name and karma cost
+- **WHEN** the test opens the create reward dialog
+- **AND** selects a test image file via the file picker
+- **AND** fills the required fields
+- **AND** submits the form
+- **THEN** the test verifies the image upload API call was made
+- **AND** verifies the reward creation API call includes the imageUrl
+- **AND** verifies the new reward displays with the uploaded image
 
-#### Scenario: Page object provides locators and helpers
+#### Scenario: E2E test for uploading image on reward edit
+- **GIVEN** a test reward with an existing image
+- **WHEN** the test opens the edit dialog
+- **AND** uploads a new image file
+- **AND** submits the form
+- **THEN** the test verifies the new image upload API call was made
+- **AND** verifies the reward update includes the new imageUrl
+- **AND** verifies the reward card displays the new image
+
+#### Scenario: E2E test for file validation errors
+- **GIVEN** the create reward dialog is open
+- **WHEN** the test selects an invalid file (too large or wrong type)
+- **THEN** the test verifies the error message displays
+- **AND** verifies the form cannot be submitted
+
+#### Scenario: E2E test for removing uploaded image
+- **GIVEN** a test has selected an image file
+- **WHEN** the test clicks "Remove image"
+- **THEN** the test verifies the preview disappears
+- **AND** verifies the file input is reset
+- **AND** verifies the upload button is shown again
+
+#### Scenario: Page object provides image upload helpers
 - **GIVEN** the RewardsPage page object class
-- **WHEN** tests use the page object
-- **THEN** all locators use data-testid attributes
-- **AND** helper methods encapsulate navigation and interaction logic
-- **AND** tests are readable and maintainable
-
-#### Scenario: All user workflows are tested
-- **GIVEN** the complete E2E test suite
-- **WHEN** tests run
-- **THEN** every user workflow is covered: view, favourite, claim, cancel claim, create, edit, delete
-- **AND** both parent and child user journeys are tested
-- **AND** responsive layouts are tested (mobile, tablet, desktop)
+- **WHEN** tests use image upload functionality
+- **THEN** helper methods exist for: uploadImage(filePath), removeImage(), verifyImagePreview(), verifyUploadError(message)
+- **AND** all image-related locators use data-testid attributes
 
 ### Requirement: Unit Testing
-Redux slices for rewards and claims MUST have 100% unit test coverage.
+Redux slices for rewards and claims MUST have 100% unit test coverage, including new image upload actions.
 
-#### Scenario: Unit test for fetchRewards thunk
+#### Scenario: Unit test for uploadRewardImage thunk
 - **GIVEN** the rewards slice unit test suite
-- **WHEN** testing the fetchRewards thunk
-- **THEN** tests cover: successful fetch, API error, loading states
-- **AND** tests verify state updates correctly in each case
+- **WHEN** testing the uploadRewardImage thunk
+- **THEN** tests cover: successful upload, API error, multipart form data construction
+- **AND** tests verify the thunk returns the imageUrl on success
+- **AND** tests verify error handling and state updates
 
-#### Scenario: Unit test for createReward thunk
+#### Scenario: Unit test for createReward with image upload
 - **GIVEN** the rewards slice unit test suite
-- **WHEN** testing the createReward thunk
-- **THEN** tests cover: successful creation, API error, optimistic update
-- **AND** tests verify temporary reward is added and then updated with API response
-
-#### Scenario: Unit test for toggleFavourite thunk
-- **GIVEN** the rewards slice unit test suite
-- **WHEN** testing the toggleFavourite thunk
-- **THEN** tests cover: successful toggle, API error with revert, both on and off states
-- **AND** tests verify optimistic update and rollback on error
-
-#### Scenario: Unit test for all selectors
-- **GIVEN** the rewards slice unit test suite
-- **WHEN** testing selectors
-- **THEN** every selector is tested: selectRewards, selectRewardsLoading, selectRewardById, selectFavouritedRewards
-- **AND** tests verify correct data is returned from state
-
-#### Scenario: Unit test for claims slice
-- **GIVEN** the claims slice unit test suite
-- **WHEN** running tests
-- **THEN** all thunks are tested: fetchClaims, claimReward, cancelClaim
-- **AND** all selectors are tested: selectClaims, selectPendingClaims, selectClaimByReward
-- **AND** coverage is 100%
+- **WHEN** testing createReward with an image file
+- **THEN** tests verify uploadRewardImage is called first
+- **AND** tests verify the returned imageUrl is used in the create payload
+- **AND** tests verify error handling if upload fails
 
 ### Requirement: Accessibility
 The rewards page MUST follow accessibility best practices with proper ARIA labels and keyboard navigation.
@@ -371,4 +286,131 @@ The rewards page MUST follow accessibility best practices with proper ARIA label
 - **THEN** all inputs have associated labels
 - **AND** required fields are indicated
 - **AND** error messages are announced
+
+### Requirement: Image Proxy API
+The web application MUST provide a Next.js API route that proxies image requests from clients to MinIO storage.
+
+#### Scenario: Fetch image through proxy
+- **GIVEN** an image stored in MinIO at path `family-123/reward-uuid.jpg`
+- **WHEN** a client requests GET `/api/images/family-123/reward-uuid.jpg`
+- **THEN** the API route fetches the image from MinIO using S3 GetObjectCommand
+- **AND** streams the image data to the client response
+- **AND** sets Content-Type header based on file extension (e.g., `image/jpeg`)
+- **AND** sets cache headers: `Cache-Control: public, max-age=31536000, immutable`
+
+#### Scenario: Handle missing image
+- **GIVEN** a client requests an image that does not exist in MinIO
+- **WHEN** GET `/api/images/family-123/nonexistent.jpg` is called
+- **THEN** the API responds with HTTP 404 Not Found
+
+#### Scenario: Handle S3 errors
+- **GIVEN** MinIO is unavailable or returns an error
+- **WHEN** a client requests an image
+- **THEN** the API responds with HTTP 500 Internal Server Error
+- **AND** logs the error for debugging
+
+#### Scenario: Serve images from any network location
+- **GIVEN** a user accessing the web app from a remote location (not localhost)
+- **WHEN** they view a reward with an uploaded image at `/api/images/family-123/reward-uuid.jpg`
+- **THEN** the image loads successfully through the proxy
+- **AND** the user does not need direct access to MinIO
+
+#### Scenario: Cache images in browser
+- **GIVEN** a client has fetched an image through the proxy
+- **WHEN** the same image is requested again
+- **THEN** the browser uses the cached version (based on Cache-Control header)
+- **AND** no additional request is made to the server
+
+### Requirement: Image Upload UI
+Parents MUST be able to upload images directly through the reward dialog using a file picker, with preview and validation feedback.
+
+#### Scenario: Upload image through file picker
+- **GIVEN** a parent with the create/edit reward dialog open
+- **WHEN** they click the "Upload Image" button
+- **THEN** a native file picker dialog opens
+- **AND** the picker accepts only image files (JPEG, PNG, GIF, WebP)
+- **WHEN** they select an image file
+- **THEN** the image preview displays immediately
+- **AND** the file is stored in component state ready for upload
+
+#### Scenario: Display image preview after selection
+- **GIVEN** a parent has selected an image file
+- **WHEN** the preview is shown
+- **THEN** the image displays at a reasonable preview size (max 200px height)
+- **AND** a "Remove image" button appears
+- **AND** the image URL input field is hidden or disabled
+
+#### Scenario: Remove uploaded image
+- **GIVEN** an image file is selected with preview showing
+- **WHEN** the parent clicks "Remove image"
+- **THEN** the preview is cleared
+- **AND** the file selection is reset
+- **AND** the "Upload Image" button is shown again
+- **AND** the image URL input field becomes available again
+
+#### Scenario: Toggle between upload and URL input
+- **GIVEN** the reward dialog is open
+- **WHEN** viewing the image input section
+- **THEN** both "Upload Image" button and URL input are visible
+- **AND** the user can choose either method
+- **AND** selecting a file hides the URL input
+- **AND** entering a URL disables the file upload button
+
+#### Scenario: Show upload progress indicator
+- **GIVEN** a parent is submitting the reward form with an uploaded image
+- **WHEN** the upload is in progress
+- **THEN** the submit button shows "Uploading..." text
+- **AND** the submit button is disabled during upload
+- **AND** a loading spinner or indicator is visible
+
+#### Scenario: Validate file size before upload
+- **GIVEN** a parent selects an image file larger than 5MB
+- **WHEN** the file is selected
+- **THEN** an error message displays: "File size must be less than 5MB"
+- **AND** the preview does not show
+- **AND** the file is not accepted
+
+#### Scenario: Validate file type before upload
+- **GIVEN** a parent selects a non-image file (e.g., PDF, TXT)
+- **WHEN** the file is selected
+- **THEN** an error message displays: "Only JPEG, PNG, GIF, and WebP images are allowed"
+- **AND** the preview does not show
+- **AND** the file is not accepted
+
+#### Scenario: Handle upload errors gracefully
+- **GIVEN** a parent submits the form with an image file
+- **WHEN** the upload API call fails (network error, server error)
+- **THEN** an error message displays: "Failed to upload image"
+- **AND** the form remains open
+- **AND** the file stays selected
+- **AND** the parent can retry by submitting again
+
+#### Scenario: Upload image before creating reward
+- **GIVEN** a parent has filled the create reward form with an uploaded image
+- **WHEN** they click "Create Reward"
+- **THEN** the image is uploaded first via POST `/v1/families/{familyId}/rewards/upload-image`
+- **AND** the returned imageUrl is used in the reward creation payload
+- **AND** the reward is created with the uploaded image URL
+- **AND** the dialog closes on success
+
+#### Scenario: Upload image before updating reward
+- **GIVEN** a parent is editing a reward and uploads a new image
+- **WHEN** they click "Update Reward"
+- **THEN** the new image is uploaded first
+- **AND** the returned imageUrl replaces the old imageUrl in the update payload
+- **AND** the reward is updated with the new image
+
+#### Scenario: Display uploaded image in reward card
+- **GIVEN** a reward was created with an uploaded image
+- **WHEN** viewing the reward card
+- **THEN** the uploaded image displays in the card
+- **AND** the image is fetched from the MinIO URL
+- **AND** the image displays with proper aspect ratio and sizing
+
+#### Scenario: Pre-fill image in edit dialog
+- **GIVEN** a parent opens the edit dialog for a reward with an uploaded image
+- **WHEN** the dialog opens
+- **THEN** the image preview shows the current reward image
+- **AND** the image URL field (if visible) shows the MinIO URL
+- **AND** the parent can replace the image by uploading a new one
 
