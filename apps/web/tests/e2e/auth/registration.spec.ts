@@ -198,7 +198,7 @@ test.describe("Authentication - Registration Flow", () => {
 
     // Verify we're on the app page
     await expect(
-      page.getByRole("heading", { name: "Dashboard" }),
+      page.getByRole("heading", { name: "Welcome back" }),
     ).toBeVisible();
   });
 

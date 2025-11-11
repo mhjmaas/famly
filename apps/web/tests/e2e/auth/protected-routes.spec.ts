@@ -28,7 +28,7 @@ test.describe("Authentication - Protected Routes", () => {
     // Should be able to access the app page
     expect(page.url()).toContain("/app");
     await expect(
-      page.getByRole("heading", { name: "Dashboard" }),
+      page.getByRole("heading", { name: "Welcome back" }),
     ).toBeVisible();
   });
 

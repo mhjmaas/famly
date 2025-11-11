@@ -49,6 +49,22 @@ export class DashboardPage {
   readonly userName: Locator;
   readonly userFamily: Locator;
 
+  // Dashboard overview locators
+  readonly karmaCard: Locator;
+  readonly karmaAmount: Locator;
+  readonly pendingTasksCard: Locator;
+  readonly pendingTasksCount: Locator;
+  readonly potentialKarmaCard: Locator;
+  readonly potentialKarmaAmount: Locator;
+  readonly pendingTasksSection: Locator;
+  readonly taskCards: Locator;
+  readonly emptyTasksState: Locator;
+  readonly rewardProgressSection: Locator;
+  readonly rewardCards: Locator;
+  readonly emptyRewardsState: Locator;
+  readonly tasksViewAll: Locator;
+  readonly rewardsViewAll: Locator;
+
   constructor(page: Page) {
     this.page = page;
 
@@ -93,6 +109,26 @@ export class DashboardPage {
     // User profile details
     this.userName = page.getByTestId("user-name");
     this.userFamily = page.getByTestId("user-family");
+
+    // Dashboard overview locators
+    this.karmaCard = page.getByTestId("dashboard-karma-card");
+    this.karmaAmount = page.getByTestId("karma-amount");
+    this.pendingTasksCard = page.getByTestId("dashboard-pending-tasks-card");
+    this.pendingTasksCount = page.getByTestId("pending-tasks-count");
+    this.potentialKarmaCard = page.getByTestId("dashboard-potential-karma-card");
+    this.potentialKarmaAmount = page.getByTestId("potential-karma-amount");
+    this.pendingTasksSection = page.getByTestId("pending-tasks-section");
+    this.taskCards = page.getByTestId("task-card");
+    this.emptyTasksState = page.getByTestId("empty-tasks-state");
+    this.rewardProgressSection = page.getByTestId("reward-progress-section");
+    this.rewardCards = page.getByTestId("reward-progress-card");
+    this.emptyRewardsState = page.getByTestId("empty-rewards-state");
+    this.tasksViewAll = this.pendingTasksSection.getByRole("link", {
+      name: /view all/i,
+    });
+    this.rewardsViewAll = this.rewardProgressSection.getByRole("link", {
+      name: /view all/i,
+    });
   }
 
   /**
@@ -180,5 +216,85 @@ export class DashboardPage {
    */
   async getPageHeadingText(): Promise<string | null> {
     return this.pageHeading.first().textContent();
+  }
+
+  /**
+   * Get available karma amount
+   */
+  async getKarmaAmount(): Promise<number> {
+    const text = await this.karmaAmount.textContent();
+    return parseInt(text || "0", 10);
+  }
+
+  /**
+   * Get pending tasks count
+   */
+  async getPendingTasksCount(): Promise<number> {
+    const text = await this.pendingTasksCount.textContent();
+    return parseInt(text || "0", 10);
+  }
+
+  /**
+   * Get potential karma amount
+   */
+  async getPotentialKarma(): Promise<number> {
+    const text = await this.potentialKarmaAmount.textContent();
+    return parseInt(text || "0", 10);
+  }
+
+  /**
+   * Get number of task cards displayed
+   */
+  async getTaskCardsCount(): Promise<number> {
+    return this.taskCards.count();
+  }
+
+  /**
+   * Get number of reward cards displayed
+   */
+  async getRewardCardsCount(): Promise<number> {
+    return this.rewardCards.count();
+  }
+
+  /**
+   * Check if empty tasks state is visible
+   */
+  async isEmptyTasksStateVisible(): Promise<boolean> {
+    return this.emptyTasksState.isVisible();
+  }
+
+  /**
+   * Check if empty rewards state is visible
+   */
+  async isEmptyRewardsStateVisible(): Promise<boolean> {
+    return this.emptyRewardsState.isVisible();
+  }
+
+  /**
+   * Click "View All" button in tasks section
+   */
+  async clickTasksViewAll() {
+    await this.tasksViewAll.click();
+  }
+
+  /**
+   * Click "View All" button in rewards section
+   */
+  async clickRewardsViewAll() {
+    await this.rewardsViewAll.click();
+  }
+
+  /**
+   * Click on a specific task card
+   */
+  async clickTaskCard(index: number) {
+    await this.taskCards.nth(index).click();
+  }
+
+  /**
+   * Click on a specific reward card
+   */
+  async clickRewardCard(index: number) {
+    await this.rewardCards.nth(index).click();
   }
 }

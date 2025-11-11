@@ -1,3 +1,4 @@
+import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
@@ -17,14 +18,7 @@ export default async function AppPage({ params }: AppPageProps) {
       lang={lang}
       title={dict.dashboard.pages.dashboard.title}
     >
-      <div className="flex flex-col gap-4">
-        <h1 className="text-3xl font-bold text-foreground">
-          {dict.dashboard.pages.dashboard.title}
-        </h1>
-        <p className="text-muted-foreground">
-          {dict.dashboard.pages.dashboard.placeholder}
-        </p>
-      </div>
+      <DashboardOverview lang={lang} dict={dict} />
     </DashboardLayout>
   );
 }

@@ -335,7 +335,34 @@
     "pages": {
       "dashboard": {
         "title": "Dashboard",
-        "placeholder": "Dashboard content coming soon"
+        "placeholder": "Dashboard content coming soon",
+        "welcome": "Welcome back, {name}!",
+        "subtitle": "Here's what's happening with your family",
+        "summary": {
+          "availableKarma": "Available Karma",
+          "pendingTasks": "Pending Tasks",
+          "potentialKarma": "Potential Karma"
+        },
+        "sections": {
+          "yourPendingTasks": "Your Pending Tasks",
+          "rewardProgress": "Reward Progress",
+          "viewAll": "View All"
+        },
+        "emptyStates": {
+          "noTasks": "No pending tasks",
+          "noTasksDescription": "You're all caught up!",
+          "noRewards": "No favorited rewards",
+          "noRewardsDescription": "Favorite rewards to track your progress"
+        },
+        "task": {
+          "karma": "{count} Karma",
+          "due": "Due {date}"
+        },
+        "reward": {
+          "progress": "{current} / {required}",
+          "remaining": "{count} more karma needed",
+          "ready": "You have enough karma!"
+        }
       },
       "family": {
         "title": "Family Members",
