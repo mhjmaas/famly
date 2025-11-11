@@ -335,7 +335,34 @@
     "pages": {
       "dashboard": {
         "title": "Dashboard",
-        "placeholder": "Dashboard-inhoud verschijnt binnenkort"
+        "placeholder": "Dashboard-inhoud verschijnt binnenkort",
+        "welcome": "Welkom terug, {name}!",
+        "subtitle": "Dit is wat er gebeurt met je gezin",
+        "summary": {
+          "availableKarma": "Beschikbare Karma",
+          "pendingTasks": "Openstaande Taken",
+          "potentialKarma": "Potentiële Karma"
+        },
+        "sections": {
+          "yourPendingTasks": "Jouw Openstaande Taken",
+          "rewardProgress": "Beloningsvoortgang",
+          "viewAll": "Bekijk Alles"
+        },
+        "emptyStates": {
+          "noTasks": "Geen openstaande taken",
+          "noTasksDescription": "Je bent helemaal bij!",
+          "noRewards": "Geen favoriete beloningen",
+          "noRewardsDescription": "Markeer beloningen als favoriet om je voortgang bij te houden"
+        },
+        "task": {
+          "karma": "{count} Karma",
+          "due": "Verval {date}"
+        },
+        "reward": {
+          "progress": "{current} / {required}",
+          "remaining": "Nog {count} karma nodig",
+          "ready": "Je hebt genoeg karma!"
+        }
       },
       "family": {
         "title": "Gezinsleden",

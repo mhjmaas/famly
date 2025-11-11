@@ -1,7 +1,7 @@
 import {
   createAsyncThunk,
+  createSelector,
   createSlice,
-  type PayloadAction,
 } from "@reduxjs/toolkit";
 import {
   createReward as apiCreateReward,
@@ -270,7 +270,9 @@ export const selectRewardsLoading = (state: RootState) =>
 export const selectRewardsError = (state: RootState) => state.rewards.error;
 export const selectRewardById = (rewardId: string) => (state: RootState) =>
   state.rewards.rewards.find((r) => r._id === rewardId);
-export const selectFavouritedRewards = (state: RootState) =>
-  state.rewards.rewards.filter((r) => r.isFavourite);
+export const selectFavouritedRewards = createSelector(
+  [(state: RootState) => state.rewards.rewards],
+  (rewards) => rewards.filter((r) => r.isFavourite),
+);
 export const selectUploadError = (state: RootState) =>
   state.rewards.uploadError;

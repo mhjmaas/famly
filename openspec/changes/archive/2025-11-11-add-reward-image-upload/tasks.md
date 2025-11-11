@@ -185,7 +185,7 @@
   - Test `createReward` with image file upload
   - Test `updateReward` with image file upload
   - Test error state for upload failures
-- [ ] Run unit tests: `pnpm --filter web test:unit`
+- [x] Run unit tests: `pnpm --filter web test:unit`
 
 ### 3.9 Write Frontend E2E Tests
 - [x] Update `apps/web/tests/e2e/pages/rewards.page.ts`
@@ -193,9 +193,9 @@
   - Add helper: `uploadImage(filePath: string)`
   - Add helper: `removeUploadedImage()`
   - Add helper: `getUploadError(): string`
-- [ ] Create test fixtures: `apps/web/tests/fixtures/test-image.png` (< 100KB)
-- [ ] Create test fixtures: `apps/web/tests/fixtures/test-image-large.png` (> 5MB, for error testing)
-- [ ] Create test fixtures: `apps/web/tests/fixtures/test-document.pdf` (for invalid type testing)
+- [x] Create test fixtures: `apps/web/tests/fixtures/test-image.png` (< 100KB)
+- [x] Create test fixtures: `apps/web/tests/fixtures/test-image-large.png` (> 5MB, for error testing)
+- [x] Create test fixtures: `apps/web/tests/fixtures/test-document.pdf` (for invalid type testing)
 - [x] Update `apps/web/tests/e2e/app/rewards.spec.ts`
   - Test: Upload image on reward creation
   - Test: Upload image on reward edit
@@ -204,7 +204,7 @@
   - Test: Remove uploaded image
   - Test: Toggle between upload and URL input
   - Test: Display uploaded image in reward card
-- [ ] Run E2E tests: `pnpm --filter web test:e2e`
+- [x] Run E2E tests: `pnpm --filter web test:e2e`
 
 ## 4. Testing & Validation
 
@@ -220,64 +220,64 @@
   - Verify new image replaces old one in UI
 
 ### 4.2 Error Scenario Testing
-- [ ] Test file size validation (select > 5MB file)
-- [ ] Test file type validation (select PDF or TXT file)
-- [ ] Test network error handling (stop MinIO, try upload)
-- [ ] Test unauthorized access (child user tries to upload)
+- [x] Test file size validation (select > 5MB file)
+- [x] Test file type validation (select PDF or TXT file)
+- [x] Test network error handling (stop MinIO, try upload)
+- [x] Test unauthorized access (child user tries to upload)
 
 ### 4.3 Test All Locales
-- [ ] Test upload flow with locale set to "en-US"
-- [ ] Test upload flow with locale set to "nl-NL"
-- [ ] Verify all translations display correctly
+- [x] Test upload flow with locale set to "en-US"
+- [x] Test upload flow with locale set to "nl-NL"
+- [x] Verify all translations display correctly
 
 ### 4.4 Run Full Test Suite
-- [ ] Run API unit tests: `pnpm --filter api test:unit`
-- [ ] Run API E2E tests: `pnpm --filter api test:e2e`
-- [ ] Run web unit tests: `pnpm --filter web test:unit`
-- [ ] Run web E2E tests: `pnpm --filter web test:e2e`
-- [ ] Verify all tests pass
+- [x] Run API unit tests: `pnpm --filter api test:unit`
+- [x] Run API E2E tests: `pnpm --filter api test:e2e`
+- [x] Run web unit tests: `pnpm --filter web test:unit`
+- [x] Run web E2E tests: `pnpm --filter web test:e2e`
+- [x] Verify all tests pass
 
 ## 5. Documentation
 
 ### 5.1 Update README
-- [ ] Document MinIO setup in project README
-- [ ] Add instructions for accessing MinIO console
-- [ ] Document environment variables for MinIO
+- [x] Document MinIO setup in project README
+- [x] Add instructions for accessing MinIO console
+- [x] Document environment variables for MinIO
 
 ### 5.2 Code Documentation
-- [ ] Add JSDoc comments to upload service functions
-- [ ] Add comments explaining MinIO client configuration
-- [ ] Document file validation rules in upload route
+- [x] Add JSDoc comments to upload service functions
+- [x] Add comments explaining MinIO client configuration
+- [x] Document file validation rules in upload route
 
 ## 6. Final Validation
 
 ### 6.1 Code Review Checklist
-- [ ] All code follows SOLID, DRY, KISS principles
-- [ ] TypeScript strict mode compliance
-- [ ] No hardcoded strings (all translations used)
-- [ ] Error handling complete and consistent
-- [ ] All TODO comments addressed or removed
-- [ ] No console.log or debug code left
+- [x] All code follows SOLID, DRY, KISS principles
+- [x] TypeScript strict mode compliance
+- [x] No hardcoded strings (all translations used)
+- [x] Error handling complete and consistent
+- [x] All TODO comments addressed or removed
+- [x] No console.log or debug code left
 
 ### 6.2 Quality Gates
-- [ ] All linting passes: `pnpm run lint`
-- [ ] All formatting passes: `pnpm run format`
-- [ ] All unit tests pass
-- [ ] All E2E tests pass
-- [ ] No TypeScript errors: `pnpm run type-check`
+- [x] All linting passes: `pnpm run lint`
+- [x] All formatting passes: `pnpm run format`
+- [x] All unit tests pass
+- [x] All E2E tests pass
+- [x] No TypeScript errors: `pnpm run type-check`
 
 ### 6.3 Feature Completeness
-- [ ] Image upload works end-to-end
-- [ ] File validation works correctly
-- [ ] Error messages display properly
-- [ ] Translations complete for both locales
-- [ ] Image preview works
-- [ ] Remove image works
-- [ ] Toggle between upload and URL works
-- [ ] Both create and edit flows work
-- [ ] Images display in reward cards
-- [ ] Parent-only access enforced
-- [ ] Family membership enforced
+- [x] Image upload works end-to-end
+- [x] File validation works correctly
+- [x] Error messages display properly
+- [x] Translations complete for both locales
+- [x] Image preview works
+- [x] Remove image works
+- [x] Toggle between upload and URL works
+- [x] Both create and edit flows work
+- [x] Images display in reward cards
+- [x] Parent-only access enforced
+- [x] Family membership enforced
 
 ## Dependencies
 

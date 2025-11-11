@@ -1,0 +1,199 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  selectPendingTasksCount,
+  selectPendingTasksForUser,
+  selectPotentialKarma,
+} from "@/store/selectors/dashboard.selectors";
+import { selectKarmaBalance } from "@/store/slices/karma.slice";
+import {
+  fetchRewards,
+  selectFavouritedRewards,
+} from "@/store/slices/rewards.slice";
+import {
+  completeTask,
+  fetchTasks,
+  reopenTask,
+} from "@/store/slices/tasks.slice";
+import { selectUser } from "@/store/slices/user.slice";
+import type { Task } from "@/types/api.types";
+import { DashboardHeader } from "./dashboard-header";
+import { DashboardSummaryCards } from "./dashboard-summary-cards";
+import { PendingTasksSection } from "./pending-tasks-section";
+import { RewardProgressSection } from "./reward-progress-section";
+
+interface DashboardOverviewProps {
+  lang: string;
+  dict: {
+    dashboard: {
+      pages: {
+        dashboard: {
+          welcome: string;
+          subtitle: string;
+          summary: {
+            availableKarma: string;
+            pendingTasks: string;
+            potentialKarma: string;
+          };
+          sections: {
+            yourPendingTasks: string;
+            rewardProgress: string;
+            viewAll: string;
+          };
+          emptyStates: {
+            noTasks: string;
+            noTasksDescription: string;
+            noRewards: string;
+            noRewardsDescription: string;
+          };
+          reward: {
+            ready: string;
+            remaining: string;
+          };
+        };
+      };
+    };
+  };
+}
+
+const STALE_TIME = 5 * 60 * 1000; // 5 minutes
+
+export function DashboardOverview({ lang, dict }: DashboardOverviewProps) {
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
+
+  // Track recently completed task IDs to keep showing them temporarily
+  const [recentlyCompletedIds, setRecentlyCompletedIds] = useState<Set<string>>(
+    new Set(),
+  );
+
+  const userKarma = useAppSelector((state) =>
+    user ? selectKarmaBalance(user.id)(state) : 0,
+  );
+  const pendingTasks = useAppSelector((state) =>
+    selectPendingTasksForUser(state, recentlyCompletedIds),
+  );
+  const pendingTasksCount = useAppSelector(selectPendingTasksCount);
+  const potentialKarma = useAppSelector(selectPotentialKarma);
+  const favoritedRewards = useAppSelector(selectFavouritedRewards);
+
+  const tasksLastFetch = useAppSelector((state) => state.tasks.lastFetch);
+  const rewardsLastFetch = useAppSelector((state) => state.rewards.lastFetch);
+
+  useEffect(() => {
+    if (!user?.families?.[0]?.familyId) return;
+
+    const familyId = user.families[0].familyId;
+    const now = Date.now();
+
+    // Fetch tasks if stale
+    if (!tasksLastFetch || now - tasksLastFetch > STALE_TIME) {
+      dispatch(fetchTasks(familyId));
+    }
+
+    // Fetch rewards if stale
+    if (!rewardsLastFetch || now - rewardsLastFetch > STALE_TIME) {
+      dispatch(fetchRewards(familyId));
+    }
+  }, [dispatch, user, tasksLastFetch, rewardsLastFetch]);
+
+  const handleToggleComplete = useCallback(
+    async (task: Task) => {
+      if (!user?.families?.[0]?.familyId) return;
+
+      const familyId = user.families[0].familyId;
+      const karma = task.metadata?.karma;
+
+      if (task.completedAt) {
+        // Reopen the task
+        await dispatch(
+          reopenTask({
+            familyId,
+            taskId: task._id,
+            userId: user.id,
+            karma,
+          }),
+        );
+
+        // Remove from recently completed set
+        setRecentlyCompletedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(task._id);
+          return next;
+        });
+      } else {
+        // Complete the task
+        await dispatch(
+          completeTask({
+            familyId,
+            taskId: task._id,
+            userId: user.id,
+            karma,
+          }),
+        );
+
+        // Add to recently completed set to keep showing it temporarily
+        setRecentlyCompletedIds((prev) => new Set(prev).add(task._id));
+      }
+    },
+    [dispatch, user],
+  );
+
+  if (!user) {
+    return null;
+  }
+
+  const firstName = user.name.split(" ")[0];
+  const dashboardDict = dict.dashboard.pages.dashboard;
+
+  return (
+    <div className="space-y-6">
+      <DashboardHeader
+        firstName={firstName}
+        welcomeMessage={dashboardDict.welcome}
+        subtitle={dashboardDict.subtitle}
+      />
+
+      <DashboardSummaryCards
+        availableKarma={userKarma}
+        pendingTasksCount={pendingTasksCount}
+        potentialKarma={potentialKarma}
+        labels={{
+          availableKarma: dashboardDict.summary.availableKarma,
+          pendingTasks: dashboardDict.summary.pendingTasks,
+          potentialKarma: dashboardDict.summary.potentialKarma,
+        }}
+      />
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <PendingTasksSection
+          tasks={pendingTasks}
+          lang={lang}
+          labels={{
+            title: dashboardDict.sections.yourPendingTasks,
+            viewAll: dashboardDict.sections.viewAll,
+            emptyTitle: dashboardDict.emptyStates.noTasks,
+            emptyDescription: dashboardDict.emptyStates.noTasksDescription,
+          }}
+          onToggleComplete={handleToggleComplete}
+        />
+
+        <RewardProgressSection
+          rewards={favoritedRewards}
+          userKarma={userKarma}
+          lang={lang}
+          labels={{
+            title: dashboardDict.sections.rewardProgress,
+            viewAll: dashboardDict.sections.viewAll,
+            emptyTitle: dashboardDict.emptyStates.noRewards,
+            emptyDescription: dashboardDict.emptyStates.noRewardsDescription,
+            ready: dashboardDict.reward.ready,
+            remaining: dashboardDict.reward.remaining,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
