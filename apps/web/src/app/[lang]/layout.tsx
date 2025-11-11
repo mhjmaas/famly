@@ -39,6 +39,9 @@ export async function generateMetadata({
   return {
     title: dict.metadata.title,
     description: dict.metadata.description,
+    appleWebApp: {
+      title: "Famly",
+    },
     alternates: {
       languages: Object.fromEntries(
         i18n.locales.map((locale) => [locale, `/${locale}`]),

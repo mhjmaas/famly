@@ -123,8 +123,9 @@ function initAuth() {
     },
 
     advanced: {
-      // Use secure cookies in production only (not in dev or test)
-      useSecureCookies: settings.isProduction,
+      // Use secure cookies only when using HTTPS
+      // This allows local/Docker deployments over HTTP while still being secure in production with HTTPS
+      useSecureCookies: settings.isHttps,
       // Disable CSRF check in development and test
       disableCSRFCheck: settings.isDevelopment || settings.isTest,
     },

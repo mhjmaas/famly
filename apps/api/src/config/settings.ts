@@ -30,6 +30,14 @@ class Settings {
   get betterAuthUrl(): string {
     return this.env.BETTER_AUTH_URL;
   }
+
+  /**
+   * Check if the application is using HTTPS
+   * Secure cookies should only be enabled when using HTTPS
+   */
+  get isHttps(): boolean {
+    return this.betterAuthUrl.startsWith("https://");
+  }
 }
 
 export const settings = new Settings();
