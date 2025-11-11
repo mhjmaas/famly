@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { logout } from "@/lib/api-client";
+import { clearSessionCookieClient } from "@/lib/session-client";
 
 /**
  * Client component to handle invalid session detection
@@ -31,16 +32,25 @@ export function SessionGuard({
           "Invalid session detected on protected route, clearing and redirecting",
         );
 
-        // Call logout endpoint to properly invalidate session
-        logout()
-          .then(() => {
-            // Redirect to signin
+        const invalidateSession = async () => {
+          try {
+            await logout();
+          } catch (error) {
+            console.error("Failed to invalidate session via API:", error);
+          } finally {
+            try {
+              await clearSessionCookieClient();
+            } catch (sessionError) {
+              console.error(
+                "Failed to clear local session cookie:",
+                sessionError,
+              );
+            }
             router.push(`/${locale}/signin`);
-          })
-          .catch(() => {
-            // Even if logout fails, still redirect to signin
-            router.push(`/${locale}/signin`);
-          });
+          }
+        };
+
+        void invalidateSession();
       }
       // Case 2: No session cookie at all (logged out or never logged in)
       else if (!hasSessionCookie && !hasUserData) {

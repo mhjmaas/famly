@@ -27,6 +27,7 @@ import type { Locale } from "@/i18n/config";
 import type { UserProfile } from "@/lib/api-client";
 import { logout, updateProfile } from "@/lib/api-client";
 import { calculateAge } from "@/lib/family-utils";
+import { clearSessionCookieClient } from "@/lib/session-client";
 import { useAppDispatch } from "@/store/hooks";
 import { clearUser, setUser } from "@/store/slices/user.slice";
 
@@ -122,18 +123,16 @@ export function UserProfileCard({
 
   const handleLogout = async () => {
     try {
-      // Call the logout API endpoint to invalidate session server-side
       await logout();
-
-      // Clear Redux store
-      dispatch(clearUser());
-
-      // Redirect to signin
-      router.push(`/${lang}/signin`);
     } catch (error) {
       console.error("Logout failed:", error);
-      // Clear Redux store and redirect even if API call fails
+    } finally {
       dispatch(clearUser());
+      try {
+        await clearSessionCookieClient();
+      } catch (sessionError) {
+        console.error("Failed to clear session cookie locally:", sessionError);
+      }
       router.push(`/${lang}/signin`);
     }
   };
