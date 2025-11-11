@@ -25,9 +25,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Locale } from "@/i18n/config";
 import type { UserProfile } from "@/lib/api-client";
-import { updateProfile } from "@/lib/api-client";
-import { clearInvalidSession } from "@/lib/auth-actions";
+import { logout, updateProfile } from "@/lib/api-client";
 import { calculateAge } from "@/lib/family-utils";
+import { clearSessionCookieClient } from "@/lib/session-client";
 import { useAppDispatch } from "@/store/hooks";
 import { clearUser, setUser } from "@/store/slices/user.slice";
 
@@ -123,17 +123,16 @@ export function UserProfileCard({
 
   const handleLogout = async () => {
     try {
-      // Clear Redux store
-      dispatch(clearUser());
-
-      // Clear session cookie
-      await clearInvalidSession();
-
-      // Redirect to signin
-      router.push(`/${lang}/signin`);
+      await logout();
     } catch (error) {
       console.error("Logout failed:", error);
-      // Still redirect even if cookie clearing fails
+    } finally {
+      dispatch(clearUser());
+      try {
+        await clearSessionCookieClient();
+      } catch (sessionError) {
+        console.error("Failed to clear session cookie locally:", sessionError);
+      }
       router.push(`/${lang}/signin`);
     }
   };

@@ -141,6 +141,12 @@ export async function register(data: RegisterRequest): Promise<AuthResponse> {
   });
 }
 
+export async function logout(): Promise<void> {
+  return apiClient<void>("/v1/auth/sign-out", {
+    method: "POST",
+  });
+}
+
 // Family API
 
 export type {
