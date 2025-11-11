@@ -170,6 +170,24 @@ export function AddMemberDialog({
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
+            <Label htmlFor={nameId}>{dict.addMemberDialog.name}</Label>
+            <Input
+              id={nameId}
+              data-testid="add-member-name"
+              placeholder={dict.addMemberDialog.namePlaceholder}
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+            />
+            {validationErrors.name && (
+              <p className="text-sm text-destructive">
+                {validationErrors.name}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor={emailId}>{dict.addMemberDialog.email}</Label>
             <Input
               id={emailId}
@@ -203,24 +221,6 @@ export function AddMemberDialog({
             {validationErrors.password && (
               <p className="text-sm text-destructive">
                 {validationErrors.password}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={nameId}>{dict.addMemberDialog.name}</Label>
-            <Input
-              id={nameId}
-              data-testid="add-member-name"
-              placeholder={dict.addMemberDialog.namePlaceholder}
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-            />
-            {validationErrors.name && (
-              <p className="text-sm text-destructive">
-                {validationErrors.name}
               </p>
             )}
           </div>
