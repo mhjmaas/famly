@@ -123,11 +123,25 @@ function initAuth() {
     },
 
     advanced: {
-      // Use secure cookies only when using HTTPS
-      // This allows local/Docker deployments over HTTP while still being secure in production with HTTPS
+      // Enable secure cookies when BETTER_AUTH_URL uses HTTPS
+      // Works correctly with reverse proxies (like Caddy) because Express trusts
+      // X-Forwarded-Proto header (configured via app.set('trust proxy', 1))
+      // This ensures cookies have the Secure flag when accessed over HTTPS
       useSecureCookies: settings.isHttps,
       // Disable CSRF check in development and test
       disableCSRFCheck: settings.isDevelopment || settings.isTest,
+      // Trust X-Forwarded-For and X-Real-IP headers from reverse proxy (Caddy)
+      // This ensures client IP addresses are correctly identified behind the proxy
+      ipAddress: {
+        ipAddressHeaders: ["x-forwarded-for", "x-real-ip"],
+      },
+      // Configure default cookie attributes
+      // SameSite: 'lax' allows cookies to be sent in same-site contexts and top-level navigation
+      // This is important for reverse proxy setups where the frontend and API are on the same domain
+      defaultCookieAttributes: {
+        sameSite: "lax" as const,
+        path: "/",
+      },
     },
   };
 

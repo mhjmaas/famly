@@ -47,6 +47,9 @@ services:
       dockerfile: apps/api/Dockerfile
     container_name: famly-api
     restart: unless-stopped
+    # SECURITY WARNING: Ports are exposed for development convenience
+    # For production, use docker-compose.prod.yml to remove port mappings
+    # This prevents direct access bypassing Caddy's HTTPS termination
     ports:
       - "${API_PORT:-3001}:3001"
     depends_on:
@@ -81,6 +84,9 @@ services:
       dockerfile: apps/web/Dockerfile
     container_name: famly-web
     restart: unless-stopped
+    # SECURITY WARNING: Ports are exposed for development convenience
+    # For production, use docker-compose.prod.yml to remove port mappings
+    # This prevents direct access bypassing Caddy's HTTPS termination
     ports:
       - "${WEB_PORT:-3000}:3000"
     depends_on:
@@ -91,14 +97,18 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      # Client-side API URL (browser requests through Caddy proxy)
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      # Server-side API URL (direct internal Docker network connection)
+      API_URL: http://api:3001
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
       MINIO_BUCKET: ${MINIO_BUCKET:-famly-rewards}
       MINIO_USE_SSL: "false"
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      test:
+        ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -106,10 +116,45 @@ services:
     networks:
       - famly-network
 
+  caddy:
+    build:
+      context: docker/caddy
+      dockerfile: Dockerfile
+    container_name: famly-caddy
+    restart: unless-stopped
+    ports:
+      - "443:443"
+      - "80:80" # For Let's Encrypt HTTP-01 challenge
+    depends_on:
+      web:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    volumes:
+      # Mount Caddyfile - uses localhost by default, or production if configured
+      # For custom domains: cp docker/caddy/Caddyfile.http01.example docker/caddy/Caddyfile.production
+      - ./docker/caddy/${CADDYFILE:-Caddyfile.localhost}:/etc/caddy/Caddyfile:ro
+      # Mount certificate directory for mkcert certificates (localhost mode)
+      - ./docker/caddy/certs:/certs:ro
+      # Persist Caddy data for Let's Encrypt certificates
+      - caddy-data:/data
+      - caddy-config:/config
+    environment:
+      # Optional: DNS provider tokens for DNS-01 challenge
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:-}
+    networks:
+      - famly-network
+    profiles:
+      - https
+
 volumes:
   mongo-data:
     driver: local
   minio-data:
+    driver: local
+  caddy-data:
+    driver: local
+  caddy-config:
     driver: local
 
 networks:

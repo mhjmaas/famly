@@ -1,0 +1,74 @@
+# Production Caddyfile Example - HTTP-01 Challenge (Simple Setup)
+# Use this if your domain points to your home IP and ports 80/443 are forwarded
+# Copy this to Caddyfile.production and customize for your domain
+
+{
+	# IMPORTANT: Configure your email for Let's Encrypt notifications
+	email admin@hfamly.eu
+
+	# Global security settings
+	# Automatically redirect HTTP to HTTPS (Caddy does this by default)
+	# Enable HTTP/2 and HTTP/3 for better performance
+	servers {
+		protocols h1 h2 h3
+	}
+}
+
+# Your public domain - Caddy automatically handles HTTP-01 challenge
+# Replace my.famly.eu with your actual domain
+my.famly.eu {
+	# Caddy automatically requests certificate from Let's Encrypt
+	# No additional TLS configuration needed for HTTP-01!
+
+	# Security headers
+	header {
+		# Enable HSTS (force HTTPS for 1 year)
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		# Prevent clickjacking
+		X-Frame-Options "SAMEORIGIN"
+		# Prevent MIME type sniffing
+		X-Content-Type-Options "nosniff"
+		# Enable XSS protection
+		X-XSS-Protection "1; mode=block"
+		# Referrer policy
+		Referrer-Policy "strict-origin-when-cross-origin"
+		# Remove server header
+		-Server
+	}
+
+	# Reverse proxy to web app
+	reverse_proxy web:3000 {
+		header_up Host {host}
+		header_up X-Real-IP {remote}
+		header_up X-Forwarded-For {remote}
+		header_up X-Forwarded-Proto {scheme}
+	}
+
+	# API routes - strip /api prefix and proxy to API service
+	handle_path /api/* {
+		reverse_proxy api:3001 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
+			header_up X-Forwarded-For {remote}
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+}
+
+# To add multiple domains, just add another block:
+# another-domain.com {
+# 	reverse_proxy web:3000 {
+# 		header_up Host {host}
+# 		header_up X-Real-IP {remote}
+# 		header_up X-Forwarded-For {remote}
+# 		header_up X-Forwarded-Proto {scheme}
+# 	}
+# 	handle_path /api/* {
+# 		reverse_proxy api:3001 {
+# 			header_up Host {host}
+# 			header_up X-Real-IP {remote}
+# 			header_up X-Forwarded-For {remote}
+# 			header_up X-Forwarded-Proto {scheme}
+# 		}
+# 	}
+# }

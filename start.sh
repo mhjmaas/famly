@@ -194,13 +194,52 @@ else
     print_info "Configuration saved to .env file"
 fi
 
-# Step 5: Start Docker Compose
+# Step 5: Check PROTOCOL and DEPLOYMENT_MODE settings
+source "$ENV_FILE" 2>/dev/null || true
+PROTOCOL=${PROTOCOL:-https}
+DEPLOYMENT_MODE=${DEPLOYMENT_MODE:-development}
+
+# Detect which Caddyfile to use for HTTPS mode
+if [ "$PROTOCOL" == "https" ]; then
+    if [ -f "docker/caddy/Caddyfile.production" ]; then
+        export CADDYFILE="Caddyfile.production"
+        HTTPS_MODE="custom domain (Let's Encrypt)"
+    else
+        export CADDYFILE="${CADDYFILE:-Caddyfile.localhost}"
+        HTTPS_MODE="localhost (mkcert)"
+    fi
+fi
+
 echo ""
-print_info "Starting Famly services..."
+if [ "$PROTOCOL" == "https" ]; then
+    print_info "Starting Famly services with HTTPS (via Caddy reverse proxy)..."
+    if [ "$CADDYFILE" == "Caddyfile.production" ]; then
+        print_success "Using custom domain configuration: docker/caddy/Caddyfile.production"
+    else
+        print_success "Using localhost configuration with mkcert certificates"
+        print_warning "For custom domains, see: https://github.com/yourusername/famly#production-https"
+    fi
+else
+    print_info "Starting Famly services (HTTP mode)..."
+fi
+
+# Show deployment mode and security warning
+if [ "$DEPLOYMENT_MODE" == "production" ]; then
+    print_success "Deployment mode: PRODUCTION (secure - no direct port access)"
+    COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
+else
+    print_warning "Deployment mode: DEVELOPMENT (ports 3000, 3001 exposed)"
+    print_warning "For production deployment, set DEPLOYMENT_MODE=production in .env"
+    COMPOSE_FILES="-f docker-compose.yml"
+fi
 echo ""
 
-# Build and start services
-$COMPOSE_CMD up -d --build
+# Build and start services (with https profile if enabled)
+if [ "$PROTOCOL" == "https" ]; then
+    $COMPOSE_CMD $COMPOSE_FILES --profile https up -d --build
+else
+    $COMPOSE_CMD $COMPOSE_FILES up -d --build
+fi
 
 # Wait a moment for services to initialize
 sleep 2
@@ -219,13 +258,55 @@ LOCAL_IP=$(get_local_ip)
 
 echo -e "${GREEN}Access your Famly instance at:${NC}"
 echo ""
-echo -e "  ${BLUE}Web Application:${NC}"
-echo -e "    • Local:   http://localhost:${WEB_PORT}"
-echo -e "    • Network: http://${LOCAL_IP}:${WEB_PORT}"
-echo ""
-echo -e "  ${BLUE}API:${NC}"
-echo -e "    • Local:   http://localhost:${API_PORT}"
-echo -e "    • Network: http://${LOCAL_IP}:${API_PORT}"
+
+if [ "$PROTOCOL" == "https" ]; then
+    if [ "$CADDYFILE" == "Caddyfile.production" ]; then
+        # Mode 3: Custom domain
+        DOMAIN=$(grep -E "^[a-zA-Z0-9.-]+\s*{" docker/caddy/Caddyfile.production | head -1 | awk '{print $1}')
+        echo -e "  ${BLUE}Web Application (Custom Domain):${NC}"
+        echo -e "    • HTTPS: ${GREEN}https://${DOMAIN}${NC}"
+        if [ "$DEPLOYMENT_MODE" == "production" ]; then
+            echo -e "    • Direct: ${GREEN}Not exposed (secure)${NC}"
+        else
+            echo -e "    • Direct: ${YELLOW}http://localhost:${WEB_PORT} (bypasses Caddy - DEV ONLY)${NC}"
+        fi
+        echo ""
+        echo -e "  ${BLUE}API (Custom Domain):${NC}"
+        echo -e "    • HTTPS: ${GREEN}https://${DOMAIN}/api${NC}"
+        if [ "$DEPLOYMENT_MODE" == "production" ]; then
+            echo -e "    • Direct: ${GREEN}Not exposed (secure)${NC}"
+        else
+            echo -e "    • Direct: ${YELLOW}http://localhost:${API_PORT} (bypasses Caddy - DEV ONLY)${NC}"
+        fi
+    else
+        # Mode 2: Localhost with mkcert
+        echo -e "  ${BLUE}Web Application (Localhost HTTPS):${NC}"
+        echo -e "    • HTTPS: ${GREEN}https://localhost${NC}"
+        echo -e "    • Network: https://${LOCAL_IP} (requires mkcert CA on device)"
+        if [ "$DEPLOYMENT_MODE" == "production" ]; then
+            echo -e "    • Direct: ${GREEN}Not exposed (secure)${NC}"
+        else
+            echo -e "    • Direct: ${YELLOW}http://localhost:${WEB_PORT} (bypasses Caddy - DEV ONLY)${NC}"
+        fi
+        echo ""
+        echo -e "  ${BLUE}API (Localhost HTTPS):${NC}"
+        echo -e "    • HTTPS: ${GREEN}https://localhost/api${NC}"
+        echo -e "    • Network: https://${LOCAL_IP}/api (requires mkcert CA on device)"
+        if [ "$DEPLOYMENT_MODE" == "production" ]; then
+            echo -e "    • Direct: ${GREEN}Not exposed (secure)${NC}"
+        else
+            echo -e "    • Direct: ${YELLOW}http://localhost:${API_PORT} (bypasses Caddy - DEV ONLY)${NC}"
+        fi
+    fi
+else
+    echo -e "  ${BLUE}Web Application:${NC}"
+    echo -e "    • Local:   http://localhost:${WEB_PORT}"
+    echo -e "    • Network: http://${LOCAL_IP}:${WEB_PORT}"
+    echo ""
+    echo -e "  ${BLUE}API:${NC}"
+    echo -e "    • Local:   http://localhost:${API_PORT}"
+    echo -e "    • Network: http://${LOCAL_IP}:${API_PORT}"
+fi
 echo ""
 echo -e "  ${BLUE}MinIO Console (Storage):${NC}"
 echo -e "    • Local:   http://localhost:${MINIO_CONSOLE_PORT}"

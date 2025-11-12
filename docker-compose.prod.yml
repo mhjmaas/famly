@@ -1,0 +1,29 @@
+# Production Docker Compose Override
+# This file removes direct port access to internal services for security
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Security Benefits:
+# - API and Web services are NOT directly accessible from outside
+# - All traffic MUST go through Caddy (HTTPS termination, proper headers)
+# - Prevents bypassing authentication, CORS, and security headers
+# - Only Caddy ports (80, 443) are exposed to the internet
+
+services:
+  api:
+    # Remove port mapping - only accessible via Docker internal network
+    # Note: Setting ports to !reset removes all port mappings from base config
+    ports: !reset []
+
+  web:
+    # Remove port mapping - only accessible via Docker internal network
+    ports: !reset []
+
+  minio:
+    # Remove console port in production - use internal access only
+    ports: !reset []
+
+  # Caddy is the only service with exposed ports in production
+  caddy:
+    profiles: []  # Remove https profile requirement - always run in production
