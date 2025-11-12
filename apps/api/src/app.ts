@@ -31,10 +31,27 @@ export const createApp = (): Express => {
 
   app.disable("x-powered-by");
 
-  // Configure CORS
+  // Configure CORS - Allow both localhost and network IP for flexibility
+  const allowedOrigins = [
+    env.CLIENT_URL, // Configured URL (e.g., http://192.168.1.224:3000)
+    "http://localhost:3000", // Always allow localhost
+    "http://127.0.0.1:3000", // Also allow 127.0.0.1
+  ];
+
   app.use(
     cors({
-      origin: env.CLIENT_URL,
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, Postman, or same-origin)
+        if (!origin) {
+          return callback(null, true);
+        }
+
+        if (allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error(`Origin ${origin} not allowed by CORS`));
+        }
+      },
       credentials: true, // Allow cookies and authorization headers
       methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
