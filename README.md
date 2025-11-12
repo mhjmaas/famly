@@ -17,6 +17,7 @@ Deploy Famly on your local network or home server using Docker Compose.
 The easiest way to get started is using our automated startup script:
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/yourusername/famly.git
    cd famly
@@ -28,6 +29,7 @@ The easiest way to get started is using our automated startup script:
    ```
 
 That's it! The script will:
+
 - Check if Docker is installed and running
 - Create a `.env` file with secure auto-generated secrets (if it doesn't exist)
 - Configure the application with your local network IP
@@ -39,17 +41,20 @@ That's it! The script will:
 If you prefer to configure everything manually:
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/yourusername/famly.git
    cd famly
    ```
 
 2. **Configure environment variables**
+
    ```bash
    cp .env.example .env
    ```
 
    Edit the `.env` file and update the following important values:
+
    - `BETTER_AUTH_SECRET`: Generate a secure random string (minimum 32 characters)
      ```bash
      # Generate using openssl:
@@ -64,11 +69,13 @@ If you prefer to configure everything manually:
      - External access: `https://your-domain.com/api`
 
 3. **Start the application**
+
    ```bash
    docker compose up -d
    ```
 
 4. **Access the application**
+
    - Web App: http://localhost:3000 (or http://YOUR_IP:3000)
    - API: http://localhost:3001 (or http://YOUR_IP:3001)
    - MinIO Console (Admin): http://localhost:9001 (or http://YOUR_IP:9001)
@@ -78,6 +85,7 @@ If you prefer to configure everything manually:
 ### Common Operations
 
 **View logs**
+
 ```bash
 # All services
 docker compose logs -f
@@ -88,16 +96,19 @@ docker compose logs -f api
 ```
 
 **Stop the application**
+
 ```bash
 docker compose down
 ```
 
 **Stop and remove all data**
+
 ```bash
 docker compose down -v
 ```
 
 **Restart services**
+
 ```bash
 docker compose restart
 ```
@@ -116,7 +127,9 @@ docker compose up -d
 ### Network Access
 
 **Local Network Access:**
+
 - Find your server's local IP address:
+
   ```bash
   # Linux/Mac
   hostname -I | awk '{print $1}'
@@ -124,9 +137,11 @@ docker compose up -d
   # Mac (alternative)
   ipconfig getifaddr en0
   ```
+
 - Access from other devices on your network: `http://YOUR_LOCAL_IP:3000`
 
 **External Access (Advanced):**
+
 - Set up port forwarding on your router (ports 3000 and 3001)
 - Consider using a reverse proxy (nginx, Caddy) with SSL/TLS
 - Use a dynamic DNS service if you don't have a static IP
@@ -143,39 +158,122 @@ docker compose up -d
 - **Authentication issues**: Verify `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` are correctly set
 - **Image upload issues**: Check MinIO is running and credentials are correct in `.env`
 
-## Getting started with development
+## 💻 Local Development
 
-### Start database
+There are two ways to set up your local development environment:
+
+### Prerequisites
+
+- **pnpm** - Fast, disk space efficient package manager
+
+  ```bash
+  # Install via npm
+  npm install -g pnpm
+
+  # Or enable via corepack (Node.js 16.13+)
+  corepack enable
+  ```
+
+- **Docker & Docker Compose** - Container runtime for services
+  - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes Docker Compose)
+  - Or install [Docker Engine](https://docs.docker.com/engine/install/) + [Docker Compose](https://docs.docker.com/compose/install/) separately
+
+### Option 1: Quick Start with Script (Recommended)
+
+The easiest way to start development with live reload and automatic setup:
 
 ```bash
-docker run --name mongodb-famly -d -p 27017:27017 mongo
+# Install dependencies
+pnpm install
+
+# Start all services (MongoDB, MinIO, API, Web) with live reload
+./start-dev.sh
 ```
 
-### Start minio
+**What this script does:**
+
+- ✅ Checks that pnpm and Docker are installed
+- ✅ Verifies Docker is running
+- ✅ Checks for port conflicts (3000, 3001, 9000, 9001, 27017)
+- ✅ Installs project dependencies if needed
+- ✅ Starts MongoDB and MinIO in the background
+- ✅ Starts API and Web containers with live reload enabled
+- ✅ Shows only API and Web logs in your console
+- ✅ Gracefully stops all services on `Ctrl+C`
+
+**Features:**
+
+- 🔥 **Live reload** - Code changes trigger automatic reloads for both API (tsx watch) and Web (Next.js Turbopack)
+- 🔍 **MongoDB exposed** - Connect MongoDB Compass to `mongodb://localhost:27017/famly` for database inspection
+- 📦 **Containerized** - Everything runs in Docker, no need to install MongoDB or MinIO locally
+- 🎯 **Clean logs** - Only see API and Web output, infrastructure logs are hidden
+
+**Access:**
+
+- Web Application: http://localhost:3000
+- API: http://localhost:3001
+- MongoDB: mongodb://localhost:27017/famly
+- MinIO Console: http://localhost:9001 (credentials: `famly-dev-access` / `famly-dev-secret-min-32-chars`)
+
+**Useful commands:**
 
 ```bash
-docker run --name minio-famly -d -p 9000:9000 -p 9001:9001 -e "MINIO_ROOT_USER=famly-dev-access" -e "MINIO_ROOT_PASSWORD=famly-dev-secret-min-32-chars" minio/minio server /data --console-address ":9001"
+# View logs from specific service
+docker compose -f docker/compose.dev.yml logs -f api
+docker compose -f docker/compose.dev.yml logs -f web
+
+# Stop all services
+docker compose -f docker/compose.dev.yml down
+
+# Restart a specific service
+docker compose -f docker/compose.dev.yml restart api
 ```
 
-### Start API
+### Option 2: Manual Setup (Advanced)
+
+For more control, you can start each service manually:
+
+#### 1. Start MongoDB
+
+```bash
+docker run --name mongodb-famly -d -p 27017:27017 mongo:7
+```
+
+#### 2. Start MinIO
+
+```bash
+docker run --name minio-famly -d -p 9000:9000 -p 9001:9001 \
+  -e "MINIO_ROOT_USER=famly-dev-access" \
+  -e "MINIO_ROOT_PASSWORD=famly-dev-secret-min-32-chars" \
+  minio/minio server /data --console-address ":9001"
+```
+
+#### 3. Install Dependencies
+
+```bash
+pnpm install
+```
+
+#### 4. Start API
 
 ```bash
 pnpm run dev:api
 ```
 
-### Start Web
+#### 5. Start Web (in another terminal)
 
 ```bash
 pnpm run dev:web
 ```
+
+**Note:** With this approach, you're running the API and Web apps directly on your host machine, while only MongoDB and MinIO run in containers.
 
 ## 🧩 Core Features (MVP)
 
 ### 👥 Family Management
 
 - Create and manage family profiles (parents, kids, grandparents)
-- Role-based permissions (parental control, view-only, assigner, etc.)
-- Shared avatars or character icons
+- Role-based permissions (parental control)
 
 ### ✅ Task & Chore Management
 

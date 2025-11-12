@@ -25,7 +25,10 @@ async function start() {
   logger.info("Starting Famly API server...");
   logger.info(`Environment: ${process.env.NODE_ENV}`);
   logger.info(
-    `MongoDB URI: ${process.env.MONGODB_URI?.replace(/\/\/.*@/, "//**redacted**@")}`,
+    `MongoDB URI: ${process.env.MONGODB_URI?.replace(
+      /\/\/.*@/,
+      "//**redacted**@",
+    )}`,
   );
 
   // Connect to MongoDB
