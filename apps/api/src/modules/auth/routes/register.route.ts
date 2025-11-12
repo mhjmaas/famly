@@ -1,5 +1,7 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import { DeploymentConfigRepository } from "@modules/deployment-config/repositories/deployment-config.repository";
+import { DeploymentConfigService } from "@modules/deployment-config/services/deployment-config.service";
 import { fromNodeHeaders } from "better-auth/node";
 import {
   type NextFunction,
@@ -26,6 +28,7 @@ import { registerValidator } from "../validators/register.validator";
  * - sessionToken: Session token (long-lived, database-backed, for token refresh)
  *
  * Response (400): Validation error
+ * Response (403): Registration blocked (standalone mode after onboarding)
  * Response (409): Email already exists
  */
 export function createRegisterRoute(): Router {
@@ -35,6 +38,20 @@ export function createRegisterRoute(): Router {
     "/register",
     async (req: Request, res: Response, next: NextFunction) => {
       try {
+        // Check if registration is blocked (standalone mode after onboarding)
+        const deploymentConfigRepo = new DeploymentConfigRepository();
+        const deploymentConfigService = new DeploymentConfigService(
+          deploymentConfigRepo,
+        );
+
+        const shouldBlock =
+          await deploymentConfigService.shouldBlockRegistration();
+        if (shouldBlock) {
+          throw HttpError.forbidden(
+            "Registration is closed. Contact your family administrator to be added.",
+          );
+        }
+
         // Validate input
         const validationResult = registerValidator.safeParse(req.body);
         if (!validationResult.success) {

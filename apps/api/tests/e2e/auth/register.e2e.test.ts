@@ -1,3 +1,5 @@
+import { DeploymentMode } from "@modules/deployment-config";
+import { DeploymentConfigRepository } from "@modules/deployment-config/repositories/deployment-config.repository";
 import request from "supertest";
 
 import { cleanDatabase } from "../helpers/database";
@@ -327,6 +329,75 @@ describe("E2E: POST /v1/auth/register", () => {
       });
 
       expect(response.status).toBe(409);
+    });
+  });
+
+  describe("Deployment Mode Registration Blocking", () => {
+    let deploymentConfigRepo: DeploymentConfigRepository;
+
+    beforeAll(async () => {
+      // Ensure MongoDB is connected for deployment config tests
+      const { connectMongo } = await import("@infra/mongo/client");
+      await connectMongo();
+    });
+
+    beforeEach(async () => {
+      deploymentConfigRepo = new DeploymentConfigRepository();
+      // Clean up deployment config before each test
+      const collection = deploymentConfigRepo["collection"];
+      await collection.deleteMany({});
+    });
+
+    it("should block registration in standalone mode after onboarding", async () => {
+      // Setup: Create standalone deployment config with onboarding completed
+      await deploymentConfigRepo.create(DeploymentMode.Standalone);
+      await deploymentConfigRepo.markOnboardingCompleted();
+
+      const response = await request(baseUrl).post("/v1/auth/register").send({
+        email: "blocked@example.com",
+        password: "SecurePassword123!",
+        name: "Blocked User",
+        birthdate: "1990-01-15",
+      });
+
+      expect(response.status).toBe(403);
+      expect(response.body).toHaveProperty("error");
+      expect(response.body.error).toBe(
+        "Registration is closed. Contact your family administrator to be added.",
+      );
+    });
+
+    it("should allow registration in standalone mode before onboarding", async () => {
+      // Setup: Create standalone deployment config without onboarding completed
+      await deploymentConfigRepo.create(DeploymentMode.Standalone);
+
+      const response = await request(baseUrl).post("/v1/auth/register").send({
+        email: "allowed@example.com",
+        password: "SecurePassword123!",
+        name: "Allowed User",
+        birthdate: "1990-01-15",
+      });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty("user");
+      expect(response.body.user.email).toBe("allowed@example.com");
+    });
+
+    it("should always allow registration in SaaS mode", async () => {
+      // Setup: Create SaaS deployment config with onboarding completed
+      await deploymentConfigRepo.create(DeploymentMode.SaaS);
+      await deploymentConfigRepo.markOnboardingCompleted();
+
+      const response = await request(baseUrl).post("/v1/auth/register").send({
+        email: "saas@example.com",
+        password: "SecurePassword123!",
+        name: "SaaS User",
+        birthdate: "1990-01-15",
+      });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty("user");
+      expect(response.body.user.email).toBe("saas@example.com");
     });
   });
 });

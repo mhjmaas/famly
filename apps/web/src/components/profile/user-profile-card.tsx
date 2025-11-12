@@ -27,7 +27,6 @@ import type { Locale } from "@/i18n/config";
 import type { UserProfile } from "@/lib/api-client";
 import { logout, updateProfile } from "@/lib/api-client";
 import { calculateAge } from "@/lib/family-utils";
-import { clearSessionCookieClient } from "@/lib/session-client";
 import { useAppDispatch } from "@/store/hooks";
 import { clearUser, setUser } from "@/store/slices/user.slice";
 
@@ -123,16 +122,16 @@ export function UserProfileCard({
 
   const handleLogout = async () => {
     try {
+      // Better-auth's sign-out endpoint automatically clears session cookies
       await logout();
+      // Clear user from Redux store
+      dispatch(clearUser());
+      // Redirect to sign-in page
+      router.push(`/${lang}/signin`);
     } catch (error) {
       console.error("Logout failed:", error);
-    } finally {
+      // Even if logout fails on the server, clear local state and redirect
       dispatch(clearUser());
-      try {
-        await clearSessionCookieClient();
-      } catch (sessionError) {
-        console.error("Failed to clear session cookie locally:", sessionError);
-      }
       router.push(`/${lang}/signin`);
     }
   };
