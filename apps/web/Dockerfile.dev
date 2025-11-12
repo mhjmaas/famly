@@ -1,0 +1,25 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy monorepo workspace files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# Copy package.json for all workspaces (needed for pnpm workspace resolution)
+COPY apps/api/package.json ./apps/api/
+COPY apps/web/package.json ./apps/web/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Set working directory to web app
+WORKDIR /app/apps/web
+
+# Expose port
+EXPOSE 3000
+
+# Run Next.js dev server with turbopack
+CMD ["pnpm", "dev"]
