@@ -1,0 +1,83 @@
+{
+	# Global options
+	# Disable automatic HTTPS when using mkcert certificates
+	auto_https off
+
+	# For production with Let's Encrypt, uncomment and configure:
+	# email admin@famly.app
+	# acme_ca https://acme-v02.api.letsencrypt.org/directory
+}
+
+# Development: localhost with mkcert certificates
+localhost {
+	# Use local mkcert certificates for development
+	tls /certs/localhost.pem /certs/localhost-key.pem
+
+	# WebSocket support for Socket.IO
+	# Caddy automatically handles upgrades, but we need to preserve headers
+	reverse_proxy web:3000 {
+		header_up Host {host}
+		header_up X-Real-IP {remote}
+		header_up X-Forwarded-For {remote}
+		header_up X-Forwarded-Proto {scheme}
+	}
+
+	# API routes - strip /api prefix and proxy to API service
+	handle_path /api/* {
+		reverse_proxy api:3001 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
+			header_up X-Forwarded-For {remote}
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+}
+
+# Production domain (example - configure with actual domain)
+# famly.app {
+# 	# Caddy automatically obtains Let's Encrypt certificate
+#
+# 	reverse_proxy web:3000 {
+# 		header_up Host {host}
+# 		header_up X-Real-IP {remote}
+# 		header_up X-Forwarded-For {remote}
+# 		header_up X-Forwarded-Proto {scheme}
+# 	}
+#
+# 	handle_path /api/* {
+# 		reverse_proxy api:3001 {
+# 			header_up Host {host}
+# 			header_up X-Real-IP {remote}
+# 			header_up X-Forwarded-For {remote}
+# 			header_up X-Forwarded-Proto {scheme}
+# 		}
+# 	}
+# }
+
+# Support for custom internal domains (e.g., famly.local)
+# Uncomment and configure for DNS-01 challenge:
+# {
+# 	acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+# }
+#
+# famly.local {
+# 	tls {
+# 		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+# 	}
+#
+# 	reverse_proxy web:3000 {
+# 		header_up Host {host}
+# 		header_up X-Real-IP {remote}
+# 		header_up X-Forwarded-For {remote}
+# 		header_up X-Forwarded-Proto {scheme}
+# 	}
+#
+# 	handle_path /api/* {
+# 		reverse_proxy api:3001 {
+# 			header_up Host {host}
+# 			header_up X-Real-IP {remote}
+# 			header_up X-Forwarded-For {remote}
+# 			header_up X-Forwarded-Proto {scheme}
+# 		}
+# 	}
+# }

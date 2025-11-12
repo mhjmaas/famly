@@ -57,8 +57,8 @@ services:
       NODE_ENV: development
       PORT: 3001
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev_better_auth_secret_min_32_chars_required_here}
-      BETTER_AUTH_URL: http://localhost:3001
-      CLIENT_URL: http://localhost:3000
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3001}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: famly-dev-access
       MINIO_SECRET_KEY: famly-dev-secret-min-32-chars
@@ -95,7 +95,10 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3000
-      NEXT_PUBLIC_API_URL: http://localhost:3001
+      # Client-side API URL (browser requests through Caddy proxy or direct)
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      # Server-side API URL (direct internal Docker network connection)
+      API_URL: http://api:3001
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: famly-dev-access
       MINIO_SECRET_KEY: famly-dev-secret-min-32-chars
@@ -121,6 +124,28 @@ services:
     networks:
       - famly-dev-network
 
+  caddy:
+    build:
+      context: caddy
+      dockerfile: Dockerfile
+    container_name: famly-caddy-dev
+    ports:
+      - "8443:443"  # Map host port 8443 to container port 443
+    depends_on:
+      - web
+      - api
+    volumes:
+      # Mount development Caddyfile configuration (localhost with mkcert)
+      - ./caddy/Caddyfile.localhost:/etc/caddy/Caddyfile:ro
+      # Mount certificate directory for mkcert certificates
+      - ./caddy/certs:/certs:ro
+      # Persist Caddy data (for Let's Encrypt certificates if used)
+      - caddy-data:/data
+    networks:
+      - famly-dev-network
+    profiles:
+      - https
+
 volumes:
   mongo-data: {}
   minio-data: {}
@@ -128,6 +153,7 @@ volumes:
   api-app-node-modules: {}
   web-node-modules: {}
   web-app-node-modules: {}
+  caddy-data: {}
 
 networks:
   famly-dev-network:

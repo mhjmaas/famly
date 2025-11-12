@@ -36,6 +36,126 @@ That's it! The script will:
 - Start all services
 - Display access URLs
 
+## 🚀 Deployment Modes
+
+Famly supports three deployment modes to fit different use cases:
+
+### Mode 1: Development (Local HTTPS with Hot Reload)
+
+**Use case:** Active development with live code reloading
+
+**Command:** `./start-dev.sh`
+
+**Features:**
+- ✅ Hot reload for API and Web (code changes apply instantly)
+- ✅ HTTPS via mkcert (localhost:8443)
+- ✅ Automatic certificate generation
+- ✅ Zero configuration required
+
+**Access:** https://localhost:8443
+
+---
+
+### Mode 2: Production (Local HTTPS - Default)
+
+**Use case:** Running production build on localhost with HTTPS
+
+**Command:** `./start.sh`
+
+**Features:**
+- ✅ Production-optimized builds
+- ✅ HTTPS via mkcert (localhost:443)
+- ✅ Automatic certificate generation
+- ✅ Zero configuration required
+- ✅ Suitable for local network access
+
+**Access:** https://localhost
+
+**Note:** This mode uses `Caddyfile.localhost` with mkcert certificates. Perfect for secure local/network deployment without exposing to the internet.
+
+---
+
+### Mode 3: Production (Custom Domain with Let's Encrypt)
+
+**Use case:** Internet-accessible deployment with your own domain
+
+**Setup:**
+
+1. **Copy the example Caddyfile:**
+
+   ```bash
+   # For HTTP-01 challenge (simpler, requires port forwarding)
+   cp docker/caddy/Caddyfile.http01.example docker/caddy/Caddyfile.production
+   
+   # OR for DNS-01 challenge (more secure, no port exposure)
+   cp docker/caddy/Caddyfile.production.example docker/caddy/Caddyfile.production
+   ```
+
+2. **Edit `docker/caddy/Caddyfile.production`:**
+
+   ```caddyfile
+   {
+       email your-email@example.com
+   }
+   
+   your-domain.com {
+       reverse_proxy web:3000 {
+           header_up Host {host}
+           header_up X-Real-IP {remote}
+           header_up X-Forwarded-For {remote}
+           header_up X-Forwarded-Proto {scheme}
+       }
+       
+       handle_path /api/* {
+           reverse_proxy api:3001 {
+               header_up Host {host}
+               header_up X-Real-IP {remote}
+               header_up X-Forwarded-For {remote}
+               header_up X-Forwarded-Proto {scheme}
+           }
+       }
+   }
+   ```
+
+3. **Update `.env`:**
+
+   ```bash
+   PROTOCOL=https
+   CADDYFILE=Caddyfile.production
+   CLIENT_URL=https://your-domain.com
+   BETTER_AUTH_URL=https://your-domain.com/api
+   NEXT_PUBLIC_API_URL=https://your-domain.com/api
+   ```
+
+4. **Configure DNS and run:**
+
+   ```bash
+   ./start.sh
+   ```
+
+   The script will automatically:
+   - Only expose Caddy ports 80 and 443
+   - Keep all internal services (API, Web, MinIO, MongoDB) secured behind Caddy
+   - Block direct access to internal ports
+
+**Features:**
+- ✅ Automatic Let's Encrypt SSL certificates
+- ✅ Auto-renewal (no maintenance needed)
+- ✅ Publicly trusted certificates
+- ✅ Internet-accessible
+
+**Access:** https://your-domain.com
+
+**🔒 Security:** See [docs/SECURITY.md](./docs/SECURITY.md) for important production security guidelines, including:
+- Port exposure protection
+- Firewall configuration
+- Cookie security
+- HTTPS best practices
+
+**📖 Detailed Setup:** See [docs/HTTPS_SETUP.md](./docs/HTTPS_SETUP.md) for complete instructions on DNS configuration, port forwarding, and troubleshooting.
+
+---
+
 ### Manual Setup (Advanced)
 
 If you prefer to configure everything manually:
@@ -158,6 +278,30 @@ docker compose up -d
 - **Authentication issues**: Verify `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` are correctly set
 - **Image upload issues**: Check MinIO is running and credentials are correct in `.env`
 
+## 🔒 HTTPS & SSL Certificates
+
+All deployment modes use HTTPS by default for enhanced security. HTTPS is required for PWA features like service workers and push notifications.
+
+### Certificate Setup
+
+- **Modes 1 & 2**: Automatic via mkcert (locally-trusted certificates)
+  - Install once: `brew install mkcert && mkcert -install` (macOS)
+  - Certificates auto-generate on first run
+  
+- **Mode 3**: Automatic via Let's Encrypt (publicly-trusted certificates)
+  - Requires domain configuration in `Caddyfile.production`
+  - Auto-renewal every 60 days
+
+### 📖 Advanced HTTPS Configuration
+
+See **[docs/HTTPS_SETUP.md](./docs/HTTPS_SETUP.md)** for:
+
+- Mobile device certificate installation
+- Custom internal domains
+- DNS-01 challenge setup (no port exposure)
+- VPN access configuration
+- Troubleshooting certificate issues
+
 ## 💻 Local Development
 
 There are two ways to set up your local development environment:
@@ -175,8 +319,12 @@ There are two ways to set up your local development environment:
   ```
 
 - **Docker & Docker Compose** - Container runtime for services
+
   - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes Docker Compose)
   - Or install [Docker Engine](https://docs.docker.com/engine/install/) + [Docker Compose](https://docs.docker.com/compose/install/) separately
+
+- **mkcert** (optional, for HTTPS) - Local certificate authority for trusted certificates
+  - See HTTPS Setup section above for installation instructions
 
 ### Option 1: Quick Start with Script (Recommended)
 

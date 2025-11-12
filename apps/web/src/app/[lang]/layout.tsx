@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { Geist, Geist_Mono } from "next/font/google";
-import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
 import { getUserWithKarma } from "@/lib/dal";
+import { getSessionCookie } from "@/lib/server-cookies";
 import { StoreProvider } from "@/store/provider";
 import type { RootState } from "@/store/store";
 
@@ -64,8 +64,7 @@ export default async function LocaleLayout({
   // Load initial Redux state server-side using Data Access Layer
   let preloadedState: Partial<RootState> | undefined;
 
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get("better-auth.session_token");
+  const sessionCookie = await getSessionCookie();
 
   // Only try to fetch user data if we have a session cookie
   if (sessionCookie) {

@@ -11,9 +11,21 @@ import { registerConnectionHandler } from "./register-handlers";
  * @returns Configured Socket.IO server instance
  */
 export function createSocketServer(httpServer: HTTPServer): Server {
+  // Allow both HTTP and HTTPS origins for Socket.IO connections
+  const allowedOrigins = [
+    process.env.CORS_ORIGIN || "http://localhost:3000",
+    "http://localhost:3000", // HTTP fallback
+    "https://localhost:3000", // HTTPS direct access
+    "https://localhost:8443", // HTTPS via Caddy reverse proxy (dev)
+    "https://localhost", // HTTPS via Caddy reverse proxy (prod)
+    "http://127.0.0.1:3000",
+    "https://127.0.0.1:3000",
+    "https://127.0.0.1:8443", // HTTPS via Caddy for 127.0.0.1 (dev)
+  ];
+
   const io = new Server(httpServer, {
     cors: {
-      origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+      origin: allowedOrigins,
       methods: ["GET", "POST"],
       credentials: true,
     },

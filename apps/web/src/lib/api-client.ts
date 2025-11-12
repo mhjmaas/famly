@@ -39,7 +39,15 @@ import type {
   UpdateTaskRequest,
 } from "@/types/api.types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+// Use different API URLs for server-side vs client-side
+// Server-side (Server Components, API routes): Direct connection to API service
+// Client-side (Browser): Through reverse proxy
+const API_BASE_URL =
+  typeof window === "undefined"
+    ? process.env.API_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      "http://localhost:3001"
+    : process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export class ApiError extends Error {
   constructor(

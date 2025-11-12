@@ -31,10 +31,37 @@ export const createApp = (): Express => {
 
   app.disable("x-powered-by");
 
-  // Configure CORS
+  // Trust first proxy (Caddy) for X-Forwarded-* headers
+  // This allows secure cookies to work correctly when behind a reverse proxy
+  // Caddy sets X-Forwarded-Proto: https, which Express uses to determine req.protocol
+  app.set("trust proxy", 1);
+
+  // Configure CORS - Allow both HTTP and HTTPS origins for flexibility
+  const allowedOrigins = [
+    env.CLIENT_URL, // Configured URL (from env: https://localhost:8443 or http://192.168.x.x:3000)
+    "http://localhost:3000", // HTTP fallback for localhost
+    "https://localhost:3000", // HTTPS for localhost (direct access)
+    "https://localhost:8443", // HTTPS via Caddy reverse proxy (dev)
+    "https://localhost", // HTTPS via Caddy reverse proxy (prod)
+    "http://127.0.0.1:3000", // HTTP fallback for 127.0.0.1
+    "https://127.0.0.1:3000", // HTTPS for 127.0.0.1
+    "https://127.0.0.1:8443", // HTTPS via Caddy for 127.0.0.1 (dev)
+  ];
+
   app.use(
     cors({
-      origin: env.CLIENT_URL,
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, Postman, or same-origin)
+        if (!origin) {
+          return callback(null, true);
+        }
+
+        if (allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error(`Origin ${origin} not allowed by CORS`));
+        }
+      },
       credentials: true, // Allow cookies and authorization headers
       methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],

@@ -10,7 +10,9 @@ import { cookies } from "next/headers";
 export async function clearInvalidSession() {
   const cookieStore = await cookies();
 
-  // Delete the session token cookie
+  // Delete both possible session cookie names
+  // When useSecureCookies is enabled, better-auth adds the __Secure- prefix
+  cookieStore.delete("__Secure-better-auth.session_token");
   cookieStore.delete("better-auth.session_token");
 
   return { success: true };

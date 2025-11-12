@@ -82,7 +82,12 @@ export function proxy(request: NextRequest) {
   );
 
   // Check for session cookie (Better Auth sets this cookie)
-  const sessionCookie = request.cookies.get("better-auth.session_token");
+  // When useSecureCookies is enabled, better-auth adds the __Secure- prefix
+  // HTTPS: __Secure-better-auth.session_token
+  // HTTP: better-auth.session_token
+  const sessionCookie =
+    request.cookies.get("__Secure-better-auth.session_token") ||
+    request.cookies.get("better-auth.session_token");
   const isAuthenticated = !!sessionCookie;
 
   // Redirect to signin if accessing protected route without authentication

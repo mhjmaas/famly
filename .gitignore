@@ -12,3 +12,10 @@ build
 *.log
 .DS_Store
 coverage
+
+# HTTPS certificates (mkcert generated)
+docker/caddy/certs/*.pem
+!docker/caddy/certs/.gitkeep
+
+# Production Caddyfile (user-specific configuration)
+docker/caddy/Caddyfile.production

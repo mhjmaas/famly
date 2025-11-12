@@ -111,9 +111,9 @@ if ! docker info >/dev/null 2>&1; then
 fi
 print_success "Docker daemon is running"
 
-# Step 3.5: Check for port conflicts
+# Step 3.5: Check for port conflicts (only Caddy ports in production mode)
 print_info "Checking for port conflicts..."
-PORTS_TO_CHECK=(3000 3001 9001)
+PORTS_TO_CHECK=(80 443)
 CONFLICTS=()
 
 for PORT in "${PORTS_TO_CHECK[@]}"; do
@@ -194,9 +194,34 @@ else
     print_info "Configuration saved to .env file"
 fi
 
-# Step 5: Start Docker Compose
+# Step 5: Check PROTOCOL setting
+source "$ENV_FILE" 2>/dev/null || true
+PROTOCOL=${PROTOCOL:-https}
+
+# Detect which Caddyfile to use for HTTPS mode
+if [ "$PROTOCOL" == "https" ]; then
+    if [ -f "docker/caddy/Caddyfile.production" ]; then
+        export CADDYFILE="Caddyfile.production"
+        HTTPS_MODE="custom domain (Let's Encrypt)"
+    else
+        export CADDYFILE="${CADDYFILE:-Caddyfile.localhost}"
+        HTTPS_MODE="localhost (mkcert)"
+    fi
+fi
+
 echo ""
-print_info "Starting Famly services..."
+print_info "Starting Famly services in production mode (secure - only Caddy ports exposed)..."
+if [ "$PROTOCOL" == "https" ]; then
+    print_success "HTTPS enabled via Caddy reverse proxy"
+    if [ "$CADDYFILE" == "Caddyfile.production" ]; then
+        print_success "Using custom domain configuration: docker/caddy/Caddyfile.production"
+    else
+        print_success "Using localhost configuration with mkcert certificates"
+        print_warning "For custom domains, see: https://github.com/yourusername/famly#production-https"
+    fi
+else
+    print_success "HTTP mode (Caddy will serve on port 80)"
+fi
 echo ""
 
 # Build and start services
@@ -219,17 +244,39 @@ LOCAL_IP=$(get_local_ip)
 
 echo -e "${GREEN}Access your Famly instance at:${NC}"
 echo ""
-echo -e "  ${BLUE}Web Application:${NC}"
-echo -e "    • Local:   http://localhost:${WEB_PORT}"
-echo -e "    • Network: http://${LOCAL_IP}:${WEB_PORT}"
+
+if [ "$PROTOCOL" == "https" ]; then
+    if [ "$CADDYFILE" == "Caddyfile.production" ]; then
+        # Mode 3: Custom domain
+        DOMAIN=$(grep -E "^[a-zA-Z0-9.-]+\s*{" docker/caddy/Caddyfile.production | head -1 | awk '{print $1}')
+        echo -e "  ${BLUE}Web Application:${NC}"
+        echo -e "    • HTTPS: ${GREEN}https://${DOMAIN}${NC}"
+        echo ""
+        echo -e "  ${BLUE}API:${NC}"
+        echo -e "    • HTTPS: ${GREEN}https://${DOMAIN}/api${NC}"
+    else
+        # Mode 2: Localhost with mkcert
+        echo -e "  ${BLUE}Web Application:${NC}"
+        echo -e "    • HTTPS: ${GREEN}https://localhost${NC}"
+        echo -e "    • Network: https://${LOCAL_IP} (requires mkcert CA on device)"
+        echo ""
+        echo -e "  ${BLUE}API:${NC}"
+        echo -e "    • HTTPS: ${GREEN}https://localhost/api${NC}"
+        echo -e "    • Network: https://${LOCAL_IP}/api (requires mkcert CA on device)"
+    fi
+else
+    echo -e "  ${BLUE}Web Application:${NC}"
+    echo -e "    • HTTP: ${GREEN}http://localhost${NC}"
+    echo -e "    • Network: http://${LOCAL_IP}"
+    echo ""
+    echo -e "  ${BLUE}API:${NC}"
+    echo -e "    • HTTP: ${GREEN}http://localhost/api${NC}"
+    echo -e "    • Network: http://${LOCAL_IP}/api"
+fi
 echo ""
-echo -e "  ${BLUE}API:${NC}"
-echo -e "    • Local:   http://localhost:${API_PORT}"
-echo -e "    • Network: http://${LOCAL_IP}:${API_PORT}"
-echo ""
-echo -e "  ${BLUE}MinIO Console (Storage):${NC}"
-echo -e "    • Local:   http://localhost:${MINIO_CONSOLE_PORT}"
-echo -e "    • Network: http://${LOCAL_IP}:${MINIO_CONSOLE_PORT}"
+echo -e "  ${BLUE}Internal Services:${NC}"
+echo -e "    • ${GREEN}Not exposed${NC} (accessible only via Caddy reverse proxy)"
+echo -e "    • API, Web, MinIO, and MongoDB are secured behind Caddy"
 echo ""
 
 print_info "It may take a minute for all services to become fully available."

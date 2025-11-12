@@ -9,7 +9,6 @@
 
 import "server-only";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { i18n, type Locale } from "@/i18n/config";
@@ -23,7 +22,7 @@ import {
   type MeResponse,
   type UserProfile,
 } from "./api-client";
-import { getCookieHeader } from "./server-cookies";
+import { getCookieHeader, getSessionCookie } from "./server-cookies";
 
 const supportedLocales = new Set<string>(i18n.locales);
 
@@ -50,8 +49,7 @@ function getSigninPath(locale?: string) {
  * @throws Redirects to signin if no valid session
  */
 export const verifySession = cache(async (locale?: Locale) => {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get("better-auth.session_token");
+  const sessionCookie = await getSessionCookie();
 
   if (!sessionCookie?.value) {
     redirect(getSigninPath(locale));

@@ -1,0 +1,70 @@
+# Production Caddyfile Example
+# Copy this to Caddyfile and customize for your domain
+
+{
+	# IMPORTANT: Configure your email for Let's Encrypt notifications
+	email admin@famly.eu
+
+	# For DNS-01 challenge with Cloudflare (recommended for internal networks)
+	# Uncomment and configure your DNS provider
+	# See: https://caddyserver.com/download for supported providers
+
+	# Cloudflare example:
+	# acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+
+	# Other providers:
+	# acme_dns route53 {env.AWS_ACCESS_KEY_ID} {env.AWS_SECRET_ACCESS_KEY}
+	# acme_dns gandi {env.GANDI_API_TOKEN}
+	# acme_dns digitalocean {env.DO_AUTH_TOKEN}
+}
+
+# Internal domain with Let's Encrypt DNS-01 challenge
+# This works even if the domain is only accessible on your local network!
+famly.local {
+	# Use DNS-01 challenge to get a publicly-trusted certificate
+	# without exposing your server to the internet
+	tls {
+		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+	}
+
+	# Reverse proxy to web app
+	reverse_proxy web:3000 {
+		header_up Host {host}
+		header_up X-Real-IP {remote}
+		header_up X-Forwarded-For {remote}
+		header_up X-Forwarded-Proto {scheme}
+	}
+
+	# API routes - strip /api prefix and proxy to API service
+	handle_path /api/* {
+		reverse_proxy api:3001 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
+			header_up X-Forwarded-For {remote}
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+}
+
+# Alternative: HTTP-01 challenge for internet-accessible domains
+# Uncomment if your server is accessible from the internet
+# your-public-domain.com {
+# 	# Caddy automatically uses HTTP-01 challenge
+# 	# Requires ports 80 and 443 accessible from internet
+#
+# 	reverse_proxy web:3000 {
+# 		header_up Host {host}
+# 		header_up X-Real-IP {remote}
+# 		header_up X-Forwarded-For {remote}
+# 		header_up X-Forwarded-Proto {scheme}
+# 	}
+#
+# 	handle_path /api/* {
+# 		reverse_proxy api:3001 {
+# 			header_up Host {host}
+# 			header_up X-Real-IP {remote}
+# 			header_up X-Forwarded-For {remote}
+# 			header_up X-Forwarded-Proto {scheme}
+# 		}
+# 	}
+# }
