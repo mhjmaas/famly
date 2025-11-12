@@ -3,7 +3,7 @@
 
 {
 	# IMPORTANT: Configure your email for Let's Encrypt notifications
-	email admin@hfamly.eu
+	email admin@famly.eu
 
 	# For DNS-01 challenge with Cloudflare (recommended for internal networks)
 	# Uncomment and configure your DNS provider
