@@ -24,9 +24,7 @@ services:
     image: minio/minio:latest
     container_name: famly-minio
     restart: unless-stopped
-    # Only expose console for management - API is internal only
-    ports:
-      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    # Port bindings are defined in docker-compose.override.yml for local access
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
@@ -47,11 +45,7 @@ services:
       dockerfile: apps/api/Dockerfile
     container_name: famly-api
     restart: unless-stopped
-    # SECURITY WARNING: Ports are exposed for development convenience
-    # For production, use docker-compose.prod.yml to remove port mappings
-    # This prevents direct access bypassing Caddy's HTTPS termination
-    ports:
-      - "${API_PORT:-3001}:3001"
+    # Port bindings are defined in docker-compose.override.yml for local access
     depends_on:
       mongo:
         condition: service_healthy
@@ -84,11 +78,7 @@ services:
       dockerfile: apps/web/Dockerfile
     container_name: famly-web
     restart: unless-stopped
-    # SECURITY WARNING: Ports are exposed for development convenience
-    # For production, use docker-compose.prod.yml to remove port mappings
-    # This prevents direct access bypassing Caddy's HTTPS termination
-    ports:
-      - "${WEB_PORT:-3000}:3000"
+    # Port bindings are defined in docker-compose.override.yml for local access
     depends_on:
       api:
         condition: service_healthy
@@ -144,8 +134,6 @@ services:
       CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:-}
     networks:
       - famly-network
-    profiles:
-      - https
 
 volumes:
   mongo-data:

@@ -4,40 +4,38 @@ This document outlines security considerations and best practices for deploying 
 
 ## Production Deployment Security
 
-### 🔒 Critical: Use Production Mode
+### 🔒 Production Deployment
 
-**NEVER deploy with `DEPLOYMENT_MODE=development` in production!** It exposes internal services directly to the internet.
+The `start.sh` script is designed for production deployments and **only exposes Caddy ports (80, 443)**.
 
 #### ✅ Secure Production Deployment
 
 ```bash
-# Set DEPLOYMENT_MODE=production in your .env file
-echo "DEPLOYMENT_MODE=production" >> .env
-
-# Then use the start script (recommended)
+# Use the start script (recommended)
 ./start.sh
 
 # Or manually:
-docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile https up -d
+docker compose up -d --build
 ```
 
-#### ❌ Insecure Development Setup (DO NOT USE IN PRODUCTION)
+#### 🔧 Development with Direct Port Access
 
 ```bash
-# This exposes ports 3000 and 3001 directly - DEVELOPMENT ONLY!
-# DEPLOYMENT_MODE=development (default)
-./start.sh
+# For development with live reload and direct port access
+# This exposes ports 3000, 3001, 9001, 27017 - DEVELOPMENT ONLY!
+./start-dev.sh
 ```
 
 ### Port Exposure Comparison
 
-| Service | Development | Production (Secure) |
-|---------|-------------|---------------------|
-| Caddy (HTTPS) | `:443` → 443 | `:443` → 443 ✅ |
-| Caddy (HTTP) | `:80` → 80 | `:80` → 80 ✅ (redirects to HTTPS) |
+| Service | start-dev.sh (Development) | start.sh (Production) |
+|---------|----------------------------|------------------------|
+| Caddy (HTTPS) | `:8443` → 443 | `:443` → 443 ✅ |
+| Caddy (HTTP) | Not used | `:80` → 80 ✅ (redirects to HTTPS) |
 | Web (Next.js) | `:3000` → 3000 ⚠️ | **Not exposed** ✅ |
 | API (Express) | `:3001` → 3001 ⚠️ | **Not exposed** ✅ |
 | MinIO Console | `:9001` → 9001 ⚠️ | **Not exposed** ✅ |
+| MongoDB | `:27017` → 27017 ⚠️ | **Not exposed** ✅ |
 
 ### Why This Matters
 
@@ -63,7 +61,6 @@ If you expose ports 3000/3001 in production:
 4. **Update .env**:
    ```env
    PROTOCOL=https
-   DEPLOYMENT_MODE=production
    CADDYFILE=Caddyfile.production
    CLIENT_URL=https://your-domain.com
    BETTER_AUTH_URL=https://your-domain.com/api
@@ -72,8 +69,6 @@ If you expose ports 3000/3001 in production:
 5. **Deploy securely**:
    ```bash
    ./start.sh
-   # Or manually:
-   # docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile https up -d
    ```
 
 Caddy will automatically:
@@ -143,11 +138,11 @@ ufw enable
 
 Even if you block ports with UFW, Docker creates its own iptables rules. To secure this:
 
-**Option 1: Use docker-compose.prod.yml** (Recommended)
-- Removes port mappings entirely
-- Services only accessible within Docker network
+**Option 1: Use start.sh** (Recommended)
+- Base docker-compose.yml has no port mappings for internal services
+- Services only accessible within Docker network via Caddy
 
-**Option 2: Bind to localhost only** (Development)
+**Option 2: Bind to localhost only** (Development with start-dev.sh)
 ```yaml
 ports:
   - "127.0.0.1:3001:3001"  # Only accessible from localhost
@@ -271,8 +266,8 @@ docker compose logs -f caddy | grep -E "(404|500|unauthorized)"
 
 Before deploying to production:
 
-- [ ] Set `DEPLOYMENT_MODE=production` in `.env`
-- [ ] Configure firewall to block ports 3000, 3001, 9000, 9001
+- [ ] Use `./start.sh` (NOT `./start-dev.sh`)
+- [ ] Configure firewall to only allow ports 80 and 443
 - [ ] Set strong `BETTER_AUTH_SECRET` (32+ characters)
 - [ ] Set strong `MINIO_ROOT_PASSWORD` (32+ characters)
 - [ ] Configure real domain in `Caddyfile.production`
@@ -291,7 +286,7 @@ Before deploying to production:
 - [ ] Enable automatic security updates on host OS
 - [ ] Set up backup for MongoDB data volume
 - [ ] Monitor logs for suspicious activity
-- [ ] Run `./start.sh` and verify it shows "PRODUCTION (secure - no direct port access)"
+- [ ] Verify startup message shows "production mode (secure - only Caddy ports exposed)"
 
 ## Reporting Security Issues
 

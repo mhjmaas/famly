@@ -121,7 +121,6 @@ Famly supports three deployment modes to fit different use cases:
 
    ```bash
    PROTOCOL=https
-   DEPLOYMENT_MODE=production  # IMPORTANT: Secures ports 3000/3001
    CADDYFILE=Caddyfile.production
    CLIENT_URL=https://your-domain.com
    BETTER_AUTH_URL=https://your-domain.com/api
@@ -135,9 +134,9 @@ Famly supports three deployment modes to fit different use cases:
    ```
 
    The script will automatically:
-   - Use `docker-compose.prod.yml` (removes direct port access)
    - Only expose Caddy ports 80 and 443
-   - Block direct access to API (3001) and Web (3000)
+   - Keep all internal services (API, Web, MinIO, MongoDB) secured behind Caddy
+   - Block direct access to internal ports
 
 **Features:**
 - ✅ Automatic Let's Encrypt SSL certificates
