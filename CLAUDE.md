@@ -75,15 +75,6 @@ We use NextJS 16. In NextJS middleware.ts is replaced by proxy.ts
 
 ## Development
 
-### Scripts
-
-- `pnpm run claude` - Update project tree and open Claude
-- `pnpm run update:claude:tree` - Update the project tree in this file
-
-### Task management
-
-We track work in Beads instead of Markdown. Run \`bd quickstart\` to see how.
-
 ### Document writing
 
 You will not write summary markdown documents unless you are explicitly asked to by the user.
