@@ -1,11 +1,9 @@
 import { errorHandler } from "@middleware/error-handler";
-import { toNodeHandler } from "better-auth/node";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type Express } from "express";
 import { getEnv } from "./config/env";
 import { activityEventsRouter } from "./modules/activity-events/routes/activity-events.router";
-import { getAuth } from "./modules/auth/better-auth";
 import { createAuthRouter } from "./modules/auth/routes/auth.router";
 import { createChatRouter } from "./modules/chat";
 import { createMessageRoute } from "./modules/chat/routes/create-message.route";
