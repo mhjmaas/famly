@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import type { Dictionary } from "@/i18n/types";
 import type { CreateRewardRequest, Reward } from "@/types/api.types";
 
 interface RewardDialogProps {
@@ -20,7 +21,7 @@ interface RewardDialogProps {
   reward?: Reward;
   onSubmit: (data: CreateRewardRequest, imageFile?: File) => void;
   onClose: () => void;
-  dict: any;
+  dict: Dictionary;
 }
 
 export function RewardDialog({
@@ -213,6 +214,7 @@ export function RewardDialog({
                 <div className="space-y-2">
                   {/* Image preview */}
                   <div className="relative inline-block">
+                    {/* biome-ignore lint/performance/noImgElement: Next/Image cannot display blob preview URLs without additional configuration */}
                     <img
                       src={imagePreview}
                       alt={t.fields.image.preview}

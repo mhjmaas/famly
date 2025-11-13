@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { Dictionary } from "@/i18n/types";
 import type { Task } from "@/types/api.types";
 
 interface TaskCardProps {
@@ -27,7 +28,7 @@ interface TaskCardProps {
   isClaimable: (task: Task) => boolean;
   getAssignmentDisplay: (task: Task) => React.ReactNode;
   getDueDateDisplay: (task: Task) => React.ReactNode;
-  dict: any;
+  dict: Dictionary;
 }
 
 export function TaskCard({

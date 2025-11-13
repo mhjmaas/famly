@@ -46,7 +46,6 @@ export default async function GetStartedPage({
           dict={dict.auth.getStarted}
           commonDict={dict.auth.common}
           initialStep={normalizedInitialStep}
-          isStandalone={isStandalone}
         />
       </main>
       <Footer

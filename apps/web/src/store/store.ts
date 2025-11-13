@@ -1,4 +1,5 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import activitiesReducer from "./slices/activities.slice";
 import claimsReducer from "./slices/claims.slice";
 import familyReducer from "./slices/family.slice";
 import karmaReducer from "./slices/karma.slice";
@@ -14,6 +15,7 @@ const rootReducer = combineReducers({
   tasks: tasksReducer,
   rewards: rewardsReducer,
   claims: claimsReducer,
+  activities: activitiesReducer,
 });
 
 // Infer RootState from the rootReducer

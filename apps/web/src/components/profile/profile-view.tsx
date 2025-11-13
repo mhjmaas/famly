@@ -1,10 +1,16 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import { LanguageSelector } from "@/components/language-selector";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { Locale } from "@/i18n/config";
 import type { ActivityEvent } from "@/lib/api-client";
-import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  fetchActivityEvents,
+  selectActivities,
+} from "@/store/slices/activities.slice";
 import { selectKarmaBalance } from "@/store/slices/karma.slice";
 import { selectUser, selectUserLoading } from "@/store/slices/user.slice";
 import { ActivityTimeline } from "./activity-timeline";
@@ -38,9 +44,42 @@ interface ProfileViewProps {
 }
 
 export function ProfileView({ lang, initialEvents, dict }: ProfileViewProps) {
+  const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
   const isLoading = useAppSelector(selectUserLoading);
   const karma = useAppSelector(selectKarmaBalance(user?.id || ""));
+  const activities = useAppSelector(selectActivities);
+  const [timeZone, setTimeZone] = useState("UTC");
+
+  useEffect(() => {
+    try {
+      const resolvedTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (resolvedTimeZone) {
+        setTimeZone(resolvedTimeZone);
+      }
+    } catch {
+      // Ignore failures and keep fallback timezone
+    }
+  }, []);
+
+  // Initialize activities in Redux with server-side initial events
+  useEffect(() => {
+    if (user && initialEvents.length > 0) {
+      // Import and use the reducer action directly
+      // This sets the initial state from server-side render
+      dispatch({
+        type: "activities/fetchActivityEvents/fulfilled",
+        payload: { events: initialEvents, timestamp: Date.now() },
+      });
+    }
+  }, [user, initialEvents, dispatch]);
+
+  // Fetch activities when user is available
+  useEffect(() => {
+    if (user?.id) {
+      dispatch(fetchActivityEvents());
+    }
+  }, [user?.id, dispatch]);
 
   // Show loading only when actively fetching or when user is not available
   if (isLoading || !user) {
@@ -103,7 +142,12 @@ export function ProfileView({ lang, initialEvents, dict }: ProfileViewProps) {
 
       {/* Activity Timeline */}
       <div data-testid="profile-activity-section">
-        <ActivityTimeline events={initialEvents} dict={dict.activity} />
+        <ActivityTimeline
+          events={activities}
+          dict={dict.activity}
+          locale={lang}
+          timeZone={timeZone}
+        />
       </div>
     </div>
   );

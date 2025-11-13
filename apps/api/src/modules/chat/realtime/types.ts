@@ -4,6 +4,7 @@
  */
 
 import type { MessageDTO } from "@modules/chat";
+import type { ChatDTO } from "../domain/chat";
 
 /**
  * Standard acknowledgment shape for all Socket.IO events
@@ -114,8 +115,7 @@ export interface PresenceUpdatePayload {
 }
 
 export interface ChatUpdatePayload {
-  // biome-ignore lint/suspicious/noExplicitAny: ChatDTO imported at runtime to avoid circular deps
-  chat: any;
+  chat: ChatDTO;
 }
 
 /**

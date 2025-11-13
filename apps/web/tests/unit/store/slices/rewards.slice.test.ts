@@ -60,7 +60,6 @@ describe("rewards.slice", () => {
   let store: ReturnType<typeof configureStore<TestRootState>>;
 
   const familyId = "family-123";
-  const userId = "user-123";
 
   const mockReward: Reward = {
     _id: "reward-1",

@@ -1,25 +1,28 @@
 import { logger } from "@lib/logger";
+import {
+  getSocketIOServer as getSharedSocketIOServer,
+  setSocketIOServer as setSharedSocketIOServer,
+} from "@modules/realtime";
 import type { ObjectId } from "mongodb";
 import type { Server } from "socket.io";
 import type { ChatDTO } from "../../domain/chat";
 
-// Global reference to Socket.IO server instance
-let ioInstance: Server | null = null;
-
 /**
  * Set the global Socket.IO server instance
  * Call this during server initialization
+ * @deprecated Use setSocketIOServer from @modules/realtime instead
  */
 export function setSocketIOServer(io: Server): void {
-  ioInstance = io;
+  setSharedSocketIOServer(io);
   logger.info("Socket.IO server instance registered for chat events");
 }
 
 /**
  * Get the global Socket.IO server instance
+ * Uses the shared realtime module's Socket.IO server
  */
 export function getSocketIOServer(): Server | null {
-  return ioInstance;
+  return getSharedSocketIOServer();
 }
 
 /**

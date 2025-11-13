@@ -1,9 +1,10 @@
 import { Award, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import type { Dictionary } from "@/i18n/types";
 
 interface KarmaBalanceCardProps {
   karma: number;
-  dict: any;
+  dict: Dictionary;
 }
 
 export function KarmaBalanceCard({ karma, dict }: KarmaBalanceCardProps) {

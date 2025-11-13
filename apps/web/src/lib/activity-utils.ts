@@ -50,10 +50,22 @@ export function formatActivityDate(dateString: string): string {
 /**
  * Formats a timestamp for activity timeline display (time only)
  */
-export function formatActivityTime(timestamp: string): string {
+export function formatActivityTime(
+  timestamp: string,
+  options?: {
+    locale?: string;
+    timeZone?: string;
+  },
+): string {
   try {
-    const date = new Date(timestamp);
-    return format(date, "h:mm a");
+    const formatter = new Intl.DateTimeFormat(options?.locale, {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: options?.timeZone ?? "UTC",
+    });
+
+    return formatter.format(new Date(timestamp));
   } catch {
     return "";
   }

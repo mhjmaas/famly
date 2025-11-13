@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { getDb } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
-import { type Collection, ObjectId } from "mongodb";
+import { type Collection, type Filter, ObjectId } from "mongodb";
 import type { Chat } from "../domain/chat";
 
 export class ChatRepository {
@@ -152,12 +152,13 @@ export class ChatRepository {
     cursor?: ObjectId,
     limit: number = 20,
   ): Promise<Chat[]> {
-    // biome-ignore lint/suspicious/noExplicitAny: MongoDB query builder requires any
-    const query: any = { _id: { $in: chatIds } };
+    let query: Filter<Chat> = { _id: { $in: chatIds } };
 
     if (cursor) {
       // Only include chats that come before the cursor in sort order (updatedAt descending)
-      query._id = { $in: chatIds, $lt: cursor };
+      query = {
+        _id: { $in: chatIds, $lt: cursor },
+      };
     }
 
     return this.collection

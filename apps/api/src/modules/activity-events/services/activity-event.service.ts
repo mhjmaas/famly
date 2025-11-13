@@ -4,6 +4,7 @@ import type {
   ActivityEvent,
   ActivityEventType,
 } from "../domain/activity-event";
+import { emitActivityCreated } from "../events/activity-events";
 import type { ActivityEventRepository } from "../repositories/activity-event.repository";
 
 export interface RecordEventInput {
@@ -47,6 +48,9 @@ export class ActivityEventService {
         userId: input.userId.toString(),
         type: input.type,
       });
+
+      // Emit activity created event
+      emitActivityCreated(event);
 
       return event;
     } catch (error) {

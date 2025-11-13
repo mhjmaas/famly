@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { TaskFormData } from "@/hooks/useTaskForm";
+import type { Dictionary } from "@/i18n/types";
 
 interface EditTaskFormProps {
   formData: TaskFormData;
@@ -25,7 +26,7 @@ interface EditTaskFormProps {
   showKarma: boolean;
   setShowKarma: (show: boolean) => void;
   familyMembers: Array<{ id: string; name: string; role: "parent" | "child" }>;
-  dict: any;
+  dict: Dictionary;
 }
 
 export function EditTaskForm({

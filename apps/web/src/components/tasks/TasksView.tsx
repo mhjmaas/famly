@@ -9,6 +9,7 @@ import { useTaskAssignment } from "@/hooks/useTaskAssignment";
 import { useTaskFilters } from "@/hooks/useTaskFilters";
 import { useTaskForm } from "@/hooks/useTaskForm";
 import { useTaskGroups } from "@/hooks/useTaskGroups";
+import type { Dictionary } from "@/i18n/types";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectKarmaBalance } from "@/store/slices/karma.slice";
 import {
@@ -33,7 +34,7 @@ import { TaskFilters } from "./TaskFilters";
 import { TaskGroup } from "./TaskGroup";
 
 interface TasksViewProps {
-  dict: any;
+  dict: Dictionary;
   familyId: string;
   userId: string;
   userRole: "parent" | "child";
@@ -258,22 +259,14 @@ export function TasksView({
         }}
         data-testid="tasks-tabs"
       >
-        <TaskFilters
-          filter={filter}
-          onFilterChange={(f) => {
-            setFilter(f);
-            setHasInitializedFilter(true);
-          }}
-          taskCounts={taskCounts}
-          dict={dict}
-        />
+        <TaskFilters taskCounts={taskCounts} dict={dict} />
 
         <TabsContent
           value={filter}
           className="space-y-4 mt-6"
           data-testid="tasks-tab-content"
         >
-          {isLoading && (
+          {isLoading && filteredTasks.length === 0 && (
             <div className="text-center py-12" data-testid="tasks-loading">
               {t.loading}
             </div>

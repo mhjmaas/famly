@@ -1,4 +1,4 @@
-import type { Task, TaskAssignment } from "@/types/api.types";
+import type { Task } from "@/types/api.types";
 
 /**
  * Determines if a task is assigned to a specific user based on the assignment type.

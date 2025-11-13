@@ -88,4 +88,11 @@ export class DeploymentConfigRepository {
     const config = await this.get();
     return config?.onboardingCompleted ?? false;
   }
+
+  /**
+   * Utility used in tests to clear the deployment configuration collection
+   */
+  async clearAll(): Promise<void> {
+    await this.collection.deleteMany({});
+  }
 }

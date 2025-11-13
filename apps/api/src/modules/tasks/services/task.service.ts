@@ -7,6 +7,12 @@ import type { FamilyMembershipRepository } from "@modules/family/repositories/fa
 import type { KarmaService } from "@modules/karma";
 import type { ObjectId } from "mongodb";
 import type { CreateTaskInput, Task, UpdateTaskInput } from "../domain/task";
+import {
+  emitTaskAssigned,
+  emitTaskCompleted,
+  emitTaskCreated,
+  emitTaskDeleted,
+} from "../events/task-events";
 import type { TaskCompletionHook } from "../hooks/task-completion.hook";
 import { TaskCompletionHookRegistry } from "../hooks/task-completion.hook";
 import type { TaskRepository } from "../repositories/task.repository";
@@ -87,6 +93,11 @@ export class TaskService {
           });
         }
       }
+
+      // Emit real-time event for task creation
+      // For member-specific assignments, notify that user
+      // For role-based assignments, would need family member IDs (defer to caller)
+      await emitTaskCreated(task);
 
       return task;
     } catch (error) {
@@ -324,6 +335,17 @@ export class TaskService {
           });
           // Don't throw - task completion should succeed even if hook fails
         }
+
+        // Emit real-time event for task completion
+        emitTaskCompleted(updatedTask, userId);
+      }
+
+      // Check if assignment changed and emit task.assigned event
+      const assignmentChanged =
+        JSON.stringify(existingTask.assignment) !==
+        JSON.stringify(input.assignment);
+      if (input.assignment && assignmentChanged) {
+        await emitTaskAssigned(updatedTask);
       }
 
       logger.info("Task updated successfully", {
@@ -383,6 +405,15 @@ export class TaskService {
       if (!deleted) {
         throw HttpError.notFound("Task not found");
       }
+
+      // Emit real-time event for task deletion
+      // Get family members who should be notified (for now, just emit to all family members)
+      // In a complete implementation, we'd fetch family member IDs here
+      const affectedUsers: string[] = [];
+      if (existingTask.assignment.type === "member") {
+        affectedUsers.push(existingTask.assignment.memberId.toString());
+      }
+      emitTaskDeleted(taskId, familyId, affectedUsers);
 
       logger.info("Task deleted successfully", {
         taskId: taskId.toString(),

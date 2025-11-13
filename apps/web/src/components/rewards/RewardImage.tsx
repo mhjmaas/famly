@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Gift } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -22,27 +23,35 @@ export function RewardImage({
   const [hasError, setHasError] = useState(false);
   const shouldShowFallback = !imageUrl || hasError;
 
-  if (!shouldShowFallback) {
+  if (shouldShowFallback) {
     return (
-      <img
-        src={imageUrl}
-        alt={name}
-        className={cn("object-cover h-full w-full", className)}
-        onError={() => setHasError(true)}
-      />
+      <div
+        className={cn(
+          "flex h-full w-full items-center justify-center bg-muted text-muted-foreground",
+          className,
+        )}
+        role="img"
+        aria-label={name}
+      >
+        <Icon className={cn(DEFAULT_ICON_SIZE, "opacity-70")} aria-hidden />
+      </div>
     );
   }
 
   return (
-    <div
-      className={cn(
-        "flex h-full w-full items-center justify-center bg-muted text-muted-foreground",
-        className,
-      )}
-      role="img"
-      aria-label={name}
-    >
-      <Icon className={cn(DEFAULT_ICON_SIZE, "opacity-70")} aria-hidden />
+    <div className={cn("relative h-full w-full", className)}>
+      <Image
+        src={imageUrl}
+        alt={name}
+        fill
+        className="object-cover"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 360px"
+        onError={() => setHasError(true)}
+        unoptimized={
+          imageUrl.startsWith("blob:") || imageUrl.startsWith("/api/")
+        }
+        priority={false}
+      />
     </div>
   );
 }

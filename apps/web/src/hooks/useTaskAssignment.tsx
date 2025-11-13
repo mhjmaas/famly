@@ -2,13 +2,14 @@ import { format } from "date-fns";
 import { Clock, User, UsersIcon } from "lucide-react";
 import { useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
+import type { Dictionary } from "@/i18n/types";
 import type { Task, TaskAssignment } from "@/types/api.types";
 
 interface UseTaskAssignmentParams {
   userId: string;
   userRole: "parent" | "child";
   familyMembers: Array<{ id: string; name: string; role: "parent" | "child" }>;
-  dict: any;
+  dict: Dictionary;
 }
 
 export function useTaskAssignment({

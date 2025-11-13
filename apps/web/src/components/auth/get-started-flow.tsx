@@ -35,7 +35,6 @@ interface GetStartedFlowProps {
   dict: DictionarySection<"auth">["getStarted"];
   commonDict: DictionarySection<"auth">["common"];
   initialStep?: "choose" | "register" | "family";
-  isStandalone?: boolean;
 }
 
 export function GetStartedFlow({
@@ -43,7 +42,6 @@ export function GetStartedFlow({
   dict,
   commonDict,
   initialStep = "choose",
-  isStandalone = false,
 }: GetStartedFlowProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();

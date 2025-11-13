@@ -33,6 +33,16 @@ export function createMeRoute(): Router {
           return;
         }
 
+        // Extract session token from cookie for WebSocket authentication
+        // The session cookie is HttpOnly, so we need to provide it for WebSocket connections
+        let websocketToken: string | null = null;
+        if (req.cookies) {
+          websocketToken =
+            req.cookies["__Secure-better-auth.session_token"] ||
+            req.cookies["better-auth.session_token"] ||
+            null;
+        }
+
         res.status(200).json({
           user: {
             id: req.user.id,
@@ -45,6 +55,9 @@ export function createMeRoute(): Router {
             families: req.user.families || [],
           },
           authType: req.authType,
+          // Provide session token for WebSocket authentication
+          // This is safe because the /me endpoint is already authenticated
+          websocketToken,
         });
       } catch (error) {
         next(error);

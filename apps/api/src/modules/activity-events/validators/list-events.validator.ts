@@ -19,14 +19,21 @@ export type ListEventsQuery = z.infer<typeof listEventsQuerySchema>;
 /**
  * Express middleware to validate list activity events query parameters
  */
+type ListEventsRequest = Request<
+  Record<string, never>,
+  unknown,
+  unknown,
+  Partial<ListEventsQuery>
+>;
+
 export function validateListEventsQuery(
-  req: Request,
+  req: ListEventsRequest,
   _res: Response,
   next: NextFunction,
 ): void {
   try {
     const validated = listEventsQuerySchema.parse(req.query);
-    req.query = validated as any; // biome-ignore lint/suspicious/noExplicitAny: Express query type
+    req.query = validated;
     next();
   } catch (error) {
     if (error instanceof z.ZodError) {

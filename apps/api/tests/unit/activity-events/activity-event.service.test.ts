@@ -1,7 +1,6 @@
 import { ObjectId } from "mongodb";
 import type { ActivityEvent } from "../../../src/modules/activity-events/domain/activity-event";
 import type { ActivityEventRepository } from "../../../src/modules/activity-events/repositories/activity-event.repository";
-import { ActivityEventService } from "../../../src/modules/activity-events/services/activity-event.service";
 
 // Mock logger to avoid environment variable dependencies
 jest.mock("../../../src/lib/logger", () => ({
@@ -11,6 +10,16 @@ jest.mock("../../../src/lib/logger", () => ({
     error: jest.fn(),
   },
 }));
+
+// Mock activity events to avoid realtime dependencies
+jest.mock(
+  "../../../src/modules/activity-events/events/activity-events",
+  () => ({
+    emitActivityCreated: jest.fn(),
+  }),
+);
+
+import { ActivityEventService } from "../../../src/modules/activity-events/services/activity-event.service";
 
 describe("ActivityEventService", () => {
   let service: ActivityEventService;

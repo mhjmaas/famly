@@ -1,13 +1,14 @@
 import { format } from "date-fns";
 import { useState } from "react";
 import { toast } from "sonner";
+import type { Dictionary } from "@/i18n/types";
 import {
   createSchedule,
   createTask,
   updateTask,
 } from "@/store/slices/tasks.slice";
 import type { AppDispatch } from "@/store/store";
-import type { Task } from "@/types/api.types";
+import type { Task, TaskAssignment } from "@/types/api.types";
 
 export interface TaskFormData {
   name: string;
@@ -19,9 +20,9 @@ export interface TaskFormData {
 
 interface UseTaskFormParams {
   familyId: string;
-  dict: any;
+  dict: Dictionary;
   dispatch: AppDispatch;
-  buildAssignment: (assignTo: string) => any;
+  buildAssignment: (assignTo: string) => TaskAssignment;
   onSuccess: () => void;
 }
 

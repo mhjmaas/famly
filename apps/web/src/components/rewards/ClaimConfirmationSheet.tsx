@@ -8,14 +8,16 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import type { Dictionary } from "@/i18n/types";
 import type { Reward } from "@/types/api.types";
+import { RewardImage } from "./RewardImage";
 
 interface ClaimConfirmationSheetProps {
   reward: Reward | null;
   isOpen: boolean;
   onConfirm: () => void;
   onCancel: () => void;
-  dict: any;
+  dict: Dictionary;
 }
 
 export function ClaimConfirmationSheet({
@@ -43,12 +45,8 @@ export function ClaimConfirmationSheet({
 
         <div className="flex-1 overflow-y-auto py-6 space-y-4">
           <div className="rounded-lg border p-4 space-y-3">
-            <div className="aspect-video w-full overflow-hidden rounded-md bg-muted">
-              <img
-                src={imageUrl}
-                alt={reward.name}
-                className="object-cover w-full h-full"
-              />
+            <div className="relative aspect-video w-full overflow-hidden rounded-md bg-muted">
+              <RewardImage imageUrl={imageUrl} name={reward.name} />
             </div>
             <div>
               <h3 className="font-semibold text-lg">{reward.name}</h3>

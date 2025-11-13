@@ -7,6 +7,11 @@ import type {
   RewardDTO,
   UpdateRewardInput,
 } from "../domain/reward";
+import {
+  emitRewardCreated,
+  emitRewardDeleted,
+  emitRewardUpdated,
+} from "../events/reward-events";
 import { toRewardDetailsDTO, toRewardDTO } from "../lib/reward.mapper";
 import type { MetadataRepository } from "../repositories/metadata.repository";
 import type { RewardRepository } from "../repositories/reward.repository";
@@ -50,6 +55,9 @@ export class RewardService {
         rewardId: reward._id.toString(),
         familyId: familyId.toString(),
       });
+
+      // Emit reward created event
+      await emitRewardCreated(reward._id, familyId, reward.name);
 
       return toRewardDTO(reward);
     } catch (error) {
@@ -204,6 +212,9 @@ export class RewardService {
         rewardId: rewardId.toString(),
       });
 
+      // Emit reward updated event
+      await emitRewardUpdated(rewardId, familyId, updated.name);
+
       return toRewardDTO(updated);
     } catch (error) {
       if (error instanceof HttpError) {
@@ -250,12 +261,18 @@ export class RewardService {
         );
       }
 
+      // Store reward name for event emission
+      const rewardName = reward.name;
+
       // Delete the reward
       await this.rewardRepository.delete(rewardId);
 
       logger.info("Reward deleted successfully", {
         rewardId: rewardId.toString(),
       });
+
+      // Emit reward deleted event
+      await emitRewardDeleted(rewardId, familyId, rewardName);
     } catch (error) {
       if (error instanceof HttpError) {
         throw error;

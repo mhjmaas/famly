@@ -2,6 +2,8 @@
 
 This module provides Socket.IO integration for real-time chat functionality in Famly.
 
+> **Note**: As of the realtime events platform update, the Socket.IO server is now centralized in `@modules/realtime`. This chat module uses the shared Socket.IO server instance and emits events through the centralized event emitter. See `@modules/realtime/README.md` for details on the shared infrastructure.
+
 ## Architecture Overview
 
 The realtime messaging system uses Socket.IO 4.8+ with the following architecture:
@@ -71,18 +73,27 @@ Socket.IO is installed in `apps/api/package.json`:
 In `apps/api/src/server.ts`:
 
 ```typescript
-import { createSocketServer } from "./modules/chat/realtime/socket-server";
+import { createSocketServer, authenticateSocket } from "@modules/realtime";
+import { registerConnectionHandler } from "@modules/chat/realtime/register-handlers";
+import { setSocketIOServer } from "@modules/chat/realtime/events/chat-events";
 
 const app = express();
 // ... Express setup ...
 
 const server = http.createServer(app);
-const io = createSocketServer(server);
+
+// Initialize Socket.IO with centralized authentication and chat handlers
+const io = createSocketServer(server, authenticateSocket, registerConnectionHandler);
+
+// Register the Socket.IO instance for chat events
+setSocketIOServer(io);
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 ```
+
+**Note**: The Socket.IO server creation is now handled by `@modules/realtime/server/socket-server.ts`. The chat module only provides the connection handler for chat-specific events.
 
 ## Event Contracts
 

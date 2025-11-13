@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
+import type { Dictionary } from "@/i18n/types";
 import { cn } from "@/lib/utils";
 import type { Reward } from "@/types/api.types";
 import { CancelClaimButton } from "./CancelClaimButton";
@@ -35,7 +36,7 @@ interface RewardCardProps {
   onDelete: () => void;
   onToggleFavourite: () => void;
   onCancelClaim?: () => Promise<void> | void;
-  dict: any;
+  dict: Dictionary;
 }
 
 export function RewardCard({

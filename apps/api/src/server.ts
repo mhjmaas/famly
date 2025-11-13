@@ -2,7 +2,8 @@ import "dotenv/config";
 import { ensureBucketExists } from "@infra/minio/client";
 import { connectMongo, disconnectMongo } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
-import { createSocketServer } from "@modules/chat/realtime/socket-server";
+import { setSocketIOServer } from "@modules/chat/realtime/events/chat-events";
+import { registerConnectionHandler } from "@modules/chat/realtime/register-handlers";
 import { ChatRepository } from "@modules/chat/repositories/chat.repository";
 import { MembershipRepository } from "@modules/chat/repositories/membership.repository";
 import { MessageRepository } from "@modules/chat/repositories/message.repository";
@@ -11,6 +12,7 @@ import { DiaryRepository } from "@modules/diary";
 import { FamilyRepository } from "@modules/family/repositories/family.repository";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import { KarmaRepository } from "@modules/karma";
+import { authenticateSocket, createSocketServer } from "@modules/realtime";
 import { ShoppingListRepository } from "@modules/shopping-lists";
 import {
   ScheduleRepository,
@@ -109,7 +111,15 @@ async function start() {
 
   // Initialize Socket.IO
   logger.info("Initializing Socket.IO server...");
-  createSocketServer(server);
+  const io = createSocketServer(
+    server,
+    authenticateSocket,
+    registerConnectionHandler,
+  );
+
+  // Register Socket.IO instance with chat module for backward compatibility
+  setSocketIOServer(io);
+
   logger.info("Socket.IO server initialized successfully");
 
   // Graceful shutdown handler

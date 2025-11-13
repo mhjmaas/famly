@@ -44,7 +44,7 @@ Famly supports three deployment modes to fit different use cases:
 
 **Use case:** Active development with live code reloading
 
-**Command:** `./start-dev.sh`
+**Command:** `./dev.sh`
 
 **Features:**
 - ✅ Hot reload for API and Web (code changes apply instantly)
@@ -335,7 +335,7 @@ The easiest way to start development with live reload and automatic setup:
 pnpm install
 
 # Start all services (MongoDB, MinIO, API, Web) with live reload
-./start-dev.sh
+./dev.sh
 ```
 
 **What this script does:**

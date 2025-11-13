@@ -659,6 +659,14 @@
             "update": "Beloning Bijwerken"
           }
         },
+        "delete": {
+          "title": "Beloning verwijderen?",
+          "description": "Weet je zeker dat je \"{name}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
+          "buttons": {
+            "cancel": "Annuleren",
+            "confirm": "Beloning Verwijderen"
+          }
+        },
         "claimSheet": {
           "title": "Beloning Claimen",
           "description": "Weet je zeker dat je deze beloning wilt claimen? De karmapunten worden afgetrokken en een ouder wordt op de hoogte gesteld om je beloning te vervullen.",
@@ -679,7 +687,9 @@
         "toast": {
           "success": "Beloning {name} succesvol geclaimd",
           "cancelled": "Claim succesvol geannuleerd",
-          "cancelError": "Claim annuleren mislukt"
+          "cancelError": "Claim annuleren mislukt",
+          "deleteSuccess": "Beloning verwijderd",
+          "deleteError": "Beloning verwijderen mislukt"
         },
         "actions": {
           "createButton": "Nieuwe Beloning"

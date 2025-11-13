@@ -6,7 +6,7 @@ Famly requires HTTPS for privacy, PWA functionality (service workers, push notif
 - Express API (port 3001) with Socket.IO on the same port
 - Next.js web app (port 3000)
 - Docker Compose orchestration for local dev and production
-- Startup scripts (`start.sh`, `start-dev.sh`) for one-command setup
+- Startup scripts (`start.sh`, `dev.sh`) for one-command setup
 - Better Auth with session cookies requiring secure flag in production
 
 Current architecture uses plain HTTP everywhere. We need to add HTTPS without disrupting the simple "clone and run" developer experience.
@@ -114,7 +114,7 @@ Browser → https://localhost (Caddy :443)
 - **Automation**: Can be run in Docker startup scripts
 
 **Implementation**:
-- `start-dev.sh` checks for mkcert installation
+- `dev.sh` checks for mkcert installation
 - Generates `localhost.pem` and `localhost-key.pem` if missing
 - Caddy container mounts certificate volume
 - Developers only need to run `mkcert -install` once per machine
@@ -306,7 +306,7 @@ cors: {
 **Risk**: Developers need to install mkcert and trust certificates
 
 **Mitigation**:
-- `start-dev.sh` checks for mkcert and provides installation instructions
+- `dev.sh` checks for mkcert and provides installation instructions
 - One-time setup: `brew install mkcert && mkcert -install`
 - Alternatively, developers can use `PROTOCOL=http` to skip Caddy entirely
 - Clear documentation in README with troubleshooting section
@@ -317,7 +317,7 @@ cors: {
 **Risk**: Caddy requires port 443, which may conflict with other services
 
 **Mitigation**:
-- `start-dev.sh` checks for port conflicts before starting
+- `dev.sh` checks for port conflicts before starting
 - Error messages guide users to stop conflicting services
 - Alternative: Change Caddy port to 8443 in docker-compose.dev.yml
 
@@ -361,7 +361,7 @@ cors: {
 **Phase 1: Add Caddy Container** (Week 1)
 1. Add Caddy Dockerfile and Caddyfile
 2. Update docker-compose.dev.yml with Caddy service
-3. Add mkcert installation check to start-dev.sh
+3. Add mkcert installation check to dev.sh
 4. Generate certificates on first run
 
 **Phase 2: Update Configuration** (Week 1)

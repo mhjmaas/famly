@@ -19,6 +19,11 @@ jest.mock("@/infra/mongo/client", () => ({
   getDb: jest.fn(),
 }));
 
+// Mock task events to avoid realtime dependencies
+jest.mock("@/modules/tasks/events/task-events", () => ({
+  emitTaskCreated: jest.fn(),
+}));
+
 // Mock the repositories
 jest.mock("@/modules/tasks/repositories/task.repository");
 jest.mock("@/modules/tasks/repositories/schedule.repository");

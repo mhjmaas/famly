@@ -1,6 +1,11 @@
 import { getDb } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
-import { type Collection, ObjectId, type UpdateFilter } from "mongodb";
+import {
+  type Collection,
+  type Filter,
+  ObjectId,
+  type UpdateFilter,
+} from "mongodb";
 import type { CreateTaskInput, Task, UpdateTaskInput } from "../domain/task";
 
 export class TaskRepository {
@@ -99,9 +104,7 @@ export class TaskRepository {
     dueDateFrom?: Date,
     dueDateTo?: Date,
   ): Promise<Task[]> {
-    // Use any for MongoDB filter to allow query operators like $gte and $lte
-    // biome-ignore lint/suspicious/noExplicitAny: MongoDB filter requires dynamic query operators
-    const query: any = { familyId };
+    const query: Filter<Task> = { familyId };
 
     if (dueDateFrom || dueDateTo) {
       query.dueDate = {};

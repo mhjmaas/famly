@@ -5,7 +5,7 @@ The deployment configuration SHALL include a Caddy reverse proxy container that 
 
 #### Scenario: Development environment Caddy service
 - **GIVEN** Docker Compose development configuration
-- **WHEN** services are started with `start-dev.sh`
+- **WHEN** services are started with `dev.sh`
 - **THEN** Caddy container runs on port 443
 - **AND** proxies traffic to web container on port 3000
 - **AND** proxies /api traffic to API container on port 3001
@@ -29,14 +29,14 @@ The deployment configuration SHALL include a Caddy reverse proxy container that 
 The development environment SHALL use mkcert to generate locally-trusted TLS certificates for HTTPS development.
 
 #### Scenario: Certificate generation on first run
-- **GIVEN** developer runs `start-dev.sh` for the first time
+- **GIVEN** developer runs `dev.sh` for the first time
 - **WHEN** mkcert is installed on the system
 - **THEN** startup script generates localhost.pem and localhost-key.pem
 - **AND** certificates are stored in docker/caddy/certs directory
 - **AND** Caddy container mounts certificate volume
 
 #### Scenario: Missing mkcert installation
-- **GIVEN** developer runs `start-dev.sh`
+- **GIVEN** developer runs `dev.sh`
 - **WHEN** mkcert is not installed
 - **THEN** script displays installation instructions
 - **AND** provides commands for macOS, Linux, and Windows
@@ -44,7 +44,7 @@ The development environment SHALL use mkcert to generate locally-trusted TLS cer
 
 #### Scenario: Existing certificates reuse
 - **GIVEN** certificates exist in docker/caddy/certs
-- **WHEN** developer runs `start-dev.sh`
+- **WHEN** developer runs `dev.sh`
 - **THEN** existing certificates are reused
 - **AND** no new certificates are generated
 
@@ -71,7 +71,7 @@ Startup scripts SHALL detect port conflicts before starting services and provide
 
 #### Scenario: Port 443 already in use
 - **GIVEN** another service is using port 443
-- **WHEN** developer runs `start-dev.sh`
+- **WHEN** developer runs `dev.sh`
 - **THEN** script detects the conflict
 - **AND** displays which process is using port 443
 - **AND** suggests stopping the conflicting service
@@ -79,7 +79,7 @@ Startup scripts SHALL detect port conflicts before starting services and provide
 
 #### Scenario: All ports available
 - **GIVEN** ports 443, 3000, 3001, 9001, 27017 are free
-- **WHEN** developer runs `start-dev.sh`
+- **WHEN** developer runs `dev.sh`
 - **THEN** all services start successfully
 - **AND** no port conflict warnings are shown
 

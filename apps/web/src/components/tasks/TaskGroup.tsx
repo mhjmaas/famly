@@ -1,3 +1,4 @@
+import type { Dictionary } from "@/i18n/types";
 import type { Task } from "@/types/api.types";
 import { TaskCard } from "./TaskCard";
 
@@ -12,7 +13,7 @@ interface TaskGroupProps {
   isClaimable: (task: Task) => boolean;
   getAssignmentDisplay: (task: Task) => React.ReactNode;
   getDueDateDisplay: (task: Task) => React.ReactNode;
-  dict: any;
+  dict: Dictionary;
 }
 
 export function TaskGroup({
