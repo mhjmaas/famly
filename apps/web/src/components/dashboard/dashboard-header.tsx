@@ -10,11 +10,13 @@ export function DashboardHeader({
   subtitle,
 }: DashboardHeaderProps) {
   return (
-    <div className="hidden lg:block">
-      <h1 className="text-3xl font-bold">
+    <div className="space-y-1">
+      <h1 className="hidden md:block text-3xl font-bold">
         {welcomeMessage.replace("{name}", firstName)}
       </h1>
-      <p className="text-muted-foreground">{subtitle}</p>
+      <p className="text-muted-foreground text-center md:text-left">
+        {subtitle}
+      </p>
     </div>
   );
 }

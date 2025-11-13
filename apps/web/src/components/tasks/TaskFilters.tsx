@@ -28,7 +28,7 @@ export function TaskFilters({ taskCounts, dict }: TaskFiltersProps) {
   const t = dict.dashboard.pages.tasks;
 
   return (
-    <div className="hidden w-full md:flex md:justify-center">
+    <div className="w-full flex justify-center">
       <TabsList data-testid="tasks-filters">
         <TabsTrigger value="my-tasks" data-testid="tasks-filter-my">
           {t.filters.myTasks}

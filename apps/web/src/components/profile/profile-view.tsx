@@ -85,10 +85,12 @@ export function ProfileView({ lang, initialEvents, dict }: ProfileViewProps) {
   if (isLoading || !user) {
     return (
       <div className="space-y-6">
-        <div className="hidden lg:flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold">{dict.title}</h1>
-            <p className="text-muted-foreground">{dict.subtitle}</p>
+            <h1 className="hidden sm:block text-3xl font-bold">{dict.title}</h1>
+            <p className="text-muted-foreground text-center sm:text-left">
+              {dict.subtitle}
+            </p>
           </div>
         </div>
         <div className="text-center py-12 text-muted-foreground">
@@ -102,19 +104,25 @@ export function ProfileView({ lang, initialEvents, dict }: ProfileViewProps) {
     <div className="space-y-6" data-testid="profile-view">
       {/* Desktop header with theme/language selectors */}
       <div
-        className="hidden lg:flex items-center justify-between gap-4"
+        className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
         data-testid="profile-desktop-header"
       >
         <div>
-          <h1 className="text-3xl font-bold" data-testid="profile-title">
+          <h1
+            className="hidden sm:block text-3xl font-bold"
+            data-testid="profile-title"
+          >
             {dict.title}
           </h1>
-          <p className="text-muted-foreground" data-testid="profile-subtitle">
+          <p
+            className="text-muted-foreground text-center sm:text-left"
+            data-testid="profile-subtitle"
+          >
             {dict.subtitle}
           </p>
         </div>
         <div
-          className="flex items-center gap-3"
+          className="hidden lg:flex items-center gap-3"
           data-testid="profile-desktop-preferences"
         >
           <LanguageSelector lang={lang} ariaLabel="Select language" />

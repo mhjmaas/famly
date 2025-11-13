@@ -10,6 +10,7 @@ export class FamilyPage {
     readonly pageTitle: Locator;
     readonly pageDescription: Locator;
     readonly addMemberButton: Locator;
+    readonly addMemberButtonMobile: Locator;
 
     // Empty state
     readonly emptyState: Locator;
@@ -60,6 +61,7 @@ export class FamilyPage {
         this.pageTitle = page.getByTestId("family-title");
         this.pageDescription = page.getByTestId("family-description");
         this.addMemberButton = page.getByTestId("add-member-button");
+        this.addMemberButtonMobile = page.getByTestId("add-member-button-mobile");
 
         // Empty state
         this.emptyState = page.getByTestId("family-empty-state");
