@@ -14,6 +14,7 @@ import { initializeRecipesModule } from "./modules/recipes/init";
 import { initializeRewardsIntegration } from "./modules/rewards/init";
 import { getTaskService } from "./modules/tasks/services/task.service.instance";
 import { createHealthRouter } from "./routes/health";
+import { createStatusRouter } from "./routes/status";
 
 export const createApp = (): Express => {
   const app = express();
@@ -77,6 +78,9 @@ export const createApp = (): Express => {
 
   // Health check endpoint (before auth setup since health check doesn't need DB)
   app.use("/v1", createHealthRouter());
+
+  // Status endpoint (unauthenticated, returns deployment mode and onboarding status)
+  app.use("/v1", createStatusRouter());
 
   // Auth routes (Better Auth manages its own indexes)
   app.use("/v1/auth", createAuthRouter());

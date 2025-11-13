@@ -3,7 +3,6 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { logout } from "@/lib/api-client";
-import { clearSessionCookieClient } from "@/lib/session-client";
 
 /**
  * Client component to handle invalid session detection
@@ -34,18 +33,11 @@ export function SessionGuard({
 
         const invalidateSession = async () => {
           try {
+            // Better-auth's sign-out endpoint automatically clears session cookies
             await logout();
           } catch (error) {
             console.error("Failed to invalidate session via API:", error);
           } finally {
-            try {
-              await clearSessionCookieClient();
-            } catch (sessionError) {
-              console.error(
-                "Failed to clear local session cookie:",
-                sessionError,
-              );
-            }
             router.push(`/${locale}/signin`);
           }
         };

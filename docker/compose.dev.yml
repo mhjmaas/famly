@@ -59,6 +59,7 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev_better_auth_secret_min_32_chars_required_here}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3001}
       CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}
+      DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-saas}
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: famly-dev-access
       MINIO_SECRET_KEY: famly-dev-secret-min-32-chars

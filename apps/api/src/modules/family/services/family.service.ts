@@ -2,6 +2,8 @@ import { getDb } from "@infra/mongo/client";
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import { getAuth } from "@modules/auth/better-auth";
+import { DeploymentConfigRepository } from "@modules/deployment-config/repositories/deployment-config.repository";
+import { DeploymentConfigService } from "@modules/deployment-config/services/deployment-config.service";
 import { ObjectId } from "mongodb";
 import {
   type AddFamilyMemberRequest,
@@ -61,6 +63,21 @@ export class FamilyService {
 
       // Convert to view DTO
       const familyView = toFamilyMembershipView(family, membership);
+
+      // Mark onboarding as complete if in standalone mode and not yet completed
+      const deploymentConfigRepo = new DeploymentConfigRepository();
+      const deploymentConfigService = new DeploymentConfigService(
+        deploymentConfigRepo,
+      );
+
+      const shouldComplete =
+        await deploymentConfigService.shouldCompleteOnboarding();
+      if (shouldComplete) {
+        await deploymentConfigService.markOnboardingCompleted();
+        logger.info(
+          "Onboarding marked as completed after first family creation",
+        );
+      }
 
       logger.info("Family created successfully", {
         familyId: family._id.toString(),

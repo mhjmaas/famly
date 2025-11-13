@@ -7,7 +7,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
 import { getUserWithKarma } from "@/lib/dal";
+import { DeploymentProvider } from "@/lib/deployment-context";
 import { getSessionCookie } from "@/lib/server-cookies";
+import { getDeploymentStatus } from "@/lib/status-client";
 import { StoreProvider } from "@/store/provider";
 import type { RootState } from "@/store/store";
 
@@ -61,6 +63,10 @@ export default async function LocaleLayout({
   const { lang: rawLang } = await params;
   const lang = isLocale(rawLang) ? rawLang : (i18n.defaultLocale as Locale);
 
+  // Fetch deployment status once at the root level
+  // This will be cached by React and reused across all components
+  const deploymentStatus = await getDeploymentStatus();
+
   // Load initial Redux state server-side using Data Access Layer
   let preloadedState: Partial<RootState> | undefined;
 
@@ -106,12 +112,14 @@ export default async function LocaleLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <StoreProvider preloadedState={preloadedState}>
-          <ThemeProvider defaultTheme="system" storageKey="famly-theme">
-            {children}
-            <Toaster />
-          </ThemeProvider>
-        </StoreProvider>
+        <DeploymentProvider status={deploymentStatus}>
+          <StoreProvider preloadedState={preloadedState}>
+            <ThemeProvider defaultTheme="system" storageKey="famly-theme">
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </StoreProvider>
+        </DeploymentProvider>
       </body>
     </html>
   );

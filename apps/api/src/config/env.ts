@@ -37,6 +37,12 @@ const envSchema = z.object({
     .default("false")
     .transform((val) => val === "true")
     .describe("Whether to use SSL for MinIO connection"),
+  DEPLOYMENT_MODE: z
+    .enum(["saas", "standalone"])
+    .default("saas")
+    .describe(
+      "Deployment mode: saas (multi-tenant) or standalone (single-family)",
+    ),
 });
 
 type Env = z.infer<typeof envSchema>;
@@ -60,6 +66,7 @@ export function getEnv(): Env {
     MINIO_SECRET_KEY: process.env.MINIO_SECRET_KEY,
     MINIO_BUCKET: process.env.MINIO_BUCKET,
     MINIO_USE_SSL: process.env.MINIO_USE_SSL,
+    DEPLOYMENT_MODE: process.env.DEPLOYMENT_MODE,
   };
 
   try {

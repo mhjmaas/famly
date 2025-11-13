@@ -3,10 +3,12 @@ import {
   MongoDBContainer,
   type StartedMongoDBContainer,
 } from "@testcontainers/mongodb";
+import { GenericContainer, type StartedTestContainer } from "testcontainers";
 
 declare global {
   var __MONGO_URI__: string;
   var __MONGO_CONTAINER__: StartedMongoDBContainer;
+  var __MINIO_CONTAINER__: StartedTestContainer;
   var __SERVER_PROCESS__: ChildProcess;
   var __TEST_baseUrl__: string;
 }
@@ -17,6 +19,13 @@ export default async function globalSetup() {
     "test_better_auth_secret_min_32_chars_long_x";
   process.env.BETTER_AUTH_URL = "http://localhost:3001";
   process.env.NODE_ENV = "test";
+  process.env.DEPLOYMENT_MODE = "saas";
+  // MinIO env vars will be set after container starts
+  process.env.MINIO_ENDPOINT = "localhost:9000"; // Temporary, will be updated
+  process.env.MINIO_ACCESS_KEY = "famly-test-access";
+  process.env.MINIO_SECRET_KEY = "famly-test-secret-min-32-chars";
+  process.env.MINIO_BUCKET = "famly-rewards-test";
+  process.env.MINIO_USE_SSL = "false";
 
   console.log("Starting shared MongoDB container for e2e tests...");
 
@@ -36,6 +45,26 @@ export default async function globalSetup() {
 
   console.log(`Shared MongoDB container started at ${mongoUri}`);
 
+  // Start MinIO container (shared across all test files)
+  console.log("Starting shared MinIO container for e2e tests...");
+  const minioContainer = await new GenericContainer("minio/minio:latest")
+    .withExposedPorts(9000)
+    .withEnvironment({
+      MINIO_ROOT_USER: "famly-test-access",
+      MINIO_ROOT_PASSWORD: "famly-test-secret-min-32-chars",
+    })
+    .withCommand(["server", "/data"])
+    .start();
+
+  const minioHost = minioContainer.getHost();
+  const minioPort = minioContainer.getMappedPort(9000);
+  const minioEndpoint = `${minioHost}:${minioPort}`;
+
+  // Store globally for teardown
+  global.__MINIO_CONTAINER__ = minioContainer;
+
+  console.log(`Shared MinIO container started at ${minioEndpoint}`);
+
   // Start API server (shared across all test files)
   console.log("Starting shared API server for e2e tests...");
   const serverPort = 3001;
@@ -48,6 +77,12 @@ export default async function globalSetup() {
       PORT: serverPort.toString(),
       BETTER_AUTH_SECRET: "test_better_auth_secret_min_32_chars_x",
       BETTER_AUTH_URL: `http://localhost:${serverPort}`,
+      DEPLOYMENT_MODE: "saas",
+      MINIO_ENDPOINT: minioEndpoint,
+      MINIO_ACCESS_KEY: "famly-test-access",
+      MINIO_SECRET_KEY: "famly-test-secret-min-32-chars",
+      MINIO_BUCKET: "famly-rewards-test",
+      MINIO_USE_SSL: "false",
     },
     stdio: ["ignore", "pipe", "pipe"],
   });

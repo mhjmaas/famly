@@ -6,6 +6,7 @@ import { createSocketServer } from "@modules/chat/realtime/socket-server";
 import { ChatRepository } from "@modules/chat/repositories/chat.repository";
 import { MembershipRepository } from "@modules/chat/repositories/membership.repository";
 import { MessageRepository } from "@modules/chat/repositories/message.repository";
+import { seedDeploymentConfig } from "@modules/deployment-config";
 import { DiaryRepository } from "@modules/diary";
 import { FamilyRepository } from "@modules/family/repositories/family.repository";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
@@ -35,6 +36,11 @@ async function start() {
   logger.info("Connecting to MongoDB...");
   await connectMongo();
   logger.info("MongoDB connected successfully");
+
+  // Seed deployment configuration
+  logger.info("Seeding deployment configuration...");
+  await seedDeploymentConfig();
+  logger.info("Deployment configuration seeded successfully");
 
   // Initialize MinIO bucket
   logger.info("Initializing MinIO bucket...");

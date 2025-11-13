@@ -54,6 +54,7 @@ services:
       PORT: 3001
       BETTER_AUTH_SECRET: test_better_auth_secret_min_32_chars_required_here_for_testing
       BETTER_AUTH_URL: http://localhost:3001
+      DEPLOYMENT_MODE: saas
       MINIO_ENDPOINT: minio-test:9000
       MINIO_ACCESS_KEY: famly-test-access
       MINIO_SECRET_KEY: famly-test-secret-min-32-chars

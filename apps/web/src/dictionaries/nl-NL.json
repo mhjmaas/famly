@@ -259,7 +259,7 @@
       },
       "register": {
         "title": "Maak uw account aan",
-        "description": "Voer uw gegevens in om met Famly Cloud te starten",
+        "description": "Voer uw gegevens in om met Famly te starten",
         "fields": {
           "name": {
             "label": "Naam",

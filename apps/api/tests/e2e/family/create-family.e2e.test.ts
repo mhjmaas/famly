@@ -1,3 +1,5 @@
+import { DeploymentMode } from "@modules/deployment-config";
+import { DeploymentConfigRepository } from "@modules/deployment-config/repositories/deployment-config.repository";
 import request from "supertest";
 import { registerTestUser } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
@@ -178,6 +180,93 @@ describe("E2E: POST /v1/families", () => {
         });
 
       expect(response.status).toBe(401);
+    });
+  });
+
+  describe("Onboarding Completion", () => {
+    let deploymentConfigRepo: DeploymentConfigRepository;
+
+    beforeAll(async () => {
+      // Ensure MongoDB is connected for deployment config tests
+      const { connectMongo } = await import("@infra/mongo/client");
+      await connectMongo();
+    });
+
+    beforeEach(async () => {
+      deploymentConfigRepo = new DeploymentConfigRepository();
+      // Clean up deployment config before each test
+      const collection = deploymentConfigRepo["collection"];
+      await collection.deleteMany({});
+    });
+
+    it("should mark onboarding complete after first family creation in standalone mode", async () => {
+      // Setup: Create standalone deployment config
+      await deploymentConfigRepo.create(DeploymentMode.Standalone);
+
+      // Verify onboarding is not complete initially
+      const configBefore = await deploymentConfigRepo.get();
+      expect(configBefore?.onboardingCompleted).toBe(false);
+
+      // Create family
+      const response = await request(baseUrl)
+        .post("/v1/families")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({
+          name: "First Family",
+        });
+
+      expect(response.status).toBe(201);
+
+      // Verify onboarding is now complete
+      const configAfter = await deploymentConfigRepo.get();
+      expect(configAfter?.onboardingCompleted).toBe(true);
+    });
+
+    it("should not affect onboarding in SaaS mode", async () => {
+      // Setup: Create SaaS deployment config
+      await deploymentConfigRepo.create(DeploymentMode.SaaS);
+
+      // Verify onboarding is not complete initially
+      const configBefore = await deploymentConfigRepo.get();
+      expect(configBefore?.onboardingCompleted).toBe(false);
+
+      // Create family
+      const response = await request(baseUrl)
+        .post("/v1/families")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({
+          name: "SaaS Family",
+        });
+
+      expect(response.status).toBe(201);
+
+      // Verify onboarding is still not complete (SaaS mode doesn't use onboarding)
+      const configAfter = await deploymentConfigRepo.get();
+      expect(configAfter?.onboardingCompleted).toBe(false);
+    });
+
+    it("should not change onboarding status if already complete", async () => {
+      // Setup: Create standalone deployment config and mark complete
+      await deploymentConfigRepo.create(DeploymentMode.Standalone);
+      await deploymentConfigRepo.markOnboardingCompleted();
+
+      // Verify onboarding is complete
+      const configBefore = await deploymentConfigRepo.get();
+      expect(configBefore?.onboardingCompleted).toBe(true);
+
+      // Create another family
+      const response = await request(baseUrl)
+        .post("/v1/families")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({
+          name: "Second Family",
+        });
+
+      expect(response.status).toBe(201);
+
+      // Verify onboarding is still complete (no change)
+      const configAfter = await deploymentConfigRepo.get();
+      expect(configAfter?.onboardingCompleted).toBe(true);
     });
   });
 });
