@@ -44,6 +44,8 @@ my.famly.eu {
 		reverse_proxy api:3001 {
 			header_up Host {host}
 			header_up X-Real-IP {remote}
+			# Preserve cookies for authentication
+			header_up Cookie {http.request.header.Cookie}
 		}
 	}
 

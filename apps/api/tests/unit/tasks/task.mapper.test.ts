@@ -31,7 +31,7 @@ describe("Task Mapper", () => {
       expect(dto.dueDate).toBe("2025-01-15T10:00:00.000Z");
       expect(dto.assignment).toEqual({
         type: "member",
-        memberId: new ObjectId("507f1f77bcf86cd799439013"),
+        memberId: "507f1f77bcf86cd799439013", // Now a string
       });
       expect(dto.scheduleId).toBe("507f1f77bcf86cd799439014");
       expect(dto.completedAt).toBe("2025-01-15T11:00:00.000Z");

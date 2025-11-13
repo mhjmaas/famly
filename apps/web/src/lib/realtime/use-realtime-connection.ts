@@ -9,7 +9,7 @@ import { ConnectionState, type ConnectionStatus } from "./types";
  */
 export interface RealtimeConnectionConfig {
   url: string;
-  token: string;
+  token?: string;
   autoConnect?: boolean;
   reconnectionAttempts?: number;
   reconnectionDelay?: number;
@@ -56,15 +56,14 @@ export function useRealtimeConnection(
       return;
     }
 
-    if (!url || !token) {
+    if (!url) {
       return;
     }
 
     // Create socket instance
     const newSocket = io(url, {
-      auth: {
-        token,
-      },
+      auth: token ? { token } : undefined,
+      withCredentials: true,
       transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionAttempts,

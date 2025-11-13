@@ -70,6 +70,14 @@ export interface UpdateTaskInput {
 }
 
 /**
+ * Task assignment DTO - same as TaskAssignment but with string IDs
+ */
+export type TaskAssignmentDTO =
+  | { type: "member"; memberId: string }
+  | { type: "role"; role: "parent" | "child" }
+  | { type: "unassigned" };
+
+/**
  * Output DTO for task API responses
  */
 export interface TaskDTO {
@@ -78,7 +86,7 @@ export interface TaskDTO {
   name: string;
   description?: string;
   dueDate?: string;
-  assignment: TaskAssignment;
+  assignment: TaskAssignmentDTO;
   scheduleId?: string;
   completedAt?: string;
   completedBy?: string;

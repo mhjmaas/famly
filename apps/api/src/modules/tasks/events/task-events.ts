@@ -3,27 +3,29 @@ import { logger } from "@lib/logger";
 import type { FamilyMembership } from "@modules/family/domain/family";
 import { emitToUserRooms } from "@modules/realtime";
 import type { ObjectId } from "mongodb";
-import type { Task } from "../domain/task";
+import type { Task, TaskDTO } from "../domain/task";
+import { toTaskDTO } from "../lib/task.mapper";
 
 /**
  * Event payload types for task events
+ * Uses TaskDTO to ensure proper serialization (no ObjectId or Date objects)
  */
 export interface TaskEventPayloads {
   "task.created": {
     taskId: string;
     familyId: string;
     assignedTo: string[]; // User IDs to notify
-    task: Task;
+    task: TaskDTO;
   };
   "task.assigned": {
     taskId: string;
     assignedTo: string[]; // User IDs to notify
-    task: Task;
+    task: TaskDTO;
   };
   "task.completed": {
     taskId: string;
     completedBy: string;
-    task: Task;
+    task: TaskDTO;
   };
   "task.deleted": {
     taskId: string;
@@ -102,7 +104,7 @@ export async function emitTaskCreated(
       taskId: task._id.toString(),
       familyId: task.familyId.toString(),
       assignedTo: targetUserIds,
-      task,
+      task: toTaskDTO(task), // Convert to DTO for proper serialization
     };
 
     emitToUserRooms("task.created", targetUserIds, payload);
@@ -146,7 +148,7 @@ export async function emitTaskAssigned(
     const payload: TaskEventPayloads["task.assigned"] = {
       taskId: task._id.toString(),
       assignedTo: targetUserIds,
-      task,
+      task: toTaskDTO(task), // Convert to DTO for proper serialization
     };
 
     emitToUserRooms("task.assigned", targetUserIds, payload);
@@ -184,7 +186,7 @@ export function emitTaskCompleted(
     const payload: TaskEventPayloads["task.completed"] = {
       taskId: task._id.toString(),
       completedBy: completedBy.toString(),
-      task,
+      task: toTaskDTO(task), // Convert to DTO for proper serialization
     };
 
     emitToUserRooms("task.completed", targetUserIds, payload);
