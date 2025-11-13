@@ -230,20 +230,26 @@ export function TasksView({
   return (
     <div className="space-y-6" data-testid="tasks-page">
       <div
-        className="hidden lg:flex items-center justify-between"
+        className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
         data-testid="tasks-header"
       >
         <div>
-          <h1 className="text-3xl font-bold" data-testid="tasks-title">
+          <h1
+            className="hidden sm:block text-3xl font-bold"
+            data-testid="tasks-title"
+          >
             {t.title}
           </h1>
-          <p className="text-muted-foreground" data-testid="tasks-description">
+          <p
+            className="text-muted-foreground text-center sm:text-left"
+            data-testid="tasks-description"
+          >
             {t.description}
           </p>
         </div>
         <Button
           onClick={() => setIsCreateOpen(true)}
-          className="gap-2"
+          className="hidden sm:flex gap-2"
           data-testid="tasks-create-button"
         >
           <Plus className="h-4 w-4" />
@@ -308,6 +314,15 @@ export function TasksView({
           )}
         </TabsContent>
       </Tabs>
+
+      <Button
+        onClick={() => setIsCreateOpen(true)}
+        className="w-full sm:hidden gap-2"
+        data-testid="tasks-create-button-mobile"
+      >
+        <Plus className="h-4 w-4" />
+        {t.newTask}
+      </Button>
 
       <CreateTaskDialog
         isOpen={isCreateOpen || !!editingTask}

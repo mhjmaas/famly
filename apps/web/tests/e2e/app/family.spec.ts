@@ -229,8 +229,11 @@ test.describe("Family Page", () => {
       await waitForPageLoad(page);
       await page.waitForLoadState("networkidle");
       await page.waitForTimeout(1000);
-      
-      await expect(familyPage.pageTitle).toBeVisible({ timeout: 10000 });
+
+      await expect(familyPage.pageTitle).toBeHidden();
+      await expect(familyPage.pageDescription).toBeVisible();
+      await expect(familyPage.addMemberButton).toBeHidden();
+      await expect(familyPage.addMemberButtonMobile).toBeVisible();
     });
 
     test("should display correctly on tablet", async ({ page }) => {
@@ -242,6 +245,9 @@ test.describe("Family Page", () => {
       await page.waitForTimeout(1000);
       
       await expect(familyPage.pageTitle).toBeVisible({ timeout: 10000 });
+      await expect(familyPage.pageDescription).toBeVisible();
+      await expect(familyPage.addMemberButton).toBeVisible();
+      await expect(familyPage.addMemberButtonMobile).toBeHidden();
     });
 
     test("should display correctly on desktop", async ({ page }) => {
@@ -253,12 +259,14 @@ test.describe("Family Page", () => {
       await page.waitForTimeout(1000);
       
       await expect(familyPage.pageTitle).toBeVisible({ timeout: 10000 });
+      await expect(familyPage.pageDescription).toBeVisible();
       
       // Check if add button is visible (should be for parent users)
       const buttonVisible = await familyPage.addMemberButton.isVisible({ timeout: 5000 }).catch(() => false);
       if (buttonVisible) {
         await expect(familyPage.addMemberButton).toBeVisible();
       }
+      await expect(familyPage.addMemberButtonMobile).toBeHidden();
     });
   });
 
@@ -786,10 +794,9 @@ test.describe("Family Page", () => {
         const grid = familyPage.membersGrid;
         await expect(grid).toBeVisible();
 
-        // Mobile should show mobile + button
-        const mobileButton = page.getByTestId("mobile-add-button");
-        // Note: Mobile button may not always be present depending on user role
-        await mobileButton.isVisible().catch(() => false);
+        // Mobile should show the dedicated CTA and hide the desktop one
+        await expect(familyPage.addMemberButton).toBeHidden();
+        await expect(familyPage.addMemberButtonMobile).toBeVisible();
       }
     });
 

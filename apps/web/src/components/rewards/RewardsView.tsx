@@ -186,15 +186,17 @@ export function RewardsView({
 
   return (
     <div className="space-y-6" data-testid="rewards-view">
-      <div className="hidden lg:flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">{t.title}</h1>
-          <p className="text-muted-foreground">{t.description}</p>
+          <h1 className="hidden sm:block text-3xl font-bold">{t.title}</h1>
+          <p className="text-muted-foreground text-center sm:text-left">
+            {t.description}
+          </p>
         </div>
         {userRole === "parent" && (
           <Button
             onClick={handleCreateClick}
-            className="gap-2"
+            className="hidden sm:flex gap-2"
             data-testid="create-reward-button"
           >
             <Plus className="h-4 w-4" />
@@ -225,6 +227,17 @@ export function RewardsView({
           onCancelClaim={handleCancelClaim}
           dict={dict}
         />
+      )}
+
+      {userRole === "parent" && (
+        <Button
+          onClick={handleCreateClick}
+          className="w-full sm:hidden gap-2"
+          data-testid="create-reward-button-mobile"
+        >
+          <Plus className="h-4 w-4" />
+          {t.actions.createButton}
+        </Button>
       )}
 
       <RewardDialog

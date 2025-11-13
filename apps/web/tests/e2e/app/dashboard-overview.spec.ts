@@ -463,10 +463,15 @@ test.describe("Dashboard Overview", () => {
       await page.reload();
       await waitForPageLoad(page);
 
-      // All sections should still be visible
-      await expect(dashboardPage.karmaCard).toBeVisible();
-      await expect(dashboardPage.pendingTasksCard).toBeVisible();
-      await expect(dashboardPage.potentialKarmaCard).toBeVisible();
+      await expect(dashboardPage.mobileHeader).toBeVisible();
+      await expect(dashboardPage.mobilePageTitle).toContainText(/dashboard/i);
+
+      // Summary cards should be hidden on mobile viewports
+      await expect(dashboardPage.karmaCard).toBeHidden();
+      await expect(dashboardPage.pendingTasksCard).toBeHidden();
+      await expect(dashboardPage.potentialKarmaCard).toBeHidden();
+
+      // Core sections remain visible
       await expect(dashboardPage.pendingTasksSection).toBeVisible();
       await expect(dashboardPage.rewardProgressSection).toBeVisible();
     });
@@ -476,10 +481,12 @@ test.describe("Dashboard Overview", () => {
       await page.reload();
       await waitForPageLoad(page);
 
-      // All sections should still be visible
-      await expect(dashboardPage.karmaCard).toBeVisible();
-      await expect(dashboardPage.pendingTasksCard).toBeVisible();
-      await expect(dashboardPage.potentialKarmaCard).toBeVisible();
+      // Summary cards remain hidden on tablet
+      await expect(dashboardPage.karmaCard).toBeHidden();
+      await expect(dashboardPage.pendingTasksCard).toBeHidden();
+      await expect(dashboardPage.potentialKarmaCard).toBeHidden();
+
+      // Section content still accessible
       await expect(dashboardPage.pendingTasksSection).toBeVisible();
       await expect(dashboardPage.rewardProgressSection).toBeVisible();
     });

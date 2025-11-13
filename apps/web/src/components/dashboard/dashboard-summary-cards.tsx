@@ -20,7 +20,7 @@ export function DashboardSummaryCards({
   labels,
 }: DashboardSummaryCardsProps) {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="hidden gap-4 lg:grid lg:grid-cols-3">
       <KarmaCard karma={availableKarma} label={labels.availableKarma} />
       <PendingTasksCard count={pendingTasksCount} label={labels.pendingTasks} />
       <PotentialKarmaCard

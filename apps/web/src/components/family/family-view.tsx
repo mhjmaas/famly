@@ -192,12 +192,15 @@ export function FamilyView({ mobileActionTrigger, dict }: FamilyViewProps) {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1
-            className="text-3xl font-bold text-foreground"
+            className="hidden sm:block text-3xl font-bold text-foreground"
             data-testid="family-title"
           >
             {dict.pages.family.title}
           </h1>
-          <p className="text-muted-foreground" data-testid="family-description">
+          <p
+            className="text-muted-foreground text-center sm:text-left"
+            data-testid="family-description"
+          >
             {dict.pages.family.description}
           </p>
         </div>
@@ -242,6 +245,17 @@ export function FamilyView({ mobileActionTrigger, dict }: FamilyViewProps) {
             />
           ))}
         </div>
+      )}
+
+      {isParent && (
+        <Button
+          onClick={() => setIsAddMemberDialogOpen(true)}
+          className="w-full sm:hidden"
+          data-testid="add-member-button-mobile"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          {dict.pages.family.addMember}
+        </Button>
       )}
 
       {currentFamily && (
