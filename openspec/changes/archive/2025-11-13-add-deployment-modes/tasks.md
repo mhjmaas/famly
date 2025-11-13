@@ -33,10 +33,10 @@
 ## 6. Configuration & Documentation
 - [x] 6.1 Add `DEPLOYMENT_MODE=saas` to `.env.example` with documentation
 - [x] 6.2 Update `docker-compose.yml` and test environment to include `DEPLOYMENT_MODE` environment variable
-- [ ] 6.3 Update README or docs with deployment mode explanation
+- [x] 6.3 Update README or docs with deployment mode explanation
 
 ## 7. Validation
 - [x] 7.1 Run backend E2E tests: All 10 tests passing (status, registration blocking, onboarding completion)
 - [x] 7.2 Run lint: Both API and Web linters passing (formatting auto-fixed)
-- [ ] 7.3 Manual testing: Start in standalone mode, complete onboarding, verify registration blocked
-- [ ] 7.4 Manual testing: Start in SaaS mode, verify landing page and open registration work
+- [x] 7.3 Manual testing: Start in standalone mode, complete onboarding, verify registration blocked
+- [x] 7.4 Manual testing: Start in SaaS mode, verify landing page and open registration work

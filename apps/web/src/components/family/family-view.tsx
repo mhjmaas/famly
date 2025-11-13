@@ -166,7 +166,9 @@ export function FamilyView({ mobileActionTrigger, dict }: FamilyViewProps) {
     setIsGiveKarmaDialogOpen(true);
   };
 
-  if (isLoading) {
+  // Only show loading state on initial load (when members is empty)
+  // Subsequent refetches (e.g., from realtime events) update silently in the background
+  if (isLoading && members.length === 0) {
     return (
       <div className="flex items-center justify-center py-16">
         <p className="text-muted-foreground">Loading...</p>

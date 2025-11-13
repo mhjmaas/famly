@@ -24,6 +24,11 @@ interface RewardsState {
   error: string | null;
   uploadError: string | null;
   lastFetch: number | null;
+  pendingDeletedReward?: Reward;
+  previousFavourite?: {
+    rewardId: string;
+    value: boolean | undefined;
+  };
 }
 
 const initialState: RewardsState = {
@@ -32,6 +37,8 @@ const initialState: RewardsState = {
   error: null,
   uploadError: null,
   lastFetch: null,
+  pendingDeletedReward: undefined,
+  previousFavourite: undefined,
 };
 
 // Async thunks
@@ -200,7 +207,7 @@ const rewardsSlice = createSlice({
           (r) => r._id === action.meta.arg.rewardId,
         );
         if (rewardToDelete) {
-          (state as any)._deletedReward = rewardToDelete;
+          state.pendingDeletedReward = rewardToDelete;
         }
         // Optimistically remove
         state.rewards = state.rewards.filter(
@@ -209,14 +216,13 @@ const rewardsSlice = createSlice({
       })
       .addCase(deleteReward.fulfilled, (state) => {
         // Keep it deleted, clean up temp storage
-        delete (state as any)._deletedReward;
+        state.pendingDeletedReward = undefined;
       })
       .addCase(deleteReward.rejected, (state, action) => {
         // Restore the deleted reward
-        const deletedReward = (state as any)._deletedReward;
-        if (deletedReward) {
-          state.rewards.push(deletedReward);
-          delete (state as any)._deletedReward;
+        if (state.pendingDeletedReward) {
+          state.rewards.push(state.pendingDeletedReward);
+          state.pendingDeletedReward = undefined;
         }
         state.error = action.error.message || "Failed to delete reward";
       })
@@ -228,22 +234,28 @@ const rewardsSlice = createSlice({
         );
         if (reward) {
           // Store original value for rollback
-          (state as any)._originalFavourite = reward.isFavourite;
+          state.previousFavourite = {
+            rewardId: reward._id,
+            value: reward.isFavourite,
+          };
           reward.isFavourite = action.meta.arg.isFavourite;
         }
       })
       .addCase(toggleFavourite.fulfilled, (state) => {
         // Keep the toggle, clean up temp storage
-        delete (state as any)._originalFavourite;
+        state.previousFavourite = undefined;
       })
       .addCase(toggleFavourite.rejected, (state, action) => {
         // Revert the toggle
-        const reward = state.rewards.find(
-          (r) => r._id === action.meta.arg.rewardId,
-        );
-        if (reward && (state as any)._originalFavourite !== undefined) {
-          reward.isFavourite = (state as any)._originalFavourite;
-          delete (state as any)._originalFavourite;
+        const previousFavourite = state.previousFavourite;
+        if (previousFavourite) {
+          const reward = state.rewards.find(
+            (r) => r._id === previousFavourite.rewardId,
+          );
+          if (reward) {
+            reward.isFavourite = previousFavourite.value;
+          }
+          state.previousFavourite = undefined;
         }
         state.error = action.error.message || "Failed to toggle favourite";
       })

@@ -1,4 +1,5 @@
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { Dictionary } from "@/i18n/types";
 
 type FilterType = "my-tasks" | "all" | "active" | "completed";
 
@@ -10,10 +11,8 @@ interface TaskCounts {
 }
 
 interface TaskFiltersProps {
-  filter: FilterType;
-  onFilterChange: (filter: FilterType) => void;
   taskCounts: TaskCounts;
-  dict: any;
+  dict: Dictionary;
 }
 
 function TabBadge({ count }: { count: number }) {
@@ -25,12 +24,7 @@ function TabBadge({ count }: { count: number }) {
   );
 }
 
-export function TaskFilters({
-  filter,
-  onFilterChange,
-  taskCounts,
-  dict,
-}: TaskFiltersProps) {
+export function TaskFilters({ taskCounts, dict }: TaskFiltersProps) {
   const t = dict.dashboard.pages.tasks;
 
   return (

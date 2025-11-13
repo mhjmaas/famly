@@ -7,6 +7,12 @@ import type { CreateTaskInput } from "@modules/tasks/domain/task";
 import type { TaskService } from "@modules/tasks/services/task.service";
 import type { ObjectId } from "mongodb";
 import type { ClaimDTO } from "../domain/reward";
+import {
+  emitApprovalTaskCreated,
+  emitClaimCancelled,
+  emitClaimCompleted,
+  emitClaimCreated,
+} from "../events/reward-events";
 import { toClaimDTO } from "../lib/reward.mapper";
 import type { ClaimRepository } from "../repositories/claim.repository";
 import type { MetadataRepository } from "../repositories/metadata.repository";
@@ -154,6 +160,17 @@ export class ClaimService {
           }
         }
 
+        // Emit real-time events for claim creation and approval task
+        emitClaimCreated(updatedClaim);
+        if (createdTask) {
+          // Emit approval task event (parents will be notified via task.created from task service)
+          emitApprovalTaskCreated(
+            createdTask._id.toString(),
+            updatedClaim,
+            [], // Parent user IDs would be determined by task service
+          );
+        }
+
         return toClaimDTO(updatedClaim);
       } catch (error) {
         // If task creation fails, still keep the claim but log the error
@@ -162,6 +179,9 @@ export class ClaimService {
           rewardId: rewardId.toString(),
           error,
         });
+
+        // Emit claim created event even if task creation failed
+        emitClaimCreated(claim);
 
         // Return claim anyway since it's created
         return toClaimDTO(claim);
@@ -253,6 +273,9 @@ export class ClaimService {
       logger.info("Claim cancelled successfully", {
         claimId: claimId.toString(),
       });
+
+      // Emit real-time event for claim cancellation
+      emitClaimCancelled(updatedClaim, cancelledBy.toString());
 
       return toClaimDTO(updatedClaim);
     } catch (error) {
@@ -383,6 +406,9 @@ export class ClaimService {
         claimId: claimId.toString(),
         rewardId: claim.rewardId.toString(),
       });
+
+      // Emit real-time event for claim completion
+      emitClaimCompleted(updatedClaim, completedBy.toString());
 
       return toClaimDTO(updatedClaim);
     } catch (error) {

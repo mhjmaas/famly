@@ -53,8 +53,9 @@ export class TokenManager {
     const cacheKey = `${prefix}-${uniqueId}`;
 
     // Return cached token if exists
-    if (this.tokenCache.has(cacheKey)) {
-      return this.tokenCache.get(cacheKey)!;
+    const cachedToken = this.tokenCache.get(cacheKey);
+    if (cachedToken) {
+      return cachedToken;
     }
 
     const password = options?.password || AUTH_CONSTANTS.DEFAULT_PASSWORD;

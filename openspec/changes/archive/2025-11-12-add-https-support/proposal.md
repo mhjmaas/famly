@@ -32,7 +32,7 @@ Currently, the entire stack (API, web, WebSockets) runs over HTTP, exposing all 
   - Socket.IO client connection URL protocol-aware
 
 - **Development Experience**:
-  - `start-dev.sh` launches Caddy container alongside existing services
+  - `dev.sh` launches Caddy container alongside existing services
   - Developers access app via `https://localhost` (Caddy → web:3000)
   - API accessible via `https://localhost/api` (Caddy → api:3001)
   - `pnpm dev` continues to work with HTTP (no Caddy)
@@ -58,7 +58,7 @@ Currently, the entire stack (API, web, WebSockets) runs over HTTP, exposing all 
 - `apps/api/src/modules/chat/realtime/socket-server.ts`: Update CORS origins
 - `apps/api/src/config/env.ts`: Add protocol-aware URL validation
 - `apps/web/src/lib/api-client.ts`: Protocol-aware API base URL
-- `start-dev.sh`: Add Caddy startup, update documentation
+- `dev.sh`: Add Caddy startup, update documentation
 - `start.sh`: Add Caddy startup, update documentation
 - `.env.example`: Add PROTOCOL variable
 - `README.md`: Update getting started instructions

@@ -1,11 +1,12 @@
 import { Gift, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import type { Dictionary } from "@/i18n/types";
 
 interface EmptyStateProps {
   userRole: "parent" | "child";
   onCreateClick: () => void;
-  dict: any;
+  dict: Dictionary;
 }
 
 export function EmptyState({ userRole, onCreateClick, dict }: EmptyStateProps) {

@@ -15,9 +15,16 @@ interface ActivityTimelineProps {
     subtitle: string;
     noEvents: string;
   };
+  locale: string;
+  timeZone?: string;
 }
 
-export function ActivityTimeline({ events, dict }: ActivityTimelineProps) {
+export function ActivityTimeline({
+  events,
+  dict,
+  locale,
+  timeZone = "UTC",
+}: ActivityTimelineProps) {
   const eventGroups = groupEventsByDate(events);
 
   if (events.length === 0) {
@@ -105,7 +112,10 @@ export function ActivityTimeline({ events, dict }: ActivityTimelineProps) {
                               </p>
                             )}
                             <p className="text-xs text-muted-foreground mt-1">
-                              {formatActivityTime(event.createdAt)}
+                              {formatActivityTime(event.createdAt, {
+                                locale,
+                                timeZone,
+                              })}
                             </p>
                           </div>
 

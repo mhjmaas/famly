@@ -195,8 +195,7 @@ describe("E2E: POST /v1/families", () => {
     beforeEach(async () => {
       deploymentConfigRepo = new DeploymentConfigRepository();
       // Clean up deployment config before each test
-      const collection = deploymentConfigRepo["collection"];
-      await collection.deleteMany({});
+      await deploymentConfigRepo.clearAll();
     });
 
     it("should mark onboarding complete after first family creation in standalone mode", async () => {

@@ -48,20 +48,22 @@ describe("task-utils", () => {
     });
 
     it("should return false for task with no assignment", () => {
-      const task: Task = {
+      const task = {
         _id: "task-1",
         familyId: "family-1",
         name: "Test Task",
-        assignment: null as any,
+        assignment: null,
         createdBy: "user-1",
         createdAt: "2024-01-01T00:00:00Z",
         updatedAt: "2024-01-01T00:00:00Z",
-      };
+      } as unknown as Task;
       expect(isTaskAssignedToUser(task, userId, userRole)).toBe(false);
     });
 
     it("should return false for task with invalid assignment type", () => {
-      const task = createTask({ type: "invalid" } as any);
+      const task = createTask({
+        type: "invalid",
+      } as unknown as Task["assignment"]);
       expect(isTaskAssignedToUser(task, userId, userRole)).toBe(false);
     });
   });

@@ -33,6 +33,9 @@ export class RewardsPage {
   readonly rewardClaimButtons: Locator;
   readonly rewardActionsButtons: Locator;
   readonly progressBars: Locator;
+  readonly deleteDialog: Locator;
+  readonly deleteDialogCancel: Locator;
+  readonly deleteDialogConfirm: Locator;
 
   // Reward dialog
   readonly rewardDialog: Locator;
@@ -76,6 +79,9 @@ export class RewardsPage {
     this.rewardClaimButtons = page.getByTestId("reward-claim-button");
     this.rewardActionsButtons = page.getByTestId("reward-actions-button");
     this.progressBars = this.rewardCards.locator('[role="progressbar"]');
+    this.deleteDialog = page.getByTestId("reward-delete-dialog");
+    this.deleteDialogCancel = page.getByTestId("reward-delete-cancel");
+    this.deleteDialogConfirm = page.getByTestId("reward-delete-confirm");
 
     // Dialog
     this.rewardDialog = page.getByTestId("reward-dialog");
@@ -187,6 +193,7 @@ export class RewardsPage {
    */
   async deleteReward(rewardIndex: number): Promise<void> {
     const actionsButton = this.rewardActionsButtons.nth(rewardIndex);
+    await actionsButton.waitFor({ state: "visible" });
     await actionsButton.click();
 
     const deleteButton = this.page.getByRole("menuitem", {
@@ -194,8 +201,9 @@ export class RewardsPage {
     });
     await deleteButton.click();
 
-    // Handle browser confirm dialog
-    this.page.once("dialog", (dialog) => dialog.accept());
+    await this.deleteDialog.waitFor({ state: "visible" });
+    await this.deleteDialogConfirm.click();
+    await this.deleteDialog.waitFor({ state: "hidden" });
   }
 
   /**

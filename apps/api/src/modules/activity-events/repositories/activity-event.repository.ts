@@ -1,6 +1,6 @@
 import { getDb } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
-import { type Collection, ObjectId } from "mongodb";
+import { type Collection, type Filter, ObjectId } from "mongodb";
 import type {
   ActivityEvent,
   RecordActivityEventInput,
@@ -61,8 +61,7 @@ export class ActivityEventRepository {
     startDate?: string, // Format: YYYY-MM-DD
     endDate?: string, // Format: YYYY-MM-DD
   ): Promise<ActivityEvent[]> {
-    // biome-ignore lint/suspicious/noExplicitAny: MongoDB query builder requires any
-    const query: any = { userId };
+    const query: Filter<ActivityEvent> = { userId };
 
     if (startDate || endDate) {
       query.createdAt = {};

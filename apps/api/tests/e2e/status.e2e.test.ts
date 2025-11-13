@@ -48,8 +48,7 @@ describe("Status Endpoint E2E Tests", () => {
       expect(response.body.onboardingCompleted).toBe(false);
 
       // Clean up
-      const collection = repository["collection"];
-      await collection.deleteMany({});
+      await repository.clearAll();
     });
 
     it("should reflect onboarding completion status", async () => {
@@ -65,8 +64,7 @@ describe("Status Endpoint E2E Tests", () => {
       expect(response.body.onboardingCompleted).toBe(true);
 
       // Clean up
-      const collection = repository["collection"];
-      await collection.deleteMany({});
+      await repository.clearAll();
     });
   });
 });

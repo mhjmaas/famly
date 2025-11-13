@@ -1,12 +1,13 @@
 import { Calendar, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import type { Dictionary } from "@/i18n/types";
 import type { FilterType } from "./TaskFilters";
 
 interface EmptyStateProps {
   filter: FilterType;
   onCreateTask: () => void;
-  dict: any;
+  dict: Dictionary;
 }
 
 export function EmptyState({ filter, onCreateTask, dict }: EmptyStateProps) {

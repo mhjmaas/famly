@@ -1,3 +1,4 @@
+import type { Dictionary } from "@/i18n/types";
 import type { Claim, Reward } from "@/types/api.types";
 import { RewardCard } from "./RewardCard";
 
@@ -12,7 +13,7 @@ interface RewardsGridProps {
   onDelete: (reward: Reward) => void;
   onToggleFavourite: (reward: Reward) => void;
   onCancelClaim: (claimId: string) => void;
-  dict: any;
+  dict: Dictionary;
 }
 
 export function RewardsGrid({

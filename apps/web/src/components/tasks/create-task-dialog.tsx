@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { TaskFormData } from "@/hooks/useTaskForm";
+import type { Dictionary } from "@/i18n/types";
 import type { Task } from "@/types/api.types";
 import { EditTaskForm } from "./EditTaskForm";
 import { RecurringTaskForm } from "./RecurringTaskForm";
@@ -41,7 +42,7 @@ interface CreateTaskDialogProps {
   handleCreateSchedule: () => Promise<void>;
   handleUpdateTask: (taskId: string) => Promise<void>;
   familyMembers: Array<{ id: string; name: string; role: "parent" | "child" }>;
-  dict: any;
+  dict: Dictionary;
 }
 
 export function CreateTaskDialog({

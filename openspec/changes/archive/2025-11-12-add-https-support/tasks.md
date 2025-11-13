@@ -30,7 +30,7 @@
 
 ## 2. Certificate Management
 
-- [x] 2.1 Update start-dev.sh to check for mkcert installation
+- [x] 2.1 Update dev.sh to check for mkcert installation
 
   - Detect OS (macOS, Linux, Windows)
   - Check if mkcert is in PATH
@@ -38,7 +38,7 @@
   - Provide commands: brew install mkcert (macOS), apt-get/yum (Linux)
   - Added interactive CA installation with clear explanation and permission warning
 
-- [x] 2.2 Add certificate generation to start-dev.sh
+- [x] 2.2 Add certificate generation to dev.sh
 
   - Check if docker/caddy/certs/localhost.pem exists
   - If missing, run: mkcert -cert-file docker/caddy/certs/localhost.pem -key-file docker/caddy/certs/localhost-key.pem localhost 127.0.0.1 ::1
@@ -100,14 +100,14 @@
 
 ## 6. Startup Script Enhancements
 
-- [x] 6.1 Update start-dev.sh with port 8443 check (changed from 443)
+- [x] 6.1 Update dev.sh with port 8443 check (changed from 443)
 
   - Add lsof -i :8443 check to detect conflicts
   - Display which process is using port 8443 if occupied
   - Suggest stopping conflicting service
   - Exit with error if port unavailable
 
-- [x] 6.2 Update start-dev.sh with Caddy startup
+- [x] 6.2 Update dev.sh with Caddy startup
 
   - Check PROTOCOL environment variable
   - If PROTOCOL=https, start Caddy container with --profile https
@@ -160,7 +160,7 @@
 
 - [x] 8.1 Test HTTPS development mode
 
-  - Start services with start-dev.sh
+  - Start services with dev.sh
   - Access https://localhost
   - Verify web app loads without certificate warnings
   - Test API calls to https://localhost/api
@@ -169,7 +169,7 @@
 - [x] 8.2 Test HTTP fallback mode
 
   - Set PROTOCOL=http in .env.dev
-  - Start services with start-dev.sh
+  - Start services with dev.sh
   - Verify Caddy does not start
   - Access http://localhost:3000 and http://localhost:3001
   - Test API calls and WebSocket connections
@@ -201,12 +201,12 @@
 - [x] 8.6 Test port conflict handling
 
   - Start another service on port 443
-  - Run start-dev.sh
+  - Run dev.sh
   - Verify script detects conflict and exits with clear message
 
 - [x] 8.7 Test certificate generation
   - Delete docker/caddy/certs/\*.pem files
-  - Run start-dev.sh
+  - Run dev.sh
   - Verify mkcert generates new certificates
   - Verify certificates are trusted by browser
 

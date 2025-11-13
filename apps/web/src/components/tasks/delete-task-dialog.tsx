@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import type { Dictionary } from "@/i18n/types";
 import type { Task } from "@/types/api.types";
 
 interface DeleteTaskDialogProps {
@@ -16,7 +17,7 @@ interface DeleteTaskDialogProps {
   task: Task | null;
   onDeleteSingle: () => void;
   onDeleteAll: () => void;
-  dict: any;
+  dict: Dictionary;
 }
 
 export function DeleteTaskDialog({

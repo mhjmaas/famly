@@ -1,5 +1,6 @@
 import { logger } from "@lib/logger";
 import type { TaskSchedule } from "../domain/task";
+import { emitTaskCreated } from "../events/task-events";
 import { shouldGenerateForDate } from "../lib/schedule-matcher";
 import type { ScheduleRepository } from "../repositories/schedule.repository";
 import type { TaskRepository } from "../repositories/task.repository";
@@ -175,6 +176,9 @@ export class TaskGeneratorService {
       familyId: schedule.familyId.toString(),
       dueDate: dueDate.toISOString(),
     });
+
+    // Emit real-time event for task creation
+    await emitTaskCreated(task);
 
     return true;
   }

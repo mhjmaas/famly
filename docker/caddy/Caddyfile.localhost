@@ -13,22 +13,42 @@ localhost {
 	# Use local mkcert certificates for development
 	tls /certs/localhost.pem /certs/localhost-key.pem
 
-	# WebSocket support for Socket.IO
-	# Caddy automatically handles upgrades, but we need to preserve headers
-	reverse_proxy web:3000 {
-		header_up Host {host}
-		header_up X-Real-IP {remote}
-		header_up X-Forwarded-For {remote}
-		header_up X-Forwarded-Proto {scheme}
+	# Socket.IO WebSocket connections - proxy to API service
+	# Socket.IO uses /socket.io/* paths for WebSocket connections
+	# Caddy automatically handles WebSocket upgrade requests
+	# IMPORTANT: Use 'handle' not 'handle_path' to preserve the /socket.io/ path
+	handle /socket.io/* {
+		reverse_proxy api:3001 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
+			# Preserve cookies for authentication
+			header_up Cookie {http.request.header.Cookie}
+		}
 	}
 
-	# API routes - strip /api prefix and proxy to API service
+	# Next.js API routes for images - proxy to web service (Next.js)
+	# These are handled by Next.js API routes, not the Express API
+	# IMPORTANT: This must come BEFORE the general /api/* handler
+	handle /api/images/* {
+		reverse_proxy web:3000 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
+		}
+	}
+
+	# API routes - strip /api prefix and proxy to Express API service
 	handle_path /api/* {
 		reverse_proxy api:3001 {
 			header_up Host {host}
 			header_up X-Real-IP {remote}
-			header_up X-Forwarded-For {remote}
-			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+
+	# Default: Proxy all other requests to web service
+	handle {
+		reverse_proxy web:3000 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
 		}
 	}
 }

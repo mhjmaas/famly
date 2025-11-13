@@ -659,6 +659,14 @@
             "update": "Update Reward"
           }
         },
+        "delete": {
+          "title": "Delete this reward?",
+          "description": "This will permanently remove \"{name}\". This action cannot be undone.",
+          "buttons": {
+            "cancel": "Cancel",
+            "confirm": "Delete Reward"
+          }
+        },
         "claimSheet": {
           "title": "Claim Reward",
           "description": "Are you sure you want to claim this reward? The karma points will be deducted and a parent will be notified to fulfill your reward.",
@@ -679,7 +687,9 @@
         "toast": {
           "success": "Successfully claimed {name}",
           "cancelled": "Claim cancelled successfully",
-          "cancelError": "Failed to cancel claim"
+          "cancelError": "Failed to cancel claim",
+          "deleteSuccess": "Reward deleted",
+          "deleteError": "Failed to delete reward"
         },
         "actions": {
           "createButton": "New Reward"

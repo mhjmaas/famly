@@ -4,6 +4,11 @@ import { logger } from "@lib/logger";
 import { getAuth } from "@modules/auth/better-auth";
 import { DeploymentConfigRepository } from "@modules/deployment-config/repositories/deployment-config.repository";
 import { DeploymentConfigService } from "@modules/deployment-config/services/deployment-config.service";
+import {
+  emitFamilyMemberAdded,
+  emitFamilyMemberRemoved,
+  emitFamilyMemberRoleUpdated,
+} from "@modules/family/events/family-events";
 import { ObjectId } from "mongodb";
 import {
   type AddFamilyMemberRequest,
@@ -273,7 +278,10 @@ export class FamilyService {
         addedBy: addedBy.toString(),
       });
 
-      // 5. Map to result DTO (without auth tokens)
+      // 5. Emit event to notify all family members
+      await emitFamilyMemberAdded(familyId, newUserId, input.name, input.role);
+
+      // 6. Map to result DTO (without auth tokens)
       return toAddFamilyMemberResult(membership, familyId, addedBy);
     } catch (error) {
       logger.error("Failed to add family member", {
@@ -341,6 +349,12 @@ export class FamilyService {
         }
       }
 
+      // Fetch user data before deletion to get the name for the event
+      const db = getDb();
+      const usersCollection = db.collection("user");
+      const user = await usersCollection.findOne({ _id: memberId });
+      const memberName = user?.name || "Unknown";
+
       const deleted = await this.membershipRepository.deleteMembership(
         familyId,
         memberId,
@@ -354,6 +368,9 @@ export class FamilyService {
         removedBy: removedBy.toString(),
         memberId: memberId.toString(),
       });
+
+      // Emit event to notify remaining family members
+      await emitFamilyMemberRemoved(familyId, memberId, memberName);
     } catch (error) {
       logger.error("Failed to remove family member", {
         familyId: familyId.toString(),
@@ -413,6 +430,9 @@ export class FamilyService {
         }
       }
 
+      // Remember old role for event
+      const oldRole = membership.role;
+
       // 3. Update the role
       const updated = await this.membershipRepository.updateMemberRole(
         familyId,
@@ -439,6 +459,21 @@ export class FamilyService {
         memberId: memberId.toString(),
         role,
       });
+
+      // Fetch user data to get the name for the event
+      const db = getDb();
+      const usersCollection = db.collection("user");
+      const user = await usersCollection.findOne({ _id: memberId });
+      const memberName = user?.name || "Unknown";
+
+      // Emit event to notify all family members of role change
+      await emitFamilyMemberRoleUpdated(
+        familyId,
+        memberId,
+        memberName,
+        oldRole,
+        role,
+      );
 
       // 5. Return response
       return {

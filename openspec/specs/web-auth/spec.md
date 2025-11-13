@@ -34,20 +34,30 @@ The web application MUST provide a sign-in page at `/signin` that allows users t
 - **THEN** the application redirects the user to `/app`
 
 ### Requirement: Registration flow
-The web application MUST provide a multi-step registration flow at `/get-started` that guides users through account creation and family setup.
+The web application MUST provide a multi-step registration flow at `/get-started` that guides users through account creation and family setup. In standalone mode, the deployment selection step MUST be skipped.
 
 #### Scenario: User accesses registration page
 - **GIVEN** an unauthenticated user
 - **WHEN** the user navigates to `/get-started`
-- **THEN** the page displays deployment options (cloud-hosted and self-hosted)
+- **THEN** the page displays deployment options (cloud-hosted and self-hosted) if mode is 'saas'
+- **OR** the page skips to account creation step if mode is 'standalone'
 - **AND** the page shows a progress indicator
 
-#### Scenario: User selects cloud deployment
+#### Scenario: User selects cloud deployment in SaaS mode
 - **GIVEN** a user on the deployment selection step
+- **AND** the deployment mode is 'saas'
 - **WHEN** the user selects "Cloud Hosted"
 - **THEN** the application advances to the account creation step
 - **AND** displays a form with fields for name, email, password, and password confirmation
 - **AND** updates the progress indicator to show step 1 of 2
+
+#### Scenario: Standalone mode skips deployment selection
+- **GIVEN** a user navigating to `/get-started`
+- **AND** the deployment mode is 'standalone'
+- **WHEN** the page loads
+- **THEN** the application displays the account creation step directly
+- **AND** does not show deployment selection options
+- **AND** updates the progress indicator appropriately
 
 #### Scenario: User creates account successfully
 - **GIVEN** a user on the account creation step
@@ -169,4 +179,26 @@ The web application MUST integrate with the existing backend authentication API 
 - **WHEN** the error is received
 - **THEN** the application displays a user-friendly error message
 - **AND** does not navigate away from the current form
+
+### Requirement: Onboarding flow in standalone mode
+The web application MUST display an onboarding flow in standalone mode when onboarding is not complete, and redirect to the app when onboarding is complete.
+
+#### Scenario: Standalone mode with incomplete onboarding shows registration
+- **GIVEN** the deployment mode is 'standalone'
+- **AND** onboarding is not complete
+- **WHEN** an unauthenticated user visits the root path `/`
+- **THEN** the application redirects to `/get-started`
+
+#### Scenario: Standalone mode with complete onboarding redirects to app
+- **GIVEN** the deployment mode is 'standalone'
+- **AND** onboarding is complete
+- **WHEN** an unauthenticated user visits the root path `/`
+- **THEN** the application redirects to `/signin`
+
+#### Scenario: Standalone mode with complete onboarding redirects authenticated users
+- **GIVEN** the deployment mode is 'standalone'
+- **AND** onboarding is complete
+- **AND** the user is authenticated
+- **WHEN** the user visits the root path `/`
+- **THEN** the application redirects to `/app`
 

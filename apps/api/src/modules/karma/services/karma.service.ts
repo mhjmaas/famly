@@ -11,6 +11,7 @@ import type {
   KarmaHistoryResponse,
   MemberKarma,
 } from "../domain/karma";
+import { emitKarmaAwarded, emitKarmaDeducted } from "../events/karma-events";
 import { toKarmaEventDTO } from "../lib/karma.mapper";
 import type { KarmaRepository } from "../repositories/karma.repository";
 
@@ -89,6 +90,9 @@ export class KarmaService {
           });
         }
       }
+
+      // Emit real-time event for karma award
+      emitKarmaAwarded(karmaEvent);
 
       return karmaEvent;
     } catch (error) {
@@ -391,6 +395,9 @@ export class KarmaService {
         amount: input.amount,
         claimId: input.claimId,
       });
+
+      // Emit real-time event for karma deduction
+      emitKarmaDeducted(karmaEvent);
 
       return karmaEvent;
     } catch (error) {

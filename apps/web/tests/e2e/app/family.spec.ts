@@ -365,24 +365,22 @@ test.describe("Family Page", () => {
         await option.waitFor({ state: "visible" });
         await option.click();
 
-        // Submit and wait for API response
+        // Submit and wait for both API responses (PATCH and refetch GET)
         const saveButton = page.getByRole("button", { name: /save changes/i });
         await Promise.all([
           page.waitForResponse(response =>
             response.url().includes("/members/") &&
             response.request().method() === "PATCH"
           ),
+          page.waitForResponse(response =>
+            response.url().includes("/families") &&
+            response.request().method() === "GET"
+          ),
           saveButton.click()
         ]);
 
         // Wait for dialog to close
         await familyPage.dialog.waitFor({ state: "hidden" });
-
-        // Wait for refetch to complete
-        await page.waitForResponse(response =>
-          response.url().includes("/families") &&
-          response.request().method() === "GET"
-        );
 
         // Verify role changed
         const updatedRole = await familyPage.getMemberRole(0);
@@ -680,23 +678,21 @@ test.describe("Family Page", () => {
         role: "Child",
       });
       
-      // Submit and wait for API response
+      // Submit and wait for both API responses (POST and refetch GET)
       await Promise.all([
         page.waitForResponse(response =>
           response.url().includes("/members") &&
           response.request().method() === "POST"
+        ),
+        page.waitForResponse(response =>
+          response.url().includes("/families") &&
+          response.request().method() === "GET"
         ),
         familyPage.submitAddMember()
       ]);
       
       // Wait for dialog to close
       await familyPage.dialog.waitFor({ state: "hidden" });
-      
-      // Wait for refetch
-      await page.waitForResponse(response =>
-        response.url().includes("/families") &&
-        response.request().method() === "GET"
-      );
 
       // Wait for the new member card to appear in the DOM
       await page.waitForFunction(

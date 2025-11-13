@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { Geist, Geist_Mono } from "next/font/google";
 import type { ReactNode } from "react";
+import { RealtimeProvider } from "@/components/realtime-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { getDictionary } from "@/dictionaries";
@@ -115,8 +116,10 @@ export default async function LocaleLayout({
         <DeploymentProvider status={deploymentStatus}>
           <StoreProvider preloadedState={preloadedState}>
             <ThemeProvider defaultTheme="system" storageKey="famly-theme">
-              {children}
-              <Toaster />
+              <RealtimeProvider>
+                {children}
+                <Toaster />
+              </RealtimeProvider>
             </ThemeProvider>
           </StoreProvider>
         </DeploymentProvider>

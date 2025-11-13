@@ -2,7 +2,7 @@
 
 This guide covers advanced HTTPS configuration for Famly, specifically for **Mode 3: Production with Custom Domain**.
 
-> **Note:** For basic local deployment (Modes 1 & 2), no configuration is needed! Just run `./start-dev.sh` or `./start.sh` and HTTPS works automatically with mkcert.
+> **Note:** For basic local deployment (Modes 1 & 2), no configuration is needed! Just run `./dev.sh` or `./start.sh` and HTTPS works automatically with mkcert.
 
 ## 📁 Caddyfile Structure
 
@@ -10,7 +10,7 @@ Famly uses separate Caddyfiles for different deployment modes:
 
 | File | Used By | Purpose |
 |------|---------|---------|
-| `Caddyfile.localhost` | `./start-dev.sh` & `./start.sh` (default) | Local HTTPS with mkcert certificates |
+| `Caddyfile.localhost` | `./dev.sh` & `./start.sh` (default) | Local HTTPS with mkcert certificates |
 | `Caddyfile.production` | `./start.sh` (when exists) | Custom domain with Let's Encrypt |
 | `Caddyfile.http01.example` | Template | HTTP-01 challenge reference |
 | `Caddyfile.production.example` | Template | DNS-01 challenge reference |

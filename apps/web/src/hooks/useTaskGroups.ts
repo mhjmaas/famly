@@ -14,39 +14,13 @@ interface UseTaskGroupsParams {
 }
 
 export function useTaskGroups({ tasks, filter }: UseTaskGroupsParams) {
-  const groupTasksByCompletionDate = (tasks: Task[]): TaskGroup[] => {
-    const groups: TaskGroup[] = [];
-
-    const completedTasks = tasks
-      .filter((t) => t.completedAt)
-      .sort(
-        (a, b) =>
-          new Date(b.completedAt!).getTime() -
-          new Date(a.completedAt!).getTime(),
-      );
-
-    const activeTasks = tasks.filter((t) => !t.completedAt);
-
-    if (activeTasks.length > 0) {
-      groups.push({ date: null, tasks: activeTasks });
+  const taskGroups = useMemo(() => {
+    const shouldShowDateSeparators = filter !== "active";
+    if (!shouldShowDateSeparators) {
+      return [{ date: null, tasks }];
     }
-
-    completedTasks.forEach((task) => {
-      if (!task.completedAt) return;
-      const taskDate = startOfDay(new Date(task.completedAt));
-      const existingGroup = groups.find(
-        (g) => g.date && isSameDay(g.date, taskDate),
-      );
-
-      if (existingGroup) {
-        existingGroup.tasks.push(task);
-      } else {
-        groups.push({ date: taskDate, tasks: [task] });
-      }
-    });
-
-    return groups;
-  };
+    return groupTasksByCompletionDate(tasks);
+  }, [filter, tasks]);
 
   const formatDateSeparator = (date: Date): string => {
     if (isToday(date)) return "Today";
@@ -54,20 +28,45 @@ export function useTaskGroups({ tasks, filter }: UseTaskGroupsParams) {
     return format(date, "MMMM d, yyyy");
   };
 
-  const shouldShowDateSeparators = filter !== "active";
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  const taskGroups = useMemo(() => {
-    return shouldShowDateSeparators
-      ? groupTasksByCompletionDate(tasks)
-      : [{ date: null, tasks }];
-  }, [tasks, shouldShowDateSeparators]);
-
   return {
     taskGroups,
     formatDateSeparator,
-    shouldShowDateSeparators,
+    shouldShowDateSeparators: filter !== "active",
   };
 }
 
 export type { TaskGroup };
+
+function groupTasksByCompletionDate(tasks: Task[]): TaskGroup[] {
+  const groups: TaskGroup[] = [];
+
+  const completedTasks = tasks
+    .filter(
+      (task): task is Task & { completedAt: string } => !!task.completedAt,
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime(),
+    );
+
+  const activeTasks = tasks.filter((t) => !t.completedAt);
+
+  if (activeTasks.length > 0) {
+    groups.push({ date: null, tasks: activeTasks });
+  }
+
+  completedTasks.forEach((task) => {
+    const taskDate = startOfDay(new Date(task.completedAt));
+    const existingGroup = groups.find(
+      (group) => group.date && isSameDay(group.date, taskDate),
+    );
+
+    if (existingGroup) {
+      existingGroup.tasks.push(task);
+    } else {
+      groups.push({ date: taskDate, tasks: [task] });
+    }
+  });
+
+  return groups;
+}

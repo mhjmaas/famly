@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import type { Dictionary } from "@/i18n/types";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   cancelClaim,
@@ -22,13 +23,14 @@ import {
 } from "@/store/slices/rewards.slice";
 import type { CreateRewardRequest, Reward } from "@/types/api.types";
 import { ClaimConfirmationSheet } from "./ClaimConfirmationSheet";
+import { DeleteRewardDialog } from "./DeleteRewardDialog";
 import { EmptyState } from "./EmptyState";
 import { KarmaBalanceCard } from "./KarmaBalanceCard";
 import { RewardDialog } from "./RewardDialog";
 import { RewardsGrid } from "./RewardsGrid";
 
 interface RewardsViewProps {
-  dict: any;
+  dict: Dictionary;
   familyId: string;
   userId: string;
   userRole: "parent" | "child";
@@ -52,6 +54,9 @@ export function RewardsView({
   const [editingReward, setEditingReward] = useState<Reward | undefined>();
   const [claimSheetOpen, setClaimSheetOpen] = useState(false);
   const [claimingReward, setClaimingReward] = useState<Reward | null>(null);
+  const [deleteConfirmReward, setDeleteConfirmReward] = useState<Reward | null>(
+    null,
+  );
 
   const t = dict.dashboard.pages.rewards;
 
@@ -99,17 +104,22 @@ export function RewardsView({
     }
   };
 
-  const handleDeleteClick = async (reward: Reward) => {
-    if (!confirm(`Are you sure you want to delete "${reward.name}"?`)) {
-      return;
-    }
+  const handleDeleteClick = (reward: Reward) => {
+    setDeleteConfirmReward(reward);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirmReward) return;
 
     try {
-      await dispatch(deleteReward({ familyId, rewardId: reward._id })).unwrap();
-      toast.success("Reward deleted successfully");
+      await dispatch(
+        deleteReward({ familyId, rewardId: deleteConfirmReward._id }),
+      ).unwrap();
+      toast.success(t.toast.deleteSuccess);
+      setDeleteConfirmReward(null);
     } catch (error) {
       toast.error(
-        `Failed to delete reward: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `${t.toast.deleteError}: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   };
@@ -234,6 +244,14 @@ export function RewardsView({
           setClaimSheetOpen(false);
           setClaimingReward(null);
         }}
+        dict={dict}
+      />
+
+      <DeleteRewardDialog
+        isOpen={!!deleteConfirmReward}
+        reward={deleteConfirmReward}
+        onClose={() => setDeleteConfirmReward(null)}
+        onConfirm={handleDeleteConfirm}
         dict={dict}
       />
     </div>

@@ -1,6 +1,6 @@
 import { getDb } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
-import { type Collection, ObjectId } from "mongodb";
+import { type Collection, type Filter, ObjectId } from "mongodb";
 import type { Message } from "../domain/message";
 
 export class MessageRepository {
@@ -94,8 +94,7 @@ export class MessageRepository {
     before?: ObjectId,
     limit: number = 50,
   ): Promise<Message[]> {
-    // biome-ignore lint/suspicious/noExplicitAny: MongoDB query builder requires any
-    let query: any = { chatId };
+    let query: Filter<Message> = { chatId };
 
     // If cursor provided, get the message to find its createdAt timestamp
     if (before) {
@@ -174,8 +173,7 @@ export class MessageRepository {
     cursor?: ObjectId,
     limit: number = 50,
   ): Promise<Message[]> {
-    // biome-ignore lint/suspicious/noExplicitAny: MongoDB query builder requires any
-    const searchQuery: any = {
+    const searchQuery: Filter<Message> = {
       chatId: { $in: chatIds },
       $text: { $search: query },
     };

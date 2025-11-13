@@ -344,8 +344,7 @@ describe("E2E: POST /v1/auth/register", () => {
     beforeEach(async () => {
       deploymentConfigRepo = new DeploymentConfigRepository();
       // Clean up deployment config before each test
-      const collection = deploymentConfigRepo["collection"];
-      await collection.deleteMany({});
+      await deploymentConfigRepo.clearAll();
     });
 
     it("should block registration in standalone mode after onboarding", async () => {

@@ -23,12 +23,12 @@ docker compose up -d --build
 ```bash
 # For development with live reload and direct port access
 # This exposes ports 3000, 3001, 9001, 27017 - DEVELOPMENT ONLY!
-./start-dev.sh
+./dev.sh
 ```
 
 ### Port Exposure Comparison
 
-| Service | start-dev.sh (Development) | start.sh (Production) |
+| Service | dev.sh (Development) | start.sh (Production) |
 |---------|----------------------------|------------------------|
 | Caddy (HTTPS) | `:8443` → 443 | `:443` → 443 ✅ |
 | Caddy (HTTP) | Not used | `:80` → 80 ✅ (redirects to HTTPS) |
@@ -104,7 +104,7 @@ Caddy will automatically:
 
 4. **Start with HTTPS**:
    ```bash
-   ./start-dev.sh
+   ./dev.sh
    # Access at https://localhost:8443
    ```
 
@@ -142,7 +142,7 @@ Even if you block ports with UFW, Docker creates its own iptables rules. To secu
 - Base docker-compose.yml has no port mappings for internal services
 - Services only accessible within Docker network via Caddy
 
-**Option 2: Bind to localhost only** (Development with start-dev.sh)
+**Option 2: Bind to localhost only** (Development with dev.sh)
 ```yaml
 ports:
   - "127.0.0.1:3001:3001"  # Only accessible from localhost
@@ -266,7 +266,7 @@ docker compose logs -f caddy | grep -E "(404|500|unauthorized)"
 
 Before deploying to production:
 
-- [ ] Use `./start.sh` (NOT `./start-dev.sh`)
+- [ ] Use `./start.sh` (NOT `./dev.sh`)
 - [ ] Configure firewall to only allow ports 80 and 443
 - [ ] Set strong `BETTER_AUTH_SECRET` (32+ characters)
 - [ ] Set strong `MINIO_ROOT_PASSWORD` (32+ characters)

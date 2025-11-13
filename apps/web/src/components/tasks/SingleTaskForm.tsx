@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { TaskFormData } from "@/hooks/useTaskForm";
+import type { Dictionary } from "@/i18n/types";
 
 interface SingleTaskFormProps {
   formData: TaskFormData;
@@ -26,7 +27,7 @@ interface SingleTaskFormProps {
   showKarma: boolean;
   setShowKarma: (show: boolean) => void;
   familyMembers: Array<{ id: string; name: string; role: "parent" | "child" }>;
-  dict: any;
+  dict: Dictionary;
 }
 
 export function SingleTaskForm({

@@ -1,4 +1,9 @@
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { Readable } from "node:stream";
+import {
+  GetObjectCommand,
+  type GetObjectCommandOutput,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { type NextRequest, NextResponse } from "next/server";
 
 /**
@@ -33,7 +38,7 @@ const CONTENT_TYPES: Record<string, string> = {
  * Path format: /api/images/{familyId}/{filename}
  */
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   context: { params: Promise<{ path: string[] }> },
 ) {
   try {
@@ -68,29 +73,26 @@ export async function GET(
       return NextResponse.json({ error: "Image not found" }, { status: 404 });
     }
 
-    // Convert the stream to buffer
-    const chunks: Uint8Array[] = [];
-    const stream = response.Body as any;
-
-    for await (const chunk of stream) {
-      chunks.push(chunk);
-    }
-
-    const buffer = Buffer.concat(chunks);
+    const buffer = await bodyToBuffer(response.Body);
 
     // Return the image with caching headers
-    return new NextResponse(buffer, {
+    return new NextResponse(Uint8Array.from(buffer), {
       status: 200,
       headers: {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching image from MinIO:", error);
 
+    const errorName =
+      typeof error === "object" && error && "name" in error
+        ? String((error as { name?: string }).name)
+        : undefined;
+
     // Handle NotFound errors
-    if (error.name === "NoSuchKey" || error.name === "NotFound") {
+    if (errorName === "NoSuchKey" || errorName === "NotFound") {
       return NextResponse.json({ error: "Image not found" }, { status: 404 });
     }
 
@@ -100,4 +102,53 @@ export async function GET(
       { status: 500 },
     );
   }
+}
+
+type ObjectBody = NonNullable<GetObjectCommandOutput["Body"]>;
+
+async function bodyToBuffer(
+  body: GetObjectCommandOutput["Body"],
+): Promise<Buffer> {
+  if (!body) {
+    throw new Error("Response body is empty");
+  }
+
+  if (body instanceof Readable) {
+    const chunks: Buffer[] = [];
+    for await (const chunk of body) {
+      if (typeof chunk === "string") {
+        chunks.push(Buffer.from(chunk));
+      } else {
+        chunks.push(Buffer.from(chunk));
+      }
+    }
+    return Buffer.concat(chunks);
+  }
+
+  if (isReadableStream(body)) {
+    const reader = body.getReader();
+    const chunks: Buffer[] = [];
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value) {
+        chunks.push(Buffer.from(value));
+      }
+    }
+    reader.releaseLock();
+    return Buffer.concat(chunks);
+  }
+
+  if (body instanceof Blob) {
+    const arrayBuffer = await body.arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  }
+
+  throw new Error("Unsupported response body type");
+}
+
+function isReadableStream(body: ObjectBody): body is ObjectBody & {
+  getReader: () => ReadableStreamDefaultReader<Uint8Array>;
+} {
+  return "getReader" in body && typeof body.getReader === "function";
 }

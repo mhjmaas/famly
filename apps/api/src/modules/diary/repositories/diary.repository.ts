@@ -1,6 +1,6 @@
 import { getDb } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
-import { type Collection, ObjectId } from "mongodb";
+import { type Collection, type Filter, ObjectId } from "mongodb";
 import type {
   CreateDiaryEntryInput,
   DiaryEntry,
@@ -101,8 +101,7 @@ export class DiaryRepository {
     startDate?: string, // Format: YYYY-MM-DD
     endDate?: string, // Format: YYYY-MM-DD
   ): Promise<DiaryEntry[]> {
-    // biome-ignore lint/suspicious/noExplicitAny: MongoDB query builder requires any
-    const query: any = { createdBy: userId };
+    const query: Filter<DiaryEntry> = { createdBy: userId };
 
     if (startDate || endDate) {
       query.date = {};
@@ -197,8 +196,7 @@ export class DiaryRepository {
     startDate?: string, // Format: YYYY-MM-DD
     endDate?: string, // Format: YYYY-MM-DD
   ): Promise<DiaryEntry[]> {
-    // biome-ignore lint/suspicious/noExplicitAny: MongoDB query builder requires any
-    const query: any = { familyId, isPersonal: false };
+    const query: Filter<DiaryEntry> = { familyId, isPersonal: false };
 
     if (startDate || endDate) {
       query.date = {};

@@ -17,6 +17,12 @@ jest.mock("../../../src/lib/logger", () => ({
   },
 }));
 
+// Mock karma events to avoid realtime dependencies
+jest.mock("../../../src/modules/karma/events/karma-events", () => ({
+  emitKarmaAwarded: jest.fn(),
+  emitKarmaDeducted: jest.fn(),
+}));
+
 import { KarmaService } from "../../../src/modules/karma/services/karma.service";
 
 describe("KarmaService", () => {

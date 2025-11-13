@@ -27,44 +27,82 @@ famly.local {
 		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
 	}
 
-	# Reverse proxy to web app
-	reverse_proxy web:3000 {
-		header_up Host {host}
-		header_up X-Real-IP {remote}
-		header_up X-Forwarded-For {remote}
-		header_up X-Forwarded-Proto {scheme}
+	# Socket.IO WebSocket connections - proxy to API service
+	# IMPORTANT: Use 'handle' not 'handle_path' to preserve the /socket.io/ path
+	handle /socket.io/* {
+		reverse_proxy api:3001 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
+			# Preserve cookies for authentication
+			header_up Cookie {http.request.header.Cookie}
+		}
 	}
 
-	# API routes - strip /api prefix and proxy to API service
+	# Next.js API routes for images - proxy to web service (Next.js)
+	# These are handled by Next.js API routes, not the Express API
+	# IMPORTANT: This must come BEFORE the general /api/* handler
+	handle /api/images/* {
+		reverse_proxy web:3000 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
+		}
+	}
+
+	# API routes - strip /api prefix and proxy to Express API service
 	handle_path /api/* {
 		reverse_proxy api:3001 {
 			header_up Host {host}
 			header_up X-Real-IP {remote}
-			header_up X-Forwarded-For {remote}
-			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+
+	# Default: Proxy all other requests to web service
+	handle {
+		reverse_proxy web:3000 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
 		}
 	}
 }
 
-# Alternative: HTTP-01 challenge for internet-accessible domains
-# Uncomment if your server is accessible from the internet
-# your-public-domain.com {
-# 	# Caddy automatically uses HTTP-01 challenge
-# 	# Requires ports 80 and 443 accessible from internet
-#
-# 	reverse_proxy web:3000 {
-# 		header_up Host {host}
-# 		header_up X-Real-IP {remote}
-# 		header_up X-Forwarded-For {remote}
-# 		header_up X-Forwarded-Proto {scheme}
-# 	}
-#
-# 	handle_path /api/* {
-# 		reverse_proxy api:3001 {
-# 			header_up Host {host}
-# 			header_up X-Real-IP {remote}
-# 			header_up X-Forwarded-For {remote}
-# 			header_up X-Forwarded-Proto {scheme}
-# 		}
-# 	}
-# }
+# Production domain (example - configure with actual domain)
+famly.app {
+	# Caddy automatically obtains Let's Encrypt certificate
+
+	# Socket.IO WebSocket connections - proxy to API service
+	# Socket.IO uses /socket.io/* paths for WebSocket connections
+	# Caddy automatically handles WebSocket upgrade requests
+	# IMPORTANT: Use 'handle' not 'handle_path' to preserve the /socket.io/ path
+	handle /socket.io/* {
+		reverse_proxy api:3001 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
+		}
+	}
+
+	# Next.js API routes for images - proxy to web service (Next.js)
+	# These are handled by Next.js API routes, not the Express API
+	# IMPORTANT: This must come BEFORE the general /api/* handler
+	handle /api/images/* {
+		reverse_proxy web:3000 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
+		}
+	}
+
+	# API routes - strip /api prefix and proxy to Express API service
+	handle_path /api/* {
+		reverse_proxy api:3001 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
+		}
+	}
+
+	# Default: Proxy all other requests to web service
+	handle {
+		reverse_proxy web:3000 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
+		}
+	}
+}
