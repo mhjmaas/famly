@@ -48,7 +48,8 @@ export interface TaskEventPayloads {
   "task.completed": {
     taskId: string;
     familyId: string;
-    completedBy: string;
+    completedBy: string; // Credited user (assignee for member tasks)
+    triggeredBy?: string; // Actor who triggered completion (if different)
     task: {
       _id: string;
       familyId: string;

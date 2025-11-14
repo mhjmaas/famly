@@ -74,11 +74,17 @@ export function useTaskEvents(
       // Refresh tasks list
       dispatch(fetchTasks(familyId));
 
-      // Show notification if it's the current user's task
+      // Determine who actually triggered the completion
+      // If triggeredBy is set, someone else completed it; otherwise completedBy did it themselves
+      const wasCompletedByOther = event.triggeredBy
+        ? event.triggeredBy !== userId
+        : event.completedBy !== userId;
+
+      // Show notification if it's the current user's task and someone else completed it
       if (
         event.task.assignment.type === "member" &&
         event.task.assignment.memberId === userId &&
-        event.completedBy !== userId
+        wasCompletedByOther
       ) {
         toast.success("Your Task Was Completed", {
           description: `${event.task.name} was marked complete`,
