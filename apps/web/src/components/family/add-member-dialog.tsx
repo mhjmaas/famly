@@ -11,6 +11,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -20,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   addFamilyMember,
@@ -69,6 +79,7 @@ export function AddMemberDialog({
   const dispatch = useAppDispatch();
   const isLoading = useAppSelector(selectOperationLoading("addMember"));
   const error = useAppSelector(selectOperationError("addMember"));
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const emailId = useId();
   const passwordId = useId();
@@ -158,125 +169,154 @@ export function AddMemberDialog({
     }
   };
 
+  // Shared form content
+  const FormContent = (
+    <div className="space-y-4 py-4">
+      <div className="space-y-2">
+        <Label htmlFor={nameId}>{dict.addMemberDialog.name}</Label>
+        <Input
+          id={nameId}
+          data-testid="add-member-name"
+          placeholder={dict.addMemberDialog.namePlaceholder}
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        />
+        {validationErrors.name && (
+          <p className="text-sm text-destructive">{validationErrors.name}</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor={emailId}>{dict.addMemberDialog.email}</Label>
+        <Input
+          id={emailId}
+          data-testid="add-member-email"
+          type="email"
+          placeholder={dict.addMemberDialog.emailPlaceholder}
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        />
+        {validationErrors.email && (
+          <p className="text-sm text-destructive">{validationErrors.email}</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor={passwordId}>{dict.addMemberDialog.password}</Label>
+        <Input
+          id={passwordId}
+          data-testid="add-member-password"
+          type="password"
+          placeholder={dict.addMemberDialog.passwordPlaceholder}
+          value={formData.password}
+          onChange={(e) =>
+            setFormData({ ...formData, password: e.target.value })
+          }
+        />
+        {validationErrors.password && (
+          <p className="text-sm text-destructive">
+            {validationErrors.password}
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor={birthdateId}>{dict.addMemberDialog.birthdate}</Label>
+        <Input
+          id={birthdateId}
+          data-testid="add-member-birthdate"
+          type="date"
+          value={formData.birthdate}
+          onChange={(e) =>
+            setFormData({ ...formData, birthdate: e.target.value })
+          }
+        />
+        {validationErrors.birthdate && (
+          <p className="text-sm text-destructive">
+            {validationErrors.birthdate}
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor={roleId}>{dict.addMemberDialog.role}</Label>
+        <Select
+          value={formData.role}
+          onValueChange={(value: "Parent" | "Child") =>
+            setFormData({ ...formData, role: value })
+          }
+        >
+          <SelectTrigger id={roleId} data-testid="add-member-role-trigger">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Parent" data-testid="add-member-role-parent">
+              {dict.addMemberDialog.roleParent}
+            </SelectItem>
+            <SelectItem value="Child" data-testid="add-member-role-child">
+              {dict.addMemberDialog.roleChild}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+
+  const header = (
+    <>
+      <DialogTitle>{dict.addMemberDialog.title}</DialogTitle>
+      <DialogDescription>{dict.addMemberDialog.description}</DialogDescription>
+    </>
+  );
+
+  const footer = (
+    <>
+      <Button
+        variant="outline"
+        onClick={handleClose}
+        disabled={isLoading}
+        data-testid="add-member-cancel"
+      >
+        {dict.addMemberDialog.cancel}
+      </Button>
+      <Button
+        onClick={handleSubmit}
+        disabled={
+          isLoading ||
+          !formData.email ||
+          !formData.password ||
+          !formData.name ||
+          !formData.birthdate
+        }
+        data-testid="add-member-submit"
+      >
+        {dict.addMemberDialog.submit}
+      </Button>
+    </>
+  );
+
+  // Desktop: Dialog
+  if (isDesktop) {
+    return (
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent>
+          <DialogHeader>{header}</DialogHeader>
+          {FormContent}
+          <DialogFooter>{footer}</DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Mobile: Drawer
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{dict.addMemberDialog.title}</DialogTitle>
-          <DialogDescription>
-            {dict.addMemberDialog.description}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor={nameId}>{dict.addMemberDialog.name}</Label>
-            <Input
-              id={nameId}
-              data-testid="add-member-name"
-              placeholder={dict.addMemberDialog.namePlaceholder}
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-            />
-            {validationErrors.name && (
-              <p className="text-sm text-destructive">
-                {validationErrors.name}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={emailId}>{dict.addMemberDialog.email}</Label>
-            <Input
-              id={emailId}
-              data-testid="add-member-email"
-              type="email"
-              placeholder={dict.addMemberDialog.emailPlaceholder}
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-            />
-            {validationErrors.email && (
-              <p className="text-sm text-destructive">
-                {validationErrors.email}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={passwordId}>{dict.addMemberDialog.password}</Label>
-            <Input
-              id={passwordId}
-              data-testid="add-member-password"
-              type="password"
-              placeholder={dict.addMemberDialog.passwordPlaceholder}
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-            />
-            {validationErrors.password && (
-              <p className="text-sm text-destructive">
-                {validationErrors.password}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={birthdateId}>
-              {dict.addMemberDialog.birthdate}
-            </Label>
-            <Input
-              id={birthdateId}
-              data-testid="add-member-birthdate"
-              type="date"
-              value={formData.birthdate}
-              onChange={(e) =>
-                setFormData({ ...formData, birthdate: e.target.value })
-              }
-            />
-            {validationErrors.birthdate && (
-              <p className="text-sm text-destructive">
-                {validationErrors.birthdate}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={roleId}>{dict.addMemberDialog.role}</Label>
-            <Select
-              value={formData.role}
-              onValueChange={(value: "Parent" | "Child") =>
-                setFormData({ ...formData, role: value })
-              }
-            >
-              <SelectTrigger id={roleId} data-testid="add-member-role-trigger">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Parent" data-testid="add-member-role-parent">
-                  {dict.addMemberDialog.roleParent}
-                </SelectItem>
-                <SelectItem value="Child" data-testid="add-member-role-child">
-                  {dict.addMemberDialog.roleChild}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <Drawer open={isOpen} onOpenChange={handleClose}>
+      <DrawerContent>
+        <DrawerHeader className="text-left">{header}</DrawerHeader>
+        <div className="px-4 pb-6 overflow-y-auto max-h-[60vh]">
+          {FormContent}
         </div>
-
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={handleClose}
-            disabled={isLoading}
-            data-testid="add-member-cancel"
-          >
-            {dict.addMemberDialog.cancel}
-          </Button>
+        <DrawerFooter className="pt-2">
           <Button
             onClick={handleSubmit}
             disabled={
@@ -290,8 +330,18 @@ export function AddMemberDialog({
           >
             {dict.addMemberDialog.submit}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DrawerClose asChild>
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              disabled={isLoading}
+              data-testid="add-member-cancel"
+            >
+              {dict.addMemberDialog.cancel}
+            </Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }

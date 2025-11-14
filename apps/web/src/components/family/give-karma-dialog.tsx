@@ -11,10 +11,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import type { FamilyMember } from "@/lib/api-client";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -61,6 +71,7 @@ export function GiveKarmaDialog({
   const dispatch = useAppDispatch();
   const isLoading = useAppSelector(selectOperationLoading("grantKarma"));
   const error = useAppSelector(selectOperationError("grantKarma"));
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const [karmaType, setKarmaType] = useState<"positive" | "negative">(
     "positive",
@@ -115,95 +126,124 @@ export function GiveKarmaDialog({
     }
   };
 
-  return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {dict.giveKarmaDialog.title.replace("{name}", member?.name || "")}
-          </DialogTitle>
-          <DialogDescription>
-            {dict.giveKarmaDialog.description}
-          </DialogDescription>
-        </DialogHeader>
+  const header = (
+    <>
+      <DialogTitle>
+        {dict.giveKarmaDialog.title.replace("{name}", member?.name || "")}
+      </DialogTitle>
+      <DialogDescription>{dict.giveKarmaDialog.description}</DialogDescription>
+    </>
+  );
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label>{dict.giveKarmaDialog.karmaType}</Label>
-            <RadioGroup
-              value={karmaType}
-              onValueChange={(value: "positive" | "negative") =>
-                setKarmaType(value)
-              }
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="positive"
-                  id="positive"
-                  data-testid="karma-type-positive"
-                />
-                <Label
-                  htmlFor="positive"
-                  className="font-normal cursor-pointer"
-                >
-                  {dict.giveKarmaDialog.positive}
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="negative"
-                  id="negative"
-                  data-testid="karma-type-negative"
-                />
-                <Label
-                  htmlFor="negative"
-                  className="font-normal cursor-pointer"
-                >
-                  {dict.giveKarmaDialog.negative}
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="karma-amount">{dict.giveKarmaDialog.amount}</Label>
-            <Input
-              id="karma-amount"
-              data-testid="karma-amount-input"
-              type="number"
-              min="1"
-              max="100000"
-              placeholder={dict.giveKarmaDialog.amountPlaceholder}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+  const FormContent = (
+    <div className="space-y-4 py-4">
+      <div className="space-y-2">
+        <Label>{dict.giveKarmaDialog.karmaType}</Label>
+        <RadioGroup
+          value={karmaType}
+          onValueChange={(value: "positive" | "negative") =>
+            setKarmaType(value)
+          }
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem
+              value="positive"
+              id="positive"
+              data-testid="karma-type-positive"
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="karma-message">
-              {dict.giveKarmaDialog.message} *
+            <Label htmlFor="positive" className="font-normal cursor-pointer">
+              {dict.giveKarmaDialog.positive}
             </Label>
-            <Textarea
-              data-testid="karma-message-input"
-              id="karma-message"
-              placeholder={dict.giveKarmaDialog.messagePlaceholder}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              maxLength={500}
-            />
           </div>
-        </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem
+              value="negative"
+              id="negative"
+              data-testid="karma-type-negative"
+            />
+            <Label htmlFor="negative" className="font-normal cursor-pointer">
+              {dict.giveKarmaDialog.negative}
+            </Label>
+          </div>
+        </RadioGroup>
+      </div>
 
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={handleClose}
-            disabled={isLoading}
-            data-testid="karma-cancel-button"
-          >
-            {dict.giveKarmaDialog.cancel}
-          </Button>
+      <div className="space-y-2">
+        <Label htmlFor="karma-amount">{dict.giveKarmaDialog.amount}</Label>
+        <Input
+          id="karma-amount"
+          data-testid="karma-amount-input"
+          type="number"
+          min="1"
+          max="100000"
+          placeholder={dict.giveKarmaDialog.amountPlaceholder}
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="karma-message">{dict.giveKarmaDialog.message} *</Label>
+        <Textarea
+          data-testid="karma-message-input"
+          id="karma-message"
+          placeholder={dict.giveKarmaDialog.messagePlaceholder}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={3}
+          maxLength={500}
+        />
+      </div>
+    </div>
+  );
+
+  const footer = (
+    <>
+      <Button
+        variant="outline"
+        onClick={handleClose}
+        disabled={isLoading}
+        data-testid="karma-cancel-button"
+      >
+        {dict.giveKarmaDialog.cancel}
+      </Button>
+      <Button
+        onClick={handleSubmit}
+        disabled={
+          isLoading ||
+          !amount ||
+          !description.trim() ||
+          Number.parseInt(amount, 10) <= 0
+        }
+        data-testid="karma-submit-button"
+      >
+        {dict.giveKarmaDialog.submit}
+      </Button>
+    </>
+  );
+
+  // Desktop: Dialog
+  if (isDesktop) {
+    return (
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent>
+          <DialogHeader>{header}</DialogHeader>
+          {FormContent}
+          <DialogFooter>{footer}</DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Mobile: Drawer
+  return (
+    <Drawer open={isOpen} onOpenChange={handleClose}>
+      <DrawerContent>
+        <DrawerHeader className="text-left">{header}</DrawerHeader>
+        <div className="px-4 pb-6 overflow-y-auto max-h-[60vh]">
+          {FormContent}
+        </div>
+        <DrawerFooter className="pt-2">
           <Button
             onClick={handleSubmit}
             disabled={
@@ -216,8 +256,18 @@ export function GiveKarmaDialog({
           >
             {dict.giveKarmaDialog.submit}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DrawerClose asChild>
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              disabled={isLoading}
+              data-testid="karma-cancel-button"
+            >
+              {dict.giveKarmaDialog.cancel}
+            </Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }

@@ -11,6 +11,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import type { FamilyMember } from "@/lib/api-client";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -52,6 +71,7 @@ export function RemoveMemberDialog({
   const members = useAppSelector(selectFamilyMembers);
   const isLoading = useAppSelector(selectOperationLoading("removeMember"));
   const error = useAppSelector(selectOperationError("removeMember"));
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const isLastParent = () => {
     if (!member || member.role !== "Parent") return false;
@@ -84,30 +104,68 @@ export function RemoveMemberDialog({
     }
   };
 
+  const header = (
+    <>
+      <DialogTitle>{dict.removeDialog.title}</DialogTitle>
+      <DialogDescription>
+        {dict.removeDialog.description.replace("{name}", member?.name || "")}
+        <br />
+        <br />
+        {dict.removeDialog.warning}
+      </DialogDescription>
+    </>
+  );
+
+  // Desktop: AlertDialog
+  if (isDesktop) {
+    return (
+      <AlertDialog open={isOpen} onOpenChange={onClose}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{dict.removeDialog.title}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {dict.removeDialog.description.replace(
+                "{name}",
+                member?.name || "",
+              )}
+              <br />
+              <br />
+              {dict.removeDialog.warning}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>
+              {dict.removeDialog.cancel}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirm} disabled={isLoading}>
+              {dict.removeDialog.confirm}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  }
+
+  // Mobile: Drawer
   return (
-    <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{dict.removeDialog.title}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {dict.removeDialog.description.replace(
-              "{name}",
-              member?.name || "",
-            )}
-            <br />
-            <br />
-            {dict.removeDialog.warning}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>
-            {dict.removeDialog.cancel}
-          </AlertDialogCancel>
-          <AlertDialogAction onClick={handleConfirm} disabled={isLoading}>
+    <Drawer open={isOpen} onOpenChange={onClose}>
+      <DrawerContent>
+        <DrawerHeader className="text-left">{header}</DrawerHeader>
+        <DrawerFooter className="gap-2 pt-2">
+          <Button
+            onClick={handleConfirm}
+            disabled={isLoading}
+            className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
             {dict.removeDialog.confirm}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+          <DrawerClose asChild>
+            <Button variant="outline" disabled={isLoading} className="w-full">
+              {dict.removeDialog.cancel}
+            </Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }

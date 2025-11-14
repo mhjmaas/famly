@@ -31,7 +31,7 @@ export function RewardsGrid({
 }: RewardsGridProps) {
   return (
     <div
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
       data-testid="rewards-grid"
     >
       {rewards.map((reward) => {
