@@ -8,7 +8,7 @@ import {
   getSchedules,
   getTasks,
 } from "@/lib/api-client";
-import { getTaskKarmaRecipient } from "@/lib/task-completion-utils";
+import { getTaskKarmaRecipient } from "@/lib/utils/task-completion-utils";
 import type {
   CreateScheduleRequest,
   CreateTaskRequest,
@@ -35,6 +35,13 @@ const initialState: TasksState = {
   isLoading: false,
   error: null,
   lastFetch: null,
+};
+
+const replaceTaskInState = (state: TasksState, updatedTask: Task) => {
+  const index = state.tasks.findIndex((t) => t._id === updatedTask._id);
+  if (index !== -1) {
+    state.tasks[index] = updatedTask;
+  }
 };
 
 // Async thunks
@@ -236,12 +243,7 @@ const tasksSlice = createSlice({
     // Update task
     builder
       .addCase(updateTask.fulfilled, (state, action) => {
-        const index = state.tasks.findIndex(
-          (t) => t._id === action.payload._id,
-        );
-        if (index !== -1) {
-          state.tasks[index] = action.payload;
-        }
+        replaceTaskInState(state, action.payload);
       })
       .addCase(updateTask.rejected, (state, action) => {
         state.error = action.error.message || "Failed to update task";
@@ -250,12 +252,7 @@ const tasksSlice = createSlice({
     // Complete task
     builder
       .addCase(completeTask.fulfilled, (state, action) => {
-        const index = state.tasks.findIndex(
-          (t) => t._id === action.payload._id,
-        );
-        if (index !== -1) {
-          state.tasks[index] = action.payload;
-        }
+        replaceTaskInState(state, action.payload);
       })
       .addCase(completeTask.rejected, (state, action) => {
         state.error = action.error.message || "Failed to complete task";
@@ -264,12 +261,7 @@ const tasksSlice = createSlice({
     // Reopen task
     builder
       .addCase(reopenTask.fulfilled, (state, action) => {
-        const index = state.tasks.findIndex(
-          (t) => t._id === action.payload._id,
-        );
-        if (index !== -1) {
-          state.tasks[index] = action.payload;
-        }
+        replaceTaskInState(state, action.payload);
       })
       .addCase(reopenTask.rejected, (state, action) => {
         state.error = action.error.message || "Failed to reopen task";

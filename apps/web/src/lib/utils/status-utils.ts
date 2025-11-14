@@ -1,9 +1,10 @@
 /**
- * Status API client for deployment mode and onboarding status
- * This endpoint is unauthenticated and can be called from anywhere
+ * Status utilities for deployment mode and onboarding status
+ * Provides cached access to deployment status with fallback behavior
  */
 
 import { cache } from "react";
+import { fetchDeploymentStatus } from "@/lib/api-client";
 
 export type DeploymentMode = "saas" | "standalone";
 
@@ -11,14 +12,6 @@ export interface DeploymentStatus {
   mode: DeploymentMode;
   onboardingCompleted: boolean;
 }
-
-// Use different API URLs for server-side vs client-side
-const API_BASE_URL =
-  typeof window === "undefined"
-    ? process.env.API_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      "http://localhost:3001"
-    : process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 /**
  * Fetch deployment status (mode and onboarding completion)
@@ -33,29 +26,7 @@ const API_BASE_URL =
 export const getDeploymentStatus = cache(
   async (): Promise<DeploymentStatus> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/v1/status`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // Use force-cache for SSR optimization - status rarely changes
-        // Next.js will revalidate on each request in development
-        cache: "force-cache",
-        next: {
-          // Revalidate every 24 hours in production
-          // This balances freshness with performance
-          revalidate: 86400,
-        },
-      });
-
-      if (!response.ok) {
-        console.warn(
-          `Failed to fetch deployment status: ${response.statusText}, falling back to SaaS mode`,
-        );
-        return { mode: "saas", onboardingCompleted: false };
-      }
-
-      return response.json();
+      return await fetchDeploymentStatus();
     } catch (error) {
       // Fallback to SaaS mode if API is unavailable
       // This handles cases like E2E test startup where API isn't ready yet

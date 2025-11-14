@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { canCompleteTask } from "@/lib/task-completion-utils";
+import { canCompleteTask } from "@/lib/utils/task-completion-utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   selectPendingTasksCount,

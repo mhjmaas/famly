@@ -1,4 +1,7 @@
-import { isTaskAssignedToUser, sortTasksByPriority } from "@/lib/task-utils";
+import {
+  isTaskAssignedToUser,
+  sortTasksByPriority,
+} from "@/lib/utils/task-utils";
 import type { Task } from "@/types/api.types";
 
 describe("task-utils", () => {

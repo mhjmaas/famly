@@ -14,7 +14,7 @@ import {
   canCompleteTask,
   getTaskCompletionBlockedReason,
   getTaskKarmaRecipient,
-} from "@/lib/task-completion-utils";
+} from "@/lib/utils/task-completion-utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectKarmaBalance } from "@/store/slices/karma.slice";
 import {

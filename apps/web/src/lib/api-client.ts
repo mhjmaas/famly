@@ -556,3 +556,54 @@ export async function cancelClaim(
     cookie,
   });
 }
+
+// ============= Status API =============
+
+export type {
+  DeploymentMode,
+  DeploymentStatus,
+} from "@/lib/utils/status-utils";
+
+/**
+ * Fetch deployment status (mode and onboarding completion)
+ * This is an unauthenticated endpoint
+ *
+ * Uses force-cache for SSR optimization - status rarely changes
+ * Next.js will revalidate on each request in development
+ * Revalidates every 24 hours in production for freshness
+ */
+export async function fetchDeploymentStatus(): Promise<{
+  mode: "saas" | "standalone";
+  onboardingCompleted: boolean;
+}> {
+  const response = await fetch(`${API_BASE_URL}/v1/status`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    // Use force-cache for SSR optimization - status rarely changes
+    // Next.js will revalidate on each request in development
+    cache: "force-cache",
+    next: {
+      // Revalidate every 24 hours in production
+      // This balances freshness with performance
+      revalidate: 86400,
+    },
+  });
+
+  if (!response.ok) {
+    const contentType = response.headers.get("content-type");
+    const isJson = contentType?.includes("application/json");
+    const errorData = isJson ? await response.json() : await response.text();
+    const errorMessage =
+      typeof errorData === "object" && errorData !== null
+        ? (errorData as { message?: string }).message ||
+          (errorData as { error?: string }).error ||
+          "Failed to fetch deployment status"
+        : String(errorData) || "Failed to fetch deployment status";
+
+    throw new ApiError(errorMessage, response.status, errorData);
+  }
+
+  return response.json();
+}

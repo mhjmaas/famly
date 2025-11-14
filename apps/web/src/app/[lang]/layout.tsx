@@ -5,12 +5,12 @@ import type { ReactNode } from "react";
 import { RealtimeProvider } from "@/components/realtime-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { DeploymentProvider } from "@/contexts/deployment-context";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
 import { getUserWithKarma } from "@/lib/dal";
-import { DeploymentProvider } from "@/lib/deployment-context";
 import { getSessionCookie } from "@/lib/server-cookies";
-import { getDeploymentStatus } from "@/lib/status-client";
+import { getDeploymentStatus } from "@/lib/utils/status-utils";
 import { StoreProvider } from "@/store/provider";
 import type { RootState } from "@/store/store";
 

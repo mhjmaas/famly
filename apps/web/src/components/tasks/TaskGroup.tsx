@@ -2,7 +2,7 @@ import type { Dictionary } from "@/i18n/types";
 import {
   canCompleteTask,
   getTaskCompletionBlockedReason,
-} from "@/lib/task-completion-utils";
+} from "@/lib/utils/task-completion-utils";
 import type { Task } from "@/types/api.types";
 import { TaskCard } from "./TaskCard";
 

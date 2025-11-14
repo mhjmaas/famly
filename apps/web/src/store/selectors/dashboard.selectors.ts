@@ -1,5 +1,8 @@
 import { createSelector } from "@reduxjs/toolkit";
-import { isTaskAssignedToUser, sortTasksByPriority } from "@/lib/task-utils";
+import {
+  isTaskAssignedToUser,
+  sortTasksByPriority,
+} from "@/lib/utils/task-utils";
 import { selectTasks } from "../slices/tasks.slice";
 import { selectUser } from "../slices/user.slice";
 import type { RootState } from "../store";

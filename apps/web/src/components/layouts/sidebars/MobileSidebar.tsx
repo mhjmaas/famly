@@ -5,7 +5,7 @@ import { LogoComponent } from "@/components/navigation/LogoComponent";
 import { SectionNavigation } from "@/components/navigation/SectionNavigation";
 import { UserProfileDisplay } from "@/components/profile/UserProfileDisplay";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/style-utils";
 import type {
   Dictionary,
   NavigationSection,
