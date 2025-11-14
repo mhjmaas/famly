@@ -1,26 +1,21 @@
 import { HttpError } from "@lib/http-error";
+import type { ObjectIdString } from "@lib/objectid-utils";
+import { zodObjectId } from "@lib/zod-objectid";
 import type { NextFunction, Response } from "express";
-import { ObjectId } from "mongodb";
 import { z } from "zod";
 
 /**
  * Input DTO for updating read cursor
  */
 export interface UpdateReadCursorInput {
-  messageId: string; // Message ID to mark as read
+  messageId: ObjectIdString; // Message ID to mark as read
 }
 
 /**
  * Zod schema for update read cursor validation
  */
 const updateReadCursorSchema = z.object({
-  messageId: z
-    .string()
-    .min(1, "Message ID is required")
-    .refine(
-      (val) => ObjectId.isValid(val),
-      "Message ID must be a valid ObjectId",
-    ),
+  messageId: zodObjectId,
 });
 
 /**

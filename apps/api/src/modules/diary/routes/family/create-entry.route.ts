@@ -10,9 +10,9 @@ import { authorizeFamilyRole } from "@modules/auth/middleware/authorize-family-r
 import { FamilyRole } from "@modules/family/domain/family";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { toDiaryEntryDTO } from "../../lib/diary-entry.mapper";
 import { DiaryRepository } from "../../repositories/diary.repository";
+import { DiaryService } from "../../services/diary.service";
 import { validateCreateEntry } from "../../validators/create-entry.validator";
 
 /**
@@ -36,6 +36,7 @@ export function createFamilyDiaryCreateEntryRoute(): Router {
   const activityEventService = new ActivityEventService(
     activityEventRepository,
   );
+  const diaryService = new DiaryService(diaryRepository, activityEventService);
 
   router.post(
     "/",
@@ -50,37 +51,20 @@ export function createFamilyDiaryCreateEntryRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        // Validate ObjectId formats
-        if (!ObjectId.isValid(req.params.familyId)) {
-          throw HttpError.badRequest("Invalid family ID format");
+        if (!req.params.familyId) {
+          logger.error("familyId parameter missing from request", {
+            params: req.params,
+            path: req.path,
+            baseUrl: req.baseUrl,
+          });
+          throw HttpError.badRequest("Missing familyId parameter");
         }
 
-        const userId = new ObjectId(req.user.id);
-        const familyId = new ObjectId(req.params.familyId);
-
-        const entry = await diaryRepository.createFamilyEntry(
-          userId,
-          familyId,
+        const entry = await diaryService.createFamilyEntry(
+          req.params.familyId,
+          req.user.id,
           req.body,
         );
-
-        // Record activity event for family diary entry creation
-        try {
-          await activityEventService.recordEvent({
-            userId,
-            type: "FAMILY_DIARY",
-            title: `Family diary entry for ${req.body.date}`,
-            description: req.body.entry.substring(0, 100), // First 100 chars as preview
-          });
-        } catch (error) {
-          logger.error(
-            "Failed to record activity event for family diary entry",
-            {
-              userId: userId.toString(),
-              error,
-            },
-          );
-        }
 
         res.status(201).json(toDiaryEntryDTO(entry));
       } catch (error) {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/style-utils";
 import type {
   Dictionary,
   NavigationItem as NavigationItemType,

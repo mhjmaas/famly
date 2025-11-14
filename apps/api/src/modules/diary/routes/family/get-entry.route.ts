@@ -5,9 +5,9 @@ import { authorizeFamilyRole } from "@modules/auth/middleware/authorize-family-r
 import { FamilyRole } from "@modules/family/domain/family";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { toDiaryEntryDTO } from "../../lib/diary-entry.mapper";
 import { DiaryRepository } from "../../repositories/diary.repository";
+import { DiaryService } from "../../services/diary.service";
 
 /**
  * GET /:familyId/diary/:entryId - Get a specific family diary entry
@@ -22,6 +22,7 @@ import { DiaryRepository } from "../../repositories/diary.repository";
 export function createFamilyDiaryGetEntryRoute(): Router {
   const router = Router({ mergeParams: true }); // CRITICAL: mergeParams to access :familyId from parent routers
   const diaryRepository = new DiaryRepository();
+  const diaryService = new DiaryService(diaryRepository);
 
   router.get(
     "/:entryId",
@@ -35,27 +36,17 @@ export function createFamilyDiaryGetEntryRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        // Validate ObjectId formats
-        if (!ObjectId.isValid(req.params.entryId)) {
-          throw HttpError.badRequest("Invalid entry ID format");
+        if (!req.params.familyId) {
+          throw HttpError.badRequest("Missing familyId parameter");
         }
-        if (!ObjectId.isValid(req.params.familyId)) {
-          throw HttpError.badRequest("Invalid family ID format");
-        }
-
-        const entryId = new ObjectId(req.params.entryId);
-        const familyId = new ObjectId(req.params.familyId);
-
-        const entry = await diaryRepository.findById(entryId);
-
-        if (!entry) {
-          throw HttpError.notFound("Diary entry not found");
+        if (!req.params.entryId) {
+          throw HttpError.badRequest("Missing entryId parameter");
         }
 
-        // Verify that the entry belongs to this family
-        if (!entry.familyId || !entry.familyId.equals(familyId)) {
-          throw HttpError.notFound("Diary entry not found");
-        }
+        const entry = await diaryService.getFamilyEntry(
+          req.params.familyId,
+          req.params.entryId,
+        );
 
         res.json(toDiaryEntryDTO(entry));
       } catch (error) {

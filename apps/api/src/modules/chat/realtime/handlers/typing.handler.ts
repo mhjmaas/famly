@@ -1,15 +1,18 @@
 import { logger } from "@lib/logger";
+import {
+  type ObjectIdString,
+  toObjectId,
+  validateObjectId,
+} from "@lib/objectid-utils";
+import { zodObjectId } from "@lib/zod-objectid";
 import { MembershipRepository } from "@modules/chat/repositories/membership.repository";
-import { ObjectId } from "mongodb";
 import type { Socket } from "socket.io";
 import { z } from "zod";
 import type { TypingStartPayload, TypingStopPayload } from "../types";
 
 // Validation schema for typing events
 const typingSchema = z.object({
-  chatId: z
-    .string()
-    .refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
+  chatId: zodObjectId,
 });
 
 /**
@@ -24,9 +27,10 @@ export async function handleTypingStart(
   socket: Socket,
   payload: TypingStartPayload,
 ): Promise<void> {
-  const userId = socket.data.userId as string;
+  let userId: ObjectIdString | undefined;
 
   try {
+    userId = validateObjectId(socket.data.userId as string, "userId");
     // Validate payload
     const validation = typingSchema.safeParse(payload);
     if (!validation.success) {
@@ -37,8 +41,8 @@ export async function handleTypingStart(
     }
 
     const { chatId } = validation.data;
-    const userObjectId = new ObjectId(userId);
-    const chatObjectId = new ObjectId(chatId);
+    const userObjectId = toObjectId(userId, "userId");
+    const chatObjectId = toObjectId(chatId, "chatId");
 
     // Verify user is a member of the chat
     const membershipRepo = new MembershipRepository();
@@ -65,10 +69,10 @@ export async function handleTypingStart(
       `Socket ${socket.id}: User ${userId} started typing in chat ${chatId}`,
     );
   } catch (error) {
-    logger.error(
-      `Socket ${socket.id}: Typing start error:`,
-      error instanceof Error ? error.message : String(error),
-    );
+    logger.error(`Socket ${socket.id}: Typing start error:`, {
+      error: error instanceof Error ? error.message : String(error),
+      userId: userId ?? socket.data.userId,
+    });
     // Fire-and-forget: don't send error to client
   }
 }
@@ -85,9 +89,10 @@ export async function handleTypingStop(
   socket: Socket,
   payload: TypingStopPayload,
 ): Promise<void> {
-  const userId = socket.data.userId as string;
+  let userId: ObjectIdString | undefined;
 
   try {
+    userId = validateObjectId(socket.data.userId as string, "userId");
     // Validate payload
     const validation = typingSchema.safeParse(payload);
     if (!validation.success) {
@@ -98,8 +103,8 @@ export async function handleTypingStop(
     }
 
     const { chatId } = validation.data;
-    const userObjectId = new ObjectId(userId);
-    const chatObjectId = new ObjectId(chatId);
+    const userObjectId = toObjectId(userId, "userId");
+    const chatObjectId = toObjectId(chatId, "chatId");
 
     // Verify user is a member of the chat
     const membershipRepo = new MembershipRepository();
@@ -126,10 +131,10 @@ export async function handleTypingStop(
       `Socket ${socket.id}: User ${userId} stopped typing in chat ${chatId}`,
     );
   } catch (error) {
-    logger.error(
-      `Socket ${socket.id}: Typing stop error:`,
-      error instanceof Error ? error.message : String(error),
-    );
+    logger.error(`Socket ${socket.id}: Typing stop error:`, {
+      error: error instanceof Error ? error.message : String(error),
+      userId: userId ?? socket.data.userId,
+    });
     // Fire-and-forget: don't send error to client
   }
 }

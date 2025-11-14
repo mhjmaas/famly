@@ -1,5 +1,6 @@
 import { getDb } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
+import { toObjectId } from "@lib/objectid-utils";
 import { type Collection, ObjectId } from "mongodb";
 import type {
   CreateScheduleInput,
@@ -43,22 +44,22 @@ export class ScheduleRepository {
    * Create a new task schedule
    */
   async createSchedule(
-    familyId: ObjectId,
+    familyId: string,
     input: CreateScheduleInput,
-    createdBy: ObjectId,
+    createdBy: string,
   ): Promise<TaskSchedule> {
     const now = new Date();
 
     const schedule: TaskSchedule = {
       _id: new ObjectId(),
-      familyId,
+      familyId: toObjectId(familyId),
       name: input.name,
       description: input.description,
       assignment: input.assignment,
       schedule: input.schedule,
       timeOfDay: input.timeOfDay,
       metadata: input.metadata,
-      createdBy,
+      createdBy: toObjectId(createdBy),
       createdAt: now,
       updatedAt: now,
     };
@@ -71,15 +72,18 @@ export class ScheduleRepository {
   /**
    * Find a schedule by ID
    */
-  async findScheduleById(scheduleId: ObjectId): Promise<TaskSchedule | null> {
-    return this.collection.findOne({ _id: scheduleId });
+  async findScheduleById(scheduleId: string): Promise<TaskSchedule | null> {
+    return this.collection.findOne({ _id: toObjectId(scheduleId) });
   }
 
   /**
    * Find all schedules for a family
    */
-  async findSchedulesByFamily(familyId: ObjectId): Promise<TaskSchedule[]> {
-    return this.collection.find({ familyId }).sort({ createdAt: -1 }).toArray();
+  async findSchedulesByFamily(familyId: string): Promise<TaskSchedule[]> {
+    return this.collection
+      .find({ familyId: toObjectId(familyId) })
+      .sort({ createdAt: -1 })
+      .toArray();
   }
 
   /**
@@ -116,7 +120,7 @@ export class ScheduleRepository {
    * Update a schedule
    */
   async updateSchedule(
-    scheduleId: ObjectId,
+    scheduleId: string,
     input: UpdateScheduleInput,
   ): Promise<TaskSchedule | null> {
     const updateFields: Partial<TaskSchedule> = {
@@ -143,7 +147,7 @@ export class ScheduleRepository {
     }
 
     const result = await this.collection.findOneAndUpdate(
-      { _id: scheduleId },
+      { _id: toObjectId(scheduleId) },
       { $set: updateFields },
       { returnDocument: "after" },
     );
@@ -154,12 +158,9 @@ export class ScheduleRepository {
   /**
    * Update the last generated date for a schedule
    */
-  async updateLastGeneratedDate(
-    scheduleId: ObjectId,
-    date: Date,
-  ): Promise<void> {
+  async updateLastGeneratedDate(scheduleId: string, date: Date): Promise<void> {
     await this.collection.updateOne(
-      { _id: scheduleId },
+      { _id: toObjectId(scheduleId) },
       {
         $set: {
           lastGeneratedDate: date,
@@ -172,8 +173,10 @@ export class ScheduleRepository {
   /**
    * Delete a schedule
    */
-  async deleteSchedule(scheduleId: ObjectId): Promise<boolean> {
-    const result = await this.collection.deleteOne({ _id: scheduleId });
+  async deleteSchedule(scheduleId: string): Promise<boolean> {
+    const result = await this.collection.deleteOne({
+      _id: toObjectId(scheduleId),
+    });
     return result.deletedCount > 0;
   }
 }

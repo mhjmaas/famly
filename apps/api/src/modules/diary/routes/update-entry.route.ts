@@ -4,9 +4,9 @@ import { authenticate } from "@modules/auth/middleware/authenticate";
 import { authorizeCreatorOwnership } from "@modules/auth/middleware/authorize-creator-ownership";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { toDiaryEntryDTO } from "../lib/diary-entry.mapper";
 import { DiaryRepository } from "../repositories/diary.repository";
+import { DiaryService } from "../services/diary.service";
 import { validateUpdateEntry } from "../validators/update-entry.validator";
 
 /**
@@ -27,33 +27,30 @@ import { validateUpdateEntry } from "../validators/update-entry.validator";
 export function updateEntryRoute(): Router {
   const router = Router();
   const diaryRepository = new DiaryRepository();
+  const diaryService = new DiaryService(diaryRepository);
 
   router.patch(
     "/:entryId",
     authenticate,
     authorizeCreatorOwnership({
       resourceIdParam: "entryId",
-      lookupFn: (id: ObjectId) => diaryRepository.findById(id),
+      lookupFn: (id: string) => diaryService.findEntryById(id),
     }),
     validateUpdateEntry,
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
       try {
+        if (!req.user?.id) {
+          throw HttpError.unauthorized("Authentication required");
+        }
         if (!req.params.entryId) {
           throw HttpError.badRequest("Missing entryId parameter");
         }
 
-        let entryId: ObjectId;
-        try {
-          entryId = new ObjectId(req.params.entryId);
-        } catch {
-          throw HttpError.notFound("Entry not found");
-        }
-
-        const entry = await diaryRepository.updateEntry(entryId, req.body);
-
-        if (!entry) {
-          throw HttpError.notFound("Entry not found");
-        }
+        const entry = await diaryService.updatePersonalEntry(
+          req.params.entryId,
+          req.user.id,
+          req.body,
+        );
 
         res.status(200).json(toDiaryEntryDTO(entry));
       } catch (error) {

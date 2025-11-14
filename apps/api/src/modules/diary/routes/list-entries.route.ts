@@ -3,9 +3,9 @@ import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { toDiaryEntryDTO } from "../lib/diary-entry.mapper";
 import { DiaryRepository } from "../repositories/diary.repository";
+import { DiaryService } from "../services/diary.service";
 
 /**
  * GET / - List all diary entries for the authenticated user
@@ -22,6 +22,7 @@ import { DiaryRepository } from "../repositories/diary.repository";
 export function listEntriesRoute(): Router {
   const router = Router();
   const diaryRepository = new DiaryRepository();
+  const diaryService = new DiaryService(diaryRepository);
 
   router.get(
     "/",
@@ -32,12 +33,11 @@ export function listEntriesRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        const userId = new ObjectId(req.user.id);
         const startDate = req.query.startDate as string | undefined;
         const endDate = req.query.endDate as string | undefined;
 
-        const entries = await diaryRepository.findByCreatorInDateRange(
-          userId,
+        const entries = await diaryService.listPersonalEntries(
+          req.user.id,
           startDate,
           endDate,
         );

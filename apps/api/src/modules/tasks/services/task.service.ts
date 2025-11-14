@@ -1,17 +1,16 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import {
+  fromObjectId,
+  type ObjectIdString,
+  validateObjectId,
+} from "@lib/objectid-utils";
 import type { ActivityEventService } from "@modules/activity-events";
 import { requireFamilyRole } from "@modules/auth/lib/require-family-role";
 import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type { KarmaService } from "@modules/karma";
-import { ObjectId } from "mongodb";
-import type {
-  CreateTaskInput,
-  Task,
-  TaskAssignment,
-  UpdateTaskInput,
-} from "../domain/task";
+import type { CreateTaskInput, Task, UpdateTaskInput } from "../domain/task";
 import {
   emitTaskAssigned,
   emitTaskCompleted,
@@ -35,28 +34,6 @@ export class TaskService {
   }
 
   /**
-   * Convert assignment IDs from strings to ObjectIds
-   * The validators ensure they're valid ObjectId strings, but don't convert them
-   */
-  private normalizeAssignment(
-    assignment: TaskAssignment | any,
-  ): TaskAssignment {
-    if (!assignment) return assignment;
-
-    if (
-      assignment.type === "member" &&
-      typeof assignment.memberId === "string"
-    ) {
-      return {
-        type: "member",
-        memberId: new ObjectId(assignment.memberId),
-      };
-    }
-
-    return assignment;
-  }
-
-  /**
    * Register a task completion hook
    */
   registerCompletionHook(hook: TaskCompletionHook): void {
@@ -67,42 +44,39 @@ export class TaskService {
    * Create a new task
    */
   async createTask(
-    familyId: ObjectId,
-    userId: ObjectId,
+    familyId: string,
+    userId: string,
     input: CreateTaskInput,
   ): Promise<Task> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedUserId = validateObjectId(userId, "userId");
+
       logger.info("Creating task", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
         name: input.name,
       });
 
-      // Verify user is a member of the family
       await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child], // Both roles can create tasks
+        userId: normalizedUserId,
+        familyId: normalizedFamilyId,
+        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
         membershipRepository: this.membershipRepository,
       });
 
-      // Normalize assignment to ensure IDs are ObjectIds
-      const normalizedInput = {
-        ...input,
-        assignment: this.normalizeAssignment(input.assignment),
-      };
-
-      // Create the task
       const task = await this.taskRepository.createTask(
-        familyId,
-        normalizedInput,
-        userId,
+        normalizedFamilyId,
+        input,
+        normalizedUserId,
       );
 
       logger.info("Task created successfully", {
         taskId: task._id.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId,
+        userId,
       });
 
       // Record activity event for non-recurring tasks only
@@ -110,7 +84,7 @@ export class TaskService {
       if (this.activityEventService && !task.scheduleId) {
         try {
           await this.activityEventService.recordEvent({
-            userId,
+            userId: normalizedUserId,
             type: "TASK",
             title: task.name,
             description: `Created ${task.name}`,
@@ -135,8 +109,8 @@ export class TaskService {
       return task;
     } catch (error) {
       logger.error("Failed to create task", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId: normalizedFamilyId ?? familyId,
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;
@@ -147,40 +121,43 @@ export class TaskService {
    * List all tasks for a family
    */
   async listTasksForFamily(
-    familyId: ObjectId,
-    userId: ObjectId,
+    familyId: string,
+    userId: string,
     dueDateFrom?: Date,
     dueDateTo?: Date,
   ): Promise<Task[]> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedUserId = validateObjectId(userId, "userId");
+
       logger.debug("Listing tasks for family", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
-      // Verify user is a member of the family
       await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child], // Both roles can list tasks
+        userId: normalizedUserId,
+        familyId: normalizedFamilyId,
+        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
         membershipRepository: this.membershipRepository,
       });
 
-      // Fetch tasks with optional date filtering
       const tasks =
         dueDateFrom || dueDateTo
           ? await this.taskRepository.findTasksByFamilyAndDateRange(
-              familyId,
+              normalizedFamilyId,
               dueDateFrom,
               dueDateTo,
             )
-          : await this.taskRepository.findTasksByFamily(familyId);
+          : await this.taskRepository.findTasksByFamily(normalizedFamilyId);
 
       return tasks;
     } catch (error) {
       logger.error("Failed to list tasks for family", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId: normalizedFamilyId ?? familyId,
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;
@@ -191,43 +168,48 @@ export class TaskService {
    * Get a specific task by ID
    */
   async getTaskById(
-    familyId: ObjectId,
-    taskId: ObjectId,
-    userId: ObjectId,
+    familyId: string,
+    taskId: string,
+    userId: string,
   ): Promise<Task> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedTaskId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedTaskId = validateObjectId(taskId, "taskId");
+      normalizedUserId = validateObjectId(userId, "userId");
+
       logger.debug("Getting task by ID", {
-        taskId: taskId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        taskId: normalizedTaskId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
-      // Verify user is a member of the family
       await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child], // Both roles can get tasks
+        userId: normalizedUserId,
+        familyId: normalizedFamilyId,
+        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
         membershipRepository: this.membershipRepository,
       });
 
-      // Fetch the task
-      const task = await this.taskRepository.findTaskById(taskId);
+      const task = await this.taskRepository.findTaskById(normalizedTaskId);
 
       if (!task) {
         throw HttpError.notFound("Task not found");
       }
 
       // Verify task belongs to the specified family
-      if (task.familyId.toString() !== familyId.toString()) {
+      if (task.familyId.toString() !== normalizedFamilyId) {
         throw HttpError.forbidden("Task does not belong to this family");
       }
 
       return task;
     } catch (error) {
       logger.error("Failed to get task by ID", {
-        taskId: taskId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        taskId: normalizedTaskId ?? taskId,
+        familyId: normalizedFamilyId ?? familyId,
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;
@@ -238,51 +220,52 @@ export class TaskService {
    * Update a task
    */
   async updateTask(
-    familyId: ObjectId,
-    taskId: ObjectId,
-    userId: ObjectId,
+    familyId: string,
+    taskId: string,
+    userId: string,
     input: UpdateTaskInput,
   ): Promise<Task> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedTaskId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedTaskId = validateObjectId(taskId, "taskId");
+      normalizedUserId = validateObjectId(userId, "userId");
+
       logger.info("Updating task", {
-        taskId: taskId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        taskId: normalizedTaskId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
-      // Verify user is a member of the family
       await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child], // Both roles can update tasks
+        userId: normalizedUserId,
+        familyId: normalizedFamilyId,
+        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
         membershipRepository: this.membershipRepository,
       });
 
-      // Verify task exists and belongs to family
-      const existingTask = await this.taskRepository.findTaskById(taskId);
+      const existingTask =
+        await this.taskRepository.findTaskById(normalizedTaskId);
       if (!existingTask) {
         throw HttpError.notFound("Task not found");
       }
 
-      if (existingTask.familyId.toString() !== familyId.toString()) {
+      if (existingTask.familyId.toString() !== normalizedFamilyId) {
         throw HttpError.forbidden("Task does not belong to this family");
-      }
-
-      // Normalize assignment to ensure IDs are ObjectIds
-      if (input.assignment) {
-        input.assignment = this.normalizeAssignment(input.assignment);
       }
 
       // Authorization guard: if completing a member-assigned task, only the assignee or a parent can do it
       if (input.completedAt && !existingTask.completedAt) {
         if (
           existingTask.assignment.type === "member" &&
-          existingTask.assignment.memberId.toString() !== userId.toString()
+          existingTask.assignment.memberId.toString() !== normalizedUserId
         ) {
           // User is not the assignee, so they must be a parent
           await requireFamilyRole({
-            userId,
-            familyId,
+            userId: normalizedUserId,
+            familyId: normalizedFamilyId,
             allowedRoles: [FamilyRole.Parent],
             membershipRepository: this.membershipRepository,
           });
@@ -292,19 +275,22 @@ export class TaskService {
       // Determine the credited user for task completion
       // For member-assigned tasks, credit goes to the assignee
       // For role/unassigned tasks, credit goes to the actor
-      let creditedUserId: ObjectId | undefined;
+      let creditedUserId: ObjectIdString | undefined;
       if (input.completedAt && !existingTask.completedAt) {
         if (existingTask.assignment.type === "member") {
-          creditedUserId = existingTask.assignment.memberId;
+          creditedUserId = validateObjectId(
+            existingTask.assignment.memberId.toString(),
+            "memberId",
+          );
         } else {
           // Role or unassigned task - credit the actor
-          creditedUserId = userId;
+          creditedUserId = normalizedUserId;
         }
       }
 
       // Update the task, passing credited user if task is being completed
       const updatedTask = await this.taskRepository.updateTask(
-        taskId,
+        normalizedTaskId,
         input,
         creditedUserId,
       );
@@ -324,25 +310,25 @@ export class TaskService {
       ) {
         try {
           await this.karmaService.awardKarma({
-            familyId: updatedTask.familyId,
+            familyId: fromObjectId(updatedTask.familyId),
             userId: creditedUserId,
             amount: updatedTask.metadata.karma,
             source: "task_completion",
             description: `Completed task "${updatedTask.name}"`,
-            metadata: { taskId: taskId.toString() },
+            metadata: { taskId: normalizedTaskId },
           });
 
           logger.info("Karma awarded for task completion", {
-            taskId: taskId.toString(),
-            creditedUserId: creditedUserId.toString(),
-            triggeredBy: userId.toString(),
+            taskId: normalizedTaskId,
+            creditedUserId,
+            triggeredBy: normalizedUserId,
             karma: updatedTask.metadata.karma,
           });
         } catch (error) {
           logger.error("Failed to award karma for task completion", {
-            taskId: taskId.toString(),
-            creditedUserId: creditedUserId.toString(),
-            triggeredBy: userId.toString(),
+            taskId: normalizedTaskId,
+            creditedUserId,
+            triggeredBy: normalizedUserId,
             error,
           });
           // Don't throw - task completion should succeed even if karma fails
@@ -357,29 +343,31 @@ export class TaskService {
         this.karmaService
       ) {
         // Use completedBy from existing task to deduct karma from the correct user
-        const karmaRecipient = existingTask.completedBy || userId;
+        const karmaRecipient = existingTask.completedBy
+          ? validateObjectId(existingTask.completedBy.toString(), "completedBy")
+          : normalizedUserId;
 
         try {
           await this.karmaService.awardKarma({
-            familyId: updatedTask.familyId,
+            familyId: fromObjectId(updatedTask.familyId),
             userId: karmaRecipient,
             amount: -updatedTask.metadata.karma, // Negative to deduct
             source: "task_uncomplete",
             description: `Uncompleted task "${updatedTask.name}"`,
-            metadata: { taskId: taskId.toString() },
+            metadata: { taskId: normalizedTaskId },
           });
 
           logger.info("Karma deducted for task uncomplete", {
-            taskId: taskId.toString(),
-            originalCompletedBy: karmaRecipient.toString(),
-            triggeredBy: userId.toString(),
+            taskId: normalizedTaskId,
+            originalCompletedBy: karmaRecipient,
+            triggeredBy: normalizedUserId,
             karma: updatedTask.metadata.karma,
           });
         } catch (error) {
           logger.error("Failed to deduct karma for task uncomplete", {
-            taskId: taskId.toString(),
-            originalCompletedBy: karmaRecipient.toString(),
-            triggeredBy: userId.toString(),
+            taskId: normalizedTaskId,
+            originalCompletedBy: karmaRecipient,
+            triggeredBy: normalizedUserId,
             error,
           });
           // Don't throw - task uncomplete should succeed even if karma fails
@@ -393,21 +381,21 @@ export class TaskService {
           await this.hookRegistry.invokeHooks(
             updatedTask,
             creditedUserId,
-            userId,
+            normalizedUserId,
             (error) => {
               logger.error("Task completion hook failed", {
-                taskId: taskId.toString(),
-                creditedUserId: creditedUserId.toString(),
-                triggeredBy: userId.toString(),
+                taskId: normalizedTaskId,
+                creditedUserId,
+                triggeredBy: normalizedUserId,
                 error,
               });
             },
           );
         } catch (error) {
           logger.error("Unexpected error invoking task completion hooks", {
-            taskId: taskId.toString(),
-            creditedUserId: creditedUserId.toString(),
-            triggeredBy: userId.toString(),
+            taskId: normalizedTaskId,
+            creditedUserId,
+            triggeredBy: normalizedUserId,
             error,
           });
           // Don't throw - task completion should succeed even if hook fails
@@ -415,7 +403,7 @@ export class TaskService {
 
         // Emit real-time event for task completion
         // Pass both credited user and triggering actor
-        emitTaskCompleted(updatedTask, creditedUserId, userId);
+        emitTaskCompleted(updatedTask, creditedUserId, normalizedUserId);
       }
 
       // Check if assignment changed and emit task.assigned event
@@ -427,17 +415,17 @@ export class TaskService {
       }
 
       logger.info("Task updated successfully", {
-        taskId: taskId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        taskId: normalizedTaskId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
       return updatedTask;
     } catch (error) {
       logger.error("Failed to update task", {
-        taskId: taskId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        taskId: normalizedTaskId ?? taskId,
+        familyId: normalizedFamilyId ?? familyId,
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;
@@ -448,37 +436,45 @@ export class TaskService {
    * Delete a task
    */
   async deleteTask(
-    familyId: ObjectId,
-    taskId: ObjectId,
-    userId: ObjectId,
+    familyId: string,
+    taskId: string,
+    userId: string,
   ): Promise<void> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedTaskId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedTaskId = validateObjectId(taskId, "taskId");
+      normalizedUserId = validateObjectId(userId, "userId");
+
       logger.info("Deleting task", {
-        taskId: taskId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        taskId: normalizedTaskId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
       // Verify user is a member of the family
       await requireFamilyRole({
-        userId,
-        familyId,
+        userId: normalizedUserId,
+        familyId: normalizedFamilyId,
         allowedRoles: [FamilyRole.Parent, FamilyRole.Child], // Both roles can delete tasks
         membershipRepository: this.membershipRepository,
       });
 
       // Verify task exists and belongs to family
-      const existingTask = await this.taskRepository.findTaskById(taskId);
+      const existingTask =
+        await this.taskRepository.findTaskById(normalizedTaskId);
       if (!existingTask) {
         throw HttpError.notFound("Task not found");
       }
 
-      if (existingTask.familyId.toString() !== familyId.toString()) {
+      if (existingTask.familyId.toString() !== normalizedFamilyId) {
         throw HttpError.forbidden("Task does not belong to this family");
       }
 
       // Delete the task
-      const deleted = await this.taskRepository.deleteTask(taskId);
+      const deleted = await this.taskRepository.deleteTask(normalizedTaskId);
 
       if (!deleted) {
         throw HttpError.notFound("Task not found");
@@ -491,18 +487,18 @@ export class TaskService {
       if (existingTask.assignment.type === "member") {
         affectedUsers.push(existingTask.assignment.memberId.toString());
       }
-      emitTaskDeleted(taskId, familyId, affectedUsers);
+      emitTaskDeleted(normalizedTaskId, normalizedFamilyId, affectedUsers);
 
       logger.info("Task deleted successfully", {
-        taskId: taskId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        taskId: normalizedTaskId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
     } catch (error) {
       logger.error("Failed to delete task", {
-        taskId: taskId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        taskId: normalizedTaskId ?? taskId,
+        familyId: normalizedFamilyId ?? familyId,
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;

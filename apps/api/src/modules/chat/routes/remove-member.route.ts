@@ -1,9 +1,9 @@
 import { HttpError } from "@lib/http-error";
+import { toObjectId, validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { verifyMembership } from "../middleware";
 import { ChatRepository } from "../repositories/chat.repository";
 import { MembershipRepository } from "../repositories/membership.repository";
@@ -51,9 +51,10 @@ export function removeMemberRoute(): Router {
         }
 
         const { chatId, userId } = req.params;
-        const removedBy = new ObjectId(req.user.id);
-        const userToRemove = new ObjectId(userId);
-        const chatObjectId = new ObjectId(chatId);
+        const normalizedRemovedBy = validateObjectId(req.user.id, "userId");
+        const normalizedUserToRemove = validateObjectId(userId, "userId");
+        const normalizedChatId = validateObjectId(chatId, "chatId");
+        const chatObjectId = toObjectId(normalizedChatId, "chatId");
 
         // Verify chat type before checking authorization
         const chat = await chatRepository.findById(chatObjectId);
@@ -65,7 +66,7 @@ export function removeMemberRoute(): Router {
         }
 
         // Check if removing self or removing others
-        const isRemovingSelf = removedBy.toString() === userToRemove.toString();
+        const isRemovingSelf = normalizedRemovedBy === normalizedUserToRemove;
 
         // If removing others, require admin role
         if (!isRemovingSelf) {
@@ -75,9 +76,9 @@ export function removeMemberRoute(): Router {
         }
 
         await membershipService.removeMember(
-          chatObjectId,
-          userToRemove,
-          removedBy,
+          normalizedChatId,
+          normalizedUserToRemove,
+          normalizedRemovedBy,
         );
 
         res.status(204).send();

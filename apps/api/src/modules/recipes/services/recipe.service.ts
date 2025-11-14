@@ -1,10 +1,10 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import { type ObjectIdString, toObjectId } from "@lib/objectid-utils";
 import type { ActivityEventService } from "@modules/activity-events";
 import { requireFamilyRole } from "@modules/auth/lib/require-family-role";
 import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
-import type { ObjectId } from "mongodb";
 import type {
   CreateRecipeInput,
   Recipe,
@@ -23,36 +23,37 @@ export class RecipeService {
    * Create a new recipe
    */
   async createRecipe(
-    familyId: ObjectId,
-    userId: ObjectId,
+    familyId: ObjectIdString,
+    userId: ObjectIdString,
     input: CreateRecipeInput,
   ): Promise<Recipe> {
     try {
       logger.info("Creating recipe", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId,
+        userId,
         name: input.name,
       });
 
       // Verify user is a member of the family
-      await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
-        membershipRepository: this.membershipRepository,
-      });
+      await this.ensureFamilyMembership(familyId, userId, [
+        FamilyRole.Parent,
+        FamilyRole.Child,
+      ]);
+
+      const familyObjectId = toObjectId(familyId, "familyId");
+      const userObjectId = toObjectId(userId, "userId");
 
       // Create the recipe
       const recipe = await this.recipeRepository.create(
-        familyId,
+        familyObjectId,
         input,
-        userId,
+        userObjectId,
       );
 
       logger.info("Recipe created successfully", {
         recipeId: recipe._id.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId,
+        userId,
       });
 
       // Record activity event for recipe creation
@@ -75,8 +76,8 @@ export class RecipeService {
       return recipe;
     } catch (error) {
       logger.error("Failed to create recipe", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId,
+        userId,
         error,
       });
       throw error;
@@ -87,27 +88,28 @@ export class RecipeService {
    * Get a specific recipe by ID
    */
   async getRecipe(
-    familyId: ObjectId,
-    recipeId: ObjectId,
-    userId: ObjectId,
+    familyId: ObjectIdString,
+    recipeId: ObjectIdString,
+    userId: ObjectIdString,
   ): Promise<Recipe> {
     try {
       logger.debug("Getting recipe by ID", {
-        recipeId: recipeId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        recipeId,
+        familyId,
+        userId,
       });
 
       // Verify user is a member of the family
-      await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
-        membershipRepository: this.membershipRepository,
-      });
+      await this.ensureFamilyMembership(familyId, userId, [
+        FamilyRole.Parent,
+        FamilyRole.Child,
+      ]);
 
       // Fetch the recipe
-      const recipe = await this.recipeRepository.getById(familyId, recipeId);
+      const recipe = await this.recipeRepository.getById(
+        toObjectId(familyId, "familyId"),
+        toObjectId(recipeId, "recipeId"),
+      );
 
       if (!recipe) {
         throw HttpError.notFound("Recipe not found");
@@ -116,9 +118,9 @@ export class RecipeService {
       return recipe;
     } catch (error) {
       logger.error("Failed to get recipe by ID", {
-        recipeId: recipeId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        recipeId,
+        familyId,
+        userId,
         error,
       });
       throw error;
@@ -129,38 +131,38 @@ export class RecipeService {
    * List recipes for a family with pagination
    */
   async listRecipes(
-    familyId: ObjectId,
-    userId: ObjectId,
+    familyId: ObjectIdString,
+    userId: ObjectIdString,
     limit: number,
     offset: number,
   ): Promise<{ recipes: Recipe[]; total: number }> {
     try {
       logger.debug("Listing recipes for family", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId,
+        userId,
         limit,
         offset,
       });
 
       // Verify user is a member of the family
-      await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
-        membershipRepository: this.membershipRepository,
-      });
+      await this.ensureFamilyMembership(familyId, userId, [
+        FamilyRole.Parent,
+        FamilyRole.Child,
+      ]);
 
       // Fetch recipes and total count
+      const familyObjectId = toObjectId(familyId, "familyId");
+
       const [recipes, total] = await Promise.all([
-        this.recipeRepository.listByFamily(familyId, limit, offset),
-        this.recipeRepository.countByFamily(familyId),
+        this.recipeRepository.listByFamily(familyObjectId, limit, offset),
+        this.recipeRepository.countByFamily(familyObjectId),
       ]);
 
       return { recipes, total };
     } catch (error) {
       logger.error("Failed to list recipes for family", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId,
+        userId,
         error,
       });
       throw error;
@@ -171,30 +173,31 @@ export class RecipeService {
    * Update a recipe
    */
   async updateRecipe(
-    familyId: ObjectId,
-    recipeId: ObjectId,
-    userId: ObjectId,
+    familyId: ObjectIdString,
+    recipeId: ObjectIdString,
+    userId: ObjectIdString,
     input: UpdateRecipeInput,
   ): Promise<Recipe> {
     try {
       logger.info("Updating recipe", {
-        recipeId: recipeId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        recipeId,
+        familyId,
+        userId,
       });
 
       // Verify user is a member of the family
-      await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
-        membershipRepository: this.membershipRepository,
-      });
+      await this.ensureFamilyMembership(familyId, userId, [
+        FamilyRole.Parent,
+        FamilyRole.Child,
+      ]);
 
       // Verify recipe exists and belongs to family
+      const familyObjectId = toObjectId(familyId, "familyId");
+      const recipeObjectId = toObjectId(recipeId, "recipeId");
+
       const existingRecipe = await this.recipeRepository.getById(
-        familyId,
-        recipeId,
+        familyObjectId,
+        recipeObjectId,
       );
       if (!existingRecipe) {
         throw HttpError.notFound("Recipe not found");
@@ -202,8 +205,8 @@ export class RecipeService {
 
       // Update the recipe
       const updatedRecipe = await this.recipeRepository.update(
-        familyId,
-        recipeId,
+        familyObjectId,
+        recipeObjectId,
         input,
       );
 
@@ -212,17 +215,17 @@ export class RecipeService {
       }
 
       logger.info("Recipe updated successfully", {
-        recipeId: recipeId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        recipeId,
+        familyId,
+        userId,
       });
 
       return updatedRecipe;
     } catch (error) {
       logger.error("Failed to update recipe", {
-        recipeId: recipeId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        recipeId,
+        familyId,
+        userId,
         error,
       });
       throw error;
@@ -233,51 +236,55 @@ export class RecipeService {
    * Delete a recipe
    */
   async deleteRecipe(
-    familyId: ObjectId,
-    recipeId: ObjectId,
-    userId: ObjectId,
+    familyId: ObjectIdString,
+    recipeId: ObjectIdString,
+    userId: ObjectIdString,
   ): Promise<void> {
     try {
       logger.info("Deleting recipe", {
-        recipeId: recipeId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        recipeId,
+        familyId,
+        userId,
       });
 
       // Verify user is a member of the family
-      await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
-        membershipRepository: this.membershipRepository,
-      });
+      await this.ensureFamilyMembership(familyId, userId, [
+        FamilyRole.Parent,
+        FamilyRole.Child,
+      ]);
 
       // Verify recipe exists and belongs to family
+      const familyObjectId = toObjectId(familyId, "familyId");
+      const recipeObjectId = toObjectId(recipeId, "recipeId");
+
       const existingRecipe = await this.recipeRepository.getById(
-        familyId,
-        recipeId,
+        familyObjectId,
+        recipeObjectId,
       );
       if (!existingRecipe) {
         throw HttpError.notFound("Recipe not found");
       }
 
       // Delete the recipe
-      const deleted = await this.recipeRepository.delete(familyId, recipeId);
+      const deleted = await this.recipeRepository.delete(
+        familyObjectId,
+        recipeObjectId,
+      );
 
       if (!deleted) {
         throw HttpError.notFound("Recipe not found");
       }
 
       logger.info("Recipe deleted successfully", {
-        recipeId: recipeId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        recipeId,
+        familyId,
+        userId,
       });
     } catch (error) {
       logger.error("Failed to delete recipe", {
-        recipeId: recipeId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        recipeId,
+        familyId,
+        userId,
         error,
       });
       throw error;
@@ -288,44 +295,57 @@ export class RecipeService {
    * Search recipes by name and description
    */
   async searchRecipes(
-    familyId: ObjectId,
-    userId: ObjectId,
+    familyId: ObjectIdString,
+    userId: ObjectIdString,
     query: string,
     limit: number,
     offset: number,
   ): Promise<{ recipes: Recipe[]; total: number }> {
     try {
       logger.debug("Searching recipes", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId,
+        userId,
         query,
         limit,
         offset,
       });
 
       // Verify user is a member of the family
-      await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
-        membershipRepository: this.membershipRepository,
-      });
+      await this.ensureFamilyMembership(familyId, userId, [
+        FamilyRole.Parent,
+        FamilyRole.Child,
+      ]);
 
       // Search recipes and count results
+      const familyObjectId = toObjectId(familyId, "familyId");
+
       const [recipes, total] = await Promise.all([
-        this.recipeRepository.search(familyId, query, limit, offset),
-        this.recipeRepository.countSearch(familyId, query),
+        this.recipeRepository.search(familyObjectId, query, limit, offset),
+        this.recipeRepository.countSearch(familyObjectId, query),
       ]);
 
       return { recipes, total };
     } catch (error) {
       logger.error("Failed to search recipes", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId,
+        userId,
         query,
         error,
       });
       throw error;
     }
+  }
+
+  private async ensureFamilyMembership(
+    familyId: ObjectIdString,
+    userId: ObjectIdString,
+    allowedRoles: FamilyRole[],
+  ): Promise<void> {
+    await requireFamilyRole({
+      familyId,
+      userId,
+      allowedRoles,
+      membershipRepository: this.membershipRepository,
+    });
   }
 }

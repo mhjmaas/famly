@@ -1,7 +1,18 @@
 import { HttpError } from "@lib/http-error";
+import { zodObjectId } from "@lib/zod-objectid";
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import { FamilyRole } from "../domain/family";
+
+/**
+ * Zod schema for add family member route params validation
+ *
+ * Validates:
+ * - familyId: Must be a valid ObjectId format
+ */
+export const addFamilyMemberParamsSchema = z.object({
+  familyId: zodObjectId,
+});
 
 /**
  * Zod schema for add family member payload validation
@@ -54,7 +65,7 @@ export const addFamilyMemberSchema = z.object({
 export type AddFamilyMemberPayload = z.infer<typeof addFamilyMemberSchema>;
 
 /**
- * Express middleware to validate add family member request body
+ * Express middleware to validate add family member request body and params
  */
 export function validateAddFamilyMember(
   req: Request,
@@ -62,6 +73,10 @@ export function validateAddFamilyMember(
   next: NextFunction,
 ): void {
   try {
+    // Validate route params
+    const validatedParams = addFamilyMemberParamsSchema.parse(req.params);
+    req.params = validatedParams;
+
     // Validate and transform request body
     const validated = addFamilyMemberSchema.parse(req.body);
 

@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { CheckCircle2, Gift, type LucideIcon } from "lucide-react";
-import type { ActivityEvent } from "./api-client";
+import type { ActivityEvent } from "../api-client";
 
 export interface EventGroup {
   date: string; // YYYY-MM-DD

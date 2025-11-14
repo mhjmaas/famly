@@ -1,6 +1,6 @@
 import { HttpError } from "@lib/http-error";
+import { zodObjectId } from "@lib/zod-objectid";
 import type { NextFunction, Request, Response } from "express";
-import { ObjectId } from "mongodb";
 import { z } from "zod";
 
 /**
@@ -12,12 +12,7 @@ import { z } from "zod";
  * - description: Optional string, max 500 characters
  */
 export const grantKarmaSchema = z.object({
-  userId: z
-    .string()
-    .min(1, "User ID is required")
-    .refine((val) => ObjectId.isValid(val), {
-      message: "Invalid user ID format",
-    }),
+  userId: zodObjectId,
 
   amount: z
     .number()

@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { FamilyMember } from "@/lib/api-client";
-import { calculateAge, getInitials } from "@/lib/family-utils";
+import { calculateAge, getInitials } from "@/lib/utils/family-utils";
 import { useAppSelector } from "@/store/hooks";
 import { selectKarmaBalance } from "@/store/slices/karma.slice";
 

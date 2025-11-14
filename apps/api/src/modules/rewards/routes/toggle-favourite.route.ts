@@ -1,11 +1,11 @@
 import { getMongoClient } from "@infra/mongo/client";
 import { HttpError } from "@lib/http-error";
+import { toObjectId, validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { MetadataRepository } from "../repositories/metadata.repository";
 import { RewardRepository } from "../repositories/reward.repository";
 import { RewardService } from "../services/reward.service";
@@ -51,9 +51,9 @@ export function toggleFavouriteRoute(): Router {
           );
         }
 
-        const userId = new ObjectId(req.user.id);
-        const familyId = new ObjectId(req.params.familyId);
-        const rewardId = new ObjectId(req.params.rewardId);
+        const userId = validateObjectId(req.user.id, "userId");
+        const familyId = validateObjectId(req.params.familyId, "familyId");
+        const rewardId = validateObjectId(req.params.rewardId, "rewardId");
         const isFavourite = req.body.isFavourite;
         const mongoClient = getMongoClient();
 
@@ -70,18 +70,20 @@ export function toggleFavouriteRoute(): Router {
 
         // Verify reward exists
         const rewardRepository = new RewardRepository(mongoClient);
-        const reward = await rewardRepository.findById(rewardId);
+        const reward = await rewardRepository.findById(
+          toObjectId(rewardId, "rewardId"),
+        );
 
-        if (!reward || reward.familyId.toString() !== familyId.toString()) {
+        if (!reward || reward.familyId.toString() !== familyId) {
           throw HttpError.notFound("Reward not found");
         }
 
         // Update favourite
         const metadataRepository = new MetadataRepository(mongoClient);
         await metadataRepository.upsertFavourite(
-          familyId,
-          rewardId,
-          userId,
+          toObjectId(familyId, "familyId"),
+          toObjectId(rewardId, "rewardId"),
+          toObjectId(userId, "userId"),
           isFavourite,
         );
 

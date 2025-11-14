@@ -4,7 +4,7 @@ import Link from "next/link";
 import { LogoComponent } from "@/components/navigation/LogoComponent";
 import { UserProfileDisplay } from "@/components/profile/UserProfileDisplay";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/style-utils";
 import type {
   Dictionary,
   NavigationItem as NavigationItemType,

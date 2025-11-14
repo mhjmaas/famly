@@ -4,7 +4,6 @@ import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { FamilyRepository } from "../repositories/family.repository";
 import { FamilyMembershipRepository } from "../repositories/family-membership.repository";
 import { FamilyService } from "../services/family.service";
@@ -46,7 +45,7 @@ export function createCreateFamilyRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        const userId = new ObjectId(req.user.id);
+        const userId = req.user.id;
 
         logger.info(`Creating family via API with name: ${req.body.name}`);
 

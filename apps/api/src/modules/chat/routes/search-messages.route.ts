@@ -3,7 +3,6 @@ import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { ChatRepository } from "../repositories/chat.repository";
 import { MembershipRepository } from "../repositories/membership.repository";
 import { MessageRepository } from "../repositories/message.repository";
@@ -46,11 +45,10 @@ export function searchMessagesRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        const userId = new ObjectId(req.user.id);
         const searchParams = (req as any).searchParams;
 
         const response = await messageService.searchMessages(
-          userId,
+          req.user.id,
           searchParams.q,
           searchParams.chatId,
           searchParams.cursor,

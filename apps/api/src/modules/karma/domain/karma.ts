@@ -1,3 +1,4 @@
+import type { ObjectIdString } from "@lib/objectid-utils";
 import type { ObjectId } from "mongodb";
 
 /**
@@ -49,8 +50,8 @@ export interface KarmaEvent {
  * Input for awarding karma to a user
  */
 export interface AwardKarmaInput {
-  familyId: ObjectId;
-  userId: ObjectId;
+  familyId: ObjectIdString;
+  userId: ObjectIdString;
   amount: number; // Positive for additions, negative for deductions
   source: KarmaSource;
   description: string;
@@ -65,8 +66,8 @@ export interface AwardKarmaInput {
  * Input for deducting karma from a user
  */
 export interface DeductKarmaInput {
-  familyId: ObjectId;
-  userId: ObjectId;
+  familyId: ObjectIdString;
+  userId: ObjectIdString;
   amount: number; // Positive number representing the deduction (e.g., 50 for 50 karma)
   claimId: string; // Reference to the reward claim
   rewardName: string; // Name of the reward being redeemed

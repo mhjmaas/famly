@@ -12,7 +12,7 @@
 "use client";
 
 import { createContext, type ReactNode, useContext } from "react";
-import type { DeploymentStatus } from "./status-client";
+import type { DeploymentStatus } from "../lib/utils/status-utils";
 
 const DeploymentContext = createContext<DeploymentStatus | undefined>(
   undefined,

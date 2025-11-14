@@ -1,11 +1,16 @@
 import { getDb } from "@infra/mongo/client";
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import {
+  fromObjectId,
+  type ObjectIdString,
+  toObjectId,
+  validateObjectId,
+} from "@lib/objectid-utils";
 import type { ActivityEventService } from "@modules/activity-events";
 import type { KarmaService } from "@modules/karma";
 import type { CreateTaskInput } from "@modules/tasks/domain/task";
 import type { TaskService } from "@modules/tasks/services/task.service";
-import type { ObjectId } from "mongodb";
 import type { ClaimDTO } from "../domain/reward";
 import {
   emitApprovalTaskCreated,
@@ -45,28 +50,37 @@ export class ClaimService {
    * @throws HttpError with 409 if duplicate pending claim exists
    */
   async createClaim(
-    rewardId: ObjectId,
-    familyId: ObjectId,
-    memberId: ObjectId,
+    rewardId: string,
+    familyId: string,
+    memberId: string,
   ): Promise<ClaimDTO> {
+    let normalizedRewardId: ObjectIdString | undefined;
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedMemberId: ObjectIdString | undefined;
     try {
+      normalizedRewardId = validateObjectId(rewardId, "rewardId");
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedMemberId = validateObjectId(memberId, "memberId");
+
+      const rewardObjectId = toObjectId(normalizedRewardId, "rewardId");
+      const familyObjectId = toObjectId(normalizedFamilyId, "familyId");
+      const memberObjectId = toObjectId(normalizedMemberId, "memberId");
+
       logger.info("Creating claim", {
-        rewardId: rewardId.toString(),
-        familyId: familyId.toString(),
-        memberId: memberId.toString(),
+        rewardId: normalizedRewardId,
+        familyId: normalizedFamilyId,
+        memberId: normalizedMemberId,
       });
 
-      // Step 1: Validate reward exists
-      const reward = await this.rewardRepository.findById(rewardId);
-      if (!reward || reward.familyId.toString() !== familyId.toString()) {
+      const reward = await this.rewardRepository.findById(rewardObjectId);
+      if (!reward || reward.familyId.toString() !== normalizedFamilyId) {
         throw HttpError.notFound("Reward not found");
       }
 
-      // Step 2: Check for existing pending claim
       const existingClaim =
         await this.claimRepository.findPendingByRewardAndMember(
-          rewardId,
-          memberId,
+          rewardObjectId,
+          memberObjectId,
         );
 
       if (existingClaim) {
@@ -75,11 +89,10 @@ export class ClaimService {
         );
       }
 
-      // Step 3: Validate member has sufficient karma
       const memberKarma = await this.karmaService.getMemberKarma(
-        familyId,
-        memberId,
-        memberId,
+        normalizedFamilyId,
+        normalizedMemberId,
+        normalizedMemberId,
       );
 
       if (memberKarma.totalKarma < reward.karmaCost) {
@@ -88,20 +101,16 @@ export class ClaimService {
         );
       }
 
-      // Step 4: Create the claim in pending status
       const claim = await this.claimRepository.create(
-        rewardId,
-        familyId,
-        memberId,
+        rewardObjectId,
+        familyObjectId,
+        memberObjectId,
       );
 
-      // Step 5: Auto-create approval task for parents
       try {
-        // Get member name from better-auth user collection
-        // Note: memberId is the userId in better-auth
         const db = getDb();
         const usersCollection = db.collection("user");
-        const user = await usersCollection.findOne({ _id: memberId });
+        const user = await usersCollection.findOne({ _id: memberObjectId });
         const memberName = user?.name || "Unknown member";
 
         const taskInput: CreateTaskInput = {
@@ -112,19 +121,17 @@ export class ClaimService {
         };
 
         const createdTask = await this.taskService.createTask(
-          familyId,
-          memberId, // Use member as creator to mark their involvement
+          normalizedFamilyId,
+          normalizedMemberId,
           taskInput,
         );
 
-        // Step 6: Update claim with auto-task ID
         const updatedClaim = await this.claimRepository.updateAutoTaskId(
           claim._id,
           createdTask._id,
         );
 
         if (!updatedClaim) {
-          // If update fails, delete the claim to maintain consistency
           logger.warn(
             "Failed to update claim with auto-task ID, rolling back claim",
             {
@@ -138,15 +145,14 @@ export class ClaimService {
 
         logger.info("Claim created successfully with auto-task", {
           claimId: updatedClaim._id.toString(),
-          rewardId: rewardId.toString(),
+          rewardId: normalizedRewardId,
           taskId: createdTask._id.toString(),
         });
 
-        // Record activity event for reward claim
         if (this.activityEventService) {
           try {
             await this.activityEventService.recordEvent({
-              userId: memberId,
+              userId: normalizedMemberId,
               type: "REWARD",
               title: reward.name,
               description: `Claimed reward for ${reward.karmaCost} karma`,
@@ -160,30 +166,21 @@ export class ClaimService {
           }
         }
 
-        // Emit real-time events for claim creation and approval task
         emitClaimCreated(updatedClaim);
         if (createdTask) {
-          // Emit approval task event (parents will be notified via task.created from task service)
-          emitApprovalTaskCreated(
-            createdTask._id.toString(),
-            updatedClaim,
-            [], // Parent user IDs would be determined by task service
-          );
+          emitApprovalTaskCreated(createdTask._id.toString(), updatedClaim, []);
         }
 
         return toClaimDTO(updatedClaim);
       } catch (error) {
-        // If task creation fails, still keep the claim but log the error
         logger.error("Failed to create auto-task for claim", {
           claimId: claim._id.toString(),
-          rewardId: rewardId.toString(),
+          rewardId: normalizedRewardId,
           error,
         });
 
-        // Emit claim created event even if task creation failed
         emitClaimCreated(claim);
 
-        // Return claim anyway since it's created
         return toClaimDTO(claim);
       }
     } catch (error) {
@@ -192,9 +189,9 @@ export class ClaimService {
       }
 
       logger.error("Failed to create claim", {
-        rewardId: rewardId.toString(),
-        familyId: familyId.toString(),
-        memberId: memberId.toString(),
+        rewardId: normalizedRewardId ?? rewardId,
+        familyId: normalizedFamilyId ?? familyId,
+        memberId: normalizedMemberId ?? memberId,
         error,
       });
       throw error;
@@ -210,18 +207,25 @@ export class ClaimService {
    * @throws HttpError with 404 if claim not found
    * @throws HttpError with 409 if claim is not pending
    */
-  async cancelClaim(
-    claimId: ObjectId,
-    cancelledBy: ObjectId,
-  ): Promise<ClaimDTO> {
+  async cancelClaim(claimId: string, cancelledBy: string): Promise<ClaimDTO> {
+    let normalizedClaimId: ObjectIdString | undefined;
+    let normalizedCancelledBy: ObjectIdString | undefined;
     try {
+      normalizedClaimId = validateObjectId(claimId, "claimId");
+      normalizedCancelledBy = validateObjectId(cancelledBy, "cancelledBy");
+      const claimObjectId = toObjectId(normalizedClaimId, "claimId");
+      const cancelledByObjectId = toObjectId(
+        normalizedCancelledBy,
+        "cancelledBy",
+      );
+
       logger.info("Cancelling claim", {
-        claimId: claimId.toString(),
-        cancelledBy: cancelledBy.toString(),
+        claimId: normalizedClaimId,
+        cancelledBy: normalizedCancelledBy,
       });
 
       // Step 1: Find the claim
-      const claim = await this.claimRepository.findById(claimId);
+      const claim = await this.claimRepository.findById(claimObjectId);
 
       if (!claim) {
         throw HttpError.notFound("Claim not found");
@@ -238,18 +242,18 @@ export class ClaimService {
       if (claim.autoTaskId) {
         try {
           await this.taskService.deleteTask(
-            claim.familyId,
-            claim.autoTaskId,
-            cancelledBy,
+            fromObjectId(claim.familyId),
+            claim.autoTaskId.toString(),
+            normalizedCancelledBy,
           );
           logger.debug("Auto-task deleted for cancelled claim", {
             taskId: claim.autoTaskId.toString(),
-            claimId: claimId.toString(),
+            claimId: normalizedClaimId,
           });
         } catch (error) {
           // Log the error but don't fail the cancellation
           logger.warn("Failed to delete auto-task during claim cancellation", {
-            claimId: claimId.toString(),
+            claimId: normalizedClaimId,
             taskId: claim.autoTaskId.toString(),
             error,
           });
@@ -258,10 +262,10 @@ export class ClaimService {
 
       // Step 4: Update claim status to cancelled
       const updatedClaim = await this.claimRepository.updateStatus(
-        claimId,
+        claimObjectId,
         "cancelled",
         {
-          cancelledBy,
+          cancelledBy: cancelledByObjectId,
           cancelledAt: new Date(),
         },
       );
@@ -271,11 +275,11 @@ export class ClaimService {
       }
 
       logger.info("Claim cancelled successfully", {
-        claimId: claimId.toString(),
+        claimId: normalizedClaimId,
       });
 
       // Emit real-time event for claim cancellation
-      emitClaimCancelled(updatedClaim, cancelledBy.toString());
+      emitClaimCancelled(updatedClaim, normalizedCancelledBy);
 
       return toClaimDTO(updatedClaim);
     } catch (error) {
@@ -284,8 +288,8 @@ export class ClaimService {
       }
 
       logger.error("Failed to cancel claim", {
-        claimId: claimId.toString(),
-        cancelledBy: cancelledBy.toString(),
+        claimId: normalizedClaimId ?? claimId,
+        cancelledBy: normalizedCancelledBy ?? cancelledBy,
         error,
       });
       throw error;
@@ -303,41 +307,47 @@ export class ClaimService {
    * @throws HttpError with 400 if member has insufficient karma at completion
    */
   async completeClaimFromTask(
-    claimId: ObjectId,
-    completedBy: ObjectId,
+    claimId: string,
+    completedBy: string,
   ): Promise<ClaimDTO> {
+    let normalizedClaimId: ObjectIdString | undefined;
+    let normalizedCompletedBy: ObjectIdString | undefined;
     try {
+      normalizedClaimId = validateObjectId(claimId, "claimId");
+      normalizedCompletedBy = validateObjectId(completedBy, "completedBy");
+      const claimObjectId = toObjectId(normalizedClaimId, "claimId");
+      const completedByObjectId = toObjectId(
+        normalizedCompletedBy,
+        "completedBy",
+      );
+
       logger.info("Completing claim from task", {
-        claimId: claimId.toString(),
-        completedBy: completedBy.toString(),
+        claimId: normalizedClaimId,
+        completedBy: normalizedCompletedBy,
       });
 
-      // Step 1: Find the claim
-      const claim = await this.claimRepository.findById(claimId);
+      const claim = await this.claimRepository.findById(claimObjectId);
 
       if (!claim) {
         throw HttpError.notFound("Claim not found");
       }
 
-      // Step 2: Verify claim is pending
       if (claim.status !== "pending") {
         throw HttpError.conflict(
           `Cannot complete a ${claim.status} claim. Only pending claims can be completed.`,
         );
       }
 
-      // Step 3: Get reward details
       const reward = await this.rewardRepository.findById(claim.rewardId);
 
       if (!reward) {
         throw HttpError.notFound("Reward not found");
       }
 
-      // Step 4: Re-validate member has sufficient karma (race condition check)
       const memberKarma = await this.karmaService.getMemberKarma(
-        claim.familyId,
-        claim.memberId,
-        claim.memberId,
+        fromObjectId(claim.familyId),
+        fromObjectId(claim.memberId),
+        fromObjectId(claim.memberId),
       );
 
       if (memberKarma.totalKarma < reward.karmaCost) {
@@ -346,12 +356,11 @@ export class ClaimService {
         );
       }
 
-      // Step 5: Update claim status to completed
       const updatedClaim = await this.claimRepository.updateStatus(
-        claimId,
+        claimObjectId,
         "completed",
         {
-          completedBy,
+          completedBy: completedByObjectId,
           completedAt: new Date(),
         },
       );
@@ -360,30 +369,26 @@ export class ClaimService {
         throw HttpError.notFound("Failed to complete claim");
       }
 
-      // Step 6: Deduct karma from member
       try {
         await this.karmaService.deductKarma({
-          familyId: claim.familyId,
-          userId: claim.memberId,
+          familyId: fromObjectId(claim.familyId),
+          userId: fromObjectId(claim.memberId),
           amount: reward.karmaCost,
-          claimId: claimId.toString(),
+          claimId: normalizedClaimId,
           rewardName: reward.name,
         });
 
         logger.debug("Karma deducted for claim", {
-          claimId: claimId.toString(),
+          claimId: normalizedClaimId,
           amount: reward.karmaCost,
         });
       } catch (error) {
         logger.error("Failed to deduct karma for claim completion", {
-          claimId: claimId.toString(),
+          claimId: normalizedClaimId,
           error,
         });
-        // We don't throw here to allow claim completion even if karma deduction fails
-        // This is best-effort for reward delivery
       }
 
-      // Step 7: Increment metadata claim count
       try {
         await this.metadataRepository.incrementClaimCount(
           claim.familyId,
@@ -392,23 +397,21 @@ export class ClaimService {
         );
 
         logger.debug("Metadata claim count incremented", {
-          claimId: claimId.toString(),
+          claimId: normalizedClaimId,
         });
       } catch (error) {
         logger.warn("Failed to increment metadata claim count", {
-          claimId: claimId.toString(),
+          claimId: normalizedClaimId,
           error,
         });
-        // Non-fatal: metadata updates are informational
       }
 
       logger.info("Claim completed successfully", {
-        claimId: claimId.toString(),
+        claimId: normalizedClaimId,
         rewardId: claim.rewardId.toString(),
       });
 
-      // Emit real-time event for claim completion
-      emitClaimCompleted(updatedClaim, completedBy.toString());
+      emitClaimCompleted(updatedClaim, normalizedCompletedBy);
 
       return toClaimDTO(updatedClaim);
     } catch (error) {
@@ -417,8 +420,8 @@ export class ClaimService {
       }
 
       logger.error("Failed to complete claim", {
-        claimId: claimId.toString(),
-        completedBy: completedBy.toString(),
+        claimId: normalizedClaimId ?? claimId,
+        completedBy: normalizedCompletedBy ?? completedBy,
         error,
       });
       throw error;

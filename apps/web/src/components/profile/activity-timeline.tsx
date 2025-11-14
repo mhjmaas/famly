@@ -1,12 +1,12 @@
 import { Sparkles, TrendingDown, TrendingUp } from "lucide-react";
+import type { ActivityEvent } from "@/lib/api-client";
 import {
   formatActivityTime,
   getActivityEventBgColor,
   getActivityEventColor,
   getActivityEventIcon,
   groupEventsByDate,
-} from "@/lib/activity-utils";
-import type { ActivityEvent } from "@/lib/api-client";
+} from "@/lib/utils/activity-utils";
 
 interface ActivityTimelineProps {
   events: ActivityEvent[];

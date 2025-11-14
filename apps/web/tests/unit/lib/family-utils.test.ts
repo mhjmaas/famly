@@ -1,4 +1,4 @@
-import { calculateAge, getInitials } from "@/lib/family-utils";
+import { calculateAge, getInitials } from "@/lib/utils/family-utils";
 
 describe("family-utils", () => {
   describe("calculateAge", () => {

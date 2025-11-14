@@ -1,5 +1,11 @@
 import { logger } from "@lib/logger";
-import type { ObjectId } from "mongodb";
+import {
+  type ObjectIdString,
+  toObjectId,
+  toObjectIdArray,
+  validateObjectId,
+  validateObjectIdArray,
+} from "@lib/objectid-utils";
 import type {
   Chat,
   ChatWithPreviewDTO,
@@ -31,18 +37,29 @@ export class ChatService {
    * @returns Object with chat and isNew flag
    */
   async createDM(
-    creatorId: ObjectId,
-    otherUserId: ObjectId,
+    creatorId: string,
+    otherUserId: string,
   ): Promise<{ chat: Chat; isNew: boolean }> {
+    let normalizedCreatorId: ObjectIdString | undefined;
+    let normalizedOtherUserId: ObjectIdString | undefined;
     try {
+      normalizedCreatorId = validateObjectId(creatorId, "creatorId");
+      normalizedOtherUserId = validateObjectId(otherUserId, "otherUserId");
+
       logger.info("Creating DM", {
-        creatorId: creatorId.toString(),
-        otherUserId: otherUserId.toString(),
+        creatorId: normalizedCreatorId,
+        otherUserId: normalizedOtherUserId,
       });
 
       // Sort IDs to ensure consistent ordering for queries and hashing
-      const sortedIds = [creatorId, otherUserId].sort((a, b) =>
-        a.toString().localeCompare(b.toString()),
+      const sortedMemberIds = [normalizedCreatorId, normalizedOtherUserId].sort(
+        (a, b) => a.localeCompare(b),
+      );
+      const sortedIds = toObjectIdArray(sortedMemberIds, "memberIds");
+      const creatorObjectId = toObjectId(normalizedCreatorId, "creatorId");
+      const otherUserObjectId = toObjectId(
+        normalizedOtherUserId,
+        "otherUserId",
       );
 
       // Check if DM already exists between these two users
@@ -51,8 +68,8 @@ export class ChatService {
       if (existingChat) {
         logger.info("DM already exists, returning existing chat", {
           chatId: existingChat._id.toString(),
-          creatorId: creatorId.toString(),
-          otherUserId: otherUserId.toString(),
+          creatorId: normalizedCreatorId,
+          otherUserId: normalizedOtherUserId,
         });
         return { chat: existingChat, isNew: false };
       }
@@ -60,21 +77,21 @@ export class ChatService {
       // Create new DM chat with sorted memberIds
       const chat = await this.chatRepository.create(
         "dm",
-        creatorId,
+        creatorObjectId,
         sortedIds,
         null, // title is null for DMs
       );
 
       // Create memberships for both users
       await this.membershipRepository.createBulk(chat._id, [
-        { userId: creatorId, role: "member" },
-        { userId: otherUserId, role: "member" },
+        { userId: creatorObjectId, role: "member" },
+        { userId: otherUserObjectId, role: "member" },
       ]);
 
       logger.info("DM created successfully", {
         chatId: chat._id.toString(),
-        creatorId: creatorId.toString(),
-        otherUserId: otherUserId.toString(),
+        creatorId: normalizedCreatorId,
+        otherUserId: normalizedOtherUserId,
       });
 
       return { chat, isNew: true };
@@ -85,36 +102,38 @@ export class ChatService {
         logger.info(
           "DM creation race condition detected, fetching existing chat",
           {
-            creatorId: creatorId.toString(),
-            otherUserId: otherUserId.toString(),
+            creatorId: normalizedCreatorId,
+            otherUserId: normalizedOtherUserId,
           },
         );
 
         // Retry fetching the existing chat
-        const sortedIds = [creatorId, otherUserId].sort((a, b) =>
-          a.toString().localeCompare(b.toString()),
+        const retrySortedIds = [
+          normalizedCreatorId ?? creatorId,
+          normalizedOtherUserId ?? otherUserId,
+        ].sort((a, b) => a.localeCompare(b));
+        const existingChat = await this.chatRepository.findByMemberIds(
+          toObjectIdArray(retrySortedIds, "memberIds"),
         );
-        const existingChat =
-          await this.chatRepository.findByMemberIds(sortedIds);
 
         if (existingChat) {
           logger.info("Found existing DM after race condition", {
             chatId: existingChat._id.toString(),
-            creatorId: creatorId.toString(),
-            otherUserId: otherUserId.toString(),
+            creatorId: normalizedCreatorId,
+            otherUserId: normalizedOtherUserId,
           });
           return { chat: existingChat, isNew: false };
         }
 
         logger.error("Failed to find existing DM after E11000 error", {
-          creatorId: creatorId.toString(),
-          otherUserId: otherUserId.toString(),
+          creatorId: normalizedCreatorId ?? creatorId,
+          otherUserId: normalizedOtherUserId ?? otherUserId,
         });
       }
 
       logger.error("Failed to create DM", {
-        creatorId: creatorId.toString(),
-        otherUserId: otherUserId.toString(),
+        creatorId: normalizedCreatorId ?? creatorId,
+        otherUserId: normalizedOtherUserId ?? otherUserId,
         error,
       });
       throw error;
@@ -130,35 +149,45 @@ export class ChatService {
    * @returns The created chat
    */
   async createGroup(
-    creatorId: ObjectId,
-    memberIds: ObjectId[],
+    creatorId: string,
+    memberIds: string[],
     title?: string | null,
   ): Promise<Chat> {
+    let normalizedCreatorId: ObjectIdString | undefined;
+    let normalizedMemberIds: ObjectIdString[] = [];
     try {
+      normalizedCreatorId = validateObjectId(creatorId, "creatorId");
+      normalizedMemberIds = validateObjectIdArray(memberIds, "memberIds");
+      const creatorObjectId = toObjectId(normalizedCreatorId, "creatorId");
+      const memberObjectIds = toObjectIdArray(normalizedMemberIds, "memberIds");
+
       logger.info("Creating group chat", {
-        creatorId: creatorId.toString(),
-        memberCount: memberIds.length + 1,
+        creatorId: normalizedCreatorId,
+        memberCount: normalizedMemberIds.length + 1,
         title,
       });
 
       // Create group chat with creator + other members
-      const allMemberIds = [creatorId, ...memberIds];
+      const allMemberIds = [creatorObjectId, ...memberObjectIds];
       const chat = await this.chatRepository.create(
         "group",
-        creatorId,
+        creatorObjectId,
         allMemberIds,
         title ?? null,
       );
 
       // Create memberships: creator as admin, others as members
       await this.membershipRepository.createBulk(chat._id, [
-        { userId: creatorId, role: "admin" },
-        ...memberIds.map((userId) => ({ userId, role: "member" as const })),
+        { userId: creatorObjectId, role: "admin" },
+        ...memberObjectIds.map((userId) => ({
+          userId,
+          role: "member" as const,
+        })),
       ]);
 
       logger.info("Group chat created successfully", {
         chatId: chat._id.toString(),
-        creatorId: creatorId.toString(),
+        creatorId: normalizedCreatorId,
         memberCount: allMemberIds.length,
         title,
       });
@@ -166,8 +195,8 @@ export class ChatService {
       return chat;
     } catch (error) {
       logger.error("Failed to create group chat", {
-        creatorId: creatorId.toString(),
-        memberCount: memberIds.length + 1,
+        creatorId: normalizedCreatorId ?? creatorId,
+        memberCount: normalizedMemberIds.length + 1,
         title,
         error,
       });
@@ -194,26 +223,34 @@ export class ChatService {
    * @returns ListChatsResponse with chats and optional nextCursor
    */
   async listUserChats(
-    userId: ObjectId,
-    cursor?: ObjectId,
+    userId: string,
+    cursor?: string,
     limit: number = 20,
   ): Promise<ListChatsResponse> {
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedUserId = validateObjectId(userId, "userId");
+      const userObjectId = toObjectId(normalizedUserId, "userId");
+      const cursorObjectId = cursor
+        ? toObjectId(validateObjectId(cursor, "cursor"), "cursor")
+        : undefined;
+
       if (!this.messageRepository) {
         throw new Error("MessageRepository not initialized in ChatService");
       }
 
       logger.info("Listing user chats", {
-        userId: userId.toString(),
-        cursor: cursor?.toString(),
+        userId: normalizedUserId,
+        cursor: cursorObjectId?.toString(),
         limit,
       });
 
       // Step 1: Get all memberships for the user
-      const memberships = await this.membershipRepository.findByUser(userId);
+      const memberships =
+        await this.membershipRepository.findByUser(userObjectId);
 
       if (memberships.length === 0) {
-        logger.info("User has no chats", { userId: userId.toString() });
+        logger.info("User has no chats", { userId: normalizedUserId });
         return { chats: [], nextCursor: undefined };
       }
 
@@ -223,7 +260,7 @@ export class ChatService {
       // Step 3: Query chats with pagination
       const chats = await this.chatRepository.findByIdsWithPagination(
         chatIds,
-        cursor,
+        cursorObjectId,
         limit + 1,
       );
 
@@ -275,7 +312,7 @@ export class ChatService {
         } catch (error) {
           logger.error("Failed to build chat preview", {
             chatId: chat._id.toString(),
-            userId: userId.toString(),
+            userId: normalizedUserId,
             error,
           });
           throw error;
@@ -289,7 +326,7 @@ export class ChatService {
       };
 
       logger.info("User chats listed successfully", {
-        userId: userId.toString(),
+        userId: normalizedUserId,
         chatCount: chatDTOs.length,
         hasMore: !!nextCursor,
       });
@@ -297,7 +334,7 @@ export class ChatService {
       return response;
     } catch (error) {
       logger.error("Failed to list user chats", {
-        userId: userId.toString(),
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;
@@ -313,45 +350,52 @@ export class ChatService {
    * @throws HttpError(403) if user is not a member
    * @throws HttpError(404) if chat not found
    */
-  async getChatById(chatId: ObjectId, userId: ObjectId): Promise<Chat | null> {
+  async getChatById(chatId: string, userId: string): Promise<Chat | null> {
+    let normalizedChatId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedChatId = validateObjectId(chatId, "chatId");
+      normalizedUserId = validateObjectId(userId, "userId");
+      const chatObjectId = toObjectId(normalizedChatId, "chatId");
+      const userObjectId = toObjectId(normalizedUserId, "userId");
+
       logger.info("Getting chat by ID", {
-        chatId: chatId.toString(),
-        userId: userId.toString(),
+        chatId: normalizedChatId,
+        userId: normalizedUserId,
       });
 
       // Verify membership
       const membership = await this.membershipRepository.findByUserAndChat(
-        userId,
-        chatId,
+        userObjectId,
+        chatObjectId,
       );
       if (!membership) {
         logger.warn("User attempted to access chat without membership", {
-          chatId: chatId.toString(),
-          userId: userId.toString(),
+          chatId: normalizedChatId,
+          userId: normalizedUserId,
         });
         return null; // Let route handler convert to 403
       }
 
       // Fetch chat
-      const chat = await this.chatRepository.findById(chatId);
+      const chat = await this.chatRepository.findById(chatObjectId);
       if (!chat) {
         logger.warn("Chat not found", {
-          chatId: chatId.toString(),
+          chatId: normalizedChatId,
         });
         return null; // Let route handler convert to 404
       }
 
       logger.info("Chat retrieved successfully", {
-        chatId: chatId.toString(),
-        userId: userId.toString(),
+        chatId: normalizedChatId,
+        userId: normalizedUserId,
       });
 
       return chat;
     } catch (error) {
       logger.error("Failed to get chat", {
-        chatId: chatId.toString(),
-        userId: userId.toString(),
+        chatId: normalizedChatId ?? chatId,
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;

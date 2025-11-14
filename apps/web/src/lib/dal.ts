@@ -72,6 +72,56 @@ const getCookieHeaderCached = cache(async () => {
 });
 
 /**
+ * Get authenticated cookie header
+ *
+ * Ensures the session exists before returning all cookies formatted as
+ * a header string. Cached per-locale to avoid duplicate verification.
+ */
+const getAuthenticatedCookieHeader = cache(async (locale?: Locale) => {
+  await verifySession(locale);
+  return getCookieHeaderCached();
+});
+
+interface AuthenticatedUserContext {
+  user: UserProfile;
+  cookieHeader: string;
+}
+
+const getAuthenticatedUserContext = cache(
+  async (locale?: Locale): Promise<AuthenticatedUserContext> => {
+    const cookieHeader = await getAuthenticatedCookieHeader(locale);
+
+    try {
+      const response: MeResponse = await getMe(cookieHeader);
+      return { user: response.user, cookieHeader };
+    } catch (error) {
+      if (error instanceof ApiError && error.isAuthError()) {
+        redirect(getSigninPath(locale));
+      }
+
+      throw error;
+    }
+  },
+);
+
+async function resolveKarmaForUser(
+  user: UserProfile,
+  cookieHeader: string,
+): Promise<number> {
+  if (!user.families?.[0]?.familyId) {
+    return 0;
+  }
+
+  const karmaData: KarmaBalance = await getKarmaBalance(
+    user.families[0].familyId,
+    user.id,
+    cookieHeader,
+  );
+
+  return karmaData.totalKarma;
+}
+
+/**
  * Get current user profile
  *
  * Fetches the authenticated user's profile from the backend.
@@ -81,25 +131,8 @@ const getCookieHeaderCached = cache(async () => {
  * @throws Redirects to signin if authentication fails
  */
 export const getUser = cache(async (locale?: Locale): Promise<UserProfile> => {
-  // Verify session exists (optimistic check)
-  await verifySession(locale);
-
-  try {
-    // Forward cookies to backend for validation
-    const cookieHeader = await getCookieHeaderCached();
-    const response: MeResponse = await getMe(cookieHeader);
-
-    return response.user;
-  } catch (error) {
-    // Handle authentication errors
-    if (error instanceof ApiError && error.isAuthError()) {
-      // Session cookie exists but is invalid - redirect to signin
-      redirect(getSigninPath(locale));
-    }
-
-    // Re-throw other errors
-    throw error;
-  }
+  const { user } = await getAuthenticatedUserContext(locale);
+  return user;
 });
 
 /**
@@ -112,21 +145,8 @@ export const getUser = cache(async (locale?: Locale): Promise<UserProfile> => {
  */
 export const getUserKarma = cache(async (locale?: Locale): Promise<number> => {
   try {
-    const user = await getUser(locale);
-
-    // User must have at least one family to have karma
-    if (!user.families?.[0]?.familyId) {
-      return 0;
-    }
-
-    const cookieHeader = await getCookieHeaderCached();
-    const karmaData: KarmaBalance = await getKarmaBalance(
-      user.families[0].familyId,
-      user.id,
-      cookieHeader,
-    );
-
-    return karmaData.totalKarma;
+    const { user, cookieHeader } = await getAuthenticatedUserContext(locale);
+    return await resolveKarmaForUser(user, cookieHeader);
   } catch (error) {
     // Re-throw redirect errors (not actual errors)
     if (isRedirectError(error)) {
@@ -157,9 +177,7 @@ export const getUserActivityEvents = cache(
   ): Promise<ActivityEvent[]> => {
     try {
       // Verify session exists
-      await verifySession(locale);
-
-      const cookieHeader = await getCookieHeaderCached();
+      const cookieHeader = await getAuthenticatedCookieHeader(locale);
       const events = await getActivityEvents(startDate, endDate, cookieHeader);
 
       return events;
@@ -186,12 +204,8 @@ export const getUserActivityEvents = cache(
  */
 export const getUserWithKarma = cache(
   async (locale?: Locale): Promise<{ user: UserProfile; karma: number }> => {
-    // Fetch both in parallel for better performance
-    const [user, karma] = await Promise.all([
-      getUser(locale),
-      getUserKarma(locale),
-    ]);
-
+    const { user, cookieHeader } = await getAuthenticatedUserContext(locale);
+    const karma = await resolveKarmaForUser(user, cookieHeader);
     return { user, karma };
   },
 );

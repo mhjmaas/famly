@@ -1,6 +1,6 @@
 import { HttpError } from "@lib/http-error";
+import { validateObjectId } from "@lib/objectid-utils";
 import type { NextFunction, Response } from "express";
-import { ObjectId } from "mongodb";
 import { z } from "zod";
 
 /**
@@ -8,8 +8,8 @@ import { z } from "zod";
  */
 export interface SearchMessagesQuery {
   q: string; // Search query (required)
-  chatId?: ObjectId; // Optional chat ID to limit search
-  cursor?: ObjectId; // Pagination cursor
+  chatId?: string; // Optional chat ID to limit search
+  cursor?: string; // Pagination cursor
   limit: number; // Max results (default 20, max 100)
 }
 
@@ -18,20 +18,8 @@ export interface SearchMessagesQuery {
  */
 const searchMessagesSchema = z.object({
   q: z.string().min(1, "Search query is required"),
-  chatId: z
-    .string()
-    .optional()
-    .refine(
-      (val) => !val || ObjectId.isValid(val),
-      "Chat ID must be a valid ObjectId",
-    ),
-  cursor: z
-    .string()
-    .optional()
-    .refine(
-      (val) => !val || ObjectId.isValid(val),
-      "Cursor must be a valid ObjectId",
-    ),
+  chatId: z.string().optional(),
+  cursor: z.string().optional(),
   limit: z
     .number()
     .int()
@@ -69,8 +57,12 @@ export const validateSearchMessages = (
 
     const params: SearchMessagesQuery = {
       q: result.data.q,
-      chatId: result.data.chatId ? new ObjectId(result.data.chatId) : undefined,
-      cursor: result.data.cursor ? new ObjectId(result.data.cursor) : undefined,
+      chatId: result.data.chatId
+        ? validateObjectId(result.data.chatId, "chatId")
+        : undefined,
+      cursor: result.data.cursor
+        ? validateObjectId(result.data.cursor, "cursor")
+        : undefined,
       limit: result.data.limit,
     };
 

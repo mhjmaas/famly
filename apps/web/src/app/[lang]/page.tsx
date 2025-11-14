@@ -9,7 +9,7 @@ import { Privacy } from "@/components/landing/privacy";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
 import { hasSessionCookie } from "@/lib/server-cookies";
-import { getDeploymentStatus } from "@/lib/status-client";
+import { getDeploymentStatus } from "@/lib/utils/status-utils";
 
 export default async function Home({
   params,

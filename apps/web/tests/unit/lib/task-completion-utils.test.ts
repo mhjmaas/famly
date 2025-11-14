@@ -2,7 +2,7 @@ import {
   canCompleteTask,
   getTaskCompletionBlockedReason,
   getTaskKarmaRecipient,
-} from "@/lib/task-completion-utils";
+} from "@/lib/utils/task-completion-utils";
 import type { Task } from "@/types/api.types";
 
 describe("task-completion-utils", () => {

@@ -14,7 +14,7 @@ import {
 
 import { useDashboardNavigation } from "@/hooks/useDashboardNavigation";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/style-utils";
 import type { DashboardLayoutProps } from "@/types/dashboard-layout.types";
 import { DesktopSidebar } from "./sidebars/DesktopSidebar";
 import { MobileSidebar } from "./sidebars/MobileSidebar";

@@ -1,4 +1,4 @@
-import type { ObjectId } from "mongodb";
+import type { ObjectIdString } from "@lib/objectid-utils";
 import type { Task } from "../domain/task";
 
 /**
@@ -14,8 +14,8 @@ export interface TaskCompletionHook {
    */
   onTaskCompleted(
     task: Task,
-    creditedUserId: ObjectId,
-    triggeredBy: ObjectId,
+    creditedUserId: ObjectIdString,
+    triggeredBy: ObjectIdString,
   ): Promise<void>;
 }
 
@@ -39,8 +39,8 @@ export class TaskCompletionHookRegistry {
    */
   async invokeHooks(
     task: Task,
-    creditedUserId: ObjectId,
-    triggeredBy: ObjectId,
+    creditedUserId: ObjectIdString,
+    triggeredBy: ObjectIdString,
     errorHandler?: (error: Error) => void,
   ): Promise<void> {
     const results = await Promise.allSettled(

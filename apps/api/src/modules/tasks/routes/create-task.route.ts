@@ -4,7 +4,6 @@ import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { toTaskDTO } from "../lib/task.mapper";
 import { getTaskService } from "../services/task.service.instance";
 import { validateCreateTask } from "../validators/create-task.validator";
@@ -39,7 +38,7 @@ export function createTaskRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        const userId = new ObjectId(req.user.id);
+        const userId = req.user.id;
 
         // Validate familyId parameter exists (critical for nested routers)
         if (!req.params.familyId) {
@@ -51,7 +50,7 @@ export function createTaskRoute(): Router {
           throw HttpError.badRequest("Missing familyId parameter");
         }
 
-        const familyId = new ObjectId(req.params.familyId);
+        const familyId = req.params.familyId;
 
         const task = await taskService.createTask(familyId, userId, req.body);
 

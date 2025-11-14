@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { HttpError } from "../../../src/lib/http-error";
+import { fromObjectId } from "../../../src/lib/objectid-utils";
 import { FamilyRole } from "../../../src/modules/family/domain/family";
 import type { FamilyMembershipRepository } from "../../../src/modules/family/repositories/family-membership.repository";
 import type {
@@ -51,12 +52,14 @@ describe("KarmaService", () => {
 
   describe("awardKarma", () => {
     it("should award karma to a family member", async () => {
-      const familyId = new ObjectId();
-      const userId = new ObjectId();
+      const familyId = fromObjectId(new ObjectId());
+      const userId = fromObjectId(new ObjectId());
+      const familyObjectId = new ObjectId(familyId);
+      const userObjectId = new ObjectId(userId);
       const karmaEvent: KarmaEvent = {
         _id: new ObjectId(),
-        familyId,
-        userId,
+        familyId: familyObjectId,
+        userId: userObjectId,
         amount: 25,
         source: "task_completion",
         description: "Completed task",
@@ -66,8 +69,8 @@ describe("KarmaService", () => {
 
       mockMembershipRepository.findByFamilyAndUser.mockResolvedValue({
         _id: new ObjectId(),
-        familyId,
-        userId,
+        familyId: familyObjectId,
+        userId: userObjectId,
         role: FamilyRole.Child,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -76,8 +79,8 @@ describe("KarmaService", () => {
       mockKarmaRepository.createKarmaEvent.mockResolvedValue(karmaEvent);
       mockKarmaRepository.upsertMemberKarma.mockResolvedValue({
         _id: new ObjectId(),
-        familyId,
-        userId,
+        familyId: familyObjectId,
+        userId: userObjectId,
         totalKarma: 25,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -96,25 +99,24 @@ describe("KarmaService", () => {
         familyId,
         userId,
       );
-      expect(mockKarmaRepository.createKarmaEvent).toHaveBeenCalledWith({
-        familyId,
-        userId,
-        amount: 25,
-        source: "task_completion",
-        description: "Completed task",
-        metadata: { taskId: "123" },
-      });
-      expect(mockKarmaRepository.upsertMemberKarma).toHaveBeenCalledWith(
-        familyId,
-        userId,
-        25,
-      );
+      const createArgs = mockKarmaRepository.createKarmaEvent.mock.calls[0][0];
+      expect(createArgs.amount).toBe(25);
+      expect(createArgs.source).toBe("task_completion");
+      expect(createArgs.description).toBe("Completed task");
+      expect(createArgs.metadata).toEqual({ taskId: "123" });
+      expect(createArgs.familyId.toHexString()).toBe(familyId);
+      expect(createArgs.userId.toHexString()).toBe(userId);
+
+      const upsertArgs = mockKarmaRepository.upsertMemberKarma.mock.calls[0];
+      expect(upsertArgs[0].toHexString()).toBe(familyId);
+      expect(upsertArgs[1].toHexString()).toBe(userId);
+      expect(upsertArgs[2]).toBe(25);
       expect(result).toEqual(karmaEvent);
     });
 
     it("should throw forbidden error if user is not a family member", async () => {
-      const familyId = new ObjectId();
-      const userId = new ObjectId();
+      const familyId = fromObjectId(new ObjectId());
+      const userId = fromObjectId(new ObjectId());
 
       mockMembershipRepository.findByFamilyAndUser.mockResolvedValue(null);
 
@@ -145,13 +147,16 @@ describe("KarmaService", () => {
 
   describe("getMemberKarma", () => {
     it("should return member karma for authorized user", async () => {
-      const familyId = new ObjectId();
-      const userId = new ObjectId();
-      const requestingUserId = new ObjectId();
+      const familyId = fromObjectId(new ObjectId());
+      const userId = fromObjectId(new ObjectId());
+      const requestingUserId = fromObjectId(new ObjectId());
+      const familyObjectId = new ObjectId(familyId);
+      const userObjectId = new ObjectId(userId);
+      const requestingObjectId = new ObjectId(requestingUserId);
       const memberKarma: MemberKarma = {
         _id: new ObjectId(),
-        familyId,
-        userId,
+        familyId: familyObjectId,
+        userId: userObjectId,
         totalKarma: 150,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -159,8 +164,8 @@ describe("KarmaService", () => {
 
       mockMembershipRepository.findByFamilyAndUser.mockResolvedValue({
         _id: new ObjectId(),
-        familyId,
-        userId: requestingUserId,
+        familyId: familyObjectId,
+        userId: requestingObjectId,
         role: FamilyRole.Parent,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -178,22 +183,24 @@ describe("KarmaService", () => {
         familyId,
         requestingUserId,
       );
-      expect(mockKarmaRepository.findMemberKarma).toHaveBeenCalledWith(
-        familyId,
-        userId,
-      );
+      const [familArg, userArg] =
+        mockKarmaRepository.findMemberKarma.mock.calls[0];
+      expect(familArg.toHexString()).toBe(familyId);
+      expect(userArg.toHexString()).toBe(userId);
       expect(result).toEqual(memberKarma);
     });
 
     it("should return zero karma for new member", async () => {
-      const familyId = new ObjectId();
-      const userId = new ObjectId();
-      const requestingUserId = new ObjectId();
+      const familyId = fromObjectId(new ObjectId());
+      const userId = fromObjectId(new ObjectId());
+      const requestingUserId = fromObjectId(new ObjectId());
+      const familyObjectId = new ObjectId(familyId);
+      const requestingObjectId = new ObjectId(requestingUserId);
 
       mockMembershipRepository.findByFamilyAndUser.mockResolvedValue({
         _id: new ObjectId(),
-        familyId,
-        userId: requestingUserId,
+        familyId: familyObjectId,
+        userId: requestingObjectId,
         role: FamilyRole.Parent,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -207,17 +214,17 @@ describe("KarmaService", () => {
         requestingUserId,
       );
 
-      expect(result.familyId).toEqual(familyId);
-      expect(result.userId).toEqual(userId);
+      expect(result.familyId.toHexString()).toEqual(familyId);
+      expect(result.userId.toHexString()).toEqual(userId);
       expect(result.totalKarma).toBe(0);
       expect(result.createdAt).toBeInstanceOf(Date);
       expect(result.updatedAt).toBeInstanceOf(Date);
     });
 
     it("should throw forbidden error if requesting user is not a family member", async () => {
-      const familyId = new ObjectId();
-      const userId = new ObjectId();
-      const requestingUserId = new ObjectId();
+      const familyId = fromObjectId(new ObjectId());
+      const userId = fromObjectId(new ObjectId());
+      const requestingUserId = fromObjectId(new ObjectId());
 
       mockMembershipRepository.findByFamilyAndUser.mockResolvedValue(null);
 
@@ -235,14 +242,17 @@ describe("KarmaService", () => {
 
   describe("getKarmaHistory", () => {
     it("should return paginated karma history for authorized user", async () => {
-      const familyId = new ObjectId();
-      const userId = new ObjectId();
-      const requestingUserId = new ObjectId();
+      const familyId = fromObjectId(new ObjectId());
+      const userId = fromObjectId(new ObjectId());
+      const requestingUserId = fromObjectId(new ObjectId());
+      const familyObjectId = new ObjectId(familyId);
+      const userObjectId = new ObjectId(userId);
+      const requestingObjectId = new ObjectId(requestingUserId);
       const events: KarmaEvent[] = [
         {
           _id: new ObjectId(),
-          familyId,
-          userId,
+          familyId: familyObjectId,
+          userId: userObjectId,
           amount: 25,
           source: "task_completion",
           description: "Event 1",
@@ -250,8 +260,8 @@ describe("KarmaService", () => {
         },
         {
           _id: new ObjectId(),
-          familyId,
-          userId,
+          familyId: familyObjectId,
+          userId: userObjectId,
           amount: 50,
           source: "manual_grant",
           description: "Event 2",
@@ -261,8 +271,8 @@ describe("KarmaService", () => {
 
       mockMembershipRepository.findByFamilyAndUser.mockResolvedValue({
         _id: new ObjectId(),
-        familyId,
-        userId: requestingUserId,
+        familyId: familyObjectId,
+        userId: requestingObjectId,
         role: FamilyRole.Parent,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -281,25 +291,24 @@ describe("KarmaService", () => {
         familyId,
         requestingUserId,
       );
-      expect(mockKarmaRepository.findKarmaEvents).toHaveBeenCalledWith(
-        familyId,
-        userId,
-        11, // limit + 1 to check for more
-        undefined,
-      );
+      const findCalls = mockKarmaRepository.findKarmaEvents.mock.calls[0];
+      expect(findCalls[0].toHexString()).toBe(familyId);
+      expect(findCalls[1].toHexString()).toBe(userId);
+      expect(findCalls[2]).toBe(11);
+      expect(findCalls[3]).toBeUndefined();
       expect(result.events).toHaveLength(2);
       expect(result.pagination.hasMore).toBe(false);
       expect(result.pagination.nextCursor).toBeUndefined();
     });
 
     it("should detect when there are more events", async () => {
-      const familyId = new ObjectId();
-      const userId = new ObjectId();
-      const requestingUserId = new ObjectId();
+      const familyId = fromObjectId(new ObjectId());
+      const userId = fromObjectId(new ObjectId());
+      const requestingUserId = fromObjectId(new ObjectId());
       const events: KarmaEvent[] = Array.from({ length: 11 }, (_, i) => ({
         _id: new ObjectId(),
-        familyId,
-        userId,
+        familyId: new ObjectId(familyId),
+        userId: new ObjectId(userId),
         amount: 10,
         source: "task_completion" as const,
         description: `Event ${i}`,
@@ -308,8 +317,8 @@ describe("KarmaService", () => {
 
       mockMembershipRepository.findByFamilyAndUser.mockResolvedValue({
         _id: new ObjectId(),
-        familyId,
-        userId: requestingUserId,
+        familyId: new ObjectId(familyId),
+        userId: new ObjectId(requestingUserId),
         role: FamilyRole.Parent,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -330,15 +339,15 @@ describe("KarmaService", () => {
     });
 
     it("should support cursor-based pagination", async () => {
-      const familyId = new ObjectId();
-      const userId = new ObjectId();
-      const requestingUserId = new ObjectId();
+      const familyId = fromObjectId(new ObjectId());
+      const userId = fromObjectId(new ObjectId());
+      const requestingUserId = fromObjectId(new ObjectId());
       const cursor = new ObjectId().toString();
 
       mockMembershipRepository.findByFamilyAndUser.mockResolvedValue({
         _id: new ObjectId(),
-        familyId,
-        userId: requestingUserId,
+        familyId: new ObjectId(familyId),
+        userId: new ObjectId(requestingUserId),
         role: FamilyRole.Parent,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -354,18 +363,16 @@ describe("KarmaService", () => {
         cursor,
       );
 
-      expect(mockKarmaRepository.findKarmaEvents).toHaveBeenCalledWith(
-        familyId,
-        userId,
-        11,
-        cursor,
-      );
+      const cursorCall = mockKarmaRepository.findKarmaEvents.mock.calls[0];
+      expect(cursorCall[0].toHexString()).toBe(familyId);
+      expect(cursorCall[1].toHexString()).toBe(userId);
+      expect(cursorCall[3]).toBe(cursor);
     });
 
     it("should throw forbidden error if requesting user is not a family member", async () => {
-      const familyId = new ObjectId();
-      const userId = new ObjectId();
-      const requestingUserId = new ObjectId();
+      const familyId = fromObjectId(new ObjectId());
+      const userId = fromObjectId(new ObjectId());
+      const requestingUserId = fromObjectId(new ObjectId());
 
       mockMembershipRepository.findByFamilyAndUser.mockResolvedValue(null);
 
@@ -383,13 +390,16 @@ describe("KarmaService", () => {
 
   describe("grantKarma", () => {
     it("should grant karma when granter is a parent", async () => {
-      const familyId = new ObjectId();
-      const userId = new ObjectId();
-      const grantedBy = new ObjectId();
+      const familyId = fromObjectId(new ObjectId());
+      const userId = fromObjectId(new ObjectId());
+      const grantedBy = fromObjectId(new ObjectId());
+      const familyObjectId = new ObjectId(familyId);
+      const userObjectId = new ObjectId(userId);
+      const grantedByObjectId = new ObjectId(grantedBy);
       const karmaEvent: KarmaEvent = {
         _id: new ObjectId(),
-        familyId,
-        userId,
+        familyId: familyObjectId,
+        userId: userObjectId,
         amount: 50,
         source: "manual_grant",
         description: "Manual karma grant",
@@ -401,8 +411,8 @@ describe("KarmaService", () => {
       mockMembershipRepository.findByFamilyAndUser
         .mockResolvedValueOnce({
           _id: new ObjectId(),
-          familyId,
-          userId: grantedBy,
+          familyId: familyObjectId,
+          userId: grantedByObjectId,
           role: FamilyRole.Parent,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -410,8 +420,8 @@ describe("KarmaService", () => {
         // Recipient is a family member
         .mockResolvedValueOnce({
           _id: new ObjectId(),
-          familyId,
-          userId,
+          familyId: familyObjectId,
+          userId: userObjectId,
           role: FamilyRole.Child,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -419,8 +429,8 @@ describe("KarmaService", () => {
         // For awardKarma call
         .mockResolvedValueOnce({
           _id: new ObjectId(),
-          familyId,
-          userId,
+          familyId: familyObjectId,
+          userId: userObjectId,
           role: FamilyRole.Child,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -429,8 +439,8 @@ describe("KarmaService", () => {
       mockKarmaRepository.createKarmaEvent.mockResolvedValue(karmaEvent);
       mockKarmaRepository.upsertMemberKarma.mockResolvedValue({
         _id: new ObjectId(),
-        familyId,
-        userId,
+        familyId: familyObjectId,
+        userId: userObjectId,
         totalKarma: 50,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -450,31 +460,34 @@ describe("KarmaService", () => {
     });
 
     it("should use default description if not provided", async () => {
-      const familyId = new ObjectId();
-      const userId = new ObjectId();
-      const grantedBy = new ObjectId();
+      const familyId = fromObjectId(new ObjectId());
+      const userId = fromObjectId(new ObjectId());
+      const grantedBy = fromObjectId(new ObjectId());
+      const familyObjectId = new ObjectId(familyId);
+      const userObjectId = new ObjectId(userId);
+      const grantedByObjectId = new ObjectId(grantedBy);
 
       mockMembershipRepository.findByFamilyAndUser
         .mockResolvedValueOnce({
           _id: new ObjectId(),
-          familyId,
-          userId: grantedBy,
+          familyId: familyObjectId,
+          userId: grantedByObjectId,
           role: FamilyRole.Parent,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
         .mockResolvedValueOnce({
           _id: new ObjectId(),
-          familyId,
-          userId,
+          familyId: familyObjectId,
+          userId: userObjectId,
           role: FamilyRole.Child,
           createdAt: new Date(),
           updatedAt: new Date(),
         })
         .mockResolvedValueOnce({
           _id: new ObjectId(),
-          familyId,
-          userId,
+          familyId: familyObjectId,
+          userId: userObjectId,
           role: FamilyRole.Child,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -482,8 +495,8 @@ describe("KarmaService", () => {
 
       mockKarmaRepository.createKarmaEvent.mockResolvedValue({
         _id: new ObjectId(),
-        familyId,
-        userId,
+        familyId: familyObjectId,
+        userId: userObjectId,
         amount: 50,
         source: "manual_grant",
         description: "Manual karma grant",
@@ -493,8 +506,8 @@ describe("KarmaService", () => {
 
       mockKarmaRepository.upsertMemberKarma.mockResolvedValue({
         _id: new ObjectId(),
-        familyId,
-        userId,
+        familyId: familyObjectId,
+        userId: userObjectId,
         totalKarma: 50,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -512,9 +525,9 @@ describe("KarmaService", () => {
     });
 
     it("should throw forbidden error if granter is not a family member", async () => {
-      const familyId = new ObjectId();
-      const userId = new ObjectId();
-      const grantedBy = new ObjectId();
+      const familyId = fromObjectId(new ObjectId());
+      const userId = fromObjectId(new ObjectId());
+      const grantedBy = fromObjectId(new ObjectId());
 
       mockMembershipRepository.findByFamilyAndUser.mockResolvedValue(null);
 
@@ -530,14 +543,14 @@ describe("KarmaService", () => {
     });
 
     it("should throw forbidden error if granter is not a parent", async () => {
-      const familyId = new ObjectId();
-      const userId = new ObjectId();
-      const grantedBy = new ObjectId();
+      const familyId = fromObjectId(new ObjectId());
+      const userId = fromObjectId(new ObjectId());
+      const grantedBy = fromObjectId(new ObjectId());
 
       mockMembershipRepository.findByFamilyAndUser.mockResolvedValue({
         _id: new ObjectId(),
-        familyId,
-        userId: grantedBy,
+        familyId: new ObjectId(familyId),
+        userId: new ObjectId(grantedBy),
         role: FamilyRole.Child, // Not a parent
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -555,17 +568,17 @@ describe("KarmaService", () => {
     });
 
     it("should throw bad request if recipient is not a family member", async () => {
-      const familyId = new ObjectId();
-      const userId = new ObjectId();
-      const grantedBy = new ObjectId();
+      const familyId = fromObjectId(new ObjectId());
+      const userId = fromObjectId(new ObjectId());
+      const grantedBy = fromObjectId(new ObjectId());
 
       // First call: check granter is a parent (success)
       // Second call: check recipient is a member (failure)
       mockMembershipRepository.findByFamilyAndUser
         .mockResolvedValueOnce({
           _id: new ObjectId(),
-          familyId,
-          userId: grantedBy,
+          familyId: new ObjectId(familyId),
+          userId: new ObjectId(grantedBy),
           role: FamilyRole.Parent,
           createdAt: new Date(),
           updatedAt: new Date(),

@@ -1,6 +1,6 @@
 import { HttpError } from "@lib/http-error";
+import { validateObjectId } from "@lib/objectid-utils";
 import type { NextFunction, Request, Response } from "express";
-import { ObjectId } from "mongodb";
 
 /**
  * Query parameters for listing chats with pagination
@@ -25,13 +25,10 @@ export function validateListChats(
     const { cursor, limit } = req.query as Record<string, string | undefined>;
 
     // Validate cursor if provided
+    let normalizedCursor: string | undefined;
     if (cursor !== undefined && cursor !== "") {
-      if (!ObjectId.isValid(cursor)) {
-        throw HttpError.badRequest(
-          "Invalid cursor format. Must be a valid ObjectId.",
-        );
-      }
-      req.query.cursor = cursor;
+      normalizedCursor = validateObjectId(cursor, "cursor");
+      req.query.cursor = normalizedCursor;
     } else if (cursor === "") {
       throw HttpError.badRequest(
         "Invalid cursor format. Must be a valid ObjectId.",
@@ -58,7 +55,7 @@ export function validateListChats(
 
     // Store parsed values in req for use in route handler
     (req as any).paginationParams = {
-      cursor: cursor ? new ObjectId(cursor) : undefined,
+      cursor: normalizedCursor,
       limit: parsedLimit,
     };
 

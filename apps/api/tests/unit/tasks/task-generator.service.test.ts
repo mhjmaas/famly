@@ -137,12 +137,12 @@ describe("TaskGeneratorService - Cleanup Functionality", () => {
       // Verify findIncompleteTasksBySchedule was called
       expect(
         mockTaskRepository.findIncompleteTasksBySchedule,
-      ).toHaveBeenCalledWith(scheduleId);
+      ).toHaveBeenCalledWith(scheduleId.toString());
 
       // Verify deleteTasksByIds was called with the incomplete task IDs
       expect(mockTaskRepository.deleteTasksByIds).toHaveBeenCalledWith([
-        incompleteTasks[0]._id,
-        incompleteTasks[1]._id,
+        incompleteTasks[0]._id.toString(),
+        incompleteTasks[1]._id.toString(),
       ]);
 
       // Verify new task was created
@@ -208,7 +208,7 @@ describe("TaskGeneratorService - Cleanup Functionality", () => {
       // Verify findIncompleteTasksBySchedule was called
       expect(
         mockTaskRepository.findIncompleteTasksBySchedule,
-      ).toHaveBeenCalledWith(scheduleId);
+      ).toHaveBeenCalledWith(scheduleId.toString());
 
       // Verify deleteTasksByIds was NOT called
       expect(mockTaskRepository.deleteTasksByIds).not.toHaveBeenCalled();
@@ -352,9 +352,9 @@ describe("TaskGeneratorService - Cleanup Functionality", () => {
       // Verify old incomplete task was deleted
       expect(
         mockTaskRepository.findIncompleteTasksBySchedule,
-      ).toHaveBeenCalledWith(scheduleId);
+      ).toHaveBeenCalledWith(scheduleId.toString());
       expect(mockTaskRepository.deleteTasksByIds).toHaveBeenCalledWith([
-        incompleteTasks[0]._id,
+        incompleteTasks[0]._id.toString(),
       ]);
 
       // Verify only ONE task was created (for today)
@@ -363,7 +363,7 @@ describe("TaskGeneratorService - Cleanup Functionality", () => {
       // Verify lastGeneratedDate was updated
       expect(
         mockScheduleRepository.updateLastGeneratedDate,
-      ).toHaveBeenCalledWith(scheduleId, today);
+      ).toHaveBeenCalledWith(scheduleId.toString(), today);
     });
 
     it("should not backfill missed days when system was offline", async () => {
@@ -422,7 +422,7 @@ describe("TaskGeneratorService - Cleanup Functionality", () => {
       // Verify lastGeneratedDate was updated to today
       expect(
         mockScheduleRepository.updateLastGeneratedDate,
-      ).toHaveBeenCalledWith(scheduleId, today);
+      ).toHaveBeenCalledWith(scheduleId.toString(), today);
     });
 
     it("should maintain one active task per schedule for multiple schedules", async () => {
@@ -497,10 +497,10 @@ describe("TaskGeneratorService - Cleanup Functionality", () => {
       ).toHaveBeenCalledTimes(2);
       expect(
         mockTaskRepository.findIncompleteTasksBySchedule,
-      ).toHaveBeenCalledWith(schedule1Id);
+      ).toHaveBeenCalledWith(schedule1Id.toString());
       expect(
         mockTaskRepository.findIncompleteTasksBySchedule,
-      ).toHaveBeenCalledWith(schedule2Id);
+      ).toHaveBeenCalledWith(schedule2Id.toString());
 
       // Both schedules should generate ONE task each for today
       expect(mockTaskRepository.createTask).toHaveBeenCalledTimes(2);
@@ -508,10 +508,10 @@ describe("TaskGeneratorService - Cleanup Functionality", () => {
       // Both should have lastGeneratedDate updated
       expect(
         mockScheduleRepository.updateLastGeneratedDate,
-      ).toHaveBeenCalledWith(schedule1Id, today);
+      ).toHaveBeenCalledWith(schedule1Id.toString(), today);
       expect(
         mockScheduleRepository.updateLastGeneratedDate,
-      ).toHaveBeenCalledWith(schedule2Id, today);
+      ).toHaveBeenCalledWith(schedule2Id.toString(), today);
     });
   });
 
@@ -570,7 +570,7 @@ describe("TaskGeneratorService - Cleanup Functionality", () => {
       });
       expect(
         mockScheduleRepository.updateLastGeneratedDate,
-      ).toHaveBeenCalledWith(scheduleId, today);
+      ).toHaveBeenCalledWith(scheduleId.toString(), today);
     });
 
     it("skips task creation when schedule is outside its start date", async () => {

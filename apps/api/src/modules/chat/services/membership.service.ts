@@ -1,6 +1,12 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
-import type { ObjectId } from "mongodb";
+import {
+  type ObjectIdString,
+  toObjectId,
+  toObjectIdArray,
+  validateObjectId,
+  validateObjectIdArray,
+} from "@lib/objectid-utils";
 import type { Chat } from "../domain/chat";
 import type { MembershipDTO } from "../domain/membership";
 import { toChatDTO } from "../lib/chat.mapper";
@@ -26,19 +32,28 @@ export class MembershipService {
    * @returns The updated chat
    */
   async addMembers(
-    chatId: ObjectId,
-    userIds: ObjectId[],
-    addedBy: ObjectId,
+    chatId: string,
+    userIds: string[],
+    addedBy: string,
   ): Promise<Chat> {
+    let normalizedChatId: ObjectIdString | undefined;
+    let normalizedAddedBy: ObjectIdString | undefined;
+    let normalizedUserIds: ObjectIdString[] = [];
     try {
+      normalizedChatId = validateObjectId(chatId, "chatId");
+      normalizedAddedBy = validateObjectId(addedBy, "addedBy");
+      normalizedUserIds = validateObjectIdArray(userIds, "userIds");
+      const chatObjectId = toObjectId(normalizedChatId, "chatId");
+      const userObjectIds = toObjectIdArray(normalizedUserIds, "userIds");
+
       logger.info("Adding members to chat", {
-        chatId: chatId.toString(),
-        userCount: userIds.length,
-        addedBy: addedBy.toString(),
+        chatId: normalizedChatId,
+        userCount: normalizedUserIds.length,
+        addedBy: normalizedAddedBy,
       });
 
       // Verify chat exists and get its current state
-      const chat = await this.chatRepository.findById(chatId);
+      const chat = await this.chatRepository.findById(chatObjectId);
       if (!chat) {
         throw HttpError.notFound("Chat not found");
       }
@@ -50,34 +65,34 @@ export class MembershipService {
 
       // Check which users are already members
       const existingMemberships =
-        await this.membershipRepository.findByChat(chatId);
+        await this.membershipRepository.findByChat(chatObjectId);
       const existingMemberIds = new Set(
         existingMemberships.map((m) => m.userId.toString()),
       );
 
       // Find users that aren't already members
-      const newUserIds: ObjectId[] = [];
-      for (const userId of userIds) {
+      const newUserIds: ReturnType<typeof toObjectId>[] = [];
+      userObjectIds.forEach((userId, index) => {
         if (!existingMemberIds.has(userId.toString())) {
           newUserIds.push(userId);
         } else {
           throw HttpError.badRequest(
-            `User ${userId.toString()} is already a member of this chat`,
+            `User ${normalizedUserIds[index]} is already a member of this chat`,
           );
         }
-      }
+      });
 
       // Create memberships for new users
       if (newUserIds.length > 0) {
         await this.membershipRepository.createBulk(
-          chatId,
+          chatObjectId,
           newUserIds.map((userId) => ({ userId, role: "member" })),
         );
 
         // Update chat's memberIds array
         const updatedMemberIds = [...chat.memberIds, ...newUserIds];
         const updatedChat = await this.chatRepository.updateMembers(
-          chatId,
+          chatObjectId,
           updatedMemberIds,
         );
 
@@ -86,9 +101,9 @@ export class MembershipService {
         }
 
         logger.info("Members added to chat successfully", {
-          chatId: chatId.toString(),
+          chatId: normalizedChatId,
           addedCount: newUserIds.length,
-          addedBy: addedBy.toString(),
+          addedBy: normalizedAddedBy,
         });
 
         // Emit Socket.IO event to OLD members only (before addition)
@@ -102,9 +117,9 @@ export class MembershipService {
       return chat;
     } catch (error) {
       logger.error("Failed to add members to chat", {
-        chatId: chatId.toString(),
-        userCount: userIds.length,
-        addedBy: addedBy.toString(),
+        chatId: normalizedChatId ?? chatId,
+        userCount: normalizedUserIds.length,
+        addedBy: normalizedAddedBy ?? addedBy,
         error,
       });
       throw error;
@@ -120,19 +135,28 @@ export class MembershipService {
    * @returns The updated chat
    */
   async removeMember(
-    chatId: ObjectId,
-    userId: ObjectId,
-    removedBy: ObjectId,
+    chatId: string,
+    userId: string,
+    removedBy: string,
   ): Promise<Chat> {
+    let normalizedChatId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
+    let normalizedRemovedBy: ObjectIdString | undefined;
     try {
+      normalizedChatId = validateObjectId(chatId, "chatId");
+      normalizedUserId = validateObjectId(userId, "userId");
+      normalizedRemovedBy = validateObjectId(removedBy, "removedBy");
+      const chatObjectId = toObjectId(normalizedChatId, "chatId");
+      const userObjectId = toObjectId(normalizedUserId, "userId");
+
       logger.info("Removing member from chat", {
-        chatId: chatId.toString(),
-        userId: userId.toString(),
-        removedBy: removedBy.toString(),
+        chatId: normalizedChatId,
+        userId: normalizedUserId,
+        removedBy: normalizedRemovedBy,
       });
 
       // Verify chat exists
-      const chat = await this.chatRepository.findById(chatId);
+      const chat = await this.chatRepository.findById(chatObjectId);
       if (!chat) {
         throw HttpError.notFound("Chat not found");
       }
@@ -144,8 +168,8 @@ export class MembershipService {
 
       // Find the membership to delete
       const membership = await this.membershipRepository.findByUserAndChat(
-        userId,
-        chatId,
+        userObjectId,
+        chatObjectId,
       );
       if (!membership) {
         throw HttpError.notFound("Member not found");
@@ -159,10 +183,10 @@ export class MembershipService {
 
       // Update chat's memberIds array
       const updatedMemberIds = chat.memberIds.filter(
-        (id) => id.toString() !== userId.toString(),
+        (id) => id.toString() !== normalizedUserId,
       );
       const updatedChat = await this.chatRepository.updateMembers(
-        chatId,
+        chatObjectId,
         updatedMemberIds,
       );
 
@@ -171,9 +195,9 @@ export class MembershipService {
       }
 
       logger.info("Member removed from chat successfully", {
-        chatId: chatId.toString(),
-        userId: userId.toString(),
-        removedBy: removedBy.toString(),
+        chatId: normalizedChatId,
+        userId: normalizedUserId,
+        removedBy: normalizedRemovedBy,
       });
 
       // Emit Socket.IO event to OLD members (including the removed one)
@@ -184,9 +208,9 @@ export class MembershipService {
       return updatedChat;
     } catch (error) {
       logger.error("Failed to remove member from chat", {
-        chatId: chatId.toString(),
-        userId: userId.toString(),
-        removedBy: removedBy.toString(),
+        chatId: normalizedChatId ?? chatId,
+        userId: normalizedUserId ?? userId,
+        removedBy: normalizedRemovedBy ?? removedBy,
         error,
       });
       throw error;
@@ -207,11 +231,21 @@ export class MembershipService {
    * @throws HttpError(400) if message doesn't belong to chat
    */
   async updateReadCursor(
-    chatId: ObjectId,
-    userId: ObjectId,
-    messageId: ObjectId,
+    chatId: string,
+    userId: string,
+    messageId: string,
   ): Promise<MembershipDTO> {
+    let normalizedChatId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
+    let normalizedMessageId: ObjectIdString | undefined;
     try {
+      normalizedChatId = validateObjectId(chatId, "chatId");
+      normalizedUserId = validateObjectId(userId, "userId");
+      normalizedMessageId = validateObjectId(messageId, "messageId");
+      const chatObjectId = toObjectId(normalizedChatId, "chatId");
+      const userObjectId = toObjectId(normalizedUserId, "userId");
+      const messageObjectId = toObjectId(normalizedMessageId, "messageId");
+
       if (!this.messageRepository) {
         throw new Error(
           "MessageRepository not initialized in MembershipService",
@@ -219,27 +253,27 @@ export class MembershipService {
       }
 
       logger.info("Updating read cursor", {
-        chatId: chatId.toString(),
-        userId: userId.toString(),
-        messageId: messageId.toString(),
+        chatId: normalizedChatId,
+        userId: normalizedUserId,
+        messageId: normalizedMessageId,
       });
 
       // Check membership FIRST (authorization before resource validation)
       const membership = await this.membershipRepository.findByUserAndChat(
-        userId,
-        chatId,
+        userObjectId,
+        chatObjectId,
       );
       if (!membership) {
         throw HttpError.forbidden("You are not a member of this chat");
       }
 
       // Then verify message exists and belongs to this chat
-      const message = await this.messageRepository.findById(messageId);
+      const message = await this.messageRepository.findById(messageObjectId);
       if (!message) {
         throw HttpError.notFound("Message not found");
       }
 
-      if (!message.chatId.equals(chatId)) {
+      if (!message.chatId.equals(chatObjectId)) {
         throw HttpError.badRequest("Message does not belong to this chat");
       }
 
@@ -247,12 +281,12 @@ export class MembershipService {
       // ObjectIds can be compared as hex strings for chronological ordering
       const shouldUpdate =
         !membership.lastReadMessageId ||
-        messageId.toString() > membership.lastReadMessageId.toString();
+        messageObjectId.toString() > membership.lastReadMessageId.toString();
 
       if (shouldUpdate) {
         const updated = await this.membershipRepository.updateReadCursor(
           membership._id,
-          messageId,
+          messageObjectId,
         );
 
         if (!updated) {
@@ -260,26 +294,26 @@ export class MembershipService {
         }
 
         logger.info("Read cursor updated successfully", {
-          chatId: chatId.toString(),
-          userId: userId.toString(),
-          messageId: messageId.toString(),
+          chatId: normalizedChatId,
+          userId: normalizedUserId,
+          messageId: normalizedMessageId,
         });
 
         return toMembershipDTO(updated);
       }
 
       logger.info("Read cursor not updated (message is older)", {
-        chatId: chatId.toString(),
-        userId: userId.toString(),
-        messageId: messageId.toString(),
+        chatId: normalizedChatId,
+        userId: normalizedUserId,
+        messageId: normalizedMessageId,
       });
 
       return toMembershipDTO(membership);
     } catch (error) {
       logger.error("Failed to update read cursor", {
-        chatId: chatId.toString(),
-        userId: userId.toString(),
-        messageId: messageId.toString(),
+        chatId: normalizedChatId ?? chatId,
+        userId: normalizedUserId ?? userId,
+        messageId: normalizedMessageId ?? messageId,
         error,
       });
       throw error;

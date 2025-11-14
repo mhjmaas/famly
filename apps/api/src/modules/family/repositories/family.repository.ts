@@ -1,5 +1,6 @@
 import { getDb } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
+import { toObjectId, toObjectIdArray } from "@lib/objectid-utils";
 import { type Collection, ObjectId } from "mongodb";
 import type { Family } from "../domain/family";
 
@@ -38,20 +39,17 @@ export class FamilyRepository {
   /**
    * Create a new family
    *
-   * @param creatorId - The user ID of the family creator
+   * @param creatorId - The user ID of the family creator (string)
    * @param name - Optional family name (normalized)
    * @returns The created family document
    */
-  async createFamily(
-    creatorId: ObjectId,
-    name: string | null,
-  ): Promise<Family> {
+  async createFamily(creatorId: string, name: string | null): Promise<Family> {
     const now = new Date();
 
     const family: Family = {
       _id: new ObjectId(),
       name,
-      creatorId,
+      creatorId: toObjectId(creatorId),
       createdAt: now,
       updatedAt: now,
     };
@@ -64,33 +62,35 @@ export class FamilyRepository {
   /**
    * Find a family by ID
    *
-   * @param familyId - The family ID
+   * @param familyId - The family ID (string)
    * @returns The family document or null if not found
    */
-  async findById(familyId: ObjectId): Promise<Family | null> {
-    return this.collection.findOne({ _id: familyId });
+  async findById(familyId: string): Promise<Family | null> {
+    return this.collection.findOne({ _id: toObjectId(familyId) });
   }
 
   /**
    * Find families by IDs
    * Useful for batch lookups when fetching membership views
    *
-   * @param familyIds - Array of family IDs
+   * @param familyIds - Array of family IDs (strings)
    * @returns Array of family documents
    */
-  async findByIds(familyIds: ObjectId[]): Promise<Family[]> {
-    return this.collection.find({ _id: { $in: familyIds } }).toArray();
+  async findByIds(familyIds: string[]): Promise<Family[]> {
+    return this.collection
+      .find({ _id: { $in: toObjectIdArray(familyIds) } })
+      .toArray();
   }
 
   /**
    * Find families created by a user
    *
-   * @param creatorId - The user ID
+   * @param creatorId - The user ID (string)
    * @returns Array of family documents
    */
-  async findByCreator(creatorId: ObjectId): Promise<Family[]> {
+  async findByCreator(creatorId: string): Promise<Family[]> {
     return this.collection
-      .find({ creatorId })
+      .find({ creatorId: toObjectId(creatorId) })
       .sort({ createdAt: -1 })
       .toArray();
   }
@@ -98,16 +98,16 @@ export class FamilyRepository {
   /**
    * Update a family name
    *
-   * @param familyId - The family ID
+   * @param familyId - The family ID (string)
    * @param name - New family name (normalized)
    * @returns The updated family document or null if not found
    */
   async updateName(
-    familyId: ObjectId,
+    familyId: string,
     name: string | null,
   ): Promise<Family | null> {
     const result = await this.collection.findOneAndUpdate(
-      { _id: familyId },
+      { _id: toObjectId(familyId) },
       {
         $set: {
           name,
@@ -123,11 +123,13 @@ export class FamilyRepository {
   /**
    * Delete a family
    *
-   * @param familyId - The family ID
+   * @param familyId - The family ID (string)
    * @returns True if deleted, false if not found
    */
-  async deleteFamily(familyId: ObjectId): Promise<boolean> {
-    const result = await this.collection.deleteOne({ _id: familyId });
+  async deleteFamily(familyId: string): Promise<boolean> {
+    const result = await this.collection.deleteOne({
+      _id: toObjectId(familyId),
+    });
     return result.deletedCount > 0;
   }
 }

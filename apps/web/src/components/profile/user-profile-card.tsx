@@ -26,7 +26,7 @@ import { Label } from "@/components/ui/label";
 import type { Locale } from "@/i18n/config";
 import type { UserProfile } from "@/lib/api-client";
 import { logout, updateProfile } from "@/lib/api-client";
-import { calculateAge } from "@/lib/family-utils";
+import { calculateAge } from "@/lib/utils/family-utils";
 import { useAppDispatch } from "@/store/hooks";
 import { clearUser, setUser } from "@/store/slices/user.slice";
 

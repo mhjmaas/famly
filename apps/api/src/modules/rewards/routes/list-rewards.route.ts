@@ -1,11 +1,11 @@
 import { getMongoClient } from "@infra/mongo/client";
 import { HttpError } from "@lib/http-error";
+import { validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { MetadataRepository } from "../repositories/metadata.repository";
 import { RewardRepository } from "../repositories/reward.repository";
 import { RewardService } from "../services/reward.service";
@@ -38,8 +38,8 @@ export function listRewardsRoute(): Router {
           throw HttpError.badRequest("Missing familyId parameter");
         }
 
-        const userId = new ObjectId(req.user.id);
-        const familyId = new ObjectId(req.params.familyId);
+        const userId = validateObjectId(req.user.id, "userId");
+        const familyId = validateObjectId(req.params.familyId, "familyId");
 
         // Verify membership
         const membershipRepository = new FamilyMembershipRepository();

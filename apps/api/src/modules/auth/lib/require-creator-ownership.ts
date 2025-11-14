@@ -1,4 +1,5 @@
 import { HttpError } from "@lib/http-error";
+import { fromObjectId } from "@lib/objectid-utils";
 import type { ObjectId } from "mongodb";
 
 /**
@@ -6,28 +7,28 @@ import type { ObjectId } from "mongodb";
  */
 export interface RequireCreatorOwnershipOptions {
   /**
-   * The user's ObjectId
+   * The user's ID (string)
    */
-  userId: ObjectId;
+  userId: string;
 
   /**
-   * The createdBy field from the resource (ObjectId)
+   * The createdBy field from the resource (can be ObjectId or string)
    * Either provide this directly OR provide resourceId + lookupFn
    */
-  createdBy?: ObjectId;
+  createdBy?: ObjectId | string;
 
   /**
-   * The resource's ObjectId for database lookup
+   * The resource's ID for database lookup (string)
    * Required if createdBy is not provided
    */
-  resourceId?: ObjectId;
+  resourceId?: string;
 
   /**
    * Repository lookup function that fetches a resource by ID
    * Required if createdBy is not provided
    * Returns the resource or null if not found
    */
-  lookupFn?: (id: ObjectId) => Promise<{ createdBy: ObjectId } | null>;
+  lookupFn?: (id: string) => Promise<{ createdBy: ObjectId } | null>;
 }
 
 /**
@@ -43,7 +44,7 @@ export interface RequireCreatorOwnershipOptions {
  * Usage for direct ownership check:
  * ```typescript
  * await requireCreatorOwnership({
- *   userId: new ObjectId(req.user.id),
+ *   userId: req.user.id,
  *   createdBy: resource.createdBy,
  * });
  * ```
@@ -51,8 +52,8 @@ export interface RequireCreatorOwnershipOptions {
  * Usage with repository lookup:
  * ```typescript
  * await requireCreatorOwnership({
- *   userId: new ObjectId(req.user.id),
- *   resourceId: new ObjectId(req.params.resourceId),
+ *   userId: req.user.id,
+ *   resourceId: req.params.resourceId,
  *   lookupFn: async (id) => {
  *     const resource = await repository.findById(id);
  *     return resource ? { createdBy: resource.createdBy } : null;
@@ -88,8 +89,15 @@ export async function requireCreatorOwnership(
 /**
  * Check ownership using directly provided createdBy value (sync)
  */
-function checkDirectOwnership(userId: ObjectId, createdBy: ObjectId): boolean {
-  if (!userId.equals(createdBy)) {
+function checkDirectOwnership(
+  userId: string,
+  createdBy: ObjectId | string,
+): boolean {
+  // Normalize createdBy to string for comparison
+  const createdByStr =
+    typeof createdBy === "string" ? createdBy : fromObjectId(createdBy);
+
+  if (userId !== createdByStr) {
     throw HttpError.forbidden(
       "You do not have permission to access this resource",
     );
@@ -102,9 +110,9 @@ function checkDirectOwnership(userId: ObjectId, createdBy: ObjectId): boolean {
  * Check ownership via repository lookup (async)
  */
 async function checkOwnershipViaLookup(
-  userId: ObjectId,
-  resourceId: ObjectId,
-  lookupFn: (id: ObjectId) => Promise<{ createdBy: ObjectId } | null>,
+  userId: string,
+  resourceId: string,
+  lookupFn: (id: string) => Promise<{ createdBy: ObjectId } | null>,
 ): Promise<boolean> {
   const resource = await lookupFn(resourceId);
 
@@ -112,7 +120,10 @@ async function checkOwnershipViaLookup(
     throw HttpError.notFound("Resource not found");
   }
 
-  if (!userId.equals(resource.createdBy)) {
+  // Convert ObjectId createdBy to string for comparison
+  const createdByStr = fromObjectId(resource.createdBy);
+
+  if (userId !== createdByStr) {
     throw HttpError.forbidden(
       "You do not have permission to access this resource",
     );

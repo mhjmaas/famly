@@ -1,9 +1,9 @@
 import { HttpError } from "@lib/http-error";
+import { validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { toActivityEventDTO } from "../lib/activity-event.mapper";
 import { ActivityEventRepository } from "../repositories/activity-event.repository";
 import { ActivityEventService } from "../services/activity-event.service";
@@ -38,7 +38,7 @@ export function listEventsRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        const userId = new ObjectId(req.user.id);
+        const userId = validateObjectId(req.user.id, "userId");
         const startDate = req.query.startDate as string | undefined;
         const endDate = req.query.endDate as string | undefined;
 

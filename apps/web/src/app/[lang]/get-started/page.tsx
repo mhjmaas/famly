@@ -3,7 +3,7 @@ import { Footer } from "@/components/landing/footer";
 import { Navigation } from "@/components/landing/navigation";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
-import { getDeploymentStatus } from "@/lib/status-client";
+import { getDeploymentStatus } from "@/lib/utils/status-utils";
 
 interface GetStartedPageProps {
   params: Promise<{ lang: string }>;

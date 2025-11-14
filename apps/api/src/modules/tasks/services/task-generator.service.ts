@@ -134,8 +134,10 @@ export class TaskGeneratorService {
     }
 
     // Check for duplicate task (idempotency)
+    const scheduleId = schedule._id.toString();
+    const familyId = schedule.familyId.toString();
     const existingTask = await this.taskRepository.findTaskByScheduleAndDate(
-      schedule._id,
+      scheduleId,
       date,
     );
 
@@ -154,7 +156,7 @@ export class TaskGeneratorService {
 
     // Create task from schedule
     const task = await this.taskRepository.createTask(
-      schedule.familyId,
+      familyId,
       {
         name: schedule.name,
         description: schedule.description,
@@ -162,12 +164,12 @@ export class TaskGeneratorService {
         assignment: schedule.assignment,
         metadata: schedule.metadata,
       },
-      schedule.createdBy,
-      schedule._id, // Link to schedule
+      schedule.createdBy.toString(),
+      scheduleId, // Link to schedule
     );
 
     // Update last generated date
-    await this.scheduleRepository.updateLastGeneratedDate(schedule._id, date);
+    await this.scheduleRepository.updateLastGeneratedDate(scheduleId, date);
 
     logger.info("Task generated from schedule", {
       taskId: task._id.toString(),
@@ -184,21 +186,22 @@ export class TaskGeneratorService {
   }
 
   private async cleanupIncompleteTasks(schedule: TaskSchedule): Promise<void> {
+    const scheduleId = schedule._id.toString();
     const incompleteTasks =
-      await this.taskRepository.findIncompleteTasksBySchedule(schedule._id);
+      await this.taskRepository.findIncompleteTasksBySchedule(scheduleId);
 
     if (incompleteTasks.length === 0) {
       return;
     }
 
-    const taskIds = incompleteTasks.map((task) => task._id);
+    const taskIds = incompleteTasks.map((task) => task._id.toString());
     const deletedCount = await this.taskRepository.deleteTasksByIds(taskIds);
 
     logger.info("Cleaned up incomplete tasks before generating new task", {
-      scheduleId: schedule._id.toString(),
+      scheduleId,
       scheduleName: schedule.name,
       deletedCount,
-      taskIds: taskIds.map((id) => id.toString()),
+      taskIds,
     });
   }
 

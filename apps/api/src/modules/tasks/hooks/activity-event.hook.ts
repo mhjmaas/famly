@@ -1,6 +1,6 @@
 import { logger } from "@lib/logger";
+import { validateObjectId } from "@lib/objectid-utils";
 import type { ActivityEventService } from "@modules/activity-events";
-import type { ObjectId } from "mongodb";
 import type { Task } from "../domain/task";
 import type { TaskCompletionHook } from "./task-completion.hook";
 
@@ -16,21 +16,30 @@ export class ActivityEventHook implements TaskCompletionHook {
    */
   async onTaskCompleted(
     task: Task,
-    creditedUserId: ObjectId,
-    triggeredBy: ObjectId,
+    creditedUserId: string,
+    triggeredBy: string,
   ): Promise<void> {
     try {
+      const normalizedCreditedUserId = validateObjectId(
+        creditedUserId,
+        "creditedUserId",
+      );
+      const normalizedTriggeredBy = validateObjectId(
+        triggeredBy,
+        "triggeredBy",
+      );
+
       // Build metadata with karma and triggeredBy if different from credited user
       const metadata: Record<string, any> = {};
       if (task.metadata?.karma) {
         metadata.karma = task.metadata.karma;
       }
-      if (creditedUserId.toString() !== triggeredBy.toString()) {
-        metadata.triggeredBy = triggeredBy.toString();
+      if (creditedUserId !== triggeredBy) {
+        metadata.triggeredBy = normalizedTriggeredBy;
       }
 
       await this.activityEventService.recordEvent({
-        userId: creditedUserId,
+        userId: normalizedCreditedUserId,
         type: "TASK",
         title: task.name,
         description: `Completed ${task.name}`,
@@ -39,15 +48,15 @@ export class ActivityEventHook implements TaskCompletionHook {
 
       logger.debug("Activity event recorded for task completion", {
         taskId: task._id.toString(),
-        creditedUserId: creditedUserId.toString(),
-        triggeredBy: triggeredBy.toString(),
+        creditedUserId: normalizedCreditedUserId,
+        triggeredBy: normalizedTriggeredBy,
       });
     } catch (error) {
       // Log but don't throw - activity event failures shouldn't block task completion
       logger.error("Failed to record activity event for task completion", {
         taskId: task._id.toString(),
-        creditedUserId: creditedUserId.toString(),
-        triggeredBy: triggeredBy.toString(),
+        creditedUserId,
+        triggeredBy,
         error,
       });
     }

@@ -5,7 +5,6 @@ import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import {
   buildFamiliesWithMembersResponse,
   type FamiliesWithMembersResponse,
@@ -45,10 +44,10 @@ export function createListFamiliesRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        const userId = new ObjectId(req.user.id);
+        const userId = req.user.id;
 
         logger.debug("Listing families via API", {
-          userId: req.user.id,
+          userId,
         });
 
         const families = await familyService.listFamiliesForUser(userId);
@@ -58,9 +57,7 @@ export function createListFamiliesRoute(): Router {
           return;
         }
 
-        const familyIds = families.map(
-          (family) => new ObjectId(family.familyId),
-        );
+        const familyIds = families.map((family) => family.familyId);
         const memberships =
           await membershipRepository.findByFamilyIds(familyIds);
 
@@ -68,7 +65,7 @@ export function createListFamiliesRoute(): Router {
         const db = getDb();
         const usersCollection = db.collection("user");
 
-        const userIds = memberships.map((m) => new ObjectId(m.userId));
+        const userIds = memberships.map((m) => m.userId);
         const users = await usersCollection
           .find({ _id: { $in: userIds } })
           .toArray();

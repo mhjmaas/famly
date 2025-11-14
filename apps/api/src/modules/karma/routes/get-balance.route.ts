@@ -1,9 +1,9 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import { validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { toMemberKarmaDTO } from "../lib/karma.mapper";
 import type { KarmaService } from "../services/karma.service";
 
@@ -31,22 +31,24 @@ export function createGetBalanceRoute(karmaService: KarmaService): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        if (!ObjectId.isValid(req.params.familyId)) {
-          throw HttpError.badRequest("Invalid family ID");
+        if (!req.params.familyId) {
+          throw HttpError.badRequest("Missing familyId parameter");
+        }
+        if (!req.params.userId) {
+          throw HttpError.badRequest("Missing userId parameter");
         }
 
-        if (!ObjectId.isValid(req.params.userId)) {
-          throw HttpError.badRequest("Invalid user ID");
-        }
-
-        const familyId = new ObjectId(req.params.familyId);
-        const userId = new ObjectId(req.params.userId);
-        const requestingUserId = new ObjectId(req.user.id);
+        const familyId = validateObjectId(req.params.familyId, "familyId");
+        const userId = validateObjectId(req.params.userId, "userId");
+        const requestingUserId = validateObjectId(
+          req.user.id,
+          "requestingUserId",
+        );
 
         logger.debug("Fetching karma balance via API", {
-          familyId: familyId.toString(),
-          userId: userId.toString(),
-          requestingUserId: requestingUserId.toString(),
+          familyId,
+          userId,
+          requestingUserId,
         });
 
         const memberKarma = await karmaService.getMemberKarma(

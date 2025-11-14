@@ -1,8 +1,8 @@
 import { getDb } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
+import { type ObjectIdString, toObjectId } from "@lib/objectid-utils";
 import type { FamilyMembership } from "@modules/family/domain/family";
 import { emitToUserRooms } from "@modules/realtime";
-import type { ObjectId } from "mongodb";
 
 /**
  * Event payload types for family member events
@@ -40,8 +40,8 @@ export interface FamilyEventPayloads {
  * @returns Array of user ID strings
  */
 async function getFamilyMemberIds(
-  familyId: ObjectId,
-  excludeUserId?: ObjectId,
+  familyId: ObjectIdString,
+  excludeUserId?: ObjectIdString,
 ): Promise<string[]> {
   try {
     const db = getDb();
@@ -49,14 +49,13 @@ async function getFamilyMemberIds(
       db.collection<FamilyMembership>("family_memberships");
 
     const memberships = await membershipsCollection
-      .find({ familyId })
+      .find({ familyId: toObjectId(familyId, "familyId") })
       .toArray();
 
     let userIds = memberships.map((m) => m.userId.toString());
 
     if (excludeUserId) {
-      const excludeId = excludeUserId.toString();
-      userIds = userIds.filter((id) => id !== excludeId);
+      userIds = userIds.filter((id) => id !== excludeUserId);
     }
 
     return userIds;
@@ -76,8 +75,8 @@ async function getFamilyMemberIds(
  * @param memberRole The new member's role
  */
 export async function emitFamilyMemberAdded(
-  familyId: ObjectId,
-  newMemberId: ObjectId,
+  familyId: ObjectIdString,
+  newMemberId: ObjectIdString,
   memberName: string,
   memberRole: "Parent" | "Child",
 ): Promise<void> {
@@ -93,8 +92,8 @@ export async function emitFamilyMemberAdded(
     }
 
     const payload: FamilyEventPayloads["family.member.added"] = {
-      familyId: familyId.toString(),
-      memberId: newMemberId.toString(),
+      familyId,
+      memberId: newMemberId,
       name: memberName,
       role: memberRole,
       affectedUsers,
@@ -103,8 +102,8 @@ export async function emitFamilyMemberAdded(
     emitToUserRooms("family.member.added", affectedUsers, payload);
 
     logger.debug(`Emitted family.member.added event`, {
-      familyId: familyId.toString(),
-      newMemberId: newMemberId.toString(),
+      familyId,
+      newMemberId,
       affectedUsers,
     });
   } catch (error) {
@@ -124,8 +123,8 @@ export async function emitFamilyMemberAdded(
  * @param memberName The removed member's name
  */
 export async function emitFamilyMemberRemoved(
-  familyId: ObjectId,
-  removedMemberId: ObjectId,
+  familyId: ObjectIdString,
+  removedMemberId: ObjectIdString,
   memberName: string,
 ): Promise<void> {
   try {
@@ -140,8 +139,8 @@ export async function emitFamilyMemberRemoved(
     }
 
     const payload: FamilyEventPayloads["family.member.removed"] = {
-      familyId: familyId.toString(),
-      memberId: removedMemberId.toString(),
+      familyId,
+      memberId: removedMemberId,
       name: memberName,
       affectedUsers,
     };
@@ -149,8 +148,8 @@ export async function emitFamilyMemberRemoved(
     emitToUserRooms("family.member.removed", affectedUsers, payload);
 
     logger.debug(`Emitted family.member.removed event`, {
-      familyId: familyId.toString(),
-      removedMemberId: removedMemberId.toString(),
+      familyId,
+      removedMemberId,
       affectedUsers,
     });
   } catch (error) {
@@ -172,8 +171,8 @@ export async function emitFamilyMemberRemoved(
  * @param newRole The new role
  */
 export async function emitFamilyMemberRoleUpdated(
-  familyId: ObjectId,
-  memberId: ObjectId,
+  familyId: ObjectIdString,
+  memberId: ObjectIdString,
   memberName: string,
   oldRole: "Parent" | "Child",
   newRole: "Parent" | "Child",
@@ -190,8 +189,8 @@ export async function emitFamilyMemberRoleUpdated(
     }
 
     const payload: FamilyEventPayloads["family.member.role.updated"] = {
-      familyId: familyId.toString(),
-      memberId: memberId.toString(),
+      familyId,
+      memberId,
       name: memberName,
       oldRole,
       newRole,
@@ -201,8 +200,8 @@ export async function emitFamilyMemberRoleUpdated(
     emitToUserRooms("family.member.role.updated", affectedUsers, payload);
 
     logger.debug(`Emitted family.member.role.updated event`, {
-      familyId: familyId.toString(),
-      memberId: memberId.toString(),
+      familyId,
+      memberId,
       oldRole,
       newRole,
       affectedUsers,

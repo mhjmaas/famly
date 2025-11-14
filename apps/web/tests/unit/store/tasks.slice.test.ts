@@ -740,7 +740,7 @@ describe("tasks slice", () => {
     });
 
     it("should clear error when creating task", async () => {
-      const state1 = store.getState().tasks;
+      const _state1 = store.getState().tasks;
       store.dispatch(clearError());
 
       const state2 = store.getState().tasks;

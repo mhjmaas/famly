@@ -1,12 +1,12 @@
 import { getMongoClient } from "@infra/mongo/client";
 import { HttpError } from "@lib/http-error";
+import { toObjectId, validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyRole } from "@modules/family/domain/family";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { toClaimDTO } from "../lib/reward.mapper";
 import { ClaimRepository } from "../repositories/claim.repository";
 
@@ -42,9 +42,9 @@ export function getClaimRoute(): Router {
           throw HttpError.badRequest("Missing claimId parameter");
         }
 
-        const userId = new ObjectId(req.user.id);
-        const familyId = new ObjectId(req.params.familyId);
-        const claimId = new ObjectId(req.params.claimId);
+        const userId = validateObjectId(req.user.id, "userId");
+        const familyId = validateObjectId(req.params.familyId, "familyId");
+        const claimId = validateObjectId(req.params.claimId, "claimId");
 
         // Verify membership
         const membershipRepository = new FamilyMembershipRepository();
@@ -60,21 +60,23 @@ export function getClaimRoute(): Router {
         // Get claim
         const mongoClient = getMongoClient();
         const claimRepository = new ClaimRepository(mongoClient);
-        const claim = await claimRepository.findById(claimId);
+        const claim = await claimRepository.findById(
+          toObjectId(claimId, "claimId"),
+        );
 
         if (!claim) {
           throw HttpError.notFound("Claim not found");
         }
 
         // Verify claim belongs to this family
-        if (!claim.familyId.equals(familyId)) {
+        if (claim.familyId.toString() !== familyId) {
           throw HttpError.forbidden("Claim does not belong to this family");
         }
 
         // Authorization: members can only see own claims, parents can see all
         if (
           membership.role !== FamilyRole.Parent &&
-          !claim.memberId.equals(userId)
+          claim.memberId.toString() !== userId
         ) {
           throw HttpError.forbidden("You can only view your own claims");
         }

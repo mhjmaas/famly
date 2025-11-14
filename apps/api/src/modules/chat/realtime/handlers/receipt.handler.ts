@@ -1,23 +1,20 @@
 import { randomUUID } from "node:crypto";
 import { isHttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import { type ObjectIdString, validateObjectId } from "@lib/objectid-utils";
+import { zodObjectId } from "@lib/zod-objectid";
 import { ChatRepository } from "@modules/chat/repositories/chat.repository";
 import { MembershipRepository } from "@modules/chat/repositories/membership.repository";
 import { MessageRepository } from "@modules/chat/repositories/message.repository";
 import { MembershipService } from "@modules/chat/services/membership.service";
-import { ObjectId } from "mongodb";
 import type { Socket } from "socket.io";
 import { z } from "zod";
-import type { Ack, ReceiptReadPayload } from "../types";
+import { type Ack, ErrorCode, type ReceiptReadPayload } from "../types";
 
 // Validation schema for read receipt events
 const receiptSchema = z.object({
-  chatId: z
-    .string()
-    .refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
-  messageId: z
-    .string()
-    .refine((val) => ObjectId.isValid(val), "Invalid messageId format"),
+  chatId: zodObjectId,
+  messageId: zodObjectId,
 });
 
 /**
@@ -33,10 +30,12 @@ export async function handleReceiptRead(
   payload: ReceiptReadPayload,
   ack: (response: Ack<{ readAt: string }>) => void,
 ): Promise<void> {
-  const userId = socket.data.userId as string;
+  let userId: ObjectIdString | undefined;
   const correlationId = randomUUID();
 
   try {
+    userId = validateObjectId(socket.data.userId as string, "userId");
+
     // Validate payload
     const validation = receiptSchema.safeParse(payload);
     if (!validation.success) {
@@ -45,16 +44,13 @@ export async function handleReceiptRead(
       );
       return ack({
         ok: false,
-        error: "VALIDATION_ERROR",
+        error: ErrorCode.VALIDATION_ERROR,
         message: validation.error.message,
         correlationId,
       });
     }
 
     const { chatId, messageId } = validation.data;
-    const userObjectId = new ObjectId(userId);
-    const chatObjectId = new ObjectId(chatId);
-    const messageObjectId = new ObjectId(messageId);
 
     // Use MembershipService to update read cursor (includes all validations)
     const chatRepo = new ChatRepository();
@@ -67,9 +63,9 @@ export async function handleReceiptRead(
     );
 
     const updatedMembership = await membershipService.updateReadCursor(
-      chatObjectId,
-      userObjectId,
-      messageObjectId,
+      chatId,
+      userId,
+      messageId,
     );
 
     const readAt = updatedMembership.updatedAt || new Date().toISOString();
@@ -93,21 +89,21 @@ export async function handleReceiptRead(
     });
   } catch (error) {
     const errorCorrelationId = randomUUID();
-    logger.error(
-      `Socket ${socket.id}: Receipt read error:`,
-      error instanceof Error ? error.message : String(error),
-    );
+    logger.error(`Socket ${socket.id}: Receipt read error:`, {
+      error: error instanceof Error ? error.message : String(error),
+      userId: userId ?? socket.data.userId,
+    });
 
     // Map HTTP errors to Socket.IO error codes
     if (isHttpError(error)) {
-      let errorCode = "INTERNAL";
+      let errorCode = ErrorCode.INTERNAL;
 
       if (error.statusCode === 404) {
-        errorCode = "NOT_FOUND";
+        errorCode = ErrorCode.NOT_FOUND;
       } else if (error.statusCode === 403) {
-        errorCode = "FORBIDDEN";
+        errorCode = ErrorCode.FORBIDDEN;
       } else if (error.statusCode === 400) {
-        errorCode = "VALIDATION_ERROR";
+        errorCode = ErrorCode.VALIDATION_ERROR;
       }
 
       return ack({
@@ -120,7 +116,7 @@ export async function handleReceiptRead(
 
     ack({
       ok: false,
-      error: "INTERNAL",
+      error: ErrorCode.INTERNAL,
       message: "Internal server error",
       correlationId: errorCorrelationId,
     });

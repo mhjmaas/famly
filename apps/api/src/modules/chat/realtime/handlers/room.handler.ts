@@ -1,6 +1,11 @@
 import { logger } from "@lib/logger";
+import {
+  type ObjectIdString,
+  toObjectId,
+  validateObjectId,
+} from "@lib/objectid-utils";
+import { zodObjectId } from "@lib/zod-objectid";
 import { MembershipRepository } from "@modules/chat/repositories/membership.repository";
-import { ObjectId } from "mongodb";
 import type { Socket } from "socket.io";
 import { z } from "zod";
 import type { Ack, RoomJoinPayload, RoomLeavePayload } from "../types";
@@ -8,15 +13,11 @@ import { ErrorCode } from "../types";
 
 // Validation schemas
 const roomJoinSchema = z.object({
-  chatId: z
-    .string()
-    .refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
+  chatId: zodObjectId,
 });
 
 const roomLeaveSchema = z.object({
-  chatId: z
-    .string()
-    .refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
+  chatId: zodObjectId,
 });
 
 /**
@@ -32,10 +33,11 @@ export async function handleRoomJoin(
   payload: RoomJoinPayload,
   ack: (response: Ack) => void,
 ): Promise<void> {
-  const userId = socket.data.userId as string;
+  let userId: ObjectIdString | undefined;
   const correlationId = crypto.randomUUID();
 
   try {
+    userId = validateObjectId(socket.data.userId as string, "userId");
     // Validate payload
     const validation = roomJoinSchema.safeParse(payload);
     if (!validation.success) {
@@ -56,8 +58,8 @@ export async function handleRoomJoin(
 
     // Verify user is a member of the chat
     const membership = await membershipRepo.findByUserAndChat(
-      new ObjectId(userId),
-      new ObjectId(chatId),
+      toObjectId(userId, "userId"),
+      toObjectId(chatId, "chatId"),
     );
 
     if (!membership) {
@@ -81,10 +83,10 @@ export async function handleRoomJoin(
 
     ack({ ok: true });
   } catch (error) {
-    logger.error(
-      `Socket ${socket.id}: Room join error:`,
-      error instanceof Error ? error.message : String(error),
-    );
+    logger.error(`Socket ${socket.id}: Room join error:`, {
+      error: error instanceof Error ? error.message : String(error),
+      userId: userId ?? socket.data.userId,
+    });
     ack({
       ok: false,
       error: ErrorCode.INTERNAL,
@@ -107,10 +109,11 @@ export async function handleRoomLeave(
   payload: RoomLeavePayload,
   ack: (response: Ack) => void,
 ): Promise<void> {
-  const userId = socket.data.userId as string;
+  let userId: ObjectIdString | undefined;
   const correlationId = crypto.randomUUID();
 
   try {
+    userId = validateObjectId(socket.data.userId as string, "userId");
     // Validate payload
     const validation = roomLeaveSchema.safeParse(payload);
     if (!validation.success) {
@@ -136,10 +139,10 @@ export async function handleRoomLeave(
 
     ack({ ok: true });
   } catch (error) {
-    logger.error(
-      `Socket ${socket.id}: Room leave error:`,
-      error instanceof Error ? error.message : String(error),
-    );
+    logger.error(`Socket ${socket.id}: Room leave error:`, {
+      error: error instanceof Error ? error.message : String(error),
+      userId: userId ?? socket.data.userId,
+    });
     ack({
       ok: false,
       error: ErrorCode.INTERNAL,

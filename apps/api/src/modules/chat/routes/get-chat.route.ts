@@ -1,9 +1,9 @@
 import { HttpError } from "@lib/http-error";
+import { toObjectId, validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import type { ChatDTO } from "../domain/chat";
 import { toChatDTO } from "../lib/chat.mapper";
 import { ChatRepository } from "../repositories/chat.repository";
@@ -41,29 +41,16 @@ export function getChatRoute(): Router {
 
         const { chatId: chatIdParam } = req.params;
 
-        // Validate chatId format - must be a valid 24-character hex string (MongoDB ObjectId format)
-        // We check the hex format first, then use ObjectId.isValid() as additional validation
-        if (!/^[0-9a-fA-F]{24}$/.test(chatIdParam)) {
-          throw HttpError.badRequest(
-            "Invalid chat ID format - must be a valid ObjectId",
-          );
-        }
-
-        if (!ObjectId.isValid(chatIdParam)) {
-          throw HttpError.badRequest(
-            "Invalid chat ID format - must be a valid ObjectId",
-          );
-        }
-
-        const chatId = new ObjectId(chatIdParam);
-        const userId = new ObjectId(req.user.id);
+        const chatId = validateObjectId(chatIdParam, "chatId");
 
         // Get chat with membership verification
-        const chat = await chatService.getChatById(chatId, userId);
+        const chat = await chatService.getChatById(chatId, req.user.id);
 
         if (!chat) {
           // Check if it's a membership issue or not found
-          const existingChat = await chatRepository.findById(chatId);
+          const existingChat = await chatRepository.findById(
+            toObjectId(chatId, "chatId"),
+          );
 
           if (!existingChat) {
             throw HttpError.notFound("Chat not found");

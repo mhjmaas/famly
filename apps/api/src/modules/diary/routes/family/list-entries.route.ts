@@ -5,9 +5,9 @@ import { authorizeFamilyRole } from "@modules/auth/middleware/authorize-family-r
 import { FamilyRole } from "@modules/family/domain/family";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { toDiaryEntryDTO } from "../../lib/diary-entry.mapper";
 import { DiaryRepository } from "../../repositories/diary.repository";
+import { DiaryService } from "../../services/diary.service";
 
 /**
  * GET /:familyId/diary - List all family diary entries
@@ -25,6 +25,7 @@ import { DiaryRepository } from "../../repositories/diary.repository";
 export function createFamilyDiaryListEntriesRoute(): Router {
   const router = Router({ mergeParams: true }); // CRITICAL: mergeParams to access :familyId from parent routers
   const diaryRepository = new DiaryRepository();
+  const diaryService = new DiaryService(diaryRepository);
 
   router.get(
     "/",
@@ -38,17 +39,14 @@ export function createFamilyDiaryListEntriesRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        // Validate ObjectId formats
-        if (!ObjectId.isValid(req.params.familyId)) {
-          throw HttpError.badRequest("Invalid family ID format");
+        if (!req.params.familyId) {
+          throw HttpError.badRequest("Missing familyId parameter");
         }
-
-        const familyId = new ObjectId(req.params.familyId);
         const startDate = req.query.startDate as string | undefined;
         const endDate = req.query.endDate as string | undefined;
 
-        const entries = await diaryRepository.findFamilyEntriesInDateRange(
-          familyId,
+        const entries = await diaryService.listFamilyEntries(
+          req.params.familyId,
           startDate,
           endDate,
         );

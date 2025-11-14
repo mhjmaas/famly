@@ -3,7 +3,6 @@ import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import type { ListChatsResponse } from "../domain/chat";
 import { ChatRepository } from "../repositories/chat.repository";
 import { MembershipRepository } from "../repositories/membership.repository";
@@ -45,14 +44,13 @@ export function listChatsRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        const userId = new ObjectId(req.user.id);
         const paginationParams = (req as any).paginationParams || {
           cursor: undefined,
           limit: 20,
         };
 
         const response: ListChatsResponse = await chatService.listUserChats(
-          userId,
+          req.user.id,
           paginationParams.cursor,
           paginationParams.limit,
         );

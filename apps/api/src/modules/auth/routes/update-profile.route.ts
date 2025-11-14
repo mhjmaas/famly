@@ -1,6 +1,6 @@
 import { getDb } from "@infra/mongo/client";
+import { toObjectId, validateObjectId } from "@lib/objectid-utils";
 import { type NextFunction, type Response, Router } from "express";
-import { ObjectId } from "mongodb";
 import {
   type AuthenticatedRequest,
   authenticate,
@@ -57,12 +57,15 @@ export function createUpdateProfileRoute(): Router {
           return;
         }
 
+        const userId = validateObjectId(req.user.id, "userId");
+        const userObjectId = toObjectId(userId, "userId");
+
         const db = getDb();
         const usersCollection = db.collection("user");
 
         // Update user in database
         const updateResult = await usersCollection.updateOne(
-          { _id: new ObjectId(req.user.id) },
+          { _id: userObjectId },
           {
             $set: {
               name,
@@ -79,7 +82,7 @@ export function createUpdateProfileRoute(): Router {
 
         // Fetch updated user
         const updatedUser = await usersCollection.findOne({
-          _id: new ObjectId(req.user.id),
+          _id: userObjectId,
         });
 
         if (!updatedUser) {

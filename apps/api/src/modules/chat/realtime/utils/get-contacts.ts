@@ -1,5 +1,5 @@
 import { getDb } from "@infra/mongo/client";
-import { ObjectId } from "mongodb";
+import { toObjectId, validateObjectId } from "@lib/objectid-utils";
 
 /**
  * Get all contact user IDs for a given user
@@ -10,7 +10,8 @@ import { ObjectId } from "mongodb";
  */
 export async function getContactUserIds(userId: string): Promise<string[]> {
   const db = getDb();
-  const userObjectId = new ObjectId(userId);
+  const normalizedUserId = validateObjectId(userId, "userId");
+  const userObjectId = toObjectId(normalizedUserId, "userId");
 
   // Find all chats the user is a member of
   const userMemberships = await db

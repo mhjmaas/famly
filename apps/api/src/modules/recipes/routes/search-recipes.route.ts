@@ -1,11 +1,11 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import { validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { toRecipeDTOArray } from "../lib/recipe.mapper";
 import { RecipeRepository } from "../repositories/recipe.repository";
 import { RecipeService } from "../services/recipe.service";
@@ -34,7 +34,7 @@ export function searchRecipesRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        const userId = new ObjectId(req.user.id);
+        const userId = validateObjectId(req.user.id, "userId");
 
         if (!req.params.familyId) {
           logger.error("familyId parameter missing from request", {
@@ -45,7 +45,7 @@ export function searchRecipesRoute(): Router {
           throw HttpError.badRequest("Missing familyId parameter");
         }
 
-        const familyId = new ObjectId(req.params.familyId);
+        const familyId = validateObjectId(req.params.familyId, "familyId");
         const { query, limit = 10, offset = 0 } = req.body;
 
         const { recipes, total } = await recipeService.searchRecipes(
