@@ -26,6 +26,8 @@ interface TaskCardProps {
   onDelete: (task: Task) => void;
   onClaim: (task: Task) => void;
   isClaimable: (task: Task) => boolean;
+  canComplete?: boolean; // Whether user can complete this task
+  completionBlockedReason?: string; // Reason why task can't be completed
   getAssignmentDisplay: (task: Task) => React.ReactNode;
   getDueDateDisplay: (task: Task) => React.ReactNode;
   dict: Dictionary;
@@ -38,6 +40,8 @@ export function TaskCard({
   onDelete,
   onClaim,
   isClaimable,
+  canComplete = true,
+  completionBlockedReason,
   getAssignmentDisplay,
   getDueDateDisplay,
   dict,
@@ -51,11 +55,22 @@ export function TaskCard({
     >
       <CardContent className="p-4" data-testid="task-card-body">
         <div className="flex items-center gap-4">
-          <Checkbox
-            checked={!!task.completedAt}
-            onCheckedChange={() => onToggleComplete(task)}
-            data-testid="task-complete-toggle"
-          />
+          {!task.completedAt && !canComplete && completionBlockedReason ? (
+            <div title={completionBlockedReason}>
+              <Checkbox
+                checked={false}
+                disabled
+                data-testid="task-complete-toggle"
+                aria-label={completionBlockedReason}
+              />
+            </div>
+          ) : (
+            <Checkbox
+              checked={!!task.completedAt}
+              onCheckedChange={() => onToggleComplete(task)}
+              data-testid="task-complete-toggle"
+            />
+          )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-4">
               <div className="flex-1 min-w-0">

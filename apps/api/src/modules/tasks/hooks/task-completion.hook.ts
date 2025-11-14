@@ -9,9 +9,14 @@ export interface TaskCompletionHook {
   /**
    * Called when a task transitions to completed status
    * @param task - The completed task
-   * @param completedBy - User ID of the person who completed the task
+   * @param creditedUserId - User ID who receives credit (assignee for member tasks)
+   * @param triggeredBy - User ID who triggered the completion action
    */
-  onTaskCompleted(task: Task, completedBy: ObjectId): Promise<void>;
+  onTaskCompleted(
+    task: Task,
+    creditedUserId: ObjectId,
+    triggeredBy: ObjectId,
+  ): Promise<void>;
 }
 
 /**
@@ -34,11 +39,14 @@ export class TaskCompletionHookRegistry {
    */
   async invokeHooks(
     task: Task,
-    completedBy: ObjectId,
+    creditedUserId: ObjectId,
+    triggeredBy: ObjectId,
     errorHandler?: (error: Error) => void,
   ): Promise<void> {
     const results = await Promise.allSettled(
-      this.hooks.map((hook) => hook.onTaskCompleted(task, completedBy)),
+      this.hooks.map((hook) =>
+        hook.onTaskCompleted(task, creditedUserId, triggeredBy),
+      ),
     );
 
     for (const result of results) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { canCompleteTask } from "@/lib/task-completion-utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   selectPendingTasksCount,
@@ -104,38 +105,52 @@ export function DashboardOverview({ lang, dict }: DashboardOverviewProps) {
       if (!user?.families?.[0]?.familyId) return;
 
       const familyId = user.families[0].familyId;
-      const karma = task.metadata?.karma;
+      const isCompleting = !task.completedAt;
+      const userRole = user.families[0].role;
+      const normalizedRole = (userRole.charAt(0).toUpperCase() +
+        userRole.slice(1)) as "Parent" | "Child";
 
-      if (task.completedAt) {
-        // Reopen the task
-        await dispatch(
-          reopenTask({
-            familyId,
-            taskId: task._id,
-            userId: user.id,
-            karma,
-          }),
-        );
+      // Check authorization before completing
+      if (isCompleting && !canCompleteTask(task, user.id, normalizedRole)) {
+        // Silently prevent completion in dashboard - user can navigate to tasks page for details
+        return;
+      }
 
-        // Remove from recently completed set
-        setRecentlyCompletedIds((prev) => {
-          const next = new Set(prev);
-          next.delete(task._id);
-          return next;
-        });
-      } else {
-        // Complete the task
-        await dispatch(
-          completeTask({
-            familyId,
-            taskId: task._id,
-            userId: user.id,
-            karma,
-          }),
-        );
-
-        // Add to recently completed set to keep showing it temporarily
-        setRecentlyCompletedIds((prev) => new Set(prev).add(task._id));
+      try {
+        if (isCompleting) {
+          await dispatch(
+            completeTask({
+              familyId,
+              taskId: task._id,
+              task, // Pass full task object
+              userId: user.id,
+              karma: task.metadata?.karma,
+              isRewardClaim: !!task.metadata?.claimId,
+            }),
+          ).unwrap();
+          // Add to recently completed set to keep showing it temporarily
+          setRecentlyCompletedIds((prev) => new Set(prev).add(task._id));
+        } else {
+          // Reopen the task
+          await dispatch(
+            reopenTask({
+              familyId,
+              taskId: task._id,
+              task, // Pass full task object
+              userId: user.id,
+              karma: task.metadata?.karma,
+              isRewardClaim: !!task.metadata?.claimId,
+            }),
+          ).unwrap();
+          // Remove from recently completed set
+          setRecentlyCompletedIds((prev) => {
+            const next = new Set(prev);
+            next.delete(task._id);
+            return next;
+          });
+        }
+      } catch (error) {
+        console.error("Failed to toggle task completion", error);
       }
     },
     [dispatch, user],

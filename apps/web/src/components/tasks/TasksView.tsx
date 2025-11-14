@@ -10,6 +10,11 @@ import { useTaskFilters } from "@/hooks/useTaskFilters";
 import { useTaskForm } from "@/hooks/useTaskForm";
 import { useTaskGroups } from "@/hooks/useTaskGroups";
 import type { Dictionary } from "@/i18n/types";
+import {
+  canCompleteTask,
+  getTaskCompletionBlockedReason,
+  getTaskKarmaRecipient,
+} from "@/lib/task-completion-utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectKarmaBalance } from "@/store/slices/karma.slice";
 import {
@@ -49,6 +54,8 @@ export function TasksView({
   familyMembers,
 }: TasksViewProps) {
   const dispatch = useAppDispatch();
+  const normalizedRole = (userRole.charAt(0).toUpperCase() +
+    userRole.slice(1)) as "Parent" | "Child";
 
   const tasks = useAppSelector(selectTasks);
   const _schedules = useAppSelector(selectSchedules);
@@ -167,25 +174,45 @@ export function TasksView({
   const handleToggleComplete = async (task: Task) => {
     const isCompleting = !task.completedAt;
 
+    // Check authorization before completing
+    if (isCompleting && !canCompleteTask(task, userId, normalizedRole)) {
+      const reason = getTaskCompletionBlockedReason(
+        task,
+        userId,
+        normalizedRole,
+      );
+      toast.error(reason || "You don't have permission to complete this task");
+      return;
+    }
+
     try {
       if (isCompleting) {
         await dispatch(
           completeTask({
             familyId,
             taskId: task._id,
+            task, // Pass full task object
             userId,
             karma: task.metadata?.karma,
             isRewardClaim: !!task.metadata?.claimId,
           }),
         ).unwrap();
 
+        // Determine who receives karma for the toast message
+        const creditedUserId = getTaskKarmaRecipient(task, userId);
+        const isCompletingForOther = creditedUserId !== userId;
+        const recipientName = isCompletingForOther
+          ? familyMembers.find((m) => m.id === creditedUserId)?.name || "them"
+          : "you";
+
         if (task.metadata?.karma) {
-          toast.success(
-            dict.dashboard.pages.tasks.complete.successWithKarma.replace(
-              "{karma}",
-              task.metadata.karma.toString(),
-            ),
-          );
+          const karmaMessage = isCompletingForOther
+            ? `Task completed! ${recipientName} earned ${task.metadata.karma} karma`
+            : dict.dashboard.pages.tasks.complete.successWithKarma.replace(
+                "{karma}",
+                task.metadata.karma.toString(),
+              );
+          toast.success(karmaMessage);
         } else {
           toast.success(dict.dashboard.pages.tasks.complete.success);
         }
@@ -194,6 +221,7 @@ export function TasksView({
           reopenTask({
             familyId,
             taskId: task._id,
+            task, // Pass full task object
             userId,
             karma: task.metadata?.karma,
             isRewardClaim: !!task.metadata?.claimId,
@@ -299,6 +327,8 @@ export function TasksView({
                   key={group.tasks.map((task) => task._id).join(",")}
                   date={group.date}
                   tasks={group.tasks}
+                  userId={userId}
+                  userRole={normalizedRole}
                   formatDateSeparator={formatDateSeparator}
                   onToggleComplete={handleToggleComplete}
                   onEdit={handleEditTask}

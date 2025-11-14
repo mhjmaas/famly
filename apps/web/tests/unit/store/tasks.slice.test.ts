@@ -228,6 +228,7 @@ describe("tasks slice", () => {
         completeTask({
           familyId: "family-1",
           taskId: "task-1",
+          task,
           userId: "user-1",
         }),
       );
@@ -259,6 +260,7 @@ describe("tasks slice", () => {
         completeTask({
           familyId: "family-1",
           taskId: "task-1",
+          task,
           userId: "user-1",
           karma: 10,
         }),

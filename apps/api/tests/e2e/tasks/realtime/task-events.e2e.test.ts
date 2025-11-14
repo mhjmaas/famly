@@ -328,4 +328,111 @@ describe("E2E: Tasks - Realtime Events", () => {
       await disconnectSocketClient(childSocket2);
     });
   });
+
+  describe("task.completed Event with triggeredBy", () => {
+    it("should include triggeredBy when parent completes child's task", async () => {
+      const { parentToken, parentUserId, childToken, childUserId, familyId } =
+        await setupFamilyWithMembers(baseUrl, 100);
+      const parent = { token: parentToken, userId: parentUserId, familyId };
+      const child = { token: childToken, userId: childUserId };
+
+      // Create task assigned to child
+      const createResponse = await request(baseUrl)
+        .post(`/v1/families/${familyId}/tasks`)
+        .set("Authorization", `Bearer ${parent.token}`)
+        .send({
+          name: "Child's homework",
+          dueDate: new Date(Date.now() + 86400000).toISOString(),
+          assignment: {
+            type: "member",
+            memberId: child.userId,
+          },
+          metadata: {
+            karma: 20,
+          },
+        })
+        .expect(201);
+
+      const taskId = createResponse.body._id;
+
+      // Connect child's socket to listen for completion event
+      const childSocket = await connectSocketClient(baseUrl, child.token);
+
+      const taskCompletedPromise = waitForEvent<any>(
+        childSocket,
+        "task.completed",
+        5000,
+      );
+
+      // Parent completes child's task
+      await request(baseUrl)
+        .patch(`/v1/families/${familyId}/tasks/${taskId}`)
+        .set("Authorization", `Bearer ${parent.token}`)
+        .send({
+          completedAt: new Date().toISOString(),
+        })
+        .expect(200);
+
+      // Child should receive task.completed event
+      const event = await taskCompletedPromise;
+
+      expect(event).toBeDefined();
+      expect(event.taskId).toBe(taskId);
+      expect(event.completedBy).toBe(child.userId); // Credited to child
+      expect(event.triggeredBy).toBe(parent.userId); // Triggered by parent
+      expect(event.task.completedBy).toBe(child.userId);
+
+      await disconnectSocketClient(childSocket);
+    });
+
+    it("should not include triggeredBy when assignee completes their own task", async () => {
+      const { parentToken, childToken, childUserId, familyId } =
+        await setupFamilyWithMembers(baseUrl, 101);
+      const parent = { token: parentToken, familyId };
+      const child = { token: childToken, userId: childUserId };
+
+      // Create task assigned to child
+      const createResponse = await request(baseUrl)
+        .post(`/v1/families/${familyId}/tasks`)
+        .set("Authorization", `Bearer ${parent.token}`)
+        .send({
+          name: "Child's task",
+          dueDate: new Date(Date.now() + 86400000).toISOString(),
+          assignment: {
+            type: "member",
+            memberId: child.userId,
+          },
+        })
+        .expect(201);
+
+      const taskId = createResponse.body._id;
+
+      // Connect child's socket
+      const childSocket = await connectSocketClient(baseUrl, child.token);
+
+      const taskCompletedPromise = waitForEvent<any>(
+        childSocket,
+        "task.completed",
+        5000,
+      );
+
+      // Child completes their own task
+      await request(baseUrl)
+        .patch(`/v1/families/${familyId}/tasks/${taskId}`)
+        .set("Authorization", `Bearer ${child.token}`)
+        .send({
+          completedAt: new Date().toISOString(),
+        })
+        .expect(200);
+
+      // Child should receive event
+      const event = await taskCompletedPromise;
+
+      expect(event).toBeDefined();
+      expect(event.completedBy).toBe(child.userId);
+      expect(event.triggeredBy).toBeUndefined(); // Should not be present
+
+      await disconnectSocketClient(childSocket);
+    });
+  });
 });

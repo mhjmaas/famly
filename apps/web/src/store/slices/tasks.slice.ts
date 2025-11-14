@@ -8,6 +8,7 @@ import {
   getSchedules,
   getTasks,
 } from "@/lib/api-client";
+import { getTaskKarmaRecipient } from "@/lib/task-completion-utils";
 import type {
   CreateScheduleRequest,
   CreateTaskRequest,
@@ -76,13 +77,15 @@ export const completeTask = createAsyncThunk(
     {
       familyId,
       taskId,
+      task: taskBeforeCompletion,
       userId,
       karma,
       isRewardClaim,
     }: {
       familyId: string;
       taskId: string;
-      userId: string;
+      task: Task; // Task before completion to determine credited user
+      userId: string; // Actor completing the task
       karma?: number;
       isRewardClaim?: boolean;
     },
@@ -91,15 +94,18 @@ export const completeTask = createAsyncThunk(
     const completedAt = new Date().toISOString();
     const task = await apiUpdateTask(familyId, taskId, { completedAt });
 
+    // Determine who receives karma credit
+    const creditedUserId = getTaskKarmaRecipient(taskBeforeCompletion, userId);
+
     // If this is a reward claim task, refresh related data from server
     // (karma is deducted from the claimer, claim count is updated, claim status changes)
     if (isRewardClaim) {
-      dispatch(fetchKarma({ familyId, userId }));
+      dispatch(fetchKarma({ familyId, userId: creditedUserId }));
       dispatch(fetchRewards(familyId));
       dispatch(fetchClaims(familyId));
     } else if (karma && karma > 0) {
-      // Regular task with karma reward - increment immediately
-      dispatch(incrementKarma({ userId, amount: karma }));
+      // Regular task with karma reward - increment for credited user
+      dispatch(incrementKarma({ userId: creditedUserId, amount: karma }));
     }
 
     return task;
@@ -112,13 +118,15 @@ export const reopenTask = createAsyncThunk(
     {
       familyId,
       taskId,
+      task: completedTask,
       userId,
       karma,
       isRewardClaim,
     }: {
       familyId: string;
       taskId: string;
-      userId: string;
+      task: Task; // Completed task to determine who was credited
+      userId: string; // Actor reopening the task
       karma?: number;
       isRewardClaim?: boolean;
     },
@@ -126,15 +134,18 @@ export const reopenTask = createAsyncThunk(
   ) => {
     const task = await apiUpdateTask(familyId, taskId, { completedAt: null });
 
+    // Determine who was credited (use completedBy from the task)
+    const creditedUserId = completedTask.completedBy || userId;
+
     // If this is a reward claim task, refresh related data from server
     // (karma is re-credited to the claimer, claim count is decremented, claim status reverts)
     if (isRewardClaim) {
-      dispatch(fetchKarma({ familyId, userId }));
+      dispatch(fetchKarma({ familyId, userId: creditedUserId }));
       dispatch(fetchRewards(familyId));
       dispatch(fetchClaims(familyId));
     } else if (karma && karma > 0) {
-      // Regular task - deduct karma that was previously awarded
-      dispatch(decrementKarma({ userId, amount: karma }));
+      // Regular task - deduct karma from the user who was credited
+      dispatch(decrementKarma({ userId: creditedUserId, amount: karma }));
     }
 
     return task;

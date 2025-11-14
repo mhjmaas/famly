@@ -200,6 +200,7 @@ export interface Task {
   dueDate?: string; // ISO 8601
   assignment: TaskAssignment;
   completedAt?: string; // ISO 8601
+  completedBy?: string; // User who received credit for completion
   scheduleId?: string;
   metadata?: {
     karma?: number;

@@ -1,10 +1,16 @@
 import type { Dictionary } from "@/i18n/types";
+import {
+  canCompleteTask,
+  getTaskCompletionBlockedReason,
+} from "@/lib/task-completion-utils";
 import type { Task } from "@/types/api.types";
 import { TaskCard } from "./TaskCard";
 
 interface TaskGroupProps {
   date: Date | null;
   tasks: Task[];
+  userId: string;
+  userRole: "Parent" | "Child";
   formatDateSeparator: (date: Date) => string;
   onToggleComplete: (task: Task) => void;
   onEdit: (task: Task) => void;
@@ -19,6 +25,8 @@ interface TaskGroupProps {
 export function TaskGroup({
   date,
   tasks,
+  userId,
+  userRole,
   formatDateSeparator,
   onToggleComplete,
   onEdit,
@@ -43,20 +51,30 @@ export function TaskGroup({
           <div className="h-px bg-border flex-1" />
         </div>
       )}
-      {tasks.map((task) => (
-        <TaskCard
-          key={task._id}
-          task={task}
-          onToggleComplete={onToggleComplete}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onClaim={onClaim}
-          isClaimable={isClaimable}
-          getAssignmentDisplay={getAssignmentDisplay}
-          getDueDateDisplay={getDueDateDisplay}
-          dict={dict}
-        />
-      ))}
+      {tasks.map((task) => {
+        const canComplete = canCompleteTask(task, userId, userRole);
+        return (
+          <TaskCard
+            key={task._id}
+            task={task}
+            onToggleComplete={onToggleComplete}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onClaim={onClaim}
+            isClaimable={isClaimable}
+            canComplete={canComplete}
+            completionBlockedReason={
+              !canComplete
+                ? getTaskCompletionBlockedReason(task, userId, userRole) ||
+                  undefined
+                : undefined
+            }
+            getAssignmentDisplay={getAssignmentDisplay}
+            getDueDateDisplay={getDueDateDisplay}
+            dict={dict}
+          />
+        );
+      })}
     </div>
   );
 }
