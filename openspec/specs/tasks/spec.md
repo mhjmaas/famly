@@ -227,47 +227,32 @@ The system MUST enforce field length and format constraints.
 - **THEN** the API responds with HTTP 400 and validation error
 
 ### Requirement: Task Completion
-Family members MUST be able to mark tasks as completed via a PATCH operation.
+Completion credit MUST follow the task assignment so the correct member receives rewards regardless of who triggered the action.
+#### Scenario: Credit assigned member when completing
+- **GIVEN** a task assigned to a specific member (`assignment.type: "member"`)
+- **WHEN** any authorized user marks it complete via `PATCH /v1/families/{familyId}/tasks/{taskId}` with `completedAt`
+- **THEN** the response's `completedBy` field MUST equal the assignment's `memberId`
+- **AND** the stored task document MUST persist that credited member in `completedBy`
+- **AND** karma hooks MUST use that member ID when awarding/deducting karma.
 
-#### Scenario: Complete a task successfully
-- **GIVEN** an authenticated family member
-- **WHEN** they PATCH `/v1/families/{familyId}/tasks/{taskId}` with `{ completedAt: '2025-01-15T10:30:00Z' }`
-- **THEN** the API responds with HTTP 200 and the updated task
-- **AND** the task's `completedAt` field is set to the provided timestamp
-- **AND** `updatedAt` timestamp is refreshed
-
-#### Scenario: Mark task as incomplete by clearing completedAt
-- **GIVEN** an authenticated family member with a completed task
-- **WHEN** they PATCH with `{ completedAt: null }`
-- **THEN** the task's `completedAt` field is set to null (marking it incomplete)
-
-#### Scenario: Complete task with current timestamp
-- **GIVEN** an authenticated family member
-- **WHEN** they PATCH with `{ completedAt: new Date().toISOString() }`
-- **THEN** the task is marked as completed with the current timestamp
-
-#### Scenario: Reject invalid completedAt format
-- **GIVEN** an authenticated family member
-- **WHEN** they PATCH with an invalid date format for `completedAt`
-- **THEN** the API responds with HTTP 400 and indicates proper ISO 8601 format required
+#### Scenario: Parent completes child-assigned task
+- **GIVEN** a task assigned to Child A and a parent user for the same family
+- **WHEN** the parent sends `PATCH ... { completedAt: now }`
+- **THEN** the API responds 200 with `completedBy` set to Child A's user ID
+- **AND** the parent ID MUST be captured separately as the actor in emitted events (see Event section)
+- **AND** the parent does NOT receive karma for the action.
 
 ### Requirement: Authorization
-Only family members MUST be authorized to access family tasks and schedules.
+The API MUST enforce that only the assignee or a parent can complete a member-targeted task.
+#### Scenario: Reject non-parent completing another member's task
+- **GIVEN** a child user attempts to complete a task whose `assignment.memberId` is a different user
+- **WHEN** they call the PATCH endpoint with `completedAt`
+- **THEN** the API responds with HTTP 403 and an error explaining only parents can complete tasks for someone else.
 
-#### Scenario: Require family membership for task access
-- **GIVEN** an authenticated user who is not a member of the specified family
-- **WHEN** they attempt any task operation for that family
-- **THEN** the API responds with HTTP 403 Forbidden
-
-#### Scenario: Both parents and children can manage tasks
-- **GIVEN** an authenticated child member of a family
-- **WHEN** they create, update, or delete a task
-- **THEN** the operation succeeds (no parent-only restrictions)
-
-#### Scenario: Require authentication for all endpoints
-- **GIVEN** an unauthenticated request (no JWT token)
-- **WHEN** accessing any task endpoint
-- **THEN** the API responds with HTTP 401 Unauthorized
+#### Scenario: Allow parents to complete any member-assigned task
+- **GIVEN** an authenticated parent user
+- **WHEN** they complete a task assigned to another user in the same family
+- **THEN** the PATCH succeeds (assuming other validations pass).
 
 ### Requirement: Optional Karma Metadata on Tasks
 The system MUST support optional karma metadata on tasks and task schedules that specifies reward points for completion.
@@ -350,20 +335,11 @@ The system SHALL record an activity event when a recurring task schedule is crea
   - metadata.karma: karma value if schedule has karma metadata
 
 ### Requirement: Activity Event Recording on Task Completion
-The system SHALL record an activity event when a task is marked as completed.
-
-#### Scenario: Task completion records event
-- **WHEN** a user marks a task as completed
-- **THEN** the system MUST create an activity event with:
-  - type: `TASK`
-  - title: task name
-  - description: "Completed {task name}"
-  - userId: user who completed the task
-  - metadata.karma: karma value if task has karma metadata
-
-#### Scenario: Task completion via hook integration
-- **WHEN** the task completion hook is invoked
-- **THEN** the system MUST call the activity event service to record the completion event
+Recorded events MUST reflect both the credited user and, when different, the actor who clicked complete.
+#### Scenario: Record credited user and actor metadata
+- **WHEN** a task completion activity event is recorded
+- **THEN** `userId` MUST represent the member credited with completion (the assignee for member tasks)
+- **AND** if the actor differs from the credited member, the event metadata MUST include `triggeredBy` with the actor's user ID so history shows who marked it complete.
 
 ### Requirement: E2E Test Coverage for Activity Events
 The system SHALL include e2e tests verifying activity event creation for task operations.
@@ -381,44 +357,12 @@ The system SHALL include e2e tests verifying activity event creation for task op
 - **THEN** tests MUST verify that an activity event is created with correct type and data
 
 ### Requirement: Real-time Task Event Emission
-
-The system SHALL emit real-time WebSocket events when tasks are created, assigned, completed, or deleted to notify affected users instantly.
-
-#### Scenario: Task created from schedule
-- **WHEN** a recurring task is generated from a schedule
-- **THEN** a `task.created` event SHALL be emitted
-- **AND** the event SHALL be broadcast to users assigned to the task
-- **AND** the event payload SHALL include the task details and assignment information
-
-#### Scenario: Task created manually
-- **WHEN** a user creates a task via the API
-- **THEN** a `task.created` event SHALL be emitted
-- **AND** the event SHALL be broadcast to users assigned to the task
-- **AND** the event payload SHALL include task ID, name, assignment, and due date
-
-#### Scenario: Task assignment changes
-- **WHEN** a task's assignment is updated
-- **THEN** a `task.assigned` event SHALL be emitted
-- **AND** the event SHALL be broadcast to newly assigned users
-- **AND** the event payload SHALL include the updated assignment
-
-#### Scenario: Task completion
-- **WHEN** a task is marked as completed
-- **THEN** a `task.completed` event SHALL be emitted
-- **AND** the event SHALL be broadcast to the family members
-- **AND** the event payload SHALL include who completed the task and when
-
-#### Scenario: Task deletion
-- **WHEN** a task is deleted
-- **THEN** a `task.deleted` event SHALL be emitted
-- **AND** the event SHALL be broadcast to users who were assigned to the task
-- **AND** the event payload SHALL include the task ID and affected user IDs
-
-#### Scenario: Event emission failure
-- **WHEN** event emission fails (e.g., WebSocket server unavailable)
-- **THEN** the failure SHALL be logged as a warning
-- **AND** the task operation SHALL complete successfully regardless
-- **AND** users will see the task on their next page refresh
+`task.completed` events MUST surface both the credited member and the actor so clients can display accurate context.
+#### Scenario: Include actor for task.completed events
+- **WHEN** emitting a `task.completed` event
+- **THEN** the payload MUST continue to expose `completedBy` as the credited member ID
+- **AND** it MUST include a `triggeredBy` field with the user ID that performed the action when they differ
+- **AND** clients MUST be able to rely on this field when showing "marked complete by" context.
 
 ### Requirement: Task Assignment Targeting
 

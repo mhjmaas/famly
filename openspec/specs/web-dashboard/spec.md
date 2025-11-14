@@ -285,74 +285,16 @@ The web application MUST provide a dashboard overview page that displays user-sp
 - **AND** loading states are managed independently for each section
 
 ### Requirement: Pending Tasks Section
-The dashboard MUST display a section showing the user's pending tasks with key task information.
+The dashboard pending tasks UI MUST follow the same completion permissions and messaging as the dedicated tasks page.
+#### Scenario: Restrict completion of other members' tasks to parents
+- **GIVEN** the dashboard shows a pending task assigned to another member
+- **WHEN** the current user is a child
+- **THEN** the checkbox control MUST be disabled with helper text indicating only parents may mark it done, and no completion request is triggered.
 
-#### Scenario: Display pending tasks for current user
-- **GIVEN** a user has 5 pending tasks assigned to them
-- **WHEN** the dashboard loads
-- **THEN** the "Your Pending Tasks" section displays up to 3 tasks
-- **AND** each task card shows task name, description (if present), due date badge (if present), and karma badge (if present)
-- **AND** tasks are ordered by due date (soonest first), then by creation date (newest first)
-- **AND** a "View All" button links to `/app/tasks`
-
-#### Scenario: Filter tasks by user assignment
-- **GIVEN** a family has 10 tasks total:
-  - 3 assigned to current user by member ID
-  - 2 assigned to user's role (e.g., "parent")
-  - 3 unassigned
-  - 2 assigned to other members
-- **WHEN** the dashboard loads for the current user
-- **THEN** only 3 tasks are shown (the 3 assigned by member ID, or mix of member and role assignments)
-- **AND** unassigned tasks are NOT shown
-- **AND** other members' tasks are NOT shown
-
-#### Scenario: Task card displays all metadata
-- **GIVEN** a pending task with name "Take out the trash", description "Remember to separate recyclables", due date tomorrow, and 10 karma
-- **WHEN** the task is rendered in the dashboard
-- **THEN** the task name "Take out the trash" is displayed prominently
-- **AND** the description "Remember to separate recyclables" is shown below
-- **AND** a due date badge displays "Due [date]" with a Clock icon
-- **AND** a karma badge displays "10 Karma" with a Sparkles icon
-
-#### Scenario: Task card without optional fields
-- **GIVEN** a pending task with only a name "Grocery shopping"
-- **WHEN** the task is rendered
-- **THEN** only the task name is displayed
-- **AND** no description, due date, or karma badges are shown
-
-#### Scenario: Empty state when no pending tasks
-- **GIVEN** a user has no pending tasks assigned to them
-- **WHEN** the dashboard loads
-- **THEN** an empty state card is displayed in the tasks section
-- **AND** the empty state shows an icon (CheckCircle)
-- **AND** the empty state shows message "No pending tasks"
-- **AND** the empty state shows description "You're all caught up!"
-
-#### Scenario: Navigate to tasks page from section
-- **GIVEN** the pending tasks section is displayed
-- **WHEN** the user clicks the "View All" button
-- **THEN** the user navigates to `/[lang]/app/tasks`
-
-#### Scenario: Task cards are clickable
-- **GIVEN** a task card is displayed
-- **WHEN** the user clicks anywhere on the card
-- **THEN** the user navigates to `/[lang]/app/tasks`
-
-#### Scenario: Calculate potential karma correctly
-- **GIVEN** the user has 3 pending tasks with karma values: 10, 0, 25
-- **WHEN** calculating potential karma
-- **THEN** the Potential Karma card displays "35" (10 + 0 + 25)
-
-#### Scenario: Tasks ordered by due date
-- **GIVEN** the user has 5 pending tasks:
-  - TaskA: no due date, created Jan 5
-  - TaskB: due Jan 15, created Jan 3
-  - TaskC: due Jan 12, created Jan 4
-  - TaskD: no due date, created Jan 6
-  - TaskE: due Jan 10, created Jan 2
-- **WHEN** the tasks are displayed
-- **THEN** the order is: TaskE (due Jan 10), TaskC (due Jan 12), TaskB (due Jan 15)
-- **AND** TaskA and TaskD are not shown (only top 3)
+#### Scenario: Parent completes another member's task with accurate messaging
+- **GIVEN** a parent user sees Child A's pending task in the dashboard list
+- **WHEN** they toggle the checkbox
+- **THEN** the dashboard MUST use the same completion helper as the tasks page, credit Child A's karma balance, and show toast copy that explicitly mentions Child A earned the reward.
 
 ### Requirement: Reward Progress Section
 The dashboard MUST display a section showing favorited rewards with progress toward earning them.

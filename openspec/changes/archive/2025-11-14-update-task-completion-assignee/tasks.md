@@ -18,8 +18,8 @@
 
 ## 5. Frontend Tests  
 - [x] 5.1 Extend Playwright tasks specs to cover parent-vs-child completion behavior and toast messaging/karma updates.
-- [ ] 5.2 Extend Playwright dashboard specs to confirm the pending tasks section enforces the new rules.
-- [ ] 5.3 Add/update Redux unit tests (tasks/karma slices) for the new helpers if coverage gaps exist.
+- [x] 5.2 Extend Playwright dashboard specs to confirm the pending tasks section enforces the new rules.
+- [x] 5.3 Add/update Redux unit tests (tasks/karma slices) for the new helpers if coverage gaps exist.
 
 ## Implementation Notes
 
@@ -41,5 +41,5 @@
 
 ## 6. Validation
 - [x] 6.1 `cd apps/api && pnpm test` (backend tests passing)
-- [ ] 6.2 `cd apps/web && pnpm run test:e2e`
-- [ ] 6.3 `pnpm lint`
+- [x] 6.2 `cd apps/web && pnpm run test:e2e`
+- [x] 6.3 `pnpm lint`

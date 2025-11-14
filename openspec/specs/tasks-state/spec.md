@@ -187,26 +187,17 @@ All Redux slice state, actions, and thunks MUST be fully typed with TypeScript.
 - **AND** type narrowing works correctly
 
 ### Requirement: Integration with Karma Slice
-The tasks slice MUST coordinate with the karma slice for reward tracking.
+Redux orchestration MUST keep karma deltas aligned with the member credited for each task completion.
+#### Scenario: Increment karma for assignment owner when parent completes
+- **GIVEN** Redux receives a fulfilled `completeTask` action for a task with karma that is assigned to Child A
+- **AND** the action payload originated from a parent user
+- **THEN** the completion thunk MUST dispatch `incrementKarma({ userId: Child A, amount })`
+- **AND** the karma slice MUST update Child A's balance, not the parent’s.
 
-#### Scenario: Dispatch karma increment on task completion
-- **GIVEN** a task with `metadata.karma: 15` is completed
-- **WHEN** the completion thunk succeeds
-- **THEN** `dispatch(incrementKarma({ userId, amount: 15 }))` is called
-- **AND** the karma balance updates in the karma slice
-- **AND** UI components reflect the new balance
-
-#### Scenario: Dispatch karma decrement on task reopen
-- **GIVEN** a completed task with karma is marked incomplete
-- **WHEN** the update thunk succeeds
-- **THEN** `dispatch(decrementKarma({ userId, amount }))` is called
-- **AND** karma is deducted from the user's balance
-
-#### Scenario: No karma dispatch for tasks without karma
-- **GIVEN** a task without `metadata.karma` is completed
-- **WHEN** the completion succeeds
-- **THEN** no karma action is dispatched
-- **AND** karma slice state is unchanged
+#### Scenario: Decrement karma for the originally credited member when reopening
+- **GIVEN** a task credited to Child A is reopened by anyone
+- **WHEN** `reopenTask` resolves
+- **THEN** the thunk MUST dispatch `decrementKarma({ userId: Child A, amount })` so balances stay accurate.
 
 ### Requirement: Redux DevTools Support
 The tasks slice MUST be compatible with Redux DevTools for debugging.
