@@ -151,46 +151,18 @@ Parents MUST be able to manually grant or deduct karma to family members with an
 - **THEN** the API responds with HTTP 403 Forbidden
 
 ### Requirement: Automatic Karma Awards from Task Completion
-The system MUST automatically award karma to the user who completes a task if the task has karma metadata configured.
+Automatic awards MUST always target the member who owns the task, even when another user triggers the completion.
+#### Scenario: Award karma to the assignment owner
+- **GIVEN** a task with `metadata.karma: 15` assigned to Member A
+- **AND** a parent user marks the task complete on their behalf
+- **WHEN** the system processes the completion
+- **THEN** the created karma event MUST credit Member A (amount +15, `userId` Member A)
+- **AND** the parent who toggled completion MUST NOT receive karma.
 
-#### Scenario: Award karma on task completion
-- **GIVEN** a task with `metadata.karma: 10`
-- **WHEN** a family member sets the task's `completedAt` timestamp (marks it complete)
-- **THEN** the system creates a karma event with `amount: 10`, `source: 'task_completion'`, and description including the task name
-- **AND** the member's karma total is incremented by 10
-- **AND** the event metadata includes the task ID
-
-#### Scenario: Award karma on recurring task completion
-- **GIVEN** a recurring task schedule with `metadata.karma: 5`
-- **AND** multiple task instances generated from that schedule
-- **WHEN** a family member completes one task instance
-- **THEN** karma is awarded for that instance
-- **AND** when they complete another instance, karma is awarded again
-
-#### Scenario: No karma awarded for tasks without karma metadata
-- **GIVEN** a task with no `metadata.karma` field
-- **WHEN** a family member completes the task
-- **THEN** no karma event is created
-- **AND** the member's karma total remains unchanged
-
-#### Scenario: Deduct karma on task uncomplete
-- **GIVEN** a completed task that previously awarded karma with `metadata.karma: 10`
-- **WHEN** a family member sets `completedAt: null` (marks it incomplete)
-- **THEN** the system creates a karma event with `amount: -10`, `source: 'task_uncomplete'`, and description indicating karma reversal
-- **AND** the member's karma total is decremented by 10
-- **AND** the event metadata includes the task ID
-
-#### Scenario: Task completion succeeds even if karma grant fails
-- **GIVEN** a task with karma metadata
-- **WHEN** a family member completes the task
-- **AND** the karma service is temporarily unavailable
-- **THEN** the task completion still succeeds (status updated to completed)
-- **AND** the karma failure is logged but does not throw an error
-
-#### Scenario: Only award karma on transition to completed
-- **GIVEN** a task that is already completed (has completedAt timestamp)
-- **WHEN** the task is updated (e.g., name changed)
-- **THEN** no additional karma is awarded (karma only on initial completion)
+#### Scenario: Deduct karma from the original assignee when reopening
+- **GIVEN** a task previously completed on behalf of another member (credited to Member A)
+- **WHEN** anyone reopens the task (`completedAt: null`)
+- **THEN** the reversal event MUST deduct karma from Member A regardless of who triggered the reopen.
 
 ### Requirement: Family-Specific Karma Isolation
 Karma totals MUST be tracked separately per family for members who belong to multiple families.

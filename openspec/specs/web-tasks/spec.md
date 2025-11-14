@@ -219,42 +219,21 @@ Family members MUST be able to edit existing tasks via a dialog interface.
 - **AND** a note indicates "Editing affects this instance only"
 
 ### Requirement: Task Completion
-Family members MUST be able to mark tasks as complete or incomplete via checkbox interaction.
+The tasks UI MUST enforce the new completion guardrails and show feedback that clarifies who earned the reward.
+#### Scenario: Disable completion toggle for other members unless viewer is parent
+- **GIVEN** the tasks list renders a task assigned to a different specific member than the current user
+- **WHEN** the viewer has the child role
+- **THEN** the completion checkbox MUST be disabled, show a tooltip explaining "Only parents can complete tasks for other members", and no PATCH request is fired when it is clicked.
 
-#### Scenario: Complete task without karma
-- **GIVEN** an active task is displayed in the list
-- **WHEN** the user clicks the checkbox
-- **THEN** a PATCH request is sent with `{ completedAt: "2025-01-15T10:30:00Z" }` (current ISO timestamp)
-- **AND** the task updates immediately with visual completion indicators:
-  - Checkbox is checked
-  - Task name has strikethrough
-  - Card has reduced opacity
-- **AND** a toast appears: "Task completed"
+#### Scenario: Allow parents to complete other members' tasks with clear feedback
+- **GIVEN** a parent views a task assigned to Child A
+- **WHEN** they click the checkbox
+- **THEN** the UI MUST optimistically show the task as completed, dispatch the completion thunk using Child A's user ID for karma credit, and display a toast such as "Marked done for Child A. They earned {karma} karma points" (or the non-karma variant when applicable).
 
-#### Scenario: Complete task with karma reward
-- **GIVEN** an active task with `metadata.karma: 10` is displayed
-- **WHEN** the user clicks the checkbox
-- **THEN** the task is marked complete
-- **AND** the karma balance in Redux is incremented by 10
-- **AND** a toast appears: "Great job! You earned 10 karma points"
-- **AND** the karma display in the sidebar updates
-
-#### Scenario: Mark completed task as incomplete
-- **GIVEN** a completed task is displayed
-- **WHEN** the user clicks the checked checkbox
-- **THEN** a PATCH request is sent with `{ completedAt: null }`
-- **AND** the task updates to show as active (no strikethrough, full opacity)
-- **AND** if the task had karma, the karma balance is decremented
-- **AND** a toast appears: "Task reopened"
-
-#### Scenario: Completed tasks group by date
-- **GIVEN** the "Completed" or "All" filter is active
-- **WHEN** tasks have various completion dates
-- **THEN** completed tasks are grouped with date separators:
-  - "Today" for tasks completed today
-  - "Yesterday" for tasks completed yesterday
-  - "January 13, 2025" format for older dates
-- **AND** active tasks appear above all completed groups
+#### Scenario: Karma balance updates for the credited member
+- **GIVEN** the sidebar karma summary is visible for multiple members
+- **WHEN** a parent completes Child A's task with 15 karma
+- **THEN** the Redux karma selector MUST show Child A's total increasing by 15 while the parent's total stays unchanged, and the sidebar reflects the new value without a full reload.
 
 ### Requirement: Task Deletion
 Family members MUST be able to delete tasks with special handling for recurring instances.

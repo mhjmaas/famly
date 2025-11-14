@@ -5,8 +5,13 @@ import { requireFamilyRole } from "@modules/auth/lib/require-family-role";
 import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type { KarmaService } from "@modules/karma";
-import type { ObjectId } from "mongodb";
-import type { CreateTaskInput, Task, UpdateTaskInput } from "../domain/task";
+import { ObjectId } from "mongodb";
+import type {
+  CreateTaskInput,
+  Task,
+  TaskAssignment,
+  UpdateTaskInput,
+} from "../domain/task";
 import {
   emitTaskAssigned,
   emitTaskCompleted,
@@ -27,6 +32,28 @@ export class TaskService {
     private activityEventService?: ActivityEventService, // Optional for activity tracking
   ) {
     this.hookRegistry = new TaskCompletionHookRegistry();
+  }
+
+  /**
+   * Convert assignment IDs from strings to ObjectIds
+   * The validators ensure they're valid ObjectId strings, but don't convert them
+   */
+  private normalizeAssignment(
+    assignment: TaskAssignment | any,
+  ): TaskAssignment {
+    if (!assignment) return assignment;
+
+    if (
+      assignment.type === "member" &&
+      typeof assignment.memberId === "string"
+    ) {
+      return {
+        type: "member",
+        memberId: new ObjectId(assignment.memberId),
+      };
+    }
+
+    return assignment;
   }
 
   /**
@@ -59,10 +86,16 @@ export class TaskService {
         membershipRepository: this.membershipRepository,
       });
 
+      // Normalize assignment to ensure IDs are ObjectIds
+      const normalizedInput = {
+        ...input,
+        assignment: this.normalizeAssignment(input.assignment),
+      };
+
       // Create the task
       const task = await this.taskRepository.createTask(
         familyId,
-        input,
+        normalizedInput,
         userId,
       );
 
@@ -80,7 +113,7 @@ export class TaskService {
             userId,
             type: "TASK",
             title: task.name,
-            description: task.description,
+            description: `Created ${task.name}`,
             metadata: task.metadata?.karma
               ? { karma: task.metadata.karma }
               : undefined,
@@ -235,13 +268,45 @@ export class TaskService {
         throw HttpError.forbidden("Task does not belong to this family");
       }
 
-      // Update the task, passing userId if task is being completed
-      const completedBy =
-        input.completedAt && !existingTask.completedAt ? userId : undefined;
+      // Normalize assignment to ensure IDs are ObjectIds
+      if (input.assignment) {
+        input.assignment = this.normalizeAssignment(input.assignment);
+      }
+
+      // Authorization guard: if completing a member-assigned task, only the assignee or a parent can do it
+      if (input.completedAt && !existingTask.completedAt) {
+        if (
+          existingTask.assignment.type === "member" &&
+          existingTask.assignment.memberId.toString() !== userId.toString()
+        ) {
+          // User is not the assignee, so they must be a parent
+          await requireFamilyRole({
+            userId,
+            familyId,
+            allowedRoles: [FamilyRole.Parent],
+            membershipRepository: this.membershipRepository,
+          });
+        }
+      }
+
+      // Determine the credited user for task completion
+      // For member-assigned tasks, credit goes to the assignee
+      // For role/unassigned tasks, credit goes to the actor
+      let creditedUserId: ObjectId | undefined;
+      if (input.completedAt && !existingTask.completedAt) {
+        if (existingTask.assignment.type === "member") {
+          creditedUserId = existingTask.assignment.memberId;
+        } else {
+          // Role or unassigned task - credit the actor
+          creditedUserId = userId;
+        }
+      }
+
+      // Update the task, passing credited user if task is being completed
       const updatedTask = await this.taskRepository.updateTask(
         taskId,
         input,
-        completedBy,
+        creditedUserId,
       );
 
       if (!updatedTask) {
@@ -249,16 +314,18 @@ export class TaskService {
       }
 
       // Award karma if task was just completed and has karma metadata
+      // Karma is always awarded to the credited user (assignee for member tasks, actor for others)
       if (
         input.completedAt &&
         !existingTask.completedAt &&
         updatedTask.metadata?.karma &&
-        this.karmaService
+        this.karmaService &&
+        creditedUserId
       ) {
         try {
           await this.karmaService.awardKarma({
             familyId: updatedTask.familyId,
-            userId,
+            userId: creditedUserId,
             amount: updatedTask.metadata.karma,
             source: "task_completion",
             description: `Completed task "${updatedTask.name}"`,
@@ -267,13 +334,15 @@ export class TaskService {
 
           logger.info("Karma awarded for task completion", {
             taskId: taskId.toString(),
-            userId: userId.toString(),
+            creditedUserId: creditedUserId.toString(),
+            triggeredBy: userId.toString(),
             karma: updatedTask.metadata.karma,
           });
         } catch (error) {
           logger.error("Failed to award karma for task completion", {
             taskId: taskId.toString(),
-            userId: userId.toString(),
+            creditedUserId: creditedUserId.toString(),
+            triggeredBy: userId.toString(),
             error,
           });
           // Don't throw - task completion should succeed even if karma fails
@@ -318,26 +387,35 @@ export class TaskService {
       }
 
       // Invoke task completion hooks if task was just completed
-      if (input.completedAt && !existingTask.completedAt) {
+      // Pass both credited user and triggering actor
+      if (input.completedAt && !existingTask.completedAt && creditedUserId) {
         try {
-          await this.hookRegistry.invokeHooks(updatedTask, userId, (error) => {
-            logger.error("Task completion hook failed", {
-              taskId: taskId.toString(),
-              userId: userId.toString(),
-              error,
-            });
-          });
+          await this.hookRegistry.invokeHooks(
+            updatedTask,
+            creditedUserId,
+            userId,
+            (error) => {
+              logger.error("Task completion hook failed", {
+                taskId: taskId.toString(),
+                creditedUserId: creditedUserId.toString(),
+                triggeredBy: userId.toString(),
+                error,
+              });
+            },
+          );
         } catch (error) {
           logger.error("Unexpected error invoking task completion hooks", {
             taskId: taskId.toString(),
-            userId: userId.toString(),
+            creditedUserId: creditedUserId.toString(),
+            triggeredBy: userId.toString(),
             error,
           });
           // Don't throw - task completion should succeed even if hook fails
         }
 
         // Emit real-time event for task completion
-        emitTaskCompleted(updatedTask, userId);
+        // Pass both credited user and triggering actor
+        emitTaskCompleted(updatedTask, creditedUserId, userId);
       }
 
       // Check if assignment changed and emit task.assigned event

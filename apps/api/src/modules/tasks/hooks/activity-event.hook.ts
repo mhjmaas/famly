@@ -10,27 +10,44 @@ import type { TaskCompletionHook } from "./task-completion.hook";
 export class ActivityEventHook implements TaskCompletionHook {
   constructor(private activityEventService: ActivityEventService) {}
 
-  async onTaskCompleted(task: Task, completedBy: ObjectId): Promise<void> {
+  /**
+   * Called when a task is completed
+   * Records an activity event for the completion
+   */
+  async onTaskCompleted(
+    task: Task,
+    creditedUserId: ObjectId,
+    triggeredBy: ObjectId,
+  ): Promise<void> {
     try {
+      // Build metadata with karma and triggeredBy if different from credited user
+      const metadata: Record<string, any> = {};
+      if (task.metadata?.karma) {
+        metadata.karma = task.metadata.karma;
+      }
+      if (creditedUserId.toString() !== triggeredBy.toString()) {
+        metadata.triggeredBy = triggeredBy.toString();
+      }
+
       await this.activityEventService.recordEvent({
-        userId: completedBy,
+        userId: creditedUserId,
         type: "TASK",
         title: task.name,
         description: `Completed ${task.name}`,
-        metadata: task.metadata?.karma
-          ? { karma: task.metadata.karma }
-          : undefined,
+        metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
       });
 
       logger.debug("Activity event recorded for task completion", {
         taskId: task._id.toString(),
-        userId: completedBy.toString(),
+        creditedUserId: creditedUserId.toString(),
+        triggeredBy: triggeredBy.toString(),
       });
     } catch (error) {
-      // Log error but don't fail task completion
+      // Log but don't throw - activity event failures shouldn't block task completion
       logger.error("Failed to record activity event for task completion", {
         taskId: task._id.toString(),
-        userId: completedBy.toString(),
+        creditedUserId: creditedUserId.toString(),
+        triggeredBy: triggeredBy.toString(),
         error,
       });
     }

@@ -45,7 +45,7 @@ describe("E2E: Activity Events - Task Integration", () => {
       expect(eventsResponse.body[0]).toMatchObject({
         type: "TASK",
         title: "Take out the trash",
-        description: "Weekly chore",
+        description: "Created Take out the trash",
         userId: childUserId,
         metadata: { karma: 10 },
       });
@@ -78,7 +78,7 @@ describe("E2E: Activity Events - Task Integration", () => {
       expect(eventsResponse.body[0]).toMatchObject({
         type: "TASK",
         title: "Simple task",
-        description: null,
+        description: "Created Simple task",
         userId: childUserId,
         metadata: null,
       });
@@ -134,7 +134,7 @@ describe("E2E: Activity Events - Task Integration", () => {
       expect(eventsResponse.body[1]).toMatchObject({
         type: "TASK",
         title: "Do homework",
-        description: null,
+        description: "Created Do homework",
         userId: childUserId,
         metadata: { karma: 20 },
       });
@@ -178,6 +178,72 @@ describe("E2E: Activity Events - Task Integration", () => {
 
       expect(completionEvent).toBeDefined();
       expect(completionEvent.description).toBe("Completed Take out the trash");
+    });
+
+    it("should record activity event in assigned member's timeline when parent completes their task", async () => {
+      testCounter++;
+      const { familyId, parentToken, parentUserId, childToken, childUserId } =
+        await setupFamilyWithMembers(baseUrl, testCounter);
+
+      // Create task assigned to child
+      const taskResponse = await request(baseUrl)
+        .post(`/v1/families/${familyId}/tasks`)
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({
+          name: "Homework for child",
+          assignment: { type: "member", memberId: childUserId },
+        })
+        .expect(201);
+
+      const taskId = taskResponse.body._id;
+
+      // Parent completes task
+      await request(baseUrl)
+        .patch(`/v1/families/${familyId}/tasks/${taskId}`)
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({
+          completedAt: new Date().toISOString(),
+        })
+        .expect(200);
+
+      // Child should see the completion event in their activity log
+      const childEventsResponse = await request(baseUrl)
+        .get("/v1/activity-events")
+        .set("Authorization", `Bearer ${childToken}`)
+        .expect(200);
+
+      const childCompletionEvent = childEventsResponse.body.find((e: any) =>
+        e.description?.includes("Completed Homework for child"),
+      );
+      expect(childCompletionEvent).toBeDefined();
+      expect(childCompletionEvent.userId).toBe(childUserId);
+
+      // Parent should NOT see a "Completed Homework for child" event
+      const parentEventsResponse = await request(baseUrl)
+        .get("/v1/activity-events")
+        .set("Authorization", `Bearer ${parentToken}`)
+        .expect(200);
+
+      const parentCompletionEvent = parentEventsResponse.body.find((e: any) =>
+        e.description?.includes("Completed Homework for child"),
+      );
+      expect(parentCompletionEvent).toBeUndefined();
+
+      // Double-check: verify parent doesn't have a COMPLETION event for this task
+      const parentCompletionEventForTask = parentEventsResponse.body.filter(
+        (e: any) =>
+          e.description?.includes("Completed Homework for child") &&
+          e.userId === parentUserId,
+      );
+      expect(parentCompletionEventForTask).toHaveLength(0);
+
+      // But parent SHOULD see the creation event since they created the task
+      const parentCreationEventForTask = parentEventsResponse.body.filter(
+        (e: any) =>
+          e.description?.includes("Created Homework for child") &&
+          e.userId === parentUserId,
+      );
+      expect(parentCreationEventForTask.length).toBeGreaterThan(0);
     });
   });
 
@@ -238,11 +304,11 @@ describe("E2E: Activity Events - Task Integration", () => {
 
       // Middle: Task 2 creation
       expect(eventsResponse.body[1].title).toBe("Task 2");
-      expect(eventsResponse.body[1].description).toBeNull();
+      expect(eventsResponse.body[1].description).toBe("Created Task 2");
 
       // Oldest: Task 1 creation
       expect(eventsResponse.body[2].title).toBe("Task 1");
-      expect(eventsResponse.body[2].description).toBeNull();
+      expect(eventsResponse.body[2].description).toBe("Created Task 1");
     });
 
     it("should only show events for the authenticated user", async () => {

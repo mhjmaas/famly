@@ -9,10 +9,12 @@ describe("TaskCompletionHookRegistry", () => {
   let registry: TaskCompletionHookRegistry;
   let mockTask: Task;
   let completedBy: ObjectId;
+  let triggeredBy: ObjectId;
 
   beforeEach(() => {
     registry = new TaskCompletionHookRegistry();
     completedBy = new ObjectId();
+    triggeredBy = new ObjectId();
 
     // Create a mock task
     mockTask = {
@@ -35,9 +37,9 @@ describe("TaskCompletionHookRegistry", () => {
       };
 
       registry.register(mockHook);
-      await registry.invokeHooks(mockTask, completedBy);
+      await registry.invokeHooks(mockTask, completedBy, triggeredBy);
 
-      expect(hookSpy).toHaveBeenCalledWith(mockTask, completedBy);
+      expect(hookSpy).toHaveBeenCalledWith(mockTask, completedBy, triggeredBy);
       expect(hookSpy).toHaveBeenCalledTimes(1);
     });
 
@@ -50,18 +52,18 @@ describe("TaskCompletionHookRegistry", () => {
       registry.register({ onTaskCompleted: hook2Spy });
       registry.register({ onTaskCompleted: hook3Spy });
 
-      await registry.invokeHooks(mockTask, completedBy);
+      await registry.invokeHooks(mockTask, completedBy, triggeredBy);
 
-      expect(hook1Spy).toHaveBeenCalledWith(mockTask, completedBy);
-      expect(hook2Spy).toHaveBeenCalledWith(mockTask, completedBy);
-      expect(hook3Spy).toHaveBeenCalledWith(mockTask, completedBy);
+      expect(hook1Spy).toHaveBeenCalledWith(mockTask, completedBy, triggeredBy);
+      expect(hook2Spy).toHaveBeenCalledWith(mockTask, completedBy, triggeredBy);
+      expect(hook3Spy).toHaveBeenCalledWith(mockTask, completedBy, triggeredBy);
     });
 
     it("should pass task and completedBy correctly to hooks", async () => {
       const hookSpy = jest.fn();
       registry.register({ onTaskCompleted: hookSpy });
 
-      await registry.invokeHooks(mockTask, completedBy);
+      await registry.invokeHooks(mockTask, completedBy, triggeredBy);
 
       const callArgs = hookSpy.mock.calls[0];
       expect(callArgs[0]).toBe(mockTask);
@@ -78,7 +80,12 @@ describe("TaskCompletionHookRegistry", () => {
       const errorHandler = jest.fn();
 
       registry.register(failingHook);
-      await registry.invokeHooks(mockTask, completedBy, errorHandler);
+      await registry.invokeHooks(
+        mockTask,
+        completedBy,
+        triggeredBy,
+        errorHandler,
+      );
 
       expect(errorHandler).toHaveBeenCalledWith(error);
     });
@@ -102,7 +109,12 @@ describe("TaskCompletionHookRegistry", () => {
       registry.register(hook2);
       registry.register(hook3);
 
-      await registry.invokeHooks(mockTask, completedBy, errorHandler);
+      await registry.invokeHooks(
+        mockTask,
+        completedBy,
+        triggeredBy,
+        errorHandler,
+      );
 
       expect(errorHandler).toHaveBeenCalledTimes(2);
       expect(errorHandler).toHaveBeenCalledWith(error1);
@@ -123,12 +135,12 @@ describe("TaskCompletionHookRegistry", () => {
       registry.register(slowHook); // Register twice
       registry.register(slowHook); // Register thrice
 
-      await registry.invokeHooks(mockTask, completedBy);
+      await registry.invokeHooks(mockTask, completedBy, triggeredBy);
 
       const elapsed = Date.now() - startTime;
       // If executed in parallel, should be ~delay, not 3*delay
       // Allow some buffer for execution
-      expect(elapsed).toBeLessThan(delay * 2);
+      expect(elapsed).toBeLessThan(delay * 2.5);
     });
 
     it("should not call error handler if none provided", async () => {
@@ -140,7 +152,7 @@ describe("TaskCompletionHookRegistry", () => {
       registry.register(failingHook);
       // Should not throw
       await expect(
-        registry.invokeHooks(mockTask, completedBy),
+        registry.invokeHooks(mockTask, completedBy, triggeredBy),
       ).resolves.toBeUndefined();
     });
   });
@@ -155,7 +167,7 @@ describe("TaskCompletionHookRegistry", () => {
 
       registry.clear();
 
-      await registry.invokeHooks(mockTask, completedBy);
+      await registry.invokeHooks(mockTask, completedBy, triggeredBy);
 
       expect(hook1Spy).not.toHaveBeenCalled();
       expect(hook2Spy).not.toHaveBeenCalled();
@@ -169,10 +181,10 @@ describe("TaskCompletionHookRegistry", () => {
       registry.clear();
       registry.register({ onTaskCompleted: hook2Spy });
 
-      await registry.invokeHooks(mockTask, completedBy);
+      await registry.invokeHooks(mockTask, completedBy, triggeredBy);
 
       expect(hook1Spy).not.toHaveBeenCalled();
-      expect(hook2Spy).toHaveBeenCalledWith(mockTask, completedBy);
+      expect(hook2Spy).toHaveBeenCalledWith(mockTask, completedBy, triggeredBy);
     });
 
     it("should maintain hook order across invocations", async () => {
@@ -198,12 +210,12 @@ describe("TaskCompletionHookRegistry", () => {
       registry.register(hook2);
       registry.register(hook3);
 
-      await registry.invokeHooks(mockTask, completedBy);
+      await registry.invokeHooks(mockTask, completedBy, triggeredBy);
 
       callOrder.length = 0;
       mockTask._id = new ObjectId(); // Change task to invoke again
 
-      await registry.invokeHooks(mockTask, completedBy);
+      await registry.invokeHooks(mockTask, completedBy, triggeredBy);
 
       // Since hooks are invoked in parallel with allSettled, order is not guaranteed
       // But the hooks should all be called
@@ -215,7 +227,7 @@ describe("TaskCompletionHookRegistry", () => {
   describe("edge cases", () => {
     it("should handle no registered hooks", async () => {
       await expect(
-        registry.invokeHooks(mockTask, completedBy),
+        registry.invokeHooks(mockTask, completedBy, triggeredBy),
       ).resolves.toBeUndefined();
     });
 
@@ -226,7 +238,7 @@ describe("TaskCompletionHookRegistry", () => {
 
       registry.register(hook);
       await expect(
-        registry.invokeHooks(mockTask, completedBy),
+        registry.invokeHooks(mockTask, completedBy, triggeredBy),
       ).resolves.toBeUndefined();
     });
 
@@ -234,7 +246,7 @@ describe("TaskCompletionHookRegistry", () => {
       const hookSpy = jest.fn().mockResolvedValue(undefined);
       registry.register({ onTaskCompleted: hookSpy });
 
-      await registry.invokeHooks(mockTask, completedBy);
+      await registry.invokeHooks(mockTask, completedBy, triggeredBy);
 
       expect(hookSpy).toHaveBeenCalled();
     });

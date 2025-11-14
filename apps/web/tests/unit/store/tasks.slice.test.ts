@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import * as apiClient from "@/lib/api-client";
 import tasksReducer, {
+  clearError,
   completeTask,
   createSchedule,
   createTask,
@@ -8,6 +9,7 @@ import tasksReducer, {
   deleteTask,
   fetchSchedules,
   fetchTasks,
+  reopenTask,
   selectSchedules,
   selectTaskById,
   selectTasks,
@@ -228,6 +230,7 @@ describe("tasks slice", () => {
         completeTask({
           familyId: "family-1",
           taskId: "task-1",
+          task,
           userId: "user-1",
         }),
       );
@@ -259,6 +262,7 @@ describe("tasks slice", () => {
         completeTask({
           familyId: "family-1",
           taskId: "task-1",
+          task,
           userId: "user-1",
           karma: 10,
         }),
@@ -267,6 +271,274 @@ describe("tasks slice", () => {
       const state = store.getState().tasks;
       const updatedTask = state.tasks.find((t) => t._id === "task-1");
       expect(updatedTask?.completedAt).toBeTruthy();
+    });
+
+    it("should handle error when completing task", async () => {
+      const task: Task = {
+        _id: "task-1",
+        familyId: "family-1",
+        name: "Task",
+        assignment: { type: "member", memberId: "user-1" },
+        createdBy: "user-1",
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+      };
+
+      mockApiClient.getTasks.mockResolvedValueOnce([task]);
+      await store.dispatch(fetchTasks("family-1"));
+
+      mockApiClient.updateTask.mockRejectedValueOnce(
+        new Error("Failed to complete"),
+      );
+
+      await store.dispatch(
+        completeTask({
+          familyId: "family-1",
+          taskId: "task-1",
+          task,
+          userId: "user-1",
+        }),
+      );
+
+      const state = store.getState().tasks;
+      expect(state.error).toBe("Failed to complete");
+    });
+
+    it("should not update task when task not found in state", async () => {
+      const completedTask: Task = {
+        _id: "nonexistent-task",
+        familyId: "family-1",
+        name: "Nonexistent Task",
+        assignment: { type: "unassigned" },
+        completedAt: "2025-01-15T10:00:00Z",
+        createdBy: "user-1",
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+      };
+
+      mockApiClient.updateTask.mockResolvedValueOnce(completedTask);
+
+      const task: Task = {
+        _id: "nonexistent-task",
+        familyId: "family-1",
+        name: "Nonexistent Task",
+        assignment: { type: "unassigned" },
+        createdBy: "user-1",
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+      };
+
+      await store.dispatch(
+        completeTask({
+          familyId: "family-1",
+          taskId: "nonexistent-task",
+          task,
+          userId: "user-1",
+        }),
+      );
+
+      const state = store.getState().tasks;
+      expect(state.tasks).toHaveLength(0);
+    });
+
+    it("should complete reward claim task and refresh data", async () => {
+      const task: Task = {
+        _id: "task-1",
+        familyId: "family-1",
+        name: "Reward Claim Task",
+        assignment: { type: "member", memberId: "user-1" },
+        createdBy: "user-1",
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+      };
+
+      mockApiClient.getTasks.mockResolvedValueOnce([task]);
+      await store.dispatch(fetchTasks("family-1"));
+
+      const completedTask = { ...task, completedAt: "2025-01-15T10:00:00Z" };
+      mockApiClient.updateTask.mockResolvedValueOnce(completedTask);
+
+      await store.dispatch(
+        completeTask({
+          familyId: "family-1",
+          taskId: "task-1",
+          task,
+          userId: "user-1",
+          isRewardClaim: true,
+        }),
+      );
+
+      const state = store.getState().tasks;
+      const updatedTask = state.tasks.find((t) => t._id === "task-1");
+      expect(updatedTask?.completedAt).toBeTruthy();
+    });
+  });
+
+  describe("reopenTask thunk", () => {
+    it("should reopen task without karma", async () => {
+      const task: Task = {
+        _id: "task-1",
+        familyId: "family-1",
+        name: "Completed Task",
+        assignment: { type: "member", memberId: "user-1" },
+        completedAt: "2025-01-15T10:00:00Z",
+        createdBy: "user-1",
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+      };
+
+      mockApiClient.getTasks.mockResolvedValueOnce([task]);
+      await store.dispatch(fetchTasks("family-1"));
+
+      const reopenedTask = { ...task, completedAt: null };
+      mockApiClient.updateTask.mockResolvedValueOnce(reopenedTask);
+
+      await store.dispatch(
+        reopenTask({
+          familyId: "family-1",
+          taskId: "task-1",
+          task,
+          userId: "user-1",
+        }),
+      );
+
+      const state = store.getState().tasks;
+      const updatedTask = state.tasks.find((t) => t._id === "task-1");
+      expect(updatedTask?.completedAt).toBeNull();
+    });
+
+    it("should reopen task with karma deduction", async () => {
+      const task: Task = {
+        _id: "task-1",
+        familyId: "family-1",
+        name: "Completed Task with Karma",
+        assignment: { type: "member", memberId: "user-1" },
+        metadata: { karma: 10 },
+        completedAt: "2025-01-15T10:00:00Z",
+        createdBy: "user-1",
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+      };
+
+      mockApiClient.getTasks.mockResolvedValueOnce([task]);
+      await store.dispatch(fetchTasks("family-1"));
+
+      const reopenedTask = { ...task, completedAt: null };
+      mockApiClient.updateTask.mockResolvedValueOnce(reopenedTask);
+
+      await store.dispatch(
+        reopenTask({
+          familyId: "family-1",
+          taskId: "task-1",
+          task,
+          userId: "user-1",
+          karma: 10,
+        }),
+      );
+
+      const state = store.getState().tasks;
+      const updatedTask = state.tasks.find((t) => t._id === "task-1");
+      expect(updatedTask?.completedAt).toBeNull();
+    });
+
+    it("should handle error when reopening task", async () => {
+      const task: Task = {
+        _id: "task-1",
+        familyId: "family-1",
+        name: "Completed Task",
+        assignment: { type: "unassigned" },
+        completedAt: "2025-01-15T10:00:00Z",
+        createdBy: "user-1",
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+      };
+
+      mockApiClient.updateTask.mockRejectedValueOnce(
+        new Error("Failed to reopen"),
+      );
+
+      await store.dispatch(
+        reopenTask({
+          familyId: "family-1",
+          taskId: "task-1",
+          task,
+          userId: "user-1",
+        }),
+      );
+
+      const state = store.getState().tasks;
+      expect(state.error).toBe("Failed to reopen");
+    });
+
+    it("should not update task when task not found in state during reopen", async () => {
+      const reopenedTask: Task = {
+        _id: "nonexistent-task",
+        familyId: "family-1",
+        name: "Nonexistent Task",
+        assignment: { type: "unassigned" },
+        completedAt: null,
+        createdBy: "user-1",
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+      };
+
+      mockApiClient.updateTask.mockResolvedValueOnce(reopenedTask);
+
+      const task: Task = {
+        _id: "nonexistent-task",
+        familyId: "family-1",
+        name: "Nonexistent Task",
+        assignment: { type: "unassigned" },
+        completedAt: "2025-01-15T10:00:00Z",
+        createdBy: "user-1",
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+      };
+
+      await store.dispatch(
+        reopenTask({
+          familyId: "family-1",
+          taskId: "nonexistent-task",
+          task,
+          userId: "user-1",
+        }),
+      );
+
+      const state = store.getState().tasks;
+      expect(state.tasks).toHaveLength(0);
+    });
+
+    it("should reopen reward claim task and refresh data", async () => {
+      const task: Task = {
+        _id: "task-1",
+        familyId: "family-1",
+        name: "Completed Reward Claim Task",
+        assignment: { type: "member", memberId: "user-1" },
+        completedAt: "2025-01-15T10:00:00Z",
+        createdBy: "user-1",
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+      };
+
+      mockApiClient.getTasks.mockResolvedValueOnce([task]);
+      await store.dispatch(fetchTasks("family-1"));
+
+      const reopenedTask: Task = { ...task, completedAt: undefined };
+      mockApiClient.updateTask.mockResolvedValueOnce(reopenedTask);
+
+      await store.dispatch(
+        reopenTask({
+          familyId: "family-1",
+          taskId: "task-1",
+          task,
+          userId: "user-1",
+          isRewardClaim: true,
+        }),
+      );
+
+      const state = store.getState().tasks;
+      const updatedTask = state.tasks.find((t: Task) => t._id === "task-1");
+      expect(updatedTask?.completedAt).toBeUndefined();
     });
   });
 
@@ -453,6 +725,220 @@ describe("tasks slice", () => {
       const state = store.getState();
       const schedules = selectSchedules(state);
       expect(Array.isArray(schedules)).toBe(true);
+    });
+  });
+
+  describe("pending handlers", () => {
+    it("should set loading state when fetching tasks", async () => {
+      mockApiClient.getTasks.mockReturnValueOnce(new Promise(() => {})); // Never resolves
+
+      store.dispatch(fetchTasks("family-1"));
+
+      const state = store.getState().tasks;
+      expect(state.isLoading).toBe(true);
+      expect(state.error).toBe(null);
+    });
+
+    it("should clear error when creating task", async () => {
+      const state1 = store.getState().tasks;
+      store.dispatch(clearError());
+
+      const state2 = store.getState().tasks;
+      expect(state2.error).toBe(null);
+    });
+
+    it("should set error null when starting fetch schedules", async () => {
+      mockApiClient.getSchedules.mockReturnValueOnce(new Promise(() => {})); // Never resolves
+
+      store.dispatch(fetchSchedules("family-1"));
+
+      const state = store.getState().tasks;
+      expect(state.error).toBe(null);
+    });
+  });
+
+  describe("error handling", () => {
+    it("should handle createTask rejection error", async () => {
+      mockApiClient.createTask.mockRejectedValueOnce(
+        new Error("Failed to create"),
+      );
+
+      await store.dispatch(
+        createTask({
+          familyId: "family-1",
+          data: {
+            name: "New Task",
+            assignment: { type: "unassigned" },
+          },
+        }),
+      );
+
+      const state = store.getState().tasks;
+      expect(state.error).toBe("Failed to create");
+    });
+
+    it("should handle updateTask rejection error", async () => {
+      const task: Task = {
+        _id: "task-1",
+        familyId: "family-1",
+        name: "Task",
+        assignment: { type: "unassigned" },
+        createdBy: "user-1",
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+      };
+
+      mockApiClient.getTasks.mockResolvedValueOnce([task]);
+      await store.dispatch(fetchTasks("family-1"));
+
+      mockApiClient.updateTask.mockRejectedValueOnce(
+        new Error("Failed to update"),
+      );
+
+      await store.dispatch(
+        updateTask({
+          familyId: "family-1",
+          taskId: "task-1",
+          data: { name: "Updated Task" },
+        }),
+      );
+
+      const state = store.getState().tasks;
+      expect(state.error).toBe("Failed to update");
+    });
+
+    it("should handle deleteTask rejection error", async () => {
+      mockApiClient.deleteTask.mockRejectedValueOnce(
+        new Error("Failed to delete"),
+      );
+
+      await store.dispatch(
+        deleteTask({ familyId: "family-1", taskId: "task-1" }),
+      );
+
+      const state = store.getState().tasks;
+      expect(state.error).toBe("Failed to delete");
+    });
+
+    it("should handle fetchSchedules rejection error", async () => {
+      mockApiClient.getSchedules.mockRejectedValueOnce(
+        new Error("Failed to fetch schedules"),
+      );
+
+      await store.dispatch(fetchSchedules("family-1"));
+
+      const state = store.getState().tasks;
+      expect(state.error).toBe("Failed to fetch schedules");
+    });
+
+    it("should handle createSchedule rejection error", async () => {
+      mockApiClient.createSchedule.mockRejectedValueOnce(
+        new Error("Failed to create schedule"),
+      );
+
+      await store.dispatch(
+        createSchedule({
+          familyId: "family-1",
+          data: {
+            name: "New Schedule",
+            assignment: { type: "unassigned" },
+            schedule: {
+              daysOfWeek: [0],
+              weeklyInterval: 1,
+              startDate: "2025-01-01",
+            },
+          },
+        }),
+      );
+
+      const state = store.getState().tasks;
+      expect(state.error).toBe("Failed to create schedule");
+    });
+
+    it("should handle deleteSchedule rejection error", async () => {
+      mockApiClient.deleteSchedule.mockRejectedValueOnce(
+        new Error("Failed to delete schedule"),
+      );
+
+      await store.dispatch(
+        deleteSchedule({ familyId: "family-1", scheduleId: "schedule-1" }),
+      );
+
+      const state = store.getState().tasks;
+      expect(state.error).toBe("Failed to delete schedule");
+    });
+  });
+
+  describe("updateTask edge cases", () => {
+    it("should not update task when task not found in state", async () => {
+      const updatedTask: Task = {
+        _id: "nonexistent-task",
+        familyId: "family-1",
+        name: "Updated Nonexistent Task",
+        assignment: { type: "unassigned" },
+        createdBy: "user-1",
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-15T00:00:00Z",
+      };
+
+      mockApiClient.updateTask.mockResolvedValueOnce(updatedTask);
+
+      await store.dispatch(
+        updateTask({
+          familyId: "family-1",
+          taskId: "nonexistent-task",
+          data: { name: "Updated Nonexistent Task" },
+        }),
+      );
+
+      const state = store.getState().tasks;
+      expect(state.tasks).toHaveLength(0);
+    });
+
+    it("should update task when task exists in state", async () => {
+      const task: Task = {
+        _id: "task-1",
+        familyId: "family-1",
+        name: "Original Task",
+        assignment: { type: "unassigned" },
+        createdBy: "user-1",
+        createdAt: "2025-01-01T00:00:00Z",
+        updatedAt: "2025-01-01T00:00:00Z",
+      };
+
+      mockApiClient.getTasks.mockResolvedValueOnce([task]);
+      await store.dispatch(fetchTasks("family-1"));
+
+      const updatedTask = { ...task, name: "Updated Task" };
+      mockApiClient.updateTask.mockResolvedValueOnce(updatedTask);
+
+      await store.dispatch(
+        updateTask({
+          familyId: "family-1",
+          taskId: "task-1",
+          data: { name: "Updated Task" },
+        }),
+      );
+
+      const state = store.getState().tasks;
+      const foundTask = state.tasks.find((t) => t._id === "task-1");
+      expect(foundTask?.name).toBe("Updated Task");
+    });
+  });
+
+  describe("clearError reducer", () => {
+    it("should clear error when clearError action is dispatched", async () => {
+      mockApiClient.getTasks.mockRejectedValueOnce(new Error("Network error"));
+
+      await store.dispatch(fetchTasks("family-1"));
+
+      let state = store.getState().tasks;
+      expect(state.error).toBe("Network error");
+
+      store.dispatch(clearError());
+
+      state = store.getState().tasks;
+      expect(state.error).toBe(null);
     });
   });
 });

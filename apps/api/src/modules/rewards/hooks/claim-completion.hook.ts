@@ -19,7 +19,11 @@ export class ClaimCompletionHook implements TaskCompletionHook {
     private karmaService: KarmaService,
   ) {}
 
-  async onTaskCompleted(task: Task, completedBy: ObjectId): Promise<void> {
+  async onTaskCompleted(
+    task: Task,
+    creditedUserId: ObjectId,
+    triggeredBy: ObjectId,
+  ): Promise<void> {
     // Check if this task is associated with a claim
     if (!task.metadata?.claimId) {
       return; // Not a reward claim task, nothing to do
@@ -29,7 +33,8 @@ export class ClaimCompletionHook implements TaskCompletionHook {
       logger.info("Processing claim completion from task", {
         taskId: task._id.toString(),
         claimId: task.metadata.claimId,
-        completedBy: completedBy.toString(),
+        creditedUserId: creditedUserId.toString(),
+        triggeredBy: triggeredBy.toString(),
       });
 
       const claimId = new ObjectId(task.metadata.claimId as string);
@@ -92,7 +97,7 @@ export class ClaimCompletionHook implements TaskCompletionHook {
 
       // Update claim status to completed
       await this.claimRepository.updateStatus(claimId, "completed", {
-        completedBy,
+        completedBy: creditedUserId,
         completedAt: new Date(),
       });
 

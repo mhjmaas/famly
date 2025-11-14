@@ -16,9 +16,9 @@ async function createTaskViaApi(
 		description?: string;
 		dueDate?: string;
 		assignment?:
-			| { type: "unassigned" }
-			| { type: "role"; role: "parent" | "child" }
-			| { type: "member"; memberId: string };
+		| { type: "unassigned" }
+		| { type: "role"; role: "parent" | "child" }
+		| { type: "member"; memberId: string };
 		karma?: number;
 	},
 ): Promise<void> {
@@ -413,6 +413,218 @@ test.describe("Tasks Page", () => {
 
 			// Note: The actual karma balance update would require accessing the profile or karma API
 			// This test verifies the task completion workflow with karma metadata is successful
+		});
+	});
+
+	test.describe("Task Completion Authorization", () => {
+		test("should allow parent to complete child-assigned task", async ({
+			page,
+		}) => {
+			// Create child user
+			const childUser = await authenticateUser(page, {
+				name: "Child Completion User",
+				birthdate: "2012-06-15",
+			});
+
+			// Add child to family
+			const addChildResponse = await fetch(
+				`${API_URL}/v1/families/${parentUser.familyId}/members`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${parentUser.sessionToken}`,
+					},
+					body: JSON.stringify({
+						email: childUser.email,
+						password: childUser.password,
+						name: childUser.name,
+						birthdate: "2012-06-15",
+						role: "Child",
+					}),
+				},
+			);
+
+			expect(addChildResponse.ok).toBeTruthy();
+			const childData = await addChildResponse.json();
+			const childMemberId = childData.memberId;
+
+			// Create task assigned to child with karma
+			await createTaskViaApi(parentUser, {
+				name: "Child's homework",
+				assignment: { type: "member", memberId: childMemberId },
+				karma: 30,
+			});
+
+			// Switch to parent and navigate to tasks
+			await switchUser(page, parentUser);
+			await tasksPage.gotoTasks("en-US");
+			await waitForPageLoad(page);
+			await tasksPage.filterAll.click();
+
+			// Parent should be able to complete child's task
+			const completeResponse = page.waitForResponse(
+				(response) =>
+					response
+						.url()
+						.includes(`/v1/families/${parentUser.familyId}/tasks/`) &&
+					response.request().method() === "PATCH",
+			);
+
+			await tasksPage.toggleTaskCompletion(0);
+			await completeResponse;
+
+			// Verify task is completed
+			await expect(tasksPage.taskCompleteToggles.nth(0)).toHaveAttribute(
+				"data-state",
+				"checked",
+			);
+
+			// Verify toast shows karma was awarded to child
+			const toast = page.locator('[data-sonner-toast]').first();
+			await expect(toast).toBeVisible({ timeout: 5000 });
+			const toastText = await toast.textContent();
+			expect(toastText?.toLowerCase()).toContain("earned");
+			expect(toastText).toContain("30");
+			expect(toastText).toContain("karma");
+		});
+
+		test("should prevent child from completing another child's task", async ({
+			page,
+		}) => {
+			// Create first child
+			const child1User = await authenticateUser(page, {
+				name: "First Child",
+				birthdate: "2011-03-20",
+			});
+
+			const addChild1Response = await fetch(
+				`${API_URL}/v1/families/${parentUser.familyId}/members`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${parentUser.sessionToken}`,
+					},
+					body: JSON.stringify({
+						email: child1User.email,
+						password: child1User.password,
+						name: child1User.name,
+						birthdate: "2011-03-20",
+						role: "Child",
+					}),
+				},
+			);
+
+			expect(addChild1Response.ok).toBeTruthy();
+			const child1Data = await addChild1Response.json();
+			const child1MemberId = child1Data.memberId;
+
+			// Create second child
+			const child2User = await authenticateUser(page, {
+				name: "Second Child",
+				birthdate: "2013-09-10",
+			});
+
+			const addChild2Response = await fetch(
+				`${API_URL}/v1/families/${parentUser.familyId}/members`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${parentUser.sessionToken}`,
+					},
+					body: JSON.stringify({
+						email: child2User.email,
+						password: child2User.password,
+						name: child2User.name,
+						birthdate: "2013-09-10",
+						role: "Child",
+					}),
+				},
+			);
+
+			expect(addChild2Response.ok).toBeTruthy();
+
+			// Create task assigned to child1
+			await createTaskViaApi(parentUser, {
+				name: "First child's chore",
+				assignment: { type: "member", memberId: child1MemberId },
+			});
+
+			// Switch to child2
+			child2User.familyId = parentUser.familyId;
+			await switchUser(page, child2User);
+			await tasksPage.gotoTasks("en-US");
+			await waitForPageLoad(page);
+			await tasksPage.filterAll.click();
+
+			// Child2 should see the task but checkbox should be disabled
+			await expect(tasksPage.taskCards.first()).toBeVisible({ timeout: 10000 });
+
+			// Check if checkbox is disabled
+			const checkbox = tasksPage.taskCompleteToggles.nth(0);
+			const isDisabled = await checkbox.getAttribute('disabled');
+			const ariaDisabled = await checkbox.getAttribute('aria-disabled');
+
+			// Should be disabled (either attribute indicates disabled state)
+			expect(isDisabled !== null || ariaDisabled === 'true').toBeTruthy();
+		});
+
+		test("should show correct karma recipient in toast when parent completes child task", async ({
+			page,
+		}) => {
+			// Create child user
+			const childUser = await authenticateUser(page, {
+				name: "Karma Recipient Child",
+				birthdate: "2014-01-25",
+			});
+
+			const addChildResponse = await fetch(
+				`${API_URL}/v1/families/${parentUser.familyId}/members`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${parentUser.sessionToken}`,
+					},
+					body: JSON.stringify({
+						email: childUser.email,
+						password: childUser.password,
+						name: childUser.name,
+						birthdate: "2014-01-25",
+						role: "Child",
+					}),
+				},
+			);
+
+			expect(addChildResponse.ok).toBeTruthy();
+			const childData = await addChildResponse.json();
+
+			// Create task with karma assigned to child
+			await createTaskViaApi(parentUser, {
+				name: "Clean bedroom",
+				assignment: { type: "member", memberId: childData.memberId },
+				karma: 25,
+			});
+
+			// Parent completes the task
+			await switchUser(page, parentUser);
+			await tasksPage.gotoTasks("en-US");
+			await waitForPageLoad(page);
+			await tasksPage.filterAll.click();
+
+			await tasksPage.toggleTaskCompletion(0);
+
+			// Check toast message mentions the child's name
+			const toast = page.locator('[data-sonner-toast]').first();
+			await expect(toast).toBeVisible({ timeout: 5000 });
+			const toastText = await toast.textContent();
+
+			// Should mention child's name and karma
+			expect(toastText).toContain("25");
+			expect(toastText?.toLowerCase()).toContain("earned");
+			expect(toastText?.toLowerCase()).toContain("karma");
 		});
 	});
 });

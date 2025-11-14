@@ -24,7 +24,8 @@ export interface TaskEventPayloads {
   };
   "task.completed": {
     taskId: string;
-    completedBy: string;
+    completedBy: string; // Credited user (assignee for member tasks)
+    triggeredBy?: string; // Actor who triggered completion (if different)
     task: TaskDTO;
   };
   "task.deleted": {
@@ -171,21 +172,27 @@ export async function emitTaskAssigned(
  * Broadcasts when a task is completed
  *
  * @param task The completed task
- * @param completedBy User ID who completed the task
+ * @param creditedUserId User ID who receives credit (assignee for member tasks)
+ * @param triggeredBy User ID who triggered the completion action
  * @param familyMemberIds Optional array of all family member IDs to notify
  */
 export function emitTaskCompleted(
   task: Task,
-  completedBy: ObjectId,
+  creditedUserId: ObjectId,
+  triggeredBy: ObjectId,
   familyMemberIds?: string[],
 ): void {
   try {
-    // Notify the user who completed it, plus optionally all family members
-    const targetUserIds = familyMemberIds || [completedBy.toString()];
+    // Notify the credited user, plus optionally all family members
+    const targetUserIds = familyMemberIds || [creditedUserId.toString()];
 
     const payload: TaskEventPayloads["task.completed"] = {
       taskId: task._id.toString(),
-      completedBy: completedBy.toString(),
+      completedBy: creditedUserId.toString(),
+      triggeredBy:
+        creditedUserId.toString() !== triggeredBy.toString()
+          ? triggeredBy.toString()
+          : undefined,
       task: toTaskDTO(task), // Convert to DTO for proper serialization
     };
 
@@ -193,7 +200,8 @@ export function emitTaskCompleted(
 
     logger.debug(`Emitted task.completed event for task ${task._id}`, {
       taskId: task._id.toString(),
-      completedBy: completedBy.toString(),
+      creditedUserId: creditedUserId.toString(),
+      triggeredBy: triggeredBy.toString(),
       targetUserIds,
     });
   } catch (error) {
