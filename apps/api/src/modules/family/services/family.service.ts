@@ -3,6 +3,7 @@ import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import {
   fromObjectId,
+  type ObjectIdString,
   toObjectId,
   validateObjectId,
 } from "@lib/objectid-utils";
@@ -48,7 +49,7 @@ export class FamilyService {
     userId: string,
     input: CreateFamilyInput,
   ): Promise<CreateFamilyResponse> {
-    let creatorId: string | undefined;
+    let creatorId: ObjectIdString | undefined;
     try {
       creatorId = validateObjectId(userId, "userId");
       // Normalize family name (trim, handle empty string, validate length)
@@ -112,7 +113,7 @@ export class FamilyService {
    * @returns List families response with membership views
    */
   async listFamiliesForUser(userId: string): Promise<ListFamiliesResponse> {
-    let normalizedUserId: string | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
       normalizedUserId = validateObjectId(userId, "userId");
 
@@ -175,8 +176,8 @@ export class FamilyService {
     addedBy: string,
     input: AddFamilyMemberRequest,
   ): Promise<AddFamilyMemberResult> {
-    let normalizedFamilyId: string | undefined;
-    let normalizedAddedBy: string | undefined;
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedAddedBy: ObjectIdString | undefined;
     try {
       normalizedFamilyId = validateObjectId(familyId, "familyId");
       normalizedAddedBy = validateObjectId(addedBy, "addedBy");
@@ -194,7 +195,7 @@ export class FamilyService {
       }
 
       const auth = getAuth();
-      let newUserId: string;
+      let newUserId: ObjectIdString;
 
       try {
         const signUpResult = await auth.api.signUpEmail({
@@ -319,9 +320,9 @@ export class FamilyService {
     removedBy: string,
     memberId: string,
   ): Promise<void> {
-    let normalizedFamilyId: string | undefined;
-    let normalizedRemovedBy: string | undefined;
-    let normalizedMemberId: string | undefined;
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedRemovedBy: ObjectIdString | undefined;
+    let normalizedMemberId: ObjectIdString | undefined;
     try {
       normalizedFamilyId = validateObjectId(familyId, "familyId");
       normalizedRemovedBy = validateObjectId(removedBy, "removedBy");
@@ -425,8 +426,8 @@ export class FamilyService {
     memberId: string,
     role: FamilyRole,
   ): Promise<UpdateMemberRoleResponse> {
-    let normalizedFamilyId: string | undefined;
-    let normalizedMemberId: string | undefined;
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedMemberId: ObjectIdString | undefined;
     try {
       normalizedFamilyId = validateObjectId(familyId, "familyId");
       normalizedMemberId = validateObjectId(memberId, "memberId");

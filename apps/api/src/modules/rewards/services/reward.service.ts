@@ -163,7 +163,6 @@ export class RewardService {
         requestingUserId,
         "requestingUserId",
       );
-      const _familyObjectId = toObjectId(normalizedFamilyId, "familyId");
       const rewardObjectId = toObjectId(normalizedRewardId, "rewardId");
       const requesterObjectId = toObjectId(
         normalizedRequestingUserId,

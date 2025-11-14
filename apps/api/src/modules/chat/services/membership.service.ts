@@ -44,7 +44,6 @@ export class MembershipService {
       normalizedAddedBy = validateObjectId(addedBy, "addedBy");
       normalizedUserIds = validateObjectIdArray(userIds, "userIds");
       const chatObjectId = toObjectId(normalizedChatId, "chatId");
-      const _addedByObjectId = toObjectId(normalizedAddedBy, "addedBy");
       const userObjectIds = toObjectIdArray(normalizedUserIds, "userIds");
 
       logger.info("Adding members to chat", {

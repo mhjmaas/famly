@@ -165,7 +165,6 @@ export class MessageService {
   ): Promise<{ messages: MessageDTO[]; nextCursor?: string }> {
     let normalizedChatId: ObjectIdString | undefined;
     let normalizedUserId: ObjectIdString | undefined;
-    let _normalizedBefore: ObjectIdString | undefined;
     try {
       normalizedChatId = validateObjectId(chatId, "chatId");
       normalizedUserId = validateObjectId(userId, "userId");
@@ -247,8 +246,6 @@ export class MessageService {
     limit: number = 20,
   ): Promise<{ messages: MessageDTO[]; nextCursor?: string }> {
     let normalizedUserId: ObjectIdString | undefined;
-    let _normalizedChatId: ObjectIdString | undefined;
-    let _normalizedCursor: ObjectIdString | undefined;
     try {
       normalizedUserId = validateObjectId(userId, "userId");
       const userObjectId = toObjectId(normalizedUserId, "userId");
@@ -281,7 +278,6 @@ export class MessageService {
           throw HttpError.forbidden("You are not a member of this chat");
         }
         chatIds = [chatObjectId];
-        _normalizedChatId = chatObjectId?.toHexString() as ObjectIdString;
       } else {
         // Get all chats user is a member of
         const memberships =

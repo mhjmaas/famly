@@ -1,6 +1,6 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
-import { validateObjectId } from "@lib/objectid-utils";
+import { type ObjectIdString, validateObjectId } from "@lib/objectid-utils";
 import type { ActivityEventService } from "@modules/activity-events";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type {
@@ -27,8 +27,8 @@ export class ScheduleService {
     userId: string,
     input: CreateScheduleInput,
   ): Promise<TaskSchedule> {
-    let normalizedFamilyId: string | undefined;
-    let normalizedUserId: string | undefined;
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
       normalizedFamilyId = validateObjectId(familyId, "familyId");
       normalizedUserId = validateObjectId(userId, "userId");
@@ -110,8 +110,8 @@ export class ScheduleService {
     familyId: string,
     userId: string,
   ): Promise<TaskSchedule[]> {
-    let normalizedFamilyId: string | undefined;
-    let normalizedUserId: string | undefined;
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
       normalizedFamilyId = validateObjectId(familyId, "familyId");
       normalizedUserId = validateObjectId(userId, "userId");
@@ -145,9 +145,9 @@ export class ScheduleService {
     scheduleId: string,
     userId: string,
   ): Promise<TaskSchedule> {
-    let normalizedFamilyId: string | undefined;
-    let normalizedScheduleId: string | undefined;
-    let normalizedUserId: string | undefined;
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedScheduleId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
       normalizedFamilyId = validateObjectId(familyId, "familyId");
       normalizedScheduleId = validateObjectId(scheduleId, "scheduleId");
@@ -194,9 +194,9 @@ export class ScheduleService {
     userId: string,
     input: UpdateScheduleInput,
   ): Promise<TaskSchedule> {
-    let normalizedFamilyId: string | undefined;
-    let normalizedScheduleId: string | undefined;
-    let normalizedUserId: string | undefined;
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedScheduleId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
       normalizedFamilyId = validateObjectId(familyId, "familyId");
       normalizedScheduleId = validateObjectId(scheduleId, "scheduleId");
@@ -255,9 +255,9 @@ export class ScheduleService {
     scheduleId: string,
     userId: string,
   ): Promise<void> {
-    let normalizedFamilyId: string | undefined;
-    let normalizedScheduleId: string | undefined;
-    let normalizedUserId: string | undefined;
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedScheduleId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
       normalizedFamilyId = validateObjectId(familyId, "familyId");
       normalizedScheduleId = validateObjectId(scheduleId, "scheduleId");
@@ -309,8 +309,8 @@ export class ScheduleService {
    * Verify that a user is a member of a family
    */
   private async verifyFamilyMembership(
-    familyId: string,
-    userId: string,
+    familyId: ObjectIdString,
+    userId: ObjectIdString,
   ): Promise<void> {
     const membership = await this.membershipRepository.findByFamilyAndUser(
       familyId,

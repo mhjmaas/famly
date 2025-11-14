@@ -1,6 +1,10 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
-import { fromObjectId, validateObjectId } from "@lib/objectid-utils";
+import {
+  fromObjectId,
+  type ObjectIdString,
+  validateObjectId,
+} from "@lib/objectid-utils";
 import type { ActivityEventService } from "@modules/activity-events";
 import { requireFamilyRole } from "@modules/auth/lib/require-family-role";
 import { FamilyRole } from "@modules/family/domain/family";
@@ -44,8 +48,8 @@ export class TaskService {
     userId: string,
     input: CreateTaskInput,
   ): Promise<Task> {
-    let normalizedFamilyId: string | undefined;
-    let normalizedUserId: string | undefined;
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
       normalizedFamilyId = validateObjectId(familyId, "familyId");
       normalizedUserId = validateObjectId(userId, "userId");
@@ -122,8 +126,8 @@ export class TaskService {
     dueDateFrom?: Date,
     dueDateTo?: Date,
   ): Promise<Task[]> {
-    let normalizedFamilyId: string | undefined;
-    let normalizedUserId: string | undefined;
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
       normalizedFamilyId = validateObjectId(familyId, "familyId");
       normalizedUserId = validateObjectId(userId, "userId");
@@ -168,9 +172,9 @@ export class TaskService {
     taskId: string,
     userId: string,
   ): Promise<Task> {
-    let normalizedFamilyId: string | undefined;
-    let normalizedTaskId: string | undefined;
-    let normalizedUserId: string | undefined;
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedTaskId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
       normalizedFamilyId = validateObjectId(familyId, "familyId");
       normalizedTaskId = validateObjectId(taskId, "taskId");
@@ -221,9 +225,9 @@ export class TaskService {
     userId: string,
     input: UpdateTaskInput,
   ): Promise<Task> {
-    let normalizedFamilyId: string | undefined;
-    let normalizedTaskId: string | undefined;
-    let normalizedUserId: string | undefined;
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedTaskId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
       normalizedFamilyId = validateObjectId(familyId, "familyId");
       normalizedTaskId = validateObjectId(taskId, "taskId");
@@ -271,10 +275,13 @@ export class TaskService {
       // Determine the credited user for task completion
       // For member-assigned tasks, credit goes to the assignee
       // For role/unassigned tasks, credit goes to the actor
-      let creditedUserId: string | undefined;
+      let creditedUserId: ObjectIdString | undefined;
       if (input.completedAt && !existingTask.completedAt) {
         if (existingTask.assignment.type === "member") {
-          creditedUserId = existingTask.assignment.memberId.toString();
+          creditedUserId = validateObjectId(
+            existingTask.assignment.memberId.toString(),
+            "memberId",
+          );
         } else {
           // Role or unassigned task - credit the actor
           creditedUserId = normalizedUserId;
@@ -337,7 +344,7 @@ export class TaskService {
       ) {
         // Use completedBy from existing task to deduct karma from the correct user
         const karmaRecipient = existingTask.completedBy
-          ? existingTask.completedBy.toString()
+          ? validateObjectId(existingTask.completedBy.toString(), "completedBy")
           : normalizedUserId;
 
         try {
@@ -433,9 +440,9 @@ export class TaskService {
     taskId: string,
     userId: string,
   ): Promise<void> {
-    let normalizedFamilyId: string | undefined;
-    let normalizedTaskId: string | undefined;
-    let normalizedUserId: string | undefined;
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedTaskId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
       normalizedFamilyId = validateObjectId(familyId, "familyId");
       normalizedTaskId = validateObjectId(taskId, "taskId");

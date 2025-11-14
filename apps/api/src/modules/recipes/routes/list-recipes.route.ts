@@ -49,7 +49,7 @@ export function listRecipesRoute(): Router {
         }
 
         const familyId = validateObjectId(req.params.familyId, "familyId");
-        const { limit, offset } = req.query as ListRecipesInput;
+        const { limit, offset } = req.query as unknown as ListRecipesInput;
 
         const { recipes, total } = await recipeService.listRecipes(
           familyId,

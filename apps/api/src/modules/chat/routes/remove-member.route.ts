@@ -55,11 +55,6 @@ export function removeMemberRoute(): Router {
         const normalizedUserToRemove = validateObjectId(userId, "userId");
         const normalizedChatId = validateObjectId(chatId, "chatId");
         const chatObjectId = toObjectId(normalizedChatId, "chatId");
-        const _removedByObjectId = toObjectId(normalizedRemovedBy, "userId");
-        const _userToRemoveObjectId = toObjectId(
-          normalizedUserToRemove,
-          "userId",
-        );
 
         // Verify chat type before checking authorization
         const chat = await chatRepository.findById(chatObjectId);
