@@ -97,7 +97,7 @@ describe("Unit: createChatSchema Validator", () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].message).toContain(
-          "Invalid user ID format",
+          "Invalid ObjectId format",
         );
       }
     });
@@ -196,7 +196,7 @@ describe("Unit: createChatSchema Validator", () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].message).toContain(
-          "Invalid user ID format",
+          "Invalid ObjectId format",
         );
       }
     });

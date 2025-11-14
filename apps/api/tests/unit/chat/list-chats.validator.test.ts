@@ -1,6 +1,5 @@
 import { validateListChats } from "@modules/chat/validators/list-chats.validator";
 import type { NextFunction, Request, Response } from "express";
-import { ObjectId } from "mongodb";
 
 describe("Unit: validateListChats middleware", () => {
   let mockReq: Partial<Request>;
@@ -29,15 +28,13 @@ describe("Unit: validateListChats middleware", () => {
     });
 
     it("should pass with valid cursor (ObjectId)", () => {
-      const validCursor = new ObjectId().toString();
+      const validCursor = "507f1f77bcf86cd799439011";
       mockReq.query = { cursor: validCursor };
 
       validateListChats(mockReq as Request, mockRes as Response, mockNext);
 
       expect(mockNext).toHaveBeenCalled();
-      expect((mockReq as any).paginationParams.cursor).toEqual(
-        new ObjectId(validCursor),
-      );
+      expect((mockReq as any).paginationParams.cursor).toEqual(validCursor);
       expect((mockReq as any).paginationParams.limit).toBe(20);
     });
 
@@ -72,14 +69,14 @@ describe("Unit: validateListChats middleware", () => {
     });
 
     it("should pass with both cursor and limit", () => {
-      const validCursor = new ObjectId().toString();
+      const validCursor = "507f1f77bcf86cd799439011";
       mockReq.query = { cursor: validCursor, limit: "25" };
 
       validateListChats(mockReq as Request, mockRes as Response, mockNext);
 
       expect(mockNext).toHaveBeenCalled();
       expect((mockReq as any).paginationParams).toEqual({
-        cursor: new ObjectId(validCursor),
+        cursor: validCursor,
         limit: 25,
       });
     });
@@ -101,7 +98,7 @@ describe("Unit: validateListChats middleware", () => {
 
       expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
       const error = (mockNext as jest.Mock).mock.calls[0][0];
-      expect(error.message).toContain("Invalid cursor");
+      expect(error.message).toContain("Invalid ObjectId format for cursor");
     });
 
     it("should reject cursor with invalid ObjectId", () => {

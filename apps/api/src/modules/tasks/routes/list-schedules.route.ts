@@ -4,7 +4,6 @@ import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { toTaskScheduleDTO } from "../lib/task-schedule.mapper";
 import { ScheduleRepository } from "../repositories/schedule.repository";
 import { ScheduleService } from "../services/schedule.service";
@@ -36,13 +35,13 @@ export function createListSchedulesRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        const userId = new ObjectId(req.user.id);
+        const userId = req.user.id;
 
         if (!req.params.familyId) {
           throw HttpError.badRequest("Missing familyId parameter");
         }
 
-        const familyId = new ObjectId(req.params.familyId);
+        const familyId = req.params.familyId;
 
         const schedules = await scheduleService.listSchedulesForFamily(
           familyId,

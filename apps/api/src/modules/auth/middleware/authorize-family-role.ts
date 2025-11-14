@@ -1,7 +1,7 @@
 import { HttpError } from "@lib/http-error";
+import { isValidObjectId } from "@lib/objectid-utils";
 import type { FamilyRole } from "@modules/family/domain/family";
 import type { NextFunction, Request, Response } from "express";
-import { ObjectId } from "mongodb";
 import { requireFamilyRole } from "../lib/require-family-role";
 import type { AuthenticatedRequest } from "./authenticate";
 
@@ -71,17 +71,15 @@ export function authorizeFamilyRole(
       }
 
       // Validate familyId format
-      if (!ObjectId.isValid(familyIdStr)) {
+      if (!isValidObjectId(familyIdStr)) {
         throw HttpError.badRequest(`Invalid ${familyIdParam} format`);
       }
 
-      const familyId = new ObjectId(familyIdStr);
-      const userId = new ObjectId(authReq.user.id);
-
       // Check role authorization using pre-hydrated families (fast path)
+      // Pass strings directly - requireFamilyRole expects string IDs
       await requireFamilyRole({
-        userId,
-        familyId,
+        userId: authReq.user.id,
+        familyId: familyIdStr,
         allowedRoles,
         userFamilies: authReq.user.families,
       });

@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { fromObjectId, type ObjectIdString } from "@/lib/objectid-utils";
 import type { Task } from "@/modules/tasks/domain/task";
 import {
   type TaskCompletionHook,
@@ -8,13 +9,13 @@ import {
 describe("TaskCompletionHookRegistry", () => {
   let registry: TaskCompletionHookRegistry;
   let mockTask: Task;
-  let completedBy: ObjectId;
-  let triggeredBy: ObjectId;
+  let completedBy: ObjectIdString;
+  let triggeredBy: ObjectIdString;
 
   beforeEach(() => {
     registry = new TaskCompletionHookRegistry();
-    completedBy = new ObjectId();
-    triggeredBy = new ObjectId();
+    completedBy = fromObjectId(new ObjectId());
+    triggeredBy = fromObjectId(new ObjectId());
 
     // Create a mock task
     mockTask = {

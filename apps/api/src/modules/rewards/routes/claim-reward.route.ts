@@ -1,5 +1,6 @@
 import { getMongoClient } from "@infra/mongo/client";
 import { HttpError } from "@lib/http-error";
+import { validateObjectId } from "@lib/objectid-utils";
 import {
   ActivityEventRepository,
   ActivityEventService,
@@ -13,7 +14,6 @@ import { TaskRepository } from "@modules/tasks/repositories/task.repository";
 import { TaskService } from "@modules/tasks/services/task.service";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { ClaimRepository } from "../repositories/claim.repository";
 import { MetadataRepository } from "../repositories/metadata.repository";
 import { RewardRepository } from "../repositories/reward.repository";
@@ -52,8 +52,8 @@ export function claimRewardRoute(): Router {
           throw HttpError.badRequest("Missing rewardId parameter");
         }
 
-        const userId = new ObjectId(req.user.id);
-        const familyId = new ObjectId(req.params.familyId);
+        const userId = validateObjectId(req.user.id, "userId");
+        const familyId = validateObjectId(req.params.familyId, "familyId");
         const rewardId = validateClaimReward(req.params.rewardId);
 
         // Verify membership

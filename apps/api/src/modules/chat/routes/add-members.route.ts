@@ -1,9 +1,9 @@
 import { HttpError } from "@lib/http-error";
+import { toObjectId, validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { toChatDTO } from "../lib/chat.mapper";
 import { verifyMembership } from "../middleware";
 import { ChatRepository } from "../repositories/chat.repository";
@@ -57,8 +57,9 @@ export function addMembersRoute(): Router {
 
         const { chatId } = req.params;
         const input: AddMembersInput = req.body;
-        const addedBy = new ObjectId(req.user.id);
-        const chatObjectId = new ObjectId(chatId);
+        const normalizedAddedBy = validateObjectId(req.user.id, "userId");
+        const normalizedChatId = validateObjectId(chatId, "chatId");
+        const chatObjectId = toObjectId(normalizedChatId, "chatId");
 
         // Verify chat type before checking admin role
         const chat = await chatRepository.findById(chatObjectId);
@@ -74,12 +75,10 @@ export function addMembersRoute(): Router {
           throw HttpError.forbidden("Admin role required for this operation");
         }
 
-        const userIds = input.userIds.map((id) => new ObjectId(id));
-
         const updatedChat = await membershipService.addMembers(
-          chatObjectId,
-          userIds,
-          addedBy,
+          normalizedChatId,
+          input.userIds,
+          normalizedAddedBy,
         );
 
         res.status(200).json(toChatDTO(updatedChat));

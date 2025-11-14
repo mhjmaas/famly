@@ -4,21 +4,20 @@ import type {
   FamilyRole,
 } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
-import type { ObjectId } from "mongodb";
 
 /**
  * Options for role-based family authorization
  */
 export interface RequireFamilyRoleOptions {
   /**
-   * The user's ObjectId
+   * The user's ID (string)
    */
-  userId: ObjectId;
+  userId: string;
 
   /**
-   * The family's ObjectId
+   * The family's ID (string)
    */
-  familyId: ObjectId;
+  familyId: string;
 
   /**
    * Roles that are allowed to perform the action
@@ -51,8 +50,8 @@ export interface RequireFamilyRoleOptions {
  * Usage in middleware:
  * ```typescript
  * requireFamilyRole({
- *   userId: new ObjectId(req.user.id),
- *   familyId: new ObjectId(req.params.familyId),
+ *   userId: req.user.id,
+ *   familyId: req.params.familyId,
  *   allowedRoles: [FamilyRole.Parent],
  *   userFamilies: req.user.families,
  *   membershipRepository: membershipRepo,
@@ -81,11 +80,7 @@ export async function requireFamilyRole(
 
   // Fast path: Use pre-hydrated families from req.user
   if (userFamilies !== undefined) {
-    return checkRoleFromFamilies(
-      familyId.toString(),
-      allowedRoles,
-      userFamilies,
-    );
+    return checkRoleFromFamilies(familyId, allowedRoles, userFamilies);
   }
 
   // Fallback path: Query repository
@@ -131,8 +126,8 @@ function checkRoleFromFamilies(
  * Check role using repository lookup (async, requires DB call)
  */
 async function checkRoleFromRepository(
-  userId: ObjectId,
-  familyId: ObjectId,
+  userId: string,
+  familyId: string,
   allowedRoles: FamilyRole[],
   repository: FamilyMembershipRepository,
 ): Promise<boolean> {

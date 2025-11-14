@@ -1,5 +1,6 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import { validateObjectId } from "@lib/objectid-utils";
 import type { ListFamiliesResponse } from "@modules/family/domain/family";
 import { FamilyRepository } from "@modules/family/repositories/family.repository";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
@@ -11,7 +12,6 @@ import {
   type Response,
   Router,
 } from "express";
-import { ObjectId } from "mongodb";
 import { getAuth } from "../better-auth";
 
 /**
@@ -135,7 +135,7 @@ export function createLoginRoute(): Router {
             new FamilyRepository(),
             new FamilyMembershipRepository(),
           );
-          const userId = new ObjectId(fullUser.id);
+          const userId = validateObjectId(fullUser.id, "userId");
           families = await familyService.listFamiliesForUser(userId);
         } catch (error) {
           logger.error("Failed to load families for login response:", error);

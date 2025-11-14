@@ -5,7 +5,6 @@ import { authenticate } from "@modules/auth/middleware/authenticate";
 import { authorizeFamilyRole } from "@modules/auth/middleware/authorize-family-role";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { FamilyRole } from "../domain/family";
 import { FamilyRepository } from "../repositories/family.repository";
 import { FamilyMembershipRepository } from "../repositories/family-membership.repository";
@@ -58,12 +57,12 @@ export function createAddMemberRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        const familyId = new ObjectId(req.params.familyId);
-        const addedBy = new ObjectId(req.user.id);
+        const familyId = req.params.familyId;
+        const addedBy = req.user.id;
 
         logger.info("Adding family member via API", {
-          familyId: familyId.toString(),
-          addedBy: addedBy.toString(),
+          familyId,
+          addedBy,
           role: req.body.role,
         });
 

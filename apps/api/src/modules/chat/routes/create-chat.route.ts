@@ -3,7 +3,6 @@ import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import type { Chat } from "../domain/chat";
 import { toChatDTO } from "../lib/chat.mapper";
 import { ChatRepository } from "../repositories/chat.repository";
@@ -49,7 +48,6 @@ export function createChatRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        const creatorId = new ObjectId(req.user.id);
         const input: CreateChatInput = req.body;
 
         let chat: Chat;
@@ -57,18 +55,17 @@ export function createChatRoute(): Router {
 
         if (input.type === "dm") {
           // For DMs, memberIds should have exactly 1 user (the other user)
-          const otherUserId = new ObjectId(input.memberIds[0]);
-
-          const result = await chatService.createDM(creatorId, otherUserId);
+          const result = await chatService.createDM(
+            req.user.id,
+            input.memberIds[0],
+          );
           chat = result.chat;
           isNew = result.isNew;
         } else {
           // For groups, memberIds are the additional members (not including creator)
-          const memberIds = input.memberIds.map((id) => new ObjectId(id));
-
           chat = await chatService.createGroup(
-            creatorId,
-            memberIds,
+            req.user.id,
+            input.memberIds,
             input.title ?? null,
           );
 

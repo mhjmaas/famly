@@ -2,7 +2,6 @@ import { getDb } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
 import type { FamilyMembership } from "@modules/family/domain/family";
 import { emitToUserRooms } from "@modules/realtime";
-import type { ObjectId } from "mongodb";
 import type { Task, TaskDTO } from "../domain/task";
 import { toTaskDTO } from "../lib/task.mapper";
 
@@ -178,21 +177,18 @@ export async function emitTaskAssigned(
  */
 export function emitTaskCompleted(
   task: Task,
-  creditedUserId: ObjectId,
-  triggeredBy: ObjectId,
+  creditedUserId: string,
+  triggeredBy: string,
   familyMemberIds?: string[],
 ): void {
   try {
     // Notify the credited user, plus optionally all family members
-    const targetUserIds = familyMemberIds || [creditedUserId.toString()];
+    const targetUserIds = familyMemberIds || [creditedUserId];
 
     const payload: TaskEventPayloads["task.completed"] = {
       taskId: task._id.toString(),
-      completedBy: creditedUserId.toString(),
-      triggeredBy:
-        creditedUserId.toString() !== triggeredBy.toString()
-          ? triggeredBy.toString()
-          : undefined,
+      completedBy: creditedUserId,
+      triggeredBy: creditedUserId !== triggeredBy ? triggeredBy : undefined,
       task: toTaskDTO(task), // Convert to DTO for proper serialization
     };
 
@@ -200,8 +196,8 @@ export function emitTaskCompleted(
 
     logger.debug(`Emitted task.completed event for task ${task._id}`, {
       taskId: task._id.toString(),
-      creditedUserId: creditedUserId.toString(),
-      triggeredBy: triggeredBy.toString(),
+      creditedUserId,
+      triggeredBy,
       targetUserIds,
     });
   } catch (error) {
@@ -221,8 +217,8 @@ export function emitTaskCompleted(
  * @param affectedUserIds Array of user IDs who should be notified
  */
 export function emitTaskDeleted(
-  taskId: ObjectId,
-  familyId: ObjectId,
+  taskId: string,
+  familyId: string,
   affectedUserIds: string[],
 ): void {
   try {
@@ -232,15 +228,15 @@ export function emitTaskDeleted(
     }
 
     const payload: TaskEventPayloads["task.deleted"] = {
-      taskId: taskId.toString(),
-      familyId: familyId.toString(),
+      taskId,
+      familyId,
       affectedUsers: affectedUserIds,
     };
 
     emitToUserRooms("task.deleted", affectedUserIds, payload);
 
     logger.debug(`Emitted task.deleted event for task ${taskId}`, {
-      taskId: taskId.toString(),
+      taskId,
       affectedUserIds,
     });
   } catch (error) {

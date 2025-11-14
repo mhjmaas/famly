@@ -1,13 +1,13 @@
 import { HttpError } from "@lib/http-error";
+import { validateObjectId } from "@lib/objectid-utils";
 import type { NextFunction, Response } from "express";
-import { ObjectId } from "mongodb";
 import { z } from "zod";
 
 /**
  * Pagination parameters for listing messages
  */
 export interface ListMessagesQuery {
-  before?: ObjectId; // Cursor for pagination (message ID)
+  before?: string; // Cursor for pagination (message ID)
   limit: number; // Max messages to return (default 50, max 200)
 }
 
@@ -15,13 +15,7 @@ export interface ListMessagesQuery {
  * Zod schema for list messages query validation
  */
 const listMessagesSchema = z.object({
-  before: z
-    .string()
-    .optional()
-    .refine(
-      (val) => !val || ObjectId.isValid(val),
-      "Before cursor must be a valid ObjectId",
-    ),
+  before: z.string().optional(),
   limit: z
     .number()
     .int()
@@ -56,7 +50,9 @@ export const validateListMessages = (
     }
 
     const params: ListMessagesQuery = {
-      before: result.data.before ? new ObjectId(result.data.before) : undefined,
+      before: result.data.before
+        ? validateObjectId(result.data.before, "before")
+        : undefined,
       limit: result.data.limit,
     };
 

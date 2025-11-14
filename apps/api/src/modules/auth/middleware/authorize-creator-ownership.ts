@@ -1,6 +1,7 @@
 import { HttpError } from "@lib/http-error";
+import { isValidObjectId } from "@lib/objectid-utils";
 import type { NextFunction, Request, Response } from "express";
-import { ObjectId } from "mongodb";
+import type { ObjectId } from "mongodb";
 import { requireCreatorOwnership } from "../lib/require-creator-ownership";
 import type { AuthenticatedRequest } from "./authenticate";
 
@@ -15,9 +16,9 @@ export interface AuthorizeCreatorOwnershipOptions {
 
   /**
    * Repository lookup function that fetches a resource by ID
-   * Should return the resource (or resource object with at least createdBy field) or null
+   * Takes a string ID and returns the resource (or resource object with at least createdBy field) or null
    */
-  lookupFn: (id: ObjectId) => Promise<{ createdBy: ObjectId } | null>;
+  lookupFn: (id: string) => Promise<{ createdBy: ObjectId } | null>;
 }
 
 /**
@@ -80,17 +81,15 @@ export function authorizeCreatorOwnership(
       }
 
       // Validate resourceId format
-      if (!ObjectId.isValid(resourceIdStr)) {
+      if (!isValidObjectId(resourceIdStr)) {
         throw HttpError.badRequest(`Invalid ${resourceIdParam} format`);
       }
 
-      const resourceId = new ObjectId(resourceIdStr);
-      const userId = new ObjectId(authReq.user.id);
-
       // Check creator ownership authorization
+      // Pass strings directly - requireCreatorOwnership expects string IDs
       await requireCreatorOwnership({
-        userId,
-        resourceId,
+        userId: authReq.user.id,
+        resourceId: resourceIdStr,
         lookupFn,
       });
 

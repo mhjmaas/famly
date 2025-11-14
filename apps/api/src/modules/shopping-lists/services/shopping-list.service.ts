@@ -1,10 +1,14 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import {
+  type ObjectIdString,
+  toObjectId,
+  validateObjectId,
+} from "@lib/objectid-utils";
 import type { ActivityEventService } from "@modules/activity-events";
 import { requireFamilyRole } from "@modules/auth/lib/require-family-role";
 import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
-import type { ObjectId } from "mongodb";
 import type {
   AddItemInput,
   CreateShoppingListInput,
@@ -25,63 +29,51 @@ export class ShoppingListService {
    * Create a new shopping list
    */
   async createShoppingList(
-    familyId: ObjectId,
-    userId: ObjectId,
+    familyId: string,
+    userId: string,
     input: CreateShoppingListInput,
   ): Promise<ShoppingList> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedUserId = validateObjectId(userId, "userId");
+
       logger.info("Creating shopping list", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
         name: input.name,
       });
 
-      // Verify user is a member of the family
-      await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
-        membershipRepository: this.membershipRepository,
-      });
+      await this.ensureFamilyMembership(normalizedFamilyId, normalizedUserId, [
+        FamilyRole.Parent,
+        FamilyRole.Child,
+      ]);
 
-      // Create the shopping list
       const shoppingList = await this.shoppingListRepository.createShoppingList(
-        familyId,
+        toObjectId(normalizedFamilyId, "familyId"),
         input,
-        userId,
+        toObjectId(normalizedUserId, "userId"),
       );
 
       logger.info("Shopping list created successfully", {
         listId: shoppingList._id.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
-      // Record activity event for shopping list creation
-      if (this.activityEventService) {
-        try {
-          await this.activityEventService.recordEvent({
-            userId,
-            type: "SHOPPING_LIST",
-            title: shoppingList.name,
-            description: `Created shopping list with ${shoppingList.items.length} items`,
-          });
-        } catch (error) {
-          logger.error(
-            "Failed to record activity event for shopping list creation",
-            {
-              listId: shoppingList._id.toString(),
-              error,
-            },
-          );
-        }
-      }
+      await this.recordActivityEvent(
+        normalizedUserId,
+        "SHOPPING_LIST",
+        shoppingList.name,
+        `Created shopping list with ${shoppingList.items.length} items`,
+      );
 
       return shoppingList;
     } catch (error) {
       logger.error("Failed to create shopping list", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId: normalizedFamilyId ?? familyId,
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;
@@ -92,32 +84,32 @@ export class ShoppingListService {
    * List all shopping lists for a family
    */
   async listShoppingLists(
-    familyId: ObjectId,
-    userId: ObjectId,
+    familyId: string,
+    userId: string,
   ): Promise<ShoppingList[]> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedUserId = validateObjectId(userId, "userId");
+
       logger.debug("Listing shopping lists for family", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
-      // Verify user is a member of the family
-      await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
-        membershipRepository: this.membershipRepository,
-      });
+      await this.ensureFamilyMembership(normalizedFamilyId, normalizedUserId, [
+        FamilyRole.Parent,
+        FamilyRole.Child,
+      ]);
 
-      // Fetch shopping lists
-      const lists =
-        await this.shoppingListRepository.findShoppingListsByFamily(familyId);
-
-      return lists;
+      return await this.shoppingListRepository.findShoppingListsByFamily(
+        toObjectId(normalizedFamilyId, "familyId"),
+      );
     } catch (error) {
       logger.error("Failed to list shopping lists for family", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId: normalizedFamilyId ?? familyId,
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;
@@ -128,35 +120,38 @@ export class ShoppingListService {
    * Get a specific shopping list by ID
    */
   async getShoppingList(
-    familyId: ObjectId,
-    listId: ObjectId,
-    userId: ObjectId,
+    familyId: string,
+    listId: string,
+    userId: string,
   ): Promise<ShoppingList> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedListId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedListId = validateObjectId(listId, "listId");
+      normalizedUserId = validateObjectId(userId, "userId");
+
       logger.debug("Getting shopping list by ID", {
-        listId: listId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
-      // Verify user is a member of the family
-      await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
-        membershipRepository: this.membershipRepository,
-      });
+      await this.ensureFamilyMembership(normalizedFamilyId, normalizedUserId, [
+        FamilyRole.Parent,
+        FamilyRole.Child,
+      ]);
 
-      // Fetch the shopping list
-      const list =
-        await this.shoppingListRepository.findShoppingListById(listId);
+      const list = await this.shoppingListRepository.findShoppingListById(
+        toObjectId(normalizedListId, "listId"),
+      );
 
       if (!list) {
         throw HttpError.notFound("Shopping list not found");
       }
 
-      // Verify list belongs to the specified family
-      if (list.familyId.toString() !== familyId.toString()) {
+      if (list.familyId.toString() !== normalizedFamilyId) {
         throw HttpError.forbidden(
           "Shopping list does not belong to this family",
         );
@@ -165,9 +160,9 @@ export class ShoppingListService {
       return list;
     } catch (error) {
       logger.error("Failed to get shopping list by ID", {
-        listId: listId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId ?? listId,
+        familyId: normalizedFamilyId ?? familyId,
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;
@@ -178,42 +173,46 @@ export class ShoppingListService {
    * Update a shopping list
    */
   async updateShoppingList(
-    familyId: ObjectId,
-    listId: ObjectId,
-    userId: ObjectId,
+    familyId: string,
+    listId: string,
+    userId: string,
     input: UpdateShoppingListInput,
   ): Promise<ShoppingList> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedListId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedListId = validateObjectId(listId, "listId");
+      normalizedUserId = validateObjectId(userId, "userId");
+
       logger.info("Updating shopping list", {
-        listId: listId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
-      // Verify user is a member of the family
-      await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
-        membershipRepository: this.membershipRepository,
-      });
+      await this.ensureFamilyMembership(normalizedFamilyId, normalizedUserId, [
+        FamilyRole.Parent,
+        FamilyRole.Child,
+      ]);
 
-      // Verify shopping list exists and belongs to family
+      const listObjectId = toObjectId(normalizedListId, "listId");
+
       const existingList =
-        await this.shoppingListRepository.findShoppingListById(listId);
+        await this.shoppingListRepository.findShoppingListById(listObjectId);
       if (!existingList) {
         throw HttpError.notFound("Shopping list not found");
       }
 
-      if (existingList.familyId.toString() !== familyId.toString()) {
+      if (existingList.familyId.toString() !== normalizedFamilyId) {
         throw HttpError.forbidden(
           "Shopping list does not belong to this family",
         );
       }
 
-      // Update the shopping list
       const updatedList = await this.shoppingListRepository.updateShoppingList(
-        listId,
+        listObjectId,
         input,
       );
 
@@ -222,17 +221,17 @@ export class ShoppingListService {
       }
 
       logger.info("Shopping list updated successfully", {
-        listId: listId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
       return updatedList;
     } catch (error) {
       logger.error("Failed to update shopping list", {
-        listId: listId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId ?? listId,
+        familyId: normalizedFamilyId ?? familyId,
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;
@@ -243,56 +242,59 @@ export class ShoppingListService {
    * Delete a shopping list
    */
   async deleteShoppingList(
-    familyId: ObjectId,
-    listId: ObjectId,
-    userId: ObjectId,
+    familyId: string,
+    listId: string,
+    userId: string,
   ): Promise<void> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedListId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedListId = validateObjectId(listId, "listId");
+      normalizedUserId = validateObjectId(userId, "userId");
+
       logger.info("Deleting shopping list", {
-        listId: listId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
-      // Verify user is a member of the family
-      await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
-        membershipRepository: this.membershipRepository,
-      });
+      await this.ensureFamilyMembership(normalizedFamilyId, normalizedUserId, [
+        FamilyRole.Parent,
+        FamilyRole.Child,
+      ]);
 
-      // Verify shopping list exists and belongs to family
+      const listObjectId = toObjectId(normalizedListId, "listId");
       const existingList =
-        await this.shoppingListRepository.findShoppingListById(listId);
+        await this.shoppingListRepository.findShoppingListById(listObjectId);
       if (!existingList) {
         throw HttpError.notFound("Shopping list not found");
       }
 
-      if (existingList.familyId.toString() !== familyId.toString()) {
+      if (existingList.familyId.toString() !== normalizedFamilyId) {
         throw HttpError.forbidden(
           "Shopping list does not belong to this family",
         );
       }
 
-      // Delete the shopping list
       const deleted =
-        await this.shoppingListRepository.deleteShoppingList(listId);
+        await this.shoppingListRepository.deleteShoppingList(listObjectId);
 
       if (!deleted) {
         throw HttpError.notFound("Shopping list not found");
       }
 
       logger.info("Shopping list deleted successfully", {
-        listId: listId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
     } catch (error) {
       logger.error("Failed to delete shopping list", {
-        listId: listId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId ?? listId,
+        familyId: normalizedFamilyId ?? familyId,
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;
@@ -303,42 +305,46 @@ export class ShoppingListService {
    * Add an item to a shopping list
    */
   async addItem(
-    familyId: ObjectId,
-    listId: ObjectId,
-    userId: ObjectId,
+    familyId: string,
+    listId: string,
+    userId: string,
     input: AddItemInput,
   ): Promise<ShoppingList> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedListId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedListId = validateObjectId(listId, "listId");
+      normalizedUserId = validateObjectId(userId, "userId");
+
       logger.info("Adding item to shopping list", {
-        listId: listId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
-      // Verify user is a member of the family
-      await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
-        membershipRepository: this.membershipRepository,
-      });
+      await this.ensureFamilyMembership(normalizedFamilyId, normalizedUserId, [
+        FamilyRole.Parent,
+        FamilyRole.Child,
+      ]);
 
-      // Verify shopping list exists and belongs to family
+      const listObjectId = toObjectId(normalizedListId, "listId");
+
       const existingList =
-        await this.shoppingListRepository.findShoppingListById(listId);
+        await this.shoppingListRepository.findShoppingListById(listObjectId);
       if (!existingList) {
         throw HttpError.notFound("Shopping list not found");
       }
 
-      if (existingList.familyId.toString() !== familyId.toString()) {
+      if (existingList.familyId.toString() !== normalizedFamilyId) {
         throw HttpError.forbidden(
           "Shopping list does not belong to this family",
         );
       }
 
-      // Add item to list
       const updatedList = await this.shoppingListRepository.addItemToList(
-        listId,
+        listObjectId,
         input,
       );
 
@@ -347,17 +353,17 @@ export class ShoppingListService {
       }
 
       logger.info("Item added to shopping list successfully", {
-        listId: listId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
       return updatedList;
     } catch (error) {
       logger.error("Failed to add item to shopping list", {
-        listId: listId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId ?? listId,
+        familyId: normalizedFamilyId ?? familyId,
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;
@@ -368,54 +374,60 @@ export class ShoppingListService {
    * Update an item in a shopping list
    */
   async updateItem(
-    familyId: ObjectId,
-    listId: ObjectId,
-    itemId: ObjectId,
-    userId: ObjectId,
+    familyId: string,
+    listId: string,
+    itemId: string,
+    userId: string,
     input: UpdateItemInput,
   ): Promise<ShoppingList> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedListId: ObjectIdString | undefined;
+    let normalizedItemId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedListId = validateObjectId(listId, "listId");
+      normalizedItemId = validateObjectId(itemId, "itemId");
+      normalizedUserId = validateObjectId(userId, "userId");
+
       logger.info("Updating item in shopping list", {
-        listId: listId.toString(),
-        itemId: itemId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId,
+        itemId: normalizedItemId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
-      // Verify user is a member of the family
-      await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
-        membershipRepository: this.membershipRepository,
-      });
+      await this.ensureFamilyMembership(normalizedFamilyId, normalizedUserId, [
+        FamilyRole.Parent,
+        FamilyRole.Child,
+      ]);
 
-      // Verify shopping list exists and belongs to family
+      const listObjectId = toObjectId(normalizedListId, "listId");
+      const itemObjectId = toObjectId(normalizedItemId, "itemId");
+
       const existingList =
-        await this.shoppingListRepository.findShoppingListById(listId);
+        await this.shoppingListRepository.findShoppingListById(listObjectId);
       if (!existingList) {
         throw HttpError.notFound("Shopping list not found");
       }
 
-      if (existingList.familyId.toString() !== familyId.toString()) {
+      if (existingList.familyId.toString() !== normalizedFamilyId) {
         throw HttpError.forbidden(
           "Shopping list does not belong to this family",
         );
       }
 
-      // Verify item exists in list
       const item = this.shoppingListRepository.findItemById(
         existingList,
-        itemId,
+        itemObjectId,
       );
       if (!item) {
         throw HttpError.notFound("Item not found in shopping list");
       }
 
-      // Update item
       const updatedList = await this.shoppingListRepository.updateItemInList(
-        listId,
-        itemId,
+        listObjectId,
+        itemObjectId,
         input,
       );
 
@@ -424,19 +436,19 @@ export class ShoppingListService {
       }
 
       logger.info("Item updated in shopping list successfully", {
-        listId: listId.toString(),
-        itemId: itemId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId,
+        itemId: normalizedItemId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
       return updatedList;
     } catch (error) {
       logger.error("Failed to update item in shopping list", {
-        listId: listId.toString(),
-        itemId: itemId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId ?? listId,
+        itemId: normalizedItemId ?? itemId,
+        familyId: normalizedFamilyId ?? familyId,
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;
@@ -447,53 +459,59 @@ export class ShoppingListService {
    * Delete an item from a shopping list
    */
   async deleteItem(
-    familyId: ObjectId,
-    listId: ObjectId,
-    itemId: ObjectId,
-    userId: ObjectId,
+    familyId: string,
+    listId: string,
+    itemId: string,
+    userId: string,
   ): Promise<ShoppingList> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedListId: ObjectIdString | undefined;
+    let normalizedItemId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedListId = validateObjectId(listId, "listId");
+      normalizedItemId = validateObjectId(itemId, "itemId");
+      normalizedUserId = validateObjectId(userId, "userId");
+
       logger.info("Deleting item from shopping list", {
-        listId: listId.toString(),
-        itemId: itemId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId,
+        itemId: normalizedItemId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
-      // Verify user is a member of the family
-      await requireFamilyRole({
-        userId,
-        familyId,
-        allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
-        membershipRepository: this.membershipRepository,
-      });
+      await this.ensureFamilyMembership(normalizedFamilyId, normalizedUserId, [
+        FamilyRole.Parent,
+        FamilyRole.Child,
+      ]);
 
-      // Verify shopping list exists and belongs to family
+      const listObjectId = toObjectId(normalizedListId, "listId");
+      const itemObjectId = toObjectId(normalizedItemId, "itemId");
+
       const existingList =
-        await this.shoppingListRepository.findShoppingListById(listId);
+        await this.shoppingListRepository.findShoppingListById(listObjectId);
       if (!existingList) {
         throw HttpError.notFound("Shopping list not found");
       }
 
-      if (existingList.familyId.toString() !== familyId.toString()) {
+      if (existingList.familyId.toString() !== normalizedFamilyId) {
         throw HttpError.forbidden(
           "Shopping list does not belong to this family",
         );
       }
 
-      // Verify item exists in list
       const item = this.shoppingListRepository.findItemById(
         existingList,
-        itemId,
+        itemObjectId,
       );
       if (!item) {
         throw HttpError.notFound("Item not found in shopping list");
       }
 
-      // Delete item
       const updatedList = await this.shoppingListRepository.deleteItemFromList(
-        listId,
-        itemId,
+        listObjectId,
+        itemObjectId,
       );
 
       if (!updatedList) {
@@ -501,22 +519,61 @@ export class ShoppingListService {
       }
 
       logger.info("Item deleted from shopping list successfully", {
-        listId: listId.toString(),
-        itemId: itemId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId,
+        itemId: normalizedItemId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
       });
 
       return updatedList;
     } catch (error) {
       logger.error("Failed to delete item from shopping list", {
-        listId: listId.toString(),
-        itemId: itemId.toString(),
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        listId: normalizedListId ?? listId,
+        itemId: normalizedItemId ?? itemId,
+        familyId: normalizedFamilyId ?? familyId,
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;
+    }
+  }
+
+  private async ensureFamilyMembership(
+    familyId: ObjectIdString,
+    userId: ObjectIdString,
+    allowedRoles: FamilyRole[],
+  ): Promise<void> {
+    await requireFamilyRole({
+      familyId,
+      userId,
+      allowedRoles,
+      membershipRepository: this.membershipRepository,
+    });
+  }
+
+  private async recordActivityEvent(
+    userId: ObjectIdString,
+    type: "SHOPPING_LIST",
+    title: string,
+    description: string,
+  ): Promise<void> {
+    if (!this.activityEventService) {
+      return;
+    }
+
+    try {
+      await this.activityEventService.recordEvent({
+        userId,
+        type,
+        title,
+        description,
+      });
+    } catch (error) {
+      logger.error("Failed to record shopping list activity event", {
+        userId,
+        type,
+        error,
+      });
     }
   }
 }

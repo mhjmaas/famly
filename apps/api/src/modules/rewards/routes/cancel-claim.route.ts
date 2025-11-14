@@ -1,5 +1,6 @@
 import { getMongoClient } from "@infra/mongo/client";
 import { HttpError } from "@lib/http-error";
+import { toObjectId, validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyRole } from "@modules/family/domain/family";
@@ -10,7 +11,6 @@ import { TaskRepository } from "@modules/tasks/repositories/task.repository";
 import { TaskService } from "@modules/tasks/services/task.service";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { ClaimRepository } from "../repositories/claim.repository";
 import { MetadataRepository } from "../repositories/metadata.repository";
 import { RewardRepository } from "../repositories/reward.repository";
@@ -49,9 +49,9 @@ export function cancelClaimRoute(): Router {
           throw HttpError.badRequest("Missing claimId parameter");
         }
 
-        const userId = new ObjectId(req.user.id);
-        const familyId = new ObjectId(req.params.familyId);
-        const claimId = new ObjectId(req.params.claimId);
+        const userId = validateObjectId(req.user.id, "userId");
+        const familyId = validateObjectId(req.params.familyId, "familyId");
+        const claimId = validateObjectId(req.params.claimId, "claimId");
         const mongoClient = getMongoClient();
 
         // Verify membership
@@ -67,18 +67,20 @@ export function cancelClaimRoute(): Router {
 
         // Check authorization on claim
         const claimRepository = new ClaimRepository(mongoClient);
-        const claim = await claimRepository.findById(claimId);
+        const claim = await claimRepository.findById(
+          toObjectId(claimId, "claimId"),
+        );
 
         if (!claim) {
           throw HttpError.notFound("Claim not found");
         }
 
-        if (claim.familyId.toString() !== familyId.toString()) {
+        if (claim.familyId.toString() !== familyId) {
           throw HttpError.forbidden("Claim not found in this family");
         }
 
         // Check if user is authorized to cancel
-        const isOwnClaim = claim.memberId.toString() === userId.toString();
+        const isOwnClaim = claim.memberId.toString() === userId;
         const isParent = membership.role === FamilyRole.Parent;
 
         if (!isOwnClaim && !isParent) {

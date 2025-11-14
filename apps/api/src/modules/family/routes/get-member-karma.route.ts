@@ -1,4 +1,5 @@
 import { HttpError } from "@lib/http-error";
+import { validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
@@ -7,7 +8,6 @@ import { KarmaRepository } from "@modules/karma/repositories/karma.repository";
 import { KarmaService } from "@modules/karma/services/karma.service";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 
 /**
  * GET /members/:memberId/karma - Get member's karma balance (convenience route)
@@ -39,9 +39,12 @@ export function createGetMemberKarmaRoute(): Router {
           throw HttpError.badRequest("Missing memberId parameter");
         }
 
-        const requestingUserId = new ObjectId(req.user.id);
-        const familyId = new ObjectId(req.params.familyId);
-        const userId = new ObjectId(req.params.memberId);
+        const requestingUserId = validateObjectId(
+          req.user.id,
+          "requestingUserId",
+        );
+        const familyId = validateObjectId(req.params.familyId, "familyId");
+        const userId = validateObjectId(req.params.memberId, "memberId");
 
         // Verify requesting user is a member
         const membershipRepository = new FamilyMembershipRepository();
@@ -61,6 +64,7 @@ export function createGetMemberKarmaRoute(): Router {
           membershipRepository,
         );
 
+        // KarmaService still uses ObjectId parameters
         const memberKarma = await karmaService.getMemberKarma(
           familyId,
           userId,

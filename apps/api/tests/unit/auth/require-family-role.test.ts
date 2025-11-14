@@ -10,8 +10,8 @@ import { ObjectId } from "mongodb";
 describe("requireFamilyRole", () => {
   describe("when user has families in req.user", () => {
     it("should return true when user has required Parent role in specified family", async () => {
-      const userId = new ObjectId();
-      const familyId = new ObjectId();
+      const userId = new ObjectId().toString();
+      const familyId = new ObjectId().toString();
       const families: FamilyMembershipView[] = [
         {
           familyId: familyId.toString(),
@@ -32,8 +32,8 @@ describe("requireFamilyRole", () => {
     });
 
     it("should return true when user has required Child role in specified family", async () => {
-      const userId = new ObjectId();
-      const familyId = new ObjectId();
+      const userId = new ObjectId().toString();
+      const familyId = new ObjectId().toString();
       const families: FamilyMembershipView[] = [
         {
           familyId: familyId.toString(),
@@ -54,8 +54,8 @@ describe("requireFamilyRole", () => {
     });
 
     it("should return true when user has one of multiple allowed roles", async () => {
-      const userId = new ObjectId();
-      const familyId = new ObjectId();
+      const userId = new ObjectId().toString();
+      const familyId = new ObjectId().toString();
       const families: FamilyMembershipView[] = [
         {
           familyId: familyId.toString(),
@@ -76,8 +76,8 @@ describe("requireFamilyRole", () => {
     });
 
     it("should throw HttpError.forbidden when user has wrong role in family", async () => {
-      const userId = new ObjectId();
-      const familyId = new ObjectId();
+      const userId = new ObjectId().toString();
+      const familyId = new ObjectId().toString();
       const families: FamilyMembershipView[] = [
         {
           familyId: familyId.toString(),
@@ -109,8 +109,8 @@ describe("requireFamilyRole", () => {
     });
 
     it("should throw HttpError.forbidden when user is not a member of the family", async () => {
-      const userId = new ObjectId();
-      const familyId = new ObjectId();
+      const userId = new ObjectId().toString();
+      const familyId = new ObjectId().toString();
       const otherFamilyId = new ObjectId();
       const families: FamilyMembershipView[] = [
         {
@@ -141,8 +141,8 @@ describe("requireFamilyRole", () => {
     });
 
     it("should throw HttpError.forbidden with proper role listing for multiple allowed roles", async () => {
-      const userId = new ObjectId();
-      const familyId = new ObjectId();
+      const userId = new ObjectId().toString();
+      const familyId = new ObjectId().toString();
       // User has no membership in any family - empty array
       const families: FamilyMembershipView[] = [];
 
@@ -159,8 +159,8 @@ describe("requireFamilyRole", () => {
 
   describe("when user families not provided (fallback to repository)", () => {
     it("should query repository and return true when user has required role", async () => {
-      const userId = new ObjectId();
-      const familyId = new ObjectId();
+      const userId = new ObjectId().toString();
+      const familyId = new ObjectId().toString();
       const mockMembershipRepo = {
         findByFamilyAndUser: jest.fn().mockResolvedValue({
           _id: new ObjectId(),
@@ -187,8 +187,8 @@ describe("requireFamilyRole", () => {
     });
 
     it("should throw HttpError.forbidden when repository returns null (no membership)", async () => {
-      const userId = new ObjectId();
-      const familyId = new ObjectId();
+      const userId = new ObjectId().toString();
+      const familyId = new ObjectId().toString();
       const mockMembershipRepo = {
         findByFamilyAndUser: jest.fn().mockResolvedValue(null),
       } as unknown as FamilyMembershipRepository;
@@ -213,8 +213,8 @@ describe("requireFamilyRole", () => {
     });
 
     it("should throw HttpError.forbidden when repository returns wrong role", async () => {
-      const userId = new ObjectId();
-      const familyId = new ObjectId();
+      const userId = new ObjectId().toString();
+      const familyId = new ObjectId().toString();
       const mockMembershipRepo = {
         findByFamilyAndUser: jest.fn().mockResolvedValue({
           _id: new ObjectId(),
@@ -250,8 +250,8 @@ describe("requireFamilyRole", () => {
 
   describe("edge cases", () => {
     it("should throw error when neither userFamilies nor membershipRepository provided", async () => {
-      const userId = new ObjectId();
-      const familyId = new ObjectId();
+      const userId = new ObjectId().toString();
+      const familyId = new ObjectId().toString();
 
       await expect(
         requireFamilyRole({

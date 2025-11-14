@@ -1,5 +1,4 @@
 import { HttpError } from "@lib/http-error";
-import type { ObjectId } from "mongodb";
 import {
   type AddFamilyMemberResult,
   type Family,
@@ -100,15 +99,15 @@ export function normalizeFamilyName(name?: string | null): string | null {
  */
 export function toAddFamilyMemberResult(
   membership: FamilyMembership,
-  familyId: ObjectId,
-  addedBy: ObjectId,
+  familyId: string,
+  addedBy: string,
 ): AddFamilyMemberResult {
   return {
     memberId: membership.userId.toString(),
-    familyId: familyId.toString(),
+    familyId,
     role: membership.role,
     linkedAt: membership.createdAt.toISOString(),
-    addedBy: addedBy.toString(),
+    addedBy,
   };
 }
 

@@ -5,7 +5,6 @@ import { authenticate } from "@modules/auth/middleware/authenticate";
 import { authorizeFamilyRole } from "@modules/auth/middleware/authorize-family-role";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { FamilyRole } from "../domain/family";
 import { FamilyRepository } from "../repositories/family.repository";
 import { FamilyMembershipRepository } from "../repositories/family-membership.repository";
@@ -47,26 +46,14 @@ export function createRemoveMemberRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        let familyId: ObjectId;
-        let memberId: ObjectId;
-        const removedBy = new ObjectId(req.user.id);
-
-        try {
-          familyId = new ObjectId(req.params.familyId);
-        } catch {
-          throw HttpError.badRequest("Invalid family identifier");
-        }
-
-        try {
-          memberId = new ObjectId(req.params.memberId);
-        } catch {
-          throw HttpError.badRequest("Invalid member identifier");
-        }
+        const familyId = req.params.familyId;
+        const memberId = req.params.memberId;
+        const removedBy = req.user.id;
 
         logger.info("Removing family member via API", {
-          familyId: familyId.toString(),
-          memberId: memberId.toString(),
-          removedBy: removedBy.toString(),
+          familyId,
+          memberId,
+          removedBy,
         });
 
         await familyService.removeFamilyMember(familyId, removedBy, memberId);

@@ -1,6 +1,10 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
-import type { ObjectId } from "mongodb";
+import {
+  type ObjectIdString,
+  toObjectId,
+  validateObjectId,
+} from "@lib/objectid-utils";
 import type { Message, MessageDTO } from "../domain/message";
 import { toMessageDTO } from "../lib/message.mapper";
 import type { ChatRepository } from "../repositories/chat.repository";
@@ -34,15 +38,22 @@ export class MessageService {
    * @returns { message: MessageDTO, isNew: boolean }
    */
   async createMessage(
-    chatId: ObjectId,
-    senderId: ObjectId,
+    chatId: string,
+    senderId: string,
     body: string,
     clientId?: string,
   ): Promise<{ message: MessageDTO; isNew: boolean }> {
+    let normalizedChatId: ObjectIdString | undefined;
+    let normalizedSenderId: ObjectIdString | undefined;
     try {
+      normalizedChatId = validateObjectId(chatId, "chatId");
+      normalizedSenderId = validateObjectId(senderId, "senderId");
+      const chatObjectId = toObjectId(normalizedChatId, "chatId");
+      const senderObjectId = toObjectId(normalizedSenderId, "senderId");
+
       logger.info("Creating message", {
-        chatId: chatId.toString(),
-        senderId: senderId.toString(),
+        chatId: normalizedChatId,
+        senderId: normalizedSenderId,
         hasClientId: !!clientId,
       });
 
@@ -52,14 +63,14 @@ export class MessageService {
       // If clientId provided, check for idempotency
       if (clientId) {
         const existing = await this.messageRepository.findByClientId(
-          chatId,
+          chatObjectId,
           clientId,
         );
         if (existing) {
           logger.info(
             "Message already exists, returning existing (idempotent)",
             {
-              chatId: chatId.toString(),
+              chatId: normalizedChatId,
               clientId,
               messageId: existing._id.toString(),
             },
@@ -69,8 +80,8 @@ export class MessageService {
         } else {
           // Create new message
           message = await this.messageRepository.create(
-            chatId,
-            senderId,
+            chatObjectId,
+            senderObjectId,
             body,
             clientId,
           );
@@ -78,8 +89,8 @@ export class MessageService {
       } else {
         // Create new message without clientId
         message = await this.messageRepository.create(
-          chatId,
-          senderId,
+          chatObjectId,
+          senderObjectId,
           body,
           undefined,
         );
@@ -88,18 +99,19 @@ export class MessageService {
       // Only do post-creation logic if this is a new message
       if (isNew) {
         // Update chat's updatedAt timestamp
-        await this.chatRepository.updateTimestamp(chatId);
+        await this.chatRepository.updateTimestamp(chatObjectId);
 
         // Check if DM role promotion is needed
         // In DMs, both users become admin after 2 messages
-        const messageCount = await this.messageRepository.countByChatId(chatId);
+        const messageCount =
+          await this.messageRepository.countByChatId(chatObjectId);
         if (messageCount === 2) {
           // Get the chat to verify type
-          const chat = await this.chatRepository.findById(chatId);
+          const chat = await this.chatRepository.findById(chatObjectId);
           if (chat && chat.type === "dm") {
             // Get all memberships for the chat
             const memberships =
-              await this.membershipRepository.findByChat(chatId);
+              await this.membershipRepository.findByChat(chatObjectId);
 
             // Update both members to admin role
             for (const membership of memberships) {
@@ -110,7 +122,7 @@ export class MessageService {
             }
 
             logger.info("DM role promotion: both users now admin", {
-              chatId: chatId.toString(),
+              chatId: normalizedChatId,
               memberCount: memberships.length,
             });
           }
@@ -120,7 +132,7 @@ export class MessageService {
       const dto = toMessageDTO(message);
 
       logger.info("Message created successfully", {
-        chatId: chatId.toString(),
+        chatId: normalizedChatId,
         messageId: message._id.toString(),
         isNew,
       });
@@ -128,8 +140,8 @@ export class MessageService {
       return { message: dto, isNew };
     } catch (error) {
       logger.error("Failed to create message", {
-        chatId: chatId.toString(),
-        senderId: senderId.toString(),
+        chatId: normalizedChatId ?? chatId,
+        senderId: normalizedSenderId ?? senderId,
         error,
       });
       throw error;
@@ -146,23 +158,34 @@ export class MessageService {
    * @returns { messages: MessageDTO[], nextCursor?: string }
    */
   async listMessages(
-    chatId: ObjectId,
-    userId: ObjectId,
-    before?: ObjectId,
+    chatId: string,
+    userId: string,
+    before?: string,
     limit: number = 50,
   ): Promise<{ messages: MessageDTO[]; nextCursor?: string }> {
+    let normalizedChatId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
+    let _normalizedBefore: ObjectIdString | undefined;
     try {
+      normalizedChatId = validateObjectId(chatId, "chatId");
+      normalizedUserId = validateObjectId(userId, "userId");
+      const chatObjectId = toObjectId(normalizedChatId, "chatId");
+      const userObjectId = toObjectId(normalizedUserId, "userId");
+      const beforeObjectId = before
+        ? toObjectId(validateObjectId(before, "before"), "before")
+        : undefined;
+
       logger.info("Listing messages", {
-        chatId: chatId.toString(),
-        userId: userId.toString(),
-        before: before?.toString(),
+        chatId: normalizedChatId,
+        userId: normalizedUserId,
+        before: beforeObjectId?.toString(),
         limit,
       });
 
       // Verify user is a member of the chat
       const membership = await this.membershipRepository.findByUserAndChat(
-        userId,
-        chatId,
+        userObjectId,
+        chatObjectId,
       );
       if (!membership) {
         throw HttpError.forbidden("You are not a member of this chat");
@@ -170,8 +193,8 @@ export class MessageService {
 
       // Query messages with pagination (limit + 1 to check if more exist)
       const messages = await this.messageRepository.findByChatId(
-        chatId,
-        before,
+        chatObjectId,
+        beforeObjectId,
         limit + 1,
       );
 
@@ -187,7 +210,7 @@ export class MessageService {
       const dtos = messagesToReturn.map(toMessageDTO);
 
       logger.info("Messages listed successfully", {
-        chatId: chatId.toString(),
+        chatId: normalizedChatId,
         count: dtos.length,
         hasMore: !!nextCursor,
       });
@@ -198,8 +221,8 @@ export class MessageService {
       };
     } catch (error) {
       logger.error("Failed to list messages", {
-        chatId: chatId.toString(),
-        userId: userId.toString(),
+        chatId: normalizedChatId ?? chatId,
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;
@@ -217,40 +240,57 @@ export class MessageService {
    * @returns { messages: MessageDTO[], nextCursor?: string }
    */
   async searchMessages(
-    userId: ObjectId,
+    userId: string,
     query: string,
-    chatId?: ObjectId,
-    cursor?: ObjectId,
+    chatId?: string,
+    cursor?: string,
     limit: number = 20,
   ): Promise<{ messages: MessageDTO[]; nextCursor?: string }> {
+    let normalizedUserId: ObjectIdString | undefined;
+    let _normalizedChatId: ObjectIdString | undefined;
+    let _normalizedCursor: ObjectIdString | undefined;
     try {
+      normalizedUserId = validateObjectId(userId, "userId");
+      const userObjectId = toObjectId(normalizedUserId, "userId");
+      const chatObjectId = chatId
+        ? toObjectId(validateObjectId(chatId, "chatId"), "chatId")
+        : undefined;
+      const cursorObjectId = cursor
+        ? toObjectId(validateObjectId(cursor, "cursor"), "cursor")
+        : undefined;
+
       logger.info("Searching messages", {
-        userId: userId.toString(),
+        userId: normalizedUserId,
         query,
-        chatId: chatId?.toString(),
+        chatId: chatObjectId?.toString(),
         limit,
       });
 
-      let chatIds: ObjectId[];
+      let chatIds: ReturnType<typeof toObjectId>[];
 
       if (chatId) {
+        if (!chatObjectId) {
+          throw HttpError.badRequest("Invalid chatId format");
+        }
         // If specific chat provided, verify user is a member
         const membership = await this.membershipRepository.findByUserAndChat(
-          userId,
-          chatId,
+          userObjectId,
+          chatObjectId,
         );
         if (!membership) {
           throw HttpError.forbidden("You are not a member of this chat");
         }
-        chatIds = [chatId];
+        chatIds = [chatObjectId];
+        _normalizedChatId = chatObjectId?.toHexString() as ObjectIdString;
       } else {
         // Get all chats user is a member of
-        const memberships = await this.membershipRepository.findByUser(userId);
+        const memberships =
+          await this.membershipRepository.findByUser(userObjectId);
         chatIds = memberships.map((m) => m.chatId);
 
         if (chatIds.length === 0) {
           logger.info("User has no chats to search", {
-            userId: userId.toString(),
+            userId: normalizedUserId,
           });
           return { messages: [], nextCursor: undefined };
         }
@@ -260,7 +300,7 @@ export class MessageService {
       const results = await this.messageRepository.search(
         chatIds,
         query,
-        cursor,
+        cursorObjectId,
         limit + 1,
       );
 
@@ -276,7 +316,7 @@ export class MessageService {
       const dtos = messagesToReturn.map(toMessageDTO);
 
       logger.info("Message search completed", {
-        userId: userId.toString(),
+        userId: normalizedUserId,
         resultCount: dtos.length,
         hasMore: !!nextCursor,
       });
@@ -287,7 +327,7 @@ export class MessageService {
       };
     } catch (error) {
       logger.error("Failed to search messages", {
-        userId: userId.toString(),
+        userId: normalizedUserId ?? userId,
         query,
         error,
       });

@@ -3,7 +3,6 @@ import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { verifyMembership } from "../middleware/verify-membership";
 import { ChatRepository } from "../repositories/chat.repository";
 import { MembershipRepository } from "../repositories/membership.repository";
@@ -47,16 +46,14 @@ export function listMessagesRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        const chatId = new ObjectId(req.params.chatId);
-        const userId = new ObjectId(req.user.id);
         const paginationParams = (req as any).paginationParams || {
           before: undefined,
           limit: 50,
         };
 
         const response = await messageService.listMessages(
-          chatId,
-          userId,
+          req.params.chatId,
+          req.user.id,
           paginationParams.before,
           paginationParams.limit,
         );

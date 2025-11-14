@@ -1,9 +1,9 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import { validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import type { KarmaService } from "../services/karma.service";
 import { validateGrantKarma } from "../validators/grant-karma.validator";
 
@@ -37,22 +37,18 @@ export function createGrantKarmaRoute(karmaService: KarmaService): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        if (!ObjectId.isValid(req.params.familyId)) {
-          throw HttpError.badRequest("Invalid family ID");
+        if (!req.params.familyId) {
+          throw HttpError.badRequest("Missing familyId parameter");
         }
 
-        if (!ObjectId.isValid(req.body.userId)) {
-          throw HttpError.badRequest("Invalid user ID");
-        }
-
-        const familyId = new ObjectId(req.params.familyId);
-        const grantedBy = new ObjectId(req.user.id);
-        const recipientUserId = new ObjectId(req.body.userId);
+        const familyId = validateObjectId(req.params.familyId, "familyId");
+        const grantedBy = validateObjectId(req.user.id, "grantedBy");
+        const recipientUserId = req.body.userId;
 
         logger.info("Granting karma via API", {
-          familyId: familyId.toString(),
-          recipientUserId: recipientUserId.toString(),
-          grantedBy: grantedBy.toString(),
+          familyId,
+          recipientUserId,
+          grantedBy,
           amount: req.body.amount,
         });
 
@@ -79,7 +75,7 @@ export function createGrantKarmaRoute(karmaService: KarmaService): Router {
           amount: karmaEvent.amount,
           totalKarma: memberKarma.totalKarma,
           description: karmaEvent.description,
-          grantedBy: grantedBy.toString(),
+          grantedBy,
           createdAt: karmaEvent.createdAt.toISOString(),
         });
       } catch (error) {

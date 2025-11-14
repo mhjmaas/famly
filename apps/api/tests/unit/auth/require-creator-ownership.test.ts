@@ -5,7 +5,7 @@ import { ObjectId } from "mongodb";
 describe("requireCreatorOwnership", () => {
   describe("direct ownership check", () => {
     it("should return true when user is the creator", async () => {
-      const userId = new ObjectId();
+      const userId = new ObjectId().toString();
       const createdBy = userId;
 
       const result = await requireCreatorOwnership({
@@ -17,8 +17,8 @@ describe("requireCreatorOwnership", () => {
     });
 
     it("should throw HttpError.forbidden when user is not the creator", async () => {
-      const userId = new ObjectId();
-      const createdBy = new ObjectId();
+      const userId = new ObjectId().toString();
+      const createdBy = new ObjectId().toString();
 
       await expect(
         requireCreatorOwnership({
@@ -38,11 +38,11 @@ describe("requireCreatorOwnership", () => {
 
   describe("repository lookup", () => {
     it("should return true when resource exists and user is creator", async () => {
-      const userId = new ObjectId();
-      const resourceId = new ObjectId();
+      const userId = new ObjectId().toString();
+      const resourceId = new ObjectId().toString();
 
       const mockLookupFn = jest.fn().mockResolvedValue({
-        createdBy: userId,
+        createdBy: new ObjectId(userId),
       });
 
       const result = await requireCreatorOwnership({
@@ -56,12 +56,12 @@ describe("requireCreatorOwnership", () => {
     });
 
     it("should throw HttpError.forbidden when resource exists but user is not creator", async () => {
-      const userId = new ObjectId();
-      const otherUserId = new ObjectId();
-      const resourceId = new ObjectId();
+      const userId = new ObjectId().toString();
+      const otherUserId = new ObjectId().toString();
+      const resourceId = new ObjectId().toString();
 
       const mockLookupFn = jest.fn().mockResolvedValue({
-        createdBy: otherUserId,
+        createdBy: new ObjectId(otherUserId),
       });
 
       await expect(
@@ -82,8 +82,8 @@ describe("requireCreatorOwnership", () => {
     });
 
     it("should throw HttpError.notFound when resource does not exist", async () => {
-      const userId = new ObjectId();
-      const resourceId = new ObjectId();
+      const userId = new ObjectId().toString();
+      const resourceId = new ObjectId().toString();
 
       const mockLookupFn = jest.fn().mockResolvedValue(null);
 
@@ -107,7 +107,7 @@ describe("requireCreatorOwnership", () => {
 
   describe("edge cases", () => {
     it("should throw error when neither createdBy nor resourceId+lookupFn provided", async () => {
-      const userId = new ObjectId();
+      const userId = new ObjectId().toString();
 
       await expect(
         requireCreatorOwnership({
@@ -119,8 +119,8 @@ describe("requireCreatorOwnership", () => {
     });
 
     it("should throw error when resourceId provided but lookupFn missing", async () => {
-      const userId = new ObjectId();
-      const resourceId = new ObjectId();
+      const userId = new ObjectId().toString();
+      const resourceId = new ObjectId().toString();
 
       await expect(
         requireCreatorOwnership({
@@ -133,7 +133,7 @@ describe("requireCreatorOwnership", () => {
     });
 
     it("should throw error when lookupFn provided but resourceId missing", async () => {
-      const userId = new ObjectId();
+      const userId = new ObjectId().toString();
       const mockLookupFn = jest.fn();
 
       await expect(

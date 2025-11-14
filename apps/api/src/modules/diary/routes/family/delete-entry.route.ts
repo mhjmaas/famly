@@ -5,8 +5,8 @@ import { authorizeFamilyRole } from "@modules/auth/middleware/authorize-family-r
 import { FamilyRole } from "@modules/family/domain/family";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { DiaryRepository } from "../../repositories/diary.repository";
+import { DiaryService } from "../../services/diary.service";
 
 /**
  * DELETE /:familyId/diary/:entryId - Delete a family diary entry
@@ -21,6 +21,7 @@ import { DiaryRepository } from "../../repositories/diary.repository";
 export function createFamilyDiaryDeleteEntryRoute(): Router {
   const router = Router({ mergeParams: true }); // CRITICAL: mergeParams to access :familyId from parent routers
   const diaryRepository = new DiaryRepository();
+  const diaryService = new DiaryService(diaryRepository);
 
   router.delete(
     "/:entryId",
@@ -34,33 +35,17 @@ export function createFamilyDiaryDeleteEntryRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        // Validate ObjectId formats
-        if (!ObjectId.isValid(req.params.entryId)) {
-          throw HttpError.badRequest("Invalid entry ID format");
+        if (!req.params.familyId) {
+          throw HttpError.badRequest("Missing familyId parameter");
         }
-        if (!ObjectId.isValid(req.params.familyId)) {
-          throw HttpError.badRequest("Invalid family ID format");
-        }
-
-        const entryId = new ObjectId(req.params.entryId);
-        const familyId = new ObjectId(req.params.familyId);
-
-        const entry = await diaryRepository.findById(entryId);
-
-        if (!entry) {
-          throw HttpError.notFound("Diary entry not found");
+        if (!req.params.entryId) {
+          throw HttpError.badRequest("Missing entryId parameter");
         }
 
-        // Verify that the entry belongs to this family
-        if (!entry.familyId || !entry.familyId.equals(familyId)) {
-          throw HttpError.notFound("Diary entry not found");
-        }
-
-        const deleted = await diaryRepository.deleteEntry(entryId);
-
-        if (!deleted) {
-          throw HttpError.notFound("Diary entry not found");
-        }
+        await diaryService.deleteFamilyEntry(
+          req.params.familyId,
+          req.params.entryId,
+        );
 
         res.status(204).send();
       } catch (error) {

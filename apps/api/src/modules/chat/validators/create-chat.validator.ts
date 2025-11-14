@@ -1,19 +1,13 @@
 import { HttpError } from "@lib/http-error";
+import { zodObjectIdArray } from "@lib/zod-objectid";
 import type { NextFunction, Request, Response } from "express";
-import { ObjectId } from "mongodb";
 import { z } from "zod";
-
-// ObjectId string validation
-const objectIdSchema = z
-  .string()
-  .refine((val) => ObjectId.isValid(val), "Invalid user ID format");
 
 // Create chat input schema
 export const createChatSchema = z
   .object({
     type: z.enum(["dm", "group"]),
-    memberIds: z
-      .array(objectIdSchema)
+    memberIds: zodObjectIdArray
       .min(1, "At least one member is required")
       .refine((ids: string[]) => {
         // Member IDs must be unique

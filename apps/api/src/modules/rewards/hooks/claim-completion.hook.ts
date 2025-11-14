@@ -1,8 +1,12 @@
 import { logger } from "@lib/logger";
+import {
+  fromObjectId,
+  toObjectId,
+  validateObjectId,
+} from "@lib/objectid-utils";
 import type { KarmaService } from "@modules/karma";
 import type { Task } from "@modules/tasks/domain/task";
 import type { TaskCompletionHook } from "@modules/tasks/hooks/task-completion.hook";
-import { ObjectId } from "mongodb";
 import type { ClaimRepository } from "../repositories/claim.repository";
 import type { MetadataRepository } from "../repositories/metadata.repository";
 import type { RewardRepository } from "../repositories/reward.repository";
@@ -21,8 +25,8 @@ export class ClaimCompletionHook implements TaskCompletionHook {
 
   async onTaskCompleted(
     task: Task,
-    creditedUserId: ObjectId,
-    triggeredBy: ObjectId,
+    creditedUserId: string,
+    triggeredBy: string,
   ): Promise<void> {
     // Check if this task is associated with a claim
     if (!task.metadata?.claimId) {
@@ -30,14 +34,17 @@ export class ClaimCompletionHook implements TaskCompletionHook {
     }
 
     try {
+      const creditedObjectId = toObjectId(creditedUserId, "creditedUserId");
+
       logger.info("Processing claim completion from task", {
         taskId: task._id.toString(),
         claimId: task.metadata.claimId,
-        creditedUserId: creditedUserId.toString(),
-        triggeredBy: triggeredBy.toString(),
+        creditedUserId,
+        triggeredBy,
       });
 
-      const claimId = new ObjectId(task.metadata.claimId as string);
+      const claimIdString = validateObjectId(task.metadata.claimId, "claimId");
+      const claimId = toObjectId(claimIdString, "claimId");
 
       // Find the claim
       const claim = await this.claimRepository.findById(claimId);
@@ -70,9 +77,9 @@ export class ClaimCompletionHook implements TaskCompletionHook {
 
       // Check member still has sufficient karma
       const memberKarma = await this.karmaService.getMemberKarma(
-        claim.familyId,
-        claim.memberId,
-        claim.memberId,
+        fromObjectId(claim.familyId),
+        fromObjectId(claim.memberId),
+        fromObjectId(claim.memberId),
       );
 
       if (memberKarma.totalKarma < reward.karmaCost) {
@@ -88,8 +95,8 @@ export class ClaimCompletionHook implements TaskCompletionHook {
 
       // Deduct karma
       await this.karmaService.deductKarma({
-        familyId: claim.familyId,
-        userId: claim.memberId,
+        familyId: fromObjectId(claim.familyId),
+        userId: fromObjectId(claim.memberId),
         amount: reward.karmaCost,
         claimId: claimId.toString(),
         rewardName: reward.name,
@@ -97,7 +104,7 @@ export class ClaimCompletionHook implements TaskCompletionHook {
 
       // Update claim status to completed
       await this.claimRepository.updateStatus(claimId, "completed", {
-        completedBy: creditedUserId,
+        completedBy: creditedObjectId,
         completedAt: new Date(),
       });
 

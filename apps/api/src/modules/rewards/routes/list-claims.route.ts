@@ -1,12 +1,12 @@
 import { getMongoClient } from "@infra/mongo/client";
 import { HttpError } from "@lib/http-error";
+import { toObjectId, validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyRole } from "@modules/family/domain/family";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import type { RewardClaim } from "../domain/reward";
 import { toClaimDTO } from "../lib/reward.mapper";
 import { ClaimRepository } from "../repositories/claim.repository";
@@ -42,8 +42,8 @@ export function listClaimsRoute(): Router {
           throw HttpError.badRequest("Missing familyId parameter");
         }
 
-        const userId = new ObjectId(req.user.id);
-        const familyId = new ObjectId(req.params.familyId);
+        const userId = validateObjectId(req.user.id, "userId");
+        const familyId = validateObjectId(req.params.familyId, "familyId");
 
         // Verify membership
         const membershipRepository = new FamilyMembershipRepository();
@@ -63,10 +63,15 @@ export function listClaimsRoute(): Router {
         let claims: RewardClaim[];
         if (membership.role === FamilyRole.Parent) {
           // Parents see all family claims
-          claims = await claimRepository.findByFamily(familyId);
+          claims = await claimRepository.findByFamily(
+            toObjectId(familyId, "familyId"),
+          );
         } else {
           // Children see only their own claims
-          claims = await claimRepository.findByMember(familyId, userId);
+          claims = await claimRepository.findByMember(
+            toObjectId(familyId, "familyId"),
+            toObjectId(userId, "userId"),
+          );
         }
 
         // Filter by status if provided

@@ -1,17 +1,12 @@
 import { HttpError } from "@lib/http-error";
+import { zodObjectId } from "@lib/zod-objectid";
 import type { NextFunction, Request, Response } from "express";
-import { ObjectId } from "mongodb";
 import { z } from "zod";
-
-// ObjectId string validation
-const objectIdSchema = z
-  .string()
-  .refine((val) => ObjectId.isValid(val), "Invalid user ID format");
 
 // Add members input schema
 export const addMembersSchema = z.object({
   userIds: z
-    .array(objectIdSchema)
+    .array(zodObjectId)
     .min(1, "At least one user ID is required")
     .refine((ids: string[]) => {
       // User IDs must be unique

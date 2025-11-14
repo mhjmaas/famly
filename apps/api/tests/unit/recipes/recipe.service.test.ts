@@ -1,4 +1,5 @@
 import { HttpError } from "@lib/http-error";
+import { fromObjectId, type ObjectIdString } from "@lib/objectid-utils";
 import { ObjectId } from "mongodb";
 import { FamilyRole } from "@/modules/family/domain/family";
 import type { Recipe } from "@/modules/recipes/domain/recipe";
@@ -23,9 +24,9 @@ describe("RecipeService", () => {
   let service: RecipeService;
   let mockRecipeRepository: any;
   let mockMembershipRepository: any;
-  let familyId: ObjectId;
-  let userId: ObjectId;
-  let recipeId: ObjectId;
+  let familyId: ObjectIdString;
+  let userId: ObjectIdString;
+  let recipeId: ObjectIdString;
 
   const mockRecipe: Recipe = {
     _id: new ObjectId(),
@@ -40,9 +41,9 @@ describe("RecipeService", () => {
   };
 
   beforeEach(() => {
-    familyId = new ObjectId();
-    userId = new ObjectId();
-    recipeId = mockRecipe._id;
+    familyId = fromObjectId(new ObjectId());
+    userId = fromObjectId(new ObjectId());
+    recipeId = fromObjectId(mockRecipe._id);
 
     mockRecipeRepository = {
       create: jest.fn(),
@@ -83,11 +84,10 @@ describe("RecipeService", () => {
         allowedRoles: [FamilyRole.Parent, FamilyRole.Child],
         membershipRepository: mockMembershipRepository,
       });
-      expect(mockRecipeRepository.create).toHaveBeenCalledWith(
-        familyId,
-        input,
-        userId,
-      );
+      const createArgs = mockRecipeRepository.create.mock.calls[0];
+      expect(createArgs[0].toHexString()).toBe(familyId);
+      expect(createArgs[1]).toBe(input);
+      expect(createArgs[2].toHexString()).toBe(userId);
     });
 
     it("should throw error when user is not a family member", async () => {
@@ -115,10 +115,9 @@ describe("RecipeService", () => {
       const result = await service.getRecipe(familyId, recipeId, userId);
 
       expect(result).toEqual(mockRecipe);
-      expect(mockRecipeRepository.getById).toHaveBeenCalledWith(
-        familyId,
-        recipeId,
-      );
+      const getArgs = mockRecipeRepository.getById.mock.calls[0];
+      expect(getArgs[0].toHexString()).toBe(familyId);
+      expect(getArgs[1].toHexString()).toBe(recipeId);
     });
 
     it("should throw not found when recipe does not exist", async () => {
@@ -153,12 +152,12 @@ describe("RecipeService", () => {
 
       expect(result.recipes).toEqual(recipes);
       expect(result.total).toBe(5);
-      expect(mockRecipeRepository.listByFamily).toHaveBeenCalledWith(
-        familyId,
-        10,
-        0,
-      );
-      expect(mockRecipeRepository.countByFamily).toHaveBeenCalledWith(familyId);
+      const listArgs = mockRecipeRepository.listByFamily.mock.calls[0];
+      expect(listArgs[0].toHexString()).toBe(familyId);
+      expect(listArgs[1]).toBe(10);
+      expect(listArgs[2]).toBe(0);
+      const countArgs = mockRecipeRepository.countByFamily.mock.calls[0][0];
+      expect(countArgs.toHexString()).toBe(familyId);
     });
 
     it("should return empty list when no recipes exist", async () => {
@@ -177,11 +176,10 @@ describe("RecipeService", () => {
 
       await service.listRecipes(familyId, userId, 20, 40);
 
-      expect(mockRecipeRepository.listByFamily).toHaveBeenCalledWith(
-        familyId,
-        20,
-        40,
-      );
+      const paginationArgs = mockRecipeRepository.listByFamily.mock.calls[0];
+      expect(paginationArgs[0].toHexString()).toBe(familyId);
+      expect(paginationArgs[1]).toBe(20);
+      expect(paginationArgs[2]).toBe(40);
     });
   });
 
@@ -205,11 +203,10 @@ describe("RecipeService", () => {
       );
 
       expect(result).toEqual(updatedRecipe);
-      expect(mockRecipeRepository.update).toHaveBeenCalledWith(
-        familyId,
-        recipeId,
-        input,
-      );
+      const updateArgs = mockRecipeRepository.update.mock.calls[0];
+      expect(updateArgs[0].toHexString()).toBe(familyId);
+      expect(updateArgs[1].toHexString()).toBe(recipeId);
+      expect(updateArgs[2]).toBe(input);
     });
 
     it("should throw not found when recipe does not exist", async () => {
@@ -229,10 +226,9 @@ describe("RecipeService", () => {
 
       await service.updateRecipe(familyId, recipeId, userId, { name: "New" });
 
-      expect(mockRecipeRepository.getById).toHaveBeenCalledWith(
-        familyId,
-        recipeId,
-      );
+      const getArgs = mockRecipeRepository.getById.mock.calls[0];
+      expect(getArgs[0].toHexString()).toBe(familyId);
+      expect(getArgs[1].toHexString()).toBe(recipeId);
     });
   });
 
@@ -243,10 +239,9 @@ describe("RecipeService", () => {
 
       await service.deleteRecipe(familyId, recipeId, userId);
 
-      expect(mockRecipeRepository.delete).toHaveBeenCalledWith(
-        familyId,
-        recipeId,
-      );
+      const deleteArgs = mockRecipeRepository.delete.mock.calls[0];
+      expect(deleteArgs[0].toHexString()).toBe(familyId);
+      expect(deleteArgs[1].toHexString()).toBe(recipeId);
     });
 
     it("should throw not found when recipe does not exist", async () => {
@@ -264,10 +259,9 @@ describe("RecipeService", () => {
 
       await service.deleteRecipe(familyId, recipeId, userId);
 
-      expect(mockRecipeRepository.getById).toHaveBeenCalledWith(
-        familyId,
-        recipeId,
-      );
+      const deleteGetArgs = mockRecipeRepository.getById.mock.calls[0];
+      expect(deleteGetArgs[0].toHexString()).toBe(familyId);
+      expect(deleteGetArgs[1].toHexString()).toBe(recipeId);
     });
   });
 
@@ -287,16 +281,14 @@ describe("RecipeService", () => {
 
       expect(result.recipes).toEqual(recipes);
       expect(result.total).toBe(1);
-      expect(mockRecipeRepository.search).toHaveBeenCalledWith(
-        familyId,
-        "pasta",
-        10,
-        0,
-      );
-      expect(mockRecipeRepository.countSearch).toHaveBeenCalledWith(
-        familyId,
-        "pasta",
-      );
+      const searchArgs = mockRecipeRepository.search.mock.calls[0];
+      expect(searchArgs[0].toHexString()).toBe(familyId);
+      expect(searchArgs[1]).toBe("pasta");
+      expect(searchArgs[2]).toBe(10);
+      expect(searchArgs[3]).toBe(0);
+      const countSearchArgs = mockRecipeRepository.countSearch.mock.calls[0];
+      expect(countSearchArgs[0].toHexString()).toBe(familyId);
+      expect(countSearchArgs[1]).toBe("pasta");
     });
 
     it("should return empty results when no matches", async () => {

@@ -2,7 +2,6 @@ import { HttpError } from "@lib/http-error";
 import type { FamilyMembershipView } from "@modules/family/domain/family";
 import { fromNodeHeaders } from "better-auth/node";
 import type { NextFunction, Request, Response } from "express";
-import { ObjectId } from "mongodb";
 import { getAuth } from "../better-auth";
 import { isJWT, verifyJWT } from "./jwt-verify";
 
@@ -35,11 +34,11 @@ export interface AuthenticatedRequest extends Request {
  * Hydrate user's family memberships.
  * Uses dynamic imports to avoid circular dependency with family module.
  *
- * @param userId - The user's ObjectId
+ * @param userId - The user's ID as string
  * @returns Array of family memberships or empty array on error
  */
 async function hydrateFamilies(
-  userId: ObjectId,
+  userId: string,
 ): Promise<FamilyMembershipView[]> {
   try {
     // Dynamic imports required to break circular dependency:
@@ -124,8 +123,7 @@ export async function authenticate(
 
         // Hydrate families for JWT auth (requires DB lookup)
         if (req.user) {
-          const userId = new ObjectId(req.user.id);
-          req.user.families = await hydrateFamilies(userId);
+          req.user.families = await hydrateFamilies(req.user.id);
         }
 
         return next();
@@ -186,8 +184,7 @@ export async function authenticate(
 
     // Hydrate families for session-based auth
     if (req.user) {
-      const userId = new ObjectId(req.user.id);
-      req.user.families = await hydrateFamilies(userId);
+      req.user.families = await hydrateFamilies(req.user.id);
     }
 
     next();

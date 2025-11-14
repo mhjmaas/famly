@@ -1,9 +1,10 @@
 import { logger } from "@lib/logger";
+import { toObjectId, validateObjectId } from "@lib/objectid-utils";
+import { zodObjectId } from "@lib/zod-objectid";
 import { ChatRepository } from "@modules/chat/repositories/chat.repository";
 import { MembershipRepository } from "@modules/chat/repositories/membership.repository";
 import { MessageRepository } from "@modules/chat/repositories/message.repository";
 import { MessageService } from "@modules/chat/services/message.service";
-import { ObjectId } from "mongodb";
 import type { Socket } from "socket.io";
 import { z } from "zod";
 import type { Ack, MessageSendPayload } from "../types";
@@ -12,9 +13,7 @@ import { getRateLimiter } from "../utils/rate-limiter";
 
 // Validation schema for message send
 const messageSendSchema = z.object({
-  chatId: z
-    .string()
-    .refine((val) => ObjectId.isValid(val), "Invalid chatId format"),
+  chatId: zodObjectId,
   clientId: z.string().min(1, "clientId is required"),
   body: z
     .string()
@@ -57,8 +56,9 @@ export async function handleMessageSend(
     }
 
     const { chatId, clientId, body } = validation.data;
-    const userObjectId = new ObjectId(userId);
-    const chatObjectId = new ObjectId(chatId);
+    const normalizedUserId = validateObjectId(userId, "userId");
+    const userObjectId = toObjectId(normalizedUserId, "userId");
+    const chatObjectId = toObjectId(chatId, "chatId");
 
     // Check rate limit
     const rateLimiter = getRateLimiter();
@@ -104,8 +104,8 @@ export async function handleMessageSend(
       chatRepo,
     );
     const result = await messageService.createMessage(
-      chatObjectId,
-      userObjectId,
+      chatId,
+      normalizedUserId,
       body,
       clientId,
     );

@@ -1,5 +1,10 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import {
+  type ObjectIdString,
+  toObjectId,
+  validateObjectId,
+} from "@lib/objectid-utils";
 import type { ActivityEventService } from "@modules/activity-events";
 import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
@@ -31,11 +36,16 @@ export class KarmaService {
    * @throws HttpError if user is not a family member
    */
   async awardKarma(input: AwardKarmaInput): Promise<KarmaEvent> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(input.familyId, "familyId");
+      normalizedUserId = validateObjectId(input.userId, "userId");
+
       // Verify user is a family member
       const membership = await this.membershipRepository.findByFamilyAndUser(
-        input.familyId,
-        input.userId,
+        normalizedFamilyId,
+        normalizedUserId,
       );
 
       if (!membership) {
@@ -43,16 +53,19 @@ export class KarmaService {
       }
 
       logger.info("Awarding karma", {
-        familyId: input.familyId.toString(),
-        userId: input.userId.toString(),
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
         amount: input.amount,
         source: input.source,
       });
 
+      const familyObjectId = toObjectId(normalizedFamilyId, "familyId");
+      const userObjectId = toObjectId(normalizedUserId, "userId");
+
       // Create karma event
       const karmaEvent = await this.karmaRepository.createKarmaEvent({
-        familyId: input.familyId,
-        userId: input.userId,
+        familyId: familyObjectId,
+        userId: userObjectId,
         amount: input.amount,
         source: input.source,
         description: input.description,
@@ -61,15 +74,15 @@ export class KarmaService {
 
       // Update member karma total atomically
       await this.karmaRepository.upsertMemberKarma(
-        input.familyId,
-        input.userId,
+        familyObjectId,
+        userObjectId,
         input.amount,
       );
 
       logger.info("Karma awarded successfully", {
         eventId: karmaEvent._id.toString(),
-        familyId: input.familyId.toString(),
-        userId: input.userId.toString(),
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
         amount: input.amount,
       });
 
@@ -77,7 +90,7 @@ export class KarmaService {
       if (this.activityEventService && input.source === "manual_grant") {
         try {
           await this.activityEventService.recordEvent({
-            userId: input.userId,
+            userId: normalizedUserId,
             type: "KARMA",
             title: "Karma awarded",
             description: input.description || `Received ${input.amount} karma`,
@@ -101,8 +114,8 @@ export class KarmaService {
       }
 
       logger.error("Failed to award karma", {
-        familyId: input.familyId.toString(),
-        userId: input.userId.toString(),
+        familyId: normalizedFamilyId ?? input.familyId,
+        userId: normalizedUserId ?? input.userId,
         error,
       });
 
@@ -120,15 +133,25 @@ export class KarmaService {
    * @throws HttpError if requesting user is not a family member
    */
   async getMemberKarma(
-    familyId: ObjectId,
-    userId: ObjectId,
-    requestingUserId: ObjectId,
+    familyId: string,
+    userId: string,
+    requestingUserId: string,
   ): Promise<MemberKarma> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
+    let normalizedRequestingUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedUserId = validateObjectId(userId, "userId");
+      normalizedRequestingUserId = validateObjectId(
+        requestingUserId,
+        "requestingUserId",
+      );
+
       // Verify requesting user is a family member
       const membership = await this.membershipRepository.findByFamilyAndUser(
-        familyId,
-        requestingUserId,
+        normalizedFamilyId,
+        normalizedRequestingUserId,
       );
 
       if (!membership) {
@@ -136,18 +159,20 @@ export class KarmaService {
       }
 
       logger.debug("Fetching member karma", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
-        requestingUserId: requestingUserId.toString(),
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
+        requestingUserId: normalizedRequestingUserId,
       });
+
+      const familyObjectId = toObjectId(normalizedFamilyId, "familyId");
+      const userObjectId = toObjectId(normalizedUserId, "userId");
 
       // Fetch member karma
       const memberKarma = await this.karmaRepository.findMemberKarma(
-        familyId,
-        userId,
+        familyObjectId,
+        userObjectId,
       );
 
-      // Return existing karma or create a zero-karma record
       if (memberKarma) {
         return memberKarma;
       }
@@ -156,8 +181,8 @@ export class KarmaService {
       const now = new Date();
       return {
         _id: new ObjectId(),
-        familyId,
-        userId,
+        familyId: familyObjectId,
+        userId: userObjectId,
         totalKarma: 0,
         createdAt: now,
         updatedAt: now,
@@ -168,8 +193,8 @@ export class KarmaService {
       }
 
       logger.error("Failed to get member karma", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId: normalizedFamilyId ?? familyId,
+        userId: normalizedUserId ?? userId,
         error,
       });
 
@@ -189,17 +214,27 @@ export class KarmaService {
    * @throws HttpError if requesting user is not a family member
    */
   async getKarmaHistory(
-    familyId: ObjectId,
-    userId: ObjectId,
-    requestingUserId: ObjectId,
+    familyId: string,
+    userId: string,
+    requestingUserId: string,
     limit: number,
     cursor?: string,
   ): Promise<KarmaHistoryResponse> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
+    let normalizedRequestingUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedUserId = validateObjectId(userId, "userId");
+      normalizedRequestingUserId = validateObjectId(
+        requestingUserId,
+        "requestingUserId",
+      );
+
       // Verify requesting user is a family member
       const membership = await this.membershipRepository.findByFamilyAndUser(
-        familyId,
-        requestingUserId,
+        normalizedFamilyId,
+        normalizedRequestingUserId,
       );
 
       if (!membership) {
@@ -207,25 +242,26 @@ export class KarmaService {
       }
 
       logger.debug("Fetching karma history", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
         limit,
         cursor,
       });
 
+      const familyObjectId = toObjectId(normalizedFamilyId, "familyId");
+      const userObjectId = toObjectId(normalizedUserId, "userId");
+
       // Fetch events (limit + 1 to check if there are more)
       const events = await this.karmaRepository.findKarmaEvents(
-        familyId,
-        userId,
+        familyObjectId,
+        userObjectId,
         limit + 1,
         cursor,
       );
 
-      // Check if there are more events
       const hasMore = events.length > limit;
       const returnEvents = hasMore ? events.slice(0, limit) : events;
 
-      // Calculate next cursor (last event's ID)
       const nextCursor =
         hasMore && returnEvents.length > 0
           ? returnEvents[returnEvents.length - 1]._id.toString()
@@ -244,8 +280,8 @@ export class KarmaService {
       }
 
       logger.error("Failed to get karma history", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId: normalizedFamilyId ?? familyId,
+        userId: normalizedUserId ?? userId,
         error,
       });
 
@@ -265,18 +301,25 @@ export class KarmaService {
    * @throws HttpError if granter is not a parent or recipient is not a family member
    */
   async grantKarma(
-    familyId: ObjectId,
-    userId: ObjectId,
+    familyId: string,
+    userId: string,
     amount: number,
     description: string | undefined,
-    grantedBy: ObjectId,
+    grantedBy: string,
   ): Promise<KarmaEvent> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
+    let normalizedGrantedBy: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedUserId = validateObjectId(userId, "userId");
+      normalizedGrantedBy = validateObjectId(grantedBy, "grantedBy");
+
       // Verify granter is a parent in the family
       const granterMembership =
         await this.membershipRepository.findByFamilyAndUser(
-          familyId,
-          grantedBy,
+          normalizedFamilyId,
+          normalizedGrantedBy,
         );
 
       if (!granterMembership) {
@@ -289,28 +332,31 @@ export class KarmaService {
 
       // Verify recipient is a family member
       const recipientMembership =
-        await this.membershipRepository.findByFamilyAndUser(familyId, userId);
+        await this.membershipRepository.findByFamilyAndUser(
+          normalizedFamilyId,
+          normalizedUserId,
+        );
 
       if (!recipientMembership) {
         throw HttpError.forbidden("Recipient is not a member of this family");
       }
 
       logger.info("Manually granting karma", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
         amount,
-        grantedBy: grantedBy.toString(),
+        grantedBy: normalizedGrantedBy,
       });
 
       // Award karma with manual_grant source
       return this.awardKarma({
-        familyId,
-        userId,
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
         amount,
         source: "manual_grant",
         description: description || "Manual karma grant",
         metadata: {
-          grantedBy: grantedBy.toString(),
+          grantedBy: normalizedGrantedBy,
         },
       });
     } catch (error) {
@@ -319,9 +365,9 @@ export class KarmaService {
       }
 
       logger.error("Failed to grant karma", {
-        familyId: familyId.toString(),
-        userId: userId.toString(),
-        grantedBy: grantedBy.toString(),
+        familyId: normalizedFamilyId ?? familyId,
+        userId: normalizedUserId ?? userId,
+        grantedBy: normalizedGrantedBy ?? grantedBy,
         error,
       });
 
@@ -337,11 +383,18 @@ export class KarmaService {
    * @throws HttpError if user is not a family member or has insufficient karma
    */
   async deductKarma(input: DeductKarmaInput): Promise<KarmaEvent> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(input.familyId, "familyId");
+      normalizedUserId = validateObjectId(input.userId, "userId");
+      const familyObjectId = toObjectId(normalizedFamilyId, "familyId");
+      const userObjectId = toObjectId(normalizedUserId, "userId");
+
       // Verify user is a family member
       const membership = await this.membershipRepository.findByFamilyAndUser(
-        input.familyId,
-        input.userId,
+        normalizedFamilyId,
+        normalizedUserId,
       );
 
       if (!membership) {
@@ -350,8 +403,8 @@ export class KarmaService {
 
       // Verify sufficient karma balance
       const memberKarma = await this.karmaRepository.findMemberKarma(
-        input.familyId,
-        input.userId,
+        familyObjectId,
+        userObjectId,
       );
 
       const currentKarma = memberKarma?.totalKarma ?? 0;
@@ -362,8 +415,8 @@ export class KarmaService {
       }
 
       logger.info("Deducting karma", {
-        familyId: input.familyId.toString(),
-        userId: input.userId.toString(),
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
         amount: input.amount,
         rewardName: input.rewardName,
         claimId: input.claimId,
@@ -371,8 +424,8 @@ export class KarmaService {
 
       // Create karma event with negative amount
       const karmaEvent = await this.karmaRepository.createKarmaEvent({
-        familyId: input.familyId,
-        userId: input.userId,
+        familyId: familyObjectId,
+        userId: userObjectId,
         amount: -input.amount, // Negative for deduction
         source: "reward_redemption",
         description: `Redeemed reward: ${input.rewardName}`,
@@ -383,15 +436,15 @@ export class KarmaService {
 
       // Update member karma total atomically (with negative amount)
       await this.karmaRepository.upsertMemberKarma(
-        input.familyId,
-        input.userId,
+        familyObjectId,
+        userObjectId,
         -input.amount,
       );
 
       logger.info("Karma deducted successfully", {
         eventId: karmaEvent._id.toString(),
-        familyId: input.familyId.toString(),
-        userId: input.userId.toString(),
+        familyId: normalizedFamilyId,
+        userId: normalizedUserId,
         amount: input.amount,
         claimId: input.claimId,
       });
@@ -406,8 +459,8 @@ export class KarmaService {
       }
 
       logger.error("Failed to deduct karma", {
-        familyId: input.familyId.toString(),
-        userId: input.userId.toString(),
+        familyId: normalizedFamilyId ?? input.familyId,
+        userId: normalizedUserId ?? input.userId,
         amount: input.amount,
         error,
       });

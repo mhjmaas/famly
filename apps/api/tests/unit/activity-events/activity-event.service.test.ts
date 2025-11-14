@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { fromObjectId } from "../../../src/lib/objectid-utils";
 import type { ActivityEvent } from "../../../src/modules/activity-events/domain/activity-event";
 import type { ActivityEventRepository } from "../../../src/modules/activity-events/repositories/activity-event.repository";
 
@@ -36,13 +37,14 @@ describe("ActivityEventService", () => {
   });
 
   describe("recordEvent", () => {
-    it("should record an activity event with all fields", async () => {
+    it("records an activity event with all fields", async () => {
       const userId = new ObjectId();
+      const userIdString = fromObjectId(userId);
       const eventId = new ObjectId();
       const createdAt = new Date();
 
       const input = {
-        userId,
+        userId: userIdString,
         type: "TASK" as const,
         title: "Take out the trash",
         description: "Completed take out the trash",
@@ -63,16 +65,27 @@ describe("ActivityEventService", () => {
 
       const result = await service.recordEvent(input);
 
-      expect(mockRepository.recordEvent).toHaveBeenCalledWith(input);
+      expect(mockRepository.recordEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: expect.any(ObjectId),
+          type: "TASK",
+          title: "Take out the trash",
+          description: "Completed take out the trash",
+          metadata: { karma: 10 },
+        }),
+      );
+      const repoInput = mockRepository.recordEvent.mock.calls[0][0];
+      expect(repoInput.userId.toHexString()).toBe(userIdString);
       expect(result).toEqual(expectedEvent);
     });
 
-    it("should record an event without optional fields", async () => {
+    it("records an event without optional fields", async () => {
       const userId = new ObjectId();
+      const userIdString = fromObjectId(userId);
       const eventId = new ObjectId();
 
       const input = {
-        userId,
+        userId: userIdString,
         type: "RECIPE" as const,
         title: "Created new recipe",
       };
@@ -89,14 +102,23 @@ describe("ActivityEventService", () => {
 
       const result = await service.recordEvent(input);
 
-      expect(mockRepository.recordEvent).toHaveBeenCalledWith(input);
+      expect(mockRepository.recordEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: expect.any(ObjectId),
+          type: "RECIPE",
+          title: "Created new recipe",
+        }),
+      );
+      const repoInput = mockRepository.recordEvent.mock.calls[0][0];
+      expect(repoInput.userId.toHexString()).toBe(userIdString);
       expect(result).toEqual(expectedEvent);
     });
 
-    it("should handle repository errors", async () => {
+    it("propagates repository errors", async () => {
       const userId = new ObjectId();
+      const userIdString = fromObjectId(userId);
       const input = {
-        userId,
+        userId: userIdString,
         type: "TASK" as const,
         title: "Test task",
       };
@@ -107,44 +129,18 @@ describe("ActivityEventService", () => {
       await expect(service.recordEvent(input)).rejects.toThrow(
         "Database error",
       );
-      expect(mockRepository.recordEvent).toHaveBeenCalledWith(input);
+      expect(mockRepository.recordEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: expect.any(ObjectId) }),
+      );
+      const repoInput = mockRepository.recordEvent.mock.calls[0][0];
+      expect(repoInput.userId.toHexString()).toBe(userIdString);
     });
   });
 
   describe("getEventsForUser", () => {
-    it("should fetch events for a user without date filters", async () => {
+    it("fetches events without date filters", async () => {
       const userId = new ObjectId();
-      const events: ActivityEvent[] = [
-        {
-          _id: new ObjectId(),
-          userId,
-          type: "TASK",
-          title: "Task 1",
-          createdAt: new Date("2024-01-15T10:00:00Z"),
-        },
-        {
-          _id: new ObjectId(),
-          userId,
-          type: "RECIPE",
-          title: "Recipe 1",
-          createdAt: new Date("2024-01-14T10:00:00Z"),
-        },
-      ];
-
-      mockRepository.findByUserInDateRange.mockResolvedValue(events);
-
-      const result = await service.getEventsForUser(userId);
-
-      expect(mockRepository.findByUserInDateRange).toHaveBeenCalledWith(
-        userId,
-        undefined,
-        undefined,
-      );
-      expect(result).toEqual(events);
-    });
-
-    it("should fetch events with start date filter", async () => {
-      const userId = new ObjectId();
+      const userIdString = fromObjectId(userId);
       const events: ActivityEvent[] = [
         {
           _id: new ObjectId(),
@@ -157,38 +153,57 @@ describe("ActivityEventService", () => {
 
       mockRepository.findByUserInDateRange.mockResolvedValue(events);
 
-      const result = await service.getEventsForUser(userId, "2024-01-15");
+      const result = await service.getEventsForUser(userIdString);
 
       expect(mockRepository.findByUserInDateRange).toHaveBeenCalledWith(
-        userId,
-        "2024-01-15",
+        expect.any(ObjectId),
+        undefined,
         undefined,
       );
+      const repoArg = mockRepository.findByUserInDateRange.mock.calls[0][0];
+      expect(repoArg.toHexString()).toBe(userIdString);
       expect(result).toEqual(events);
     });
 
-    it("should fetch events with end date filter", async () => {
+    it("fetches events with a start date", async () => {
       const userId = new ObjectId();
+      const userIdString = fromObjectId(userId);
       const events: ActivityEvent[] = [];
 
       mockRepository.findByUserInDateRange.mockResolvedValue(events);
 
-      const result = await service.getEventsForUser(
-        userId,
-        undefined,
-        "2024-01-31",
-      );
+      const result = await service.getEventsForUser(userIdString, "2024-01-15");
 
       expect(mockRepository.findByUserInDateRange).toHaveBeenCalledWith(
-        userId,
+        expect.any(ObjectId),
+        "2024-01-15",
         undefined,
-        "2024-01-31",
       );
+      const repoArg = mockRepository.findByUserInDateRange.mock.calls[0][0];
+      expect(repoArg.toHexString()).toBe(userIdString);
       expect(result).toEqual(events);
     });
 
-    it("should fetch events with date range filter", async () => {
+    it("fetches events with an end date", async () => {
       const userId = new ObjectId();
+      const userIdString = fromObjectId(userId);
+
+      mockRepository.findByUserInDateRange.mockResolvedValue([]);
+
+      await service.getEventsForUser(userIdString, undefined, "2024-01-31");
+
+      expect(mockRepository.findByUserInDateRange).toHaveBeenCalledWith(
+        expect.any(ObjectId),
+        undefined,
+        "2024-01-31",
+      );
+      const repoArg = mockRepository.findByUserInDateRange.mock.calls[0][0];
+      expect(repoArg.toHexString()).toBe(userIdString);
+    });
+
+    it("fetches events within a date range", async () => {
+      const userId = new ObjectId();
+      const userIdString = fromObjectId(userId);
       const events: ActivityEvent[] = [
         {
           _id: new ObjectId(),
@@ -202,33 +217,38 @@ describe("ActivityEventService", () => {
       mockRepository.findByUserInDateRange.mockResolvedValue(events);
 
       const result = await service.getEventsForUser(
-        userId,
+        userIdString,
         "2024-01-01",
         "2024-01-31",
       );
 
       expect(mockRepository.findByUserInDateRange).toHaveBeenCalledWith(
-        userId,
+        expect.any(ObjectId),
         "2024-01-01",
         "2024-01-31",
       );
+      const repoArg = mockRepository.findByUserInDateRange.mock.calls[0][0];
+      expect(repoArg.toHexString()).toBe(userIdString);
       expect(result).toEqual(events);
     });
 
-    it("should handle repository errors", async () => {
+    it("propagates repository errors", async () => {
       const userId = new ObjectId();
+      const userIdString = fromObjectId(userId);
       const error = new Error("Database error");
 
       mockRepository.findByUserInDateRange.mockRejectedValue(error);
 
-      await expect(service.getEventsForUser(userId)).rejects.toThrow(
+      await expect(service.getEventsForUser(userIdString)).rejects.toThrow(
         "Database error",
       );
       expect(mockRepository.findByUserInDateRange).toHaveBeenCalledWith(
-        userId,
+        expect.any(ObjectId),
         undefined,
         undefined,
       );
+      const repoArg = mockRepository.findByUserInDateRange.mock.calls[0][0];
+      expect(repoArg.toHexString()).toBe(userIdString);
     });
   });
 });

@@ -1,7 +1,20 @@
 import { HttpError } from "@lib/http-error";
+import { zodObjectId } from "@lib/zod-objectid";
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import { FamilyRole } from "../domain/family";
+
+/**
+ * Zod schema for update member role route params validation
+ *
+ * Validates:
+ * - familyId: Must be a valid ObjectId format
+ * - memberId: Must be a valid ObjectId format
+ */
+export const updateMemberRoleParamsSchema = z.object({
+  familyId: zodObjectId,
+  memberId: zodObjectId,
+});
 
 /**
  * Zod schema for update member role payload validation
@@ -20,7 +33,7 @@ export const updateMemberRoleSchema = z.object({
 export type UpdateMemberRolePayload = z.infer<typeof updateMemberRoleSchema>;
 
 /**
- * Express middleware to validate update member role request body
+ * Express middleware to validate update member role request body and params
  */
 export function validateUpdateMemberRole(
   req: Request,
@@ -28,6 +41,10 @@ export function validateUpdateMemberRole(
   next: NextFunction,
 ): void {
   try {
+    // Validate route params
+    const validatedParams = updateMemberRoleParamsSchema.parse(req.params);
+    req.params = validatedParams;
+
     // Validate and transform request body
     const validated = updateMemberRoleSchema.parse(req.body);
 

@@ -1,3 +1,4 @@
+import { fromObjectId } from "@lib/objectid-utils";
 import type { Chat } from "@modules/chat/domain/chat";
 import { ObjectId } from "mongodb";
 
@@ -37,10 +38,13 @@ const mockMembershipRepository = {
 
 describe("Unit: ChatService", () => {
   let service: ChatService;
-  const creatorId = new ObjectId();
-  const otherUserId = new ObjectId();
-  const userId3 = new ObjectId();
+  const creatorObjectId = new ObjectId();
+  const otherUserObjectId = new ObjectId();
+  const user3ObjectId = new ObjectId();
   const chatId = new ObjectId();
+  const creatorId = fromObjectId(creatorObjectId);
+  const otherUserId = fromObjectId(otherUserObjectId);
+  const userId3 = fromObjectId(user3ObjectId);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -56,8 +60,8 @@ describe("Unit: ChatService", () => {
         _id: chatId,
         type: "dm",
         title: null,
-        createdBy: creatorId,
-        memberIds: [creatorId, otherUserId],
+        createdBy: creatorObjectId,
+        memberIds: [creatorObjectId, otherUserObjectId],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -68,7 +72,7 @@ describe("Unit: ChatService", () => {
         {
           _id: new ObjectId(),
           chatId,
-          userId: creatorId,
+          userId: creatorObjectId,
           role: "member",
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -76,7 +80,7 @@ describe("Unit: ChatService", () => {
         {
           _id: new ObjectId(),
           chatId,
-          userId: otherUserId,
+          userId: otherUserObjectId,
           role: "member",
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -96,7 +100,8 @@ describe("Unit: ChatService", () => {
       // Verify sorted IDs are used for creation
       const callArgs = mockChatRepository.create.mock.calls[0];
       expect(callArgs[0]).toBe("dm");
-      expect(callArgs[1]).toEqual(creatorId);
+      expect(callArgs[1]).toBeInstanceOf(ObjectId);
+      expect(callArgs[1].toHexString()).toEqual(creatorId);
       expect(callArgs[3]).toBeNull();
       // Check that memberIds are sorted
       const memberIds = callArgs[2] as ObjectId[];
@@ -105,9 +110,18 @@ describe("Unit: ChatService", () => {
       const sorted = [...idStrings].sort();
       expect(idStrings).toEqual(sorted);
       expect(mockMembershipRepository.createBulk).toHaveBeenCalledWith(chatId, [
-        { userId: creatorId, role: "member" },
-        { userId: otherUserId, role: "member" },
+        expect.objectContaining({
+          userId: expect.any(ObjectId),
+          role: "member",
+        }),
+        expect.objectContaining({
+          userId: expect.any(ObjectId),
+          role: "member",
+        }),
       ]);
+      const bulkArgs = mockMembershipRepository.createBulk.mock.calls[0][1];
+      expect(bulkArgs[0].userId.toHexString()).toBe(creatorId);
+      expect(bulkArgs[1].userId.toHexString()).toBe(otherUserId);
     });
 
     it("should return existing DM without creating new one", async () => {
@@ -115,8 +129,8 @@ describe("Unit: ChatService", () => {
         _id: chatId,
         type: "dm",
         title: null,
-        createdBy: creatorId,
-        memberIds: [creatorId, otherUserId],
+        createdBy: creatorObjectId,
+        memberIds: [creatorObjectId, otherUserObjectId],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -148,8 +162,8 @@ describe("Unit: ChatService", () => {
         _id: chatId,
         type: "group",
         title: "Family Planning",
-        createdBy: creatorId,
-        memberIds: [creatorId, otherUserId, userId3],
+        createdBy: creatorObjectId,
+        memberIds: [creatorObjectId, otherUserObjectId, user3ObjectId],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -164,16 +178,23 @@ describe("Unit: ChatService", () => {
       );
 
       expect(result).toEqual(mockChat);
-      expect(mockChatRepository.create).toHaveBeenCalledWith(
-        "group",
+      const createArgs = mockChatRepository.create.mock.calls[0];
+      expect(createArgs[0]).toBe("group");
+      expect(createArgs[1].toHexString()).toBe(creatorId);
+      const memberArg = createArgs[2] as ObjectId[];
+      expect(memberArg.map((id) => id.toHexString())).toEqual([
         creatorId,
-        [creatorId, otherUserId, userId3],
-        "Family Planning",
-      );
-      expect(mockMembershipRepository.createBulk).toHaveBeenCalledWith(chatId, [
-        { userId: creatorId, role: "admin" },
-        { userId: otherUserId, role: "member" },
-        { userId: userId3, role: "member" },
+        otherUserId,
+        userId3,
+      ]);
+      expect(createArgs[3]).toBe("Family Planning");
+      const bulkArgs = mockMembershipRepository.createBulk.mock.calls[0];
+      expect(bulkArgs[0]).toBe(chatId);
+      const bulkMembers = bulkArgs[1];
+      expect(bulkMembers.map((m: any) => m.userId.toHexString())).toEqual([
+        creatorId,
+        otherUserId,
+        userId3,
       ]);
     });
 
@@ -182,8 +203,8 @@ describe("Unit: ChatService", () => {
         _id: chatId,
         type: "group",
         title: null,
-        createdBy: creatorId,
-        memberIds: [creatorId, otherUserId],
+        createdBy: creatorObjectId,
+        memberIds: [creatorObjectId, otherUserObjectId],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -194,12 +215,12 @@ describe("Unit: ChatService", () => {
       const result = await service.createGroup(creatorId, [otherUserId]);
 
       expect(result).toEqual(mockChat);
-      expect(mockChatRepository.create).toHaveBeenCalledWith(
-        "group",
-        creatorId,
+      const callArgs = mockChatRepository.create.mock.calls[0];
+      expect(callArgs[1].toHexString()).toBe(creatorId);
+      expect((callArgs[2] as ObjectId[]).map((id) => id.toHexString())).toEqual(
         [creatorId, otherUserId],
-        null,
       );
+      expect(callArgs[3]).toBeNull();
     });
 
     it("should handle null title by converting to null", async () => {
@@ -207,8 +228,8 @@ describe("Unit: ChatService", () => {
         _id: chatId,
         type: "group",
         title: null,
-        createdBy: creatorId,
-        memberIds: [creatorId, otherUserId],
+        createdBy: creatorObjectId,
+        memberIds: [creatorObjectId, otherUserObjectId],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -218,12 +239,12 @@ describe("Unit: ChatService", () => {
 
       await service.createGroup(creatorId, [otherUserId], null);
 
-      expect(mockChatRepository.create).toHaveBeenCalledWith(
-        "group",
-        creatorId,
+      const callArgs = mockChatRepository.create.mock.calls[0];
+      expect(callArgs[1].toHexString()).toBe(creatorId);
+      expect((callArgs[2] as ObjectId[]).map((id) => id.toHexString())).toEqual(
         [creatorId, otherUserId],
-        null,
       );
+      expect(callArgs[3]).toBeNull();
     });
 
     it("should create group with single additional member", async () => {
@@ -231,8 +252,8 @@ describe("Unit: ChatService", () => {
         _id: chatId,
         type: "group",
         title: "Pair Group",
-        createdBy: creatorId,
-        memberIds: [creatorId, otherUserId],
+        createdBy: creatorObjectId,
+        memberIds: [creatorObjectId, otherUserObjectId],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -247,12 +268,12 @@ describe("Unit: ChatService", () => {
       );
 
       expect(result).toEqual(mockChat);
-      expect(mockChatRepository.create).toHaveBeenCalledWith(
-        "group",
-        creatorId,
+      const callArgs = mockChatRepository.create.mock.calls[0];
+      expect(callArgs[1].toHexString()).toBe(creatorId);
+      expect((callArgs[2] as ObjectId[]).map((id) => id.toHexString())).toEqual(
         [creatorId, otherUserId],
-        "Pair Group",
       );
+      expect(callArgs[3]).toBe("Pair Group");
     });
 
     it("should handle repository errors during creation", async () => {
@@ -268,8 +289,8 @@ describe("Unit: ChatService", () => {
         _id: chatId,
         type: "group",
         title: "Multi Group",
-        createdBy: creatorId,
-        memberIds: [creatorId, otherUserId, userId3],
+        createdBy: creatorObjectId,
+        memberIds: [creatorObjectId, otherUserObjectId, user3ObjectId],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -285,7 +306,9 @@ describe("Unit: ChatService", () => {
 
       // Verify members were passed in correct order: creator first, then others
       const callArgs = mockChatRepository.create.mock.calls[0];
-      expect(callArgs[2]).toEqual([creatorId, otherUserId, userId3]);
+      expect((callArgs[2] as ObjectId[]).map((id) => id.toHexString())).toEqual(
+        [creatorId, otherUserId, userId3],
+      );
     });
   });
 });

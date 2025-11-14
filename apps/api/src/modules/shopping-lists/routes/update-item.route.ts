@@ -1,11 +1,11 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import { validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { toShoppingListDTO } from "../lib/shopping-list.mapper";
 import { ShoppingListRepository } from "../repositories/shopping-list.repository";
 import { ShoppingListService } from "../services/shopping-list.service";
@@ -30,7 +30,7 @@ export function updateItemRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        const userId = new ObjectId(req.user.id);
+        const userId = validateObjectId(req.user.id, "userId");
 
         if (!req.params.familyId) {
           logger.error("familyId parameter missing from request", {
@@ -49,14 +49,13 @@ export function updateItemRoute(): Router {
           throw HttpError.badRequest("Missing itemId parameter");
         }
 
-        let familyId: ObjectId;
-        let listId: ObjectId;
-        let itemId: ObjectId;
-
+        let familyId: string;
+        let listId: string;
+        let itemId: string;
         try {
-          familyId = new ObjectId(req.params.familyId);
-          listId = new ObjectId(req.params.listId);
-          itemId = new ObjectId(req.params.itemId);
+          familyId = validateObjectId(req.params.familyId, "familyId");
+          listId = validateObjectId(req.params.listId, "listId");
+          itemId = validateObjectId(req.params.itemId, "itemId");
         } catch {
           throw HttpError.notFound("Item not found");
         }

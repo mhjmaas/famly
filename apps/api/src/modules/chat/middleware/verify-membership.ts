@@ -1,7 +1,7 @@
 import { HttpError } from "@lib/http-error";
+import { toObjectId, validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
-import { ObjectId } from "mongodb";
 import type { Membership } from "../domain/membership";
 import { MembershipRepository } from "../repositories/membership.repository";
 
@@ -40,8 +40,10 @@ export async function verifyMembership(
       throw HttpError.badRequest("Chat ID is required");
     }
 
-    const chatObjectId = new ObjectId(chatId);
-    const userObjectId = new ObjectId(userId);
+    const normalizedChatId = validateObjectId(chatId, "chatId");
+    const normalizedUserId = validateObjectId(userId, "userId");
+    const chatObjectId = toObjectId(normalizedChatId, "chatId");
+    const userObjectId = toObjectId(normalizedUserId, "userId");
 
     const membershipRepository = new MembershipRepository();
     const membership = await membershipRepository.findByUserAndChat(

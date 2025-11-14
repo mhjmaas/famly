@@ -1,6 +1,10 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
-import type { ObjectId } from "mongodb";
+import {
+  type ObjectIdString,
+  toObjectId,
+  validateObjectId,
+} from "@lib/objectid-utils";
 import type {
   CreateRewardInput,
   RewardDetailsDTO,
@@ -34,36 +38,43 @@ export class RewardService {
    * @returns The created reward as DTO
    */
   async createReward(
-    familyId: ObjectId,
-    createdBy: ObjectId,
+    familyId: string,
+    createdBy: string,
     input: CreateRewardInput,
   ): Promise<RewardDTO> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedCreatedBy: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedCreatedBy = validateObjectId(createdBy, "createdBy");
+      const familyObjectId = toObjectId(normalizedFamilyId, "familyId");
+      const createdByObjectId = toObjectId(normalizedCreatedBy, "createdBy");
+
       logger.info("Creating reward", {
-        familyId: familyId.toString(),
-        createdBy: createdBy.toString(),
+        familyId: normalizedFamilyId,
+        createdBy: normalizedCreatedBy,
         rewardName: input.name,
       });
 
       const reward = await this.rewardRepository.create(
-        familyId,
+        familyObjectId,
         input,
-        createdBy,
+        createdByObjectId,
       );
 
       logger.info("Reward created successfully", {
         rewardId: reward._id.toString(),
-        familyId: familyId.toString(),
+        familyId: normalizedFamilyId,
       });
 
       // Emit reward created event
-      await emitRewardCreated(reward._id, familyId, reward.name);
+      await emitRewardCreated(reward._id, familyObjectId, reward.name);
 
       return toRewardDTO(reward);
     } catch (error) {
       logger.error("Failed to create reward", {
-        familyId: familyId.toString(),
-        createdBy: createdBy.toString(),
+        familyId: normalizedFamilyId ?? familyId,
+        createdBy: normalizedCreatedBy ?? createdBy,
         error,
       });
       throw error;
@@ -78,25 +89,37 @@ export class RewardService {
    * @returns Array of reward DTOs
    */
   async listRewards(
-    familyId: ObjectId,
-    requestingUserId: ObjectId,
-    memberId?: ObjectId,
+    familyId: string,
+    requestingUserId: string,
+    _memberId?: string,
   ): Promise<RewardDTO[]> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedRequestingUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedRequestingUserId = validateObjectId(
+        requestingUserId,
+        "requestingUserId",
+      );
+      const familyObjectId = toObjectId(normalizedFamilyId, "familyId");
+      const requesterObjectId = toObjectId(
+        normalizedRequestingUserId,
+        "requestingUserId",
+      );
+
       logger.debug("Listing rewards", {
-        familyId: familyId.toString(),
-        requestingUserId: requestingUserId.toString(),
-        memberId: memberId?.toString(),
+        familyId: normalizedFamilyId,
+        requestingUserId: normalizedRequestingUserId,
       });
 
-      const rewards = await this.rewardRepository.findByFamily(familyId);
+      const rewards = await this.rewardRepository.findByFamily(familyObjectId);
 
       // Enrich rewards with member-specific metadata
       const enrichedRewards = await Promise.all(
         rewards.map(async (reward) => {
           const metadata = await this.metadataRepository.findByRewardAndMember(
             reward._id,
-            requestingUserId,
+            requesterObjectId,
           );
 
           return {
@@ -110,7 +133,7 @@ export class RewardService {
       return enrichedRewards;
     } catch (error) {
       logger.error("Failed to list rewards", {
-        familyId: familyId.toString(),
+        familyId: normalizedFamilyId ?? familyId,
         error,
       });
       throw error;
@@ -126,34 +149,48 @@ export class RewardService {
    * @throws HttpError with 404 if reward not found or belongs to different family
    */
   async getReward(
-    familyId: ObjectId,
-    rewardId: ObjectId,
-    requestingUserId: ObjectId,
+    familyId: string,
+    rewardId: string,
+    requestingUserId: string,
   ): Promise<RewardDetailsDTO> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedRewardId: ObjectIdString | undefined;
+    let normalizedRequestingUserId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedRewardId = validateObjectId(rewardId, "rewardId");
+      normalizedRequestingUserId = validateObjectId(
+        requestingUserId,
+        "requestingUserId",
+      );
+      const _familyObjectId = toObjectId(normalizedFamilyId, "familyId");
+      const rewardObjectId = toObjectId(normalizedRewardId, "rewardId");
+      const requesterObjectId = toObjectId(
+        normalizedRequestingUserId,
+        "requestingUserId",
+      );
+
       logger.debug("Getting reward", {
-        familyId: familyId.toString(),
-        rewardId: rewardId.toString(),
-        requestingUserId: requestingUserId.toString(),
+        familyId: normalizedFamilyId,
+        rewardId: normalizedRewardId,
+        requestingUserId: normalizedRequestingUserId,
       });
 
-      const reward = await this.rewardRepository.findById(rewardId);
+      const reward = await this.rewardRepository.findById(rewardObjectId);
 
-      if (!reward || reward.familyId.toString() !== familyId.toString()) {
+      if (!reward || reward.familyId.toString() !== normalizedFamilyId) {
         throw HttpError.notFound("Reward not found");
       }
 
-      // Fetch metadata for the requesting user
       const metadata = await this.metadataRepository.findByRewardAndMember(
-        rewardId,
-        requestingUserId,
+        rewardObjectId,
+        requesterObjectId,
       );
 
-      // Fetch aggregated metadata
       const totalClaimCount =
-        await this.metadataRepository.getTotalClaimCount(rewardId);
+        await this.metadataRepository.getTotalClaimCount(rewardObjectId);
       const totalFavouriteCount =
-        await this.metadataRepository.getTotalFavouriteCount(rewardId);
+        await this.metadataRepository.getTotalFavouriteCount(rewardObjectId);
 
       return toRewardDetailsDTO(reward, {
         claimCount: metadata?.claimCount ?? 0,
@@ -167,8 +204,8 @@ export class RewardService {
       }
 
       logger.error("Failed to get reward", {
-        familyId: familyId.toString(),
-        rewardId: rewardId.toString(),
+        familyId: normalizedFamilyId ?? familyId,
+        rewardId: normalizedRewardId ?? rewardId,
         error,
       });
       throw error;
@@ -184,36 +221,40 @@ export class RewardService {
    * @throws HttpError with 404 if reward not found or belongs to different family
    */
   async updateReward(
-    familyId: ObjectId,
-    rewardId: ObjectId,
+    familyId: string,
+    rewardId: string,
     input: UpdateRewardInput,
   ): Promise<RewardDTO> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedRewardId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedRewardId = validateObjectId(rewardId, "rewardId");
+      const familyObjectId = toObjectId(normalizedFamilyId, "familyId");
+      const rewardObjectId = toObjectId(normalizedRewardId, "rewardId");
+
       logger.info("Updating reward", {
-        familyId: familyId.toString(),
-        rewardId: rewardId.toString(),
+        familyId: normalizedFamilyId,
+        rewardId: normalizedRewardId,
       });
 
-      // Verify reward exists and belongs to family
-      const reward = await this.rewardRepository.findById(rewardId);
+      const reward = await this.rewardRepository.findById(rewardObjectId);
 
-      if (!reward || reward.familyId.toString() !== familyId.toString()) {
+      if (!reward || reward.familyId.toString() !== normalizedFamilyId) {
         throw HttpError.notFound("Reward not found");
       }
 
-      // Update the reward
-      const updated = await this.rewardRepository.update(rewardId, input);
+      const updated = await this.rewardRepository.update(rewardObjectId, input);
 
       if (!updated) {
         throw HttpError.notFound("Reward not found");
       }
 
       logger.info("Reward updated successfully", {
-        rewardId: rewardId.toString(),
+        rewardId: normalizedRewardId,
       });
 
-      // Emit reward updated event
-      await emitRewardUpdated(rewardId, familyId, updated.name);
+      await emitRewardUpdated(rewardObjectId, familyObjectId, updated.name);
 
       return toRewardDTO(updated);
     } catch (error) {
@@ -222,8 +263,8 @@ export class RewardService {
       }
 
       logger.error("Failed to update reward", {
-        familyId: familyId.toString(),
-        rewardId: rewardId.toString(),
+        familyId: normalizedFamilyId ?? familyId,
+        rewardId: normalizedRewardId ?? rewardId,
         error,
       });
       throw error;
@@ -237,23 +278,28 @@ export class RewardService {
    * @throws HttpError with 404 if reward not found
    * @throws HttpError with 409 if reward has pending claims
    */
-  async deleteReward(familyId: ObjectId, rewardId: ObjectId): Promise<void> {
+  async deleteReward(familyId: string, rewardId: string): Promise<void> {
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedRewardId: ObjectIdString | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedRewardId = validateObjectId(rewardId, "rewardId");
+      const familyObjectId = toObjectId(normalizedFamilyId, "familyId");
+      const rewardObjectId = toObjectId(normalizedRewardId, "rewardId");
+
       logger.info("Deleting reward", {
-        familyId: familyId.toString(),
-        rewardId: rewardId.toString(),
+        familyId: normalizedFamilyId,
+        rewardId: normalizedRewardId,
       });
 
-      // Verify reward exists and belongs to family
-      const reward = await this.rewardRepository.findById(rewardId);
+      const reward = await this.rewardRepository.findById(rewardObjectId);
 
-      if (!reward || reward.familyId.toString() !== familyId.toString()) {
+      if (!reward || reward.familyId.toString() !== normalizedFamilyId) {
         throw HttpError.notFound("Reward not found");
       }
 
-      // Check for pending claims
       const hasPendingClaims =
-        await this.rewardRepository.hasPendingClaims(rewardId);
+        await this.rewardRepository.hasPendingClaims(rewardObjectId);
 
       if (hasPendingClaims) {
         throw HttpError.conflict(
@@ -261,26 +307,23 @@ export class RewardService {
         );
       }
 
-      // Store reward name for event emission
       const rewardName = reward.name;
 
-      // Delete the reward
-      await this.rewardRepository.delete(rewardId);
+      await this.rewardRepository.delete(rewardObjectId);
 
       logger.info("Reward deleted successfully", {
-        rewardId: rewardId.toString(),
+        rewardId: normalizedRewardId,
       });
 
-      // Emit reward deleted event
-      await emitRewardDeleted(rewardId, familyId, rewardName);
+      await emitRewardDeleted(rewardObjectId, familyObjectId, rewardName);
     } catch (error) {
       if (error instanceof HttpError) {
         throw error;
       }
 
       logger.error("Failed to delete reward", {
-        familyId: familyId.toString(),
-        rewardId: rewardId.toString(),
+        familyId: normalizedFamilyId ?? familyId,
+        rewardId: normalizedRewardId ?? rewardId,
         error,
       });
       throw error;

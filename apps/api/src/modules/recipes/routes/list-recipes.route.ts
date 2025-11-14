@@ -1,15 +1,18 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import { validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { toRecipeDTOArray } from "../lib/recipe.mapper";
 import { RecipeRepository } from "../repositories/recipe.repository";
 import { RecipeService } from "../services/recipe.service";
-import { validateListRecipes } from "../validators/list-recipes.validator";
+import {
+  type ListRecipesInput,
+  validateListRecipes,
+} from "../validators/list-recipes.validator";
 
 export function listRecipesRoute(): Router {
   const router = Router({ mergeParams: true });
@@ -34,7 +37,7 @@ export function listRecipesRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        const userId = new ObjectId(req.user.id);
+        const userId = validateObjectId(req.user.id, "userId");
 
         if (!req.params.familyId) {
           logger.error("familyId parameter missing from request", {
@@ -45,9 +48,8 @@ export function listRecipesRoute(): Router {
           throw HttpError.badRequest("Missing familyId parameter");
         }
 
-        const familyId = new ObjectId(req.params.familyId);
-        const limit = parseInt(req.query.limit as string, 10) || 10;
-        const offset = parseInt(req.query.offset as string, 10) || 0;
+        const familyId = validateObjectId(req.params.familyId, "familyId");
+        const { limit, offset } = req.query as ListRecipesInput;
 
         const { recipes, total } = await recipeService.listRecipes(
           familyId,

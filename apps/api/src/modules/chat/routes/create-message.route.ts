@@ -1,9 +1,9 @@
 import { HttpError } from "@lib/http-error";
+import { toObjectId, validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { ChatRepository } from "../repositories/chat.repository";
 import { MembershipRepository } from "../repositories/membership.repository";
 import { MessageRepository } from "../repositories/message.repository";
@@ -50,27 +50,17 @@ export function createMessageRoute(): Router {
 
         const { chatId: chatIdParam } = req.params;
 
-        // Validate chatId format
-        if (!/^[0-9a-fA-F]{24}$/.test(chatIdParam)) {
-          throw HttpError.badRequest(
-            "Invalid chat ID format - must be a valid ObjectId",
-          );
-        }
-
-        if (!ObjectId.isValid(chatIdParam)) {
-          throw HttpError.badRequest(
-            "Invalid chat ID format - must be a valid ObjectId",
-          );
-        }
+        const chatId = validateObjectId(chatIdParam, "chatId");
+        const senderId = validateObjectId(req.user.id, "userId");
 
         const input: CreateMessageInput = (req as any).validatedBody;
-        const senderId = new ObjectId(req.user.id);
-        const chatId = new ObjectId(chatIdParam);
+        const chatObjectId = toObjectId(chatId, "chatId");
+        const senderObjectId = toObjectId(senderId, "userId");
 
         // Verify user is a member of the chat
         const membership = await membershipRepository.findByUserAndChat(
-          senderId,
-          chatId,
+          senderObjectId,
+          chatObjectId,
         );
         if (!membership) {
           throw HttpError.forbidden("You are not a member of this chat");

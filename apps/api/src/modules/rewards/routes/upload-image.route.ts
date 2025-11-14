@@ -1,11 +1,11 @@
 import { HttpError } from "@lib/http-error";
+import { validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import { FamilyRole } from "@modules/family/domain/family";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import multer from "multer";
 import {
   uploadRewardImage,
@@ -77,8 +77,8 @@ export function uploadImageRoute(): Router {
           throw HttpError.badRequest("File size must be less than 5MB");
         }
 
-        const userId = new ObjectId(req.user.id);
-        const familyId = new ObjectId(req.params.familyId);
+        const userId = validateObjectId(req.user.id, "userId");
+        const familyId = validateObjectId(req.params.familyId, "familyId");
 
         // Authorize parent role
         const membershipRepository = new FamilyMembershipRepository();
@@ -92,7 +92,7 @@ export function uploadImageRoute(): Router {
         }
 
         // Upload to MinIO
-        const imageUrl = await uploadRewardImage(req.file, req.params.familyId);
+        const imageUrl = await uploadRewardImage(req.file, familyId);
 
         res.status(200).json({ imageUrl });
       } catch (error) {

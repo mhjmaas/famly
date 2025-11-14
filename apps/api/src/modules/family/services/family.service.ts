@@ -1,6 +1,11 @@
 import { getDb } from "@infra/mongo/client";
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
+import {
+  fromObjectId,
+  toObjectId,
+  validateObjectId,
+} from "@lib/objectid-utils";
 import { getAuth } from "@modules/auth/better-auth";
 import { DeploymentConfigRepository } from "@modules/deployment-config/repositories/deployment-config.repository";
 import { DeploymentConfigService } from "@modules/deployment-config/services/deployment-config.service";
@@ -9,7 +14,6 @@ import {
   emitFamilyMemberRemoved,
   emitFamilyMemberRoleUpdated,
 } from "@modules/family/events/family-events";
-import { ObjectId } from "mongodb";
 import {
   type AddFamilyMemberRequest,
   type AddFamilyMemberResult,
@@ -36,33 +40,35 @@ export class FamilyService {
   /**
    * Create a new family and link the creator as a Parent
    *
-   * @param userId - The ID of the user creating the family
+   * @param userId - The ID of the user creating the family (string)
    * @param input - Create family input payload
    * @returns Create family response with membership view
    */
   async createFamily(
-    userId: ObjectId,
+    userId: string,
     input: CreateFamilyInput,
   ): Promise<CreateFamilyResponse> {
+    let creatorId: string | undefined;
     try {
+      creatorId = validateObjectId(userId, "userId");
       // Normalize family name (trim, handle empty string, validate length)
       const normalizedName = normalizeFamilyName(input.name);
 
       logger.info("Creating family", {
-        userId: userId.toString(),
+        userId: creatorId,
         name: normalizedName,
       });
 
       // Create family document
       const family = await this.familyRepository.createFamily(
-        userId,
+        creatorId,
         normalizedName,
       );
 
       // Create Parent membership for creator
       const membership = await this.membershipRepository.insertMembership(
-        family._id,
-        userId,
+        fromObjectId(family._id),
+        creatorId,
         FamilyRole.Parent,
       );
 
@@ -85,14 +91,14 @@ export class FamilyService {
       }
 
       logger.info("Family created successfully", {
-        familyId: family._id.toString(),
-        userId: userId.toString(),
+        familyId: fromObjectId(family._id),
+        userId: creatorId,
       });
 
       return familyView;
     } catch (error) {
       logger.error("Failed to create family", {
-        userId: userId.toString(),
+        userId: creatorId ?? userId,
         error,
       });
       throw error;
@@ -102,22 +108,26 @@ export class FamilyService {
   /**
    * List all families for a user
    *
-   * @param userId - The ID of the user
+   * @param userId - The ID of the user (string)
    * @returns List families response with membership views
    */
-  async listFamiliesForUser(userId: ObjectId): Promise<ListFamiliesResponse> {
+  async listFamiliesForUser(userId: string): Promise<ListFamiliesResponse> {
+    let normalizedUserId: string | undefined;
     try {
-      logger.debug("Listing families for user", { userId: userId.toString() });
+      normalizedUserId = validateObjectId(userId, "userId");
+
+      logger.debug("Listing families for user", { userId: normalizedUserId });
 
       // Find all memberships for the user
-      const memberships = await this.membershipRepository.findByUser(userId);
+      const memberships =
+        await this.membershipRepository.findByUser(normalizedUserId);
 
       if (memberships.length === 0) {
         return [];
       }
 
-      // Extract unique family IDs
-      const familyIds = memberships.map((m) => m.familyId);
+      // Extract unique family IDs as strings
+      const familyIds = memberships.map((m) => fromObjectId(m.familyId));
 
       // Fetch family documents
       const families = await this.familyRepository.findByIds(familyIds);
@@ -143,7 +153,7 @@ export class FamilyService {
       return familyViews;
     } catch (error) {
       logger.error("Failed to list families for user", {
-        userId: userId.toString(),
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;
@@ -155,33 +165,36 @@ export class FamilyService {
    * Parent can add both Parent and Child roles
    * Creates user via better-auth without auto-login
    *
-   * @param familyId - The ID of the family
-   * @param addedBy - The ID of the parent adding the member
+   * @param familyId - The ID of the family (string)
+   * @param addedBy - The ID of the parent adding the member (string)
    * @param input - Add family member input payload
    * @returns Add family member result
    */
   async addFamilyMember(
-    familyId: ObjectId,
-    addedBy: ObjectId,
+    familyId: string,
+    addedBy: string,
     input: AddFamilyMemberRequest,
   ): Promise<AddFamilyMemberResult> {
+    let normalizedFamilyId: string | undefined;
+    let normalizedAddedBy: string | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedAddedBy = validateObjectId(addedBy, "addedBy");
+
       logger.info("Adding family member", {
-        familyId: familyId.toString(),
-        addedBy: addedBy.toString(),
+        familyId: normalizedFamilyId,
+        addedBy: normalizedAddedBy,
         role: input.role,
         email: input.email,
       });
 
-      // 1. Verify family exists
-      const family = await this.familyRepository.findById(familyId);
+      const family = await this.familyRepository.findById(normalizedFamilyId);
       if (!family) {
         throw HttpError.notFound("Family not found");
       }
 
-      // 2. Create user via better-auth (without auto-login) or use existing user
       const auth = getAuth();
-      let newUserId: ObjectId;
+      let newUserId: string;
 
       try {
         const signUpResult = await auth.api.signUpEmail({
@@ -194,20 +207,18 @@ export class FamilyService {
           },
         });
 
-        newUserId = new ObjectId(signUpResult.user.id);
+        newUserId = validateObjectId(signUpResult.user.id, "newUserId");
 
         logger.debug("User created via better-auth", {
-          userId: newUserId.toString(),
+          userId: newUserId,
           email: input.email,
         });
       } catch (error) {
-        // If user creation fails, check if it's because the email already exists
         logger.debug("User creation failed, checking if user exists", {
           email: input.email,
           error,
         });
 
-        // Query the users collection via MongoDB directly
         const db = getDb();
         const usersCollection = db.collection("user");
 
@@ -216,7 +227,6 @@ export class FamilyService {
         });
 
         if (!existingUser) {
-          // Email doesn't exist, so this is a different error
           logger.error("Failed to create user via better-auth", {
             email: input.email,
             error,
@@ -224,38 +234,36 @@ export class FamilyService {
           throw HttpError.badRequest("Failed to create user account");
         }
 
-        // User exists, check if they belong to a different family
-        newUserId = new ObjectId(existingUser._id);
+        const existingUserId = fromObjectId(existingUser._id);
 
         const existingMemberships =
-          await this.membershipRepository.findByUser(newUserId);
+          await this.membershipRepository.findByUser(existingUserId);
 
         if (existingMemberships.length > 0) {
-          // Check if user is in THIS family
           const membershipInThisFamily = existingMemberships.find(
-            (m) => m.familyId.toString() === familyId.toString(),
+            (m) => m.familyId.toString() === normalizedFamilyId,
           );
 
           if (membershipInThisFamily) {
             throw HttpError.conflict("User is already a member of this family");
           }
 
-          // User belongs to a different family
           throw HttpError.conflict(
             "Email is already associated with another family",
           );
         }
 
         logger.debug("Using existing user without family membership", {
-          userId: newUserId.toString(),
+          userId: existingUserId,
           email: input.email,
         });
+
+        newUserId = existingUserId;
       }
 
-      // 3. Check if user already member of this family (final check)
       const existingMembership =
         await this.membershipRepository.findByFamilyAndUser(
-          familyId,
+          normalizedFamilyId,
           newUserId,
         );
 
@@ -263,30 +271,36 @@ export class FamilyService {
         throw HttpError.conflict("User is already a member of this family");
       }
 
-      // 4. Create family membership with addedBy metadata
       const membership = await this.membershipRepository.insertMembership(
-        familyId,
+        normalizedFamilyId,
         newUserId,
         input.role,
-        addedBy,
+        normalizedAddedBy,
       );
 
       logger.info("Family member added successfully", {
-        familyId: familyId.toString(),
-        memberId: newUserId.toString(),
+        familyId: normalizedFamilyId,
+        memberId: newUserId,
         role: input.role,
-        addedBy: addedBy.toString(),
+        addedBy: normalizedAddedBy,
       });
 
-      // 5. Emit event to notify all family members
-      await emitFamilyMemberAdded(familyId, newUserId, input.name, input.role);
+      await emitFamilyMemberAdded(
+        normalizedFamilyId,
+        newUserId,
+        input.name,
+        input.role,
+      );
 
-      // 6. Map to result DTO (without auth tokens)
-      return toAddFamilyMemberResult(membership, familyId, addedBy);
+      return toAddFamilyMemberResult(
+        membership,
+        normalizedFamilyId,
+        normalizedAddedBy,
+      );
     } catch (error) {
       logger.error("Failed to add family member", {
-        familyId: familyId.toString(),
-        addedBy: addedBy.toString(),
+        familyId: normalizedFamilyId ?? familyId,
+        addedBy: normalizedAddedBy ?? addedBy,
         error,
       });
       throw error;
@@ -296,31 +310,38 @@ export class FamilyService {
   /**
    * Remove a member from a family and enforce parent guardrails
    *
-   * @param familyId - Family the member belongs to
-   * @param removedBy - Parent initiating the removal
-   * @param memberId - User being removed from the family
+   * @param familyId - Family the member belongs to (string)
+   * @param removedBy - Parent initiating the removal (string)
+   * @param memberId - User being removed from the family (string)
    */
   async removeFamilyMember(
-    familyId: ObjectId,
-    removedBy: ObjectId,
-    memberId: ObjectId,
+    familyId: string,
+    removedBy: string,
+    memberId: string,
   ): Promise<void> {
+    let normalizedFamilyId: string | undefined;
+    let normalizedRemovedBy: string | undefined;
+    let normalizedMemberId: string | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedRemovedBy = validateObjectId(removedBy, "removedBy");
+      normalizedMemberId = validateObjectId(memberId, "memberId");
+
       logger.info("Removing family member", {
-        familyId: familyId.toString(),
-        removedBy: removedBy.toString(),
-        memberId: memberId.toString(),
+        familyId: normalizedFamilyId,
+        removedBy: normalizedRemovedBy,
+        memberId: normalizedMemberId,
       });
 
-      const family = await this.familyRepository.findById(familyId);
+      const family = await this.familyRepository.findById(normalizedFamilyId);
       if (!family) {
         throw HttpError.notFound("Family not found");
       }
 
       const initiatorMembership =
         await this.membershipRepository.findByFamilyAndUser(
-          familyId,
-          removedBy,
+          normalizedFamilyId,
+          normalizedRemovedBy,
         );
 
       if (
@@ -331,7 +352,10 @@ export class FamilyService {
       }
 
       const targetMembership =
-        await this.membershipRepository.findByFamilyAndUser(familyId, memberId);
+        await this.membershipRepository.findByFamilyAndUser(
+          normalizedFamilyId,
+          normalizedMemberId,
+        );
 
       if (!targetMembership) {
         throw HttpError.notFound("Member not found in family");
@@ -339,7 +363,7 @@ export class FamilyService {
 
       if (targetMembership.role === FamilyRole.Parent) {
         const memberships =
-          await this.membershipRepository.findByFamily(familyId);
+          await this.membershipRepository.findByFamily(normalizedFamilyId);
         const parentCount = memberships.filter(
           (membership) => membership.role === FamilyRole.Parent,
         ).length;
@@ -352,30 +376,36 @@ export class FamilyService {
       // Fetch user data before deletion to get the name for the event
       const db = getDb();
       const usersCollection = db.collection("user");
-      const user = await usersCollection.findOne({ _id: memberId });
+      const user = await usersCollection.findOne({
+        _id: toObjectId(normalizedMemberId, "memberId"),
+      });
       const memberName = user?.name || "Unknown";
 
       const deleted = await this.membershipRepository.deleteMembership(
-        familyId,
-        memberId,
+        normalizedFamilyId,
+        normalizedMemberId,
       );
       if (!deleted) {
         throw HttpError.notFound("Member not found in family");
       }
 
       logger.info("Family member removed successfully", {
-        familyId: familyId.toString(),
-        removedBy: removedBy.toString(),
-        memberId: memberId.toString(),
+        familyId: normalizedFamilyId,
+        removedBy: normalizedRemovedBy,
+        memberId: normalizedMemberId,
       });
 
       // Emit event to notify remaining family members
-      await emitFamilyMemberRemoved(familyId, memberId, memberName);
+      await emitFamilyMemberRemoved(
+        normalizedFamilyId,
+        normalizedMemberId,
+        memberName,
+      );
     } catch (error) {
       logger.error("Failed to remove family member", {
-        familyId: familyId.toString(),
-        removedBy: removedBy.toString(),
-        memberId: memberId.toString(),
+        familyId: normalizedFamilyId ?? familyId,
+        removedBy: normalizedRemovedBy ?? removedBy,
+        memberId: normalizedMemberId ?? memberId,
         error,
       });
       throw error;
@@ -385,33 +415,36 @@ export class FamilyService {
   /**
    * Update a member's role in a family
    *
-   * @param familyId - The ID of the family
-   * @param memberId - The ID of the member whose role will be updated
+   * @param familyId - The ID of the family (string)
+   * @param memberId - The ID of the member whose role will be updated (string)
    * @param role - The new role (Parent or Child)
    * @returns Update member role response
    */
   async updateMemberRole(
-    familyId: ObjectId,
-    memberId: ObjectId,
+    familyId: string,
+    memberId: string,
     role: FamilyRole,
   ): Promise<UpdateMemberRoleResponse> {
+    let normalizedFamilyId: string | undefined;
+    let normalizedMemberId: string | undefined;
     try {
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedMemberId = validateObjectId(memberId, "memberId");
+
       logger.info("Updating member role", {
-        familyId: familyId.toString(),
-        memberId: memberId.toString(),
+        familyId: normalizedFamilyId,
+        memberId: normalizedMemberId,
         role,
       });
 
-      // 1. Verify family exists
-      const family = await this.familyRepository.findById(familyId);
+      const family = await this.familyRepository.findById(normalizedFamilyId);
       if (!family) {
         throw HttpError.notFound("Family not found");
       }
 
-      // 2. Verify membership exists
       const membership = await this.membershipRepository.findByFamilyAndUser(
-        familyId,
-        memberId,
+        normalizedFamilyId,
+        normalizedMemberId,
       );
 
       if (!membership) {
@@ -420,7 +453,7 @@ export class FamilyService {
 
       if (membership.role === FamilyRole.Parent && role === FamilyRole.Child) {
         const memberships =
-          await this.membershipRepository.findByFamily(familyId);
+          await this.membershipRepository.findByFamily(normalizedFamilyId);
         const parentCount = memberships.filter(
           (member) => member.role === FamilyRole.Parent,
         ).length;
@@ -433,10 +466,9 @@ export class FamilyService {
       // Remember old role for event
       const oldRole = membership.role;
 
-      // 3. Update the role
       const updated = await this.membershipRepository.updateMemberRole(
-        familyId,
-        memberId,
+        normalizedFamilyId,
+        normalizedMemberId,
         role,
       );
 
@@ -444,9 +476,11 @@ export class FamilyService {
         throw HttpError.notFound("Member not found");
       }
 
-      // 4. Fetch updated membership to get updatedAt timestamp
       const updatedMembership =
-        await this.membershipRepository.findByFamilyAndUser(familyId, memberId);
+        await this.membershipRepository.findByFamilyAndUser(
+          normalizedFamilyId,
+          normalizedMemberId,
+        );
 
       if (!updatedMembership) {
         throw HttpError.internalServerError(
@@ -455,37 +489,37 @@ export class FamilyService {
       }
 
       logger.info("Member role updated successfully", {
-        familyId: familyId.toString(),
-        memberId: memberId.toString(),
+        familyId,
+        memberId,
         role,
       });
 
       // Fetch user data to get the name for the event
       const db = getDb();
       const usersCollection = db.collection("user");
-      const user = await usersCollection.findOne({ _id: memberId });
+      const user = await usersCollection.findOne({
+        _id: toObjectId(normalizedMemberId, "memberId"),
+      });
       const memberName = user?.name || "Unknown";
 
-      // Emit event to notify all family members of role change
       await emitFamilyMemberRoleUpdated(
-        familyId,
-        memberId,
+        normalizedFamilyId,
+        normalizedMemberId,
         memberName,
         oldRole,
         role,
       );
 
-      // 5. Return response
       return {
-        memberId: memberId.toString(),
-        familyId: familyId.toString(),
+        memberId: normalizedMemberId,
+        familyId: normalizedFamilyId,
         role: updatedMembership.role,
         updatedAt: updatedMembership.updatedAt.toISOString(),
       };
     } catch (error) {
       logger.error("Failed to update member role", {
-        familyId: familyId.toString(),
-        memberId: memberId.toString(),
+        familyId: normalizedFamilyId ?? familyId,
+        memberId: normalizedMemberId ?? memberId,
         role,
         error,
       });

@@ -1,9 +1,9 @@
 import { HttpError } from "@lib/http-error";
+import { validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
-import { ObjectId } from "mongodb";
 import { verifyMembership } from "../middleware/verify-membership";
 import { ChatRepository } from "../repositories/chat.repository";
 import { MembershipRepository } from "../repositories/membership.repository";
@@ -48,10 +48,10 @@ export function updateReadCursorRoute(): Router {
           throw HttpError.unauthorized("Authentication required");
         }
 
-        const chatId = new ObjectId(req.params.chatId);
-        const userId = new ObjectId(req.user.id);
+        const chatId = validateObjectId(req.params.chatId, "chatId");
+        const userId = validateObjectId(req.user.id, "userId");
         const input: UpdateReadCursorInput = (req as any).validatedBody;
-        const messageId = new ObjectId(input.messageId);
+        const messageId = input.messageId;
 
         const membership = await membershipService.updateReadCursor(
           chatId,

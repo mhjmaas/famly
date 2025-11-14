@@ -1,5 +1,9 @@
 import { logger } from "@lib/logger";
-import type { ObjectId } from "mongodb";
+import {
+  type ObjectIdString,
+  toObjectId,
+  validateObjectId,
+} from "@lib/objectid-utils";
 import type {
   ActivityEvent,
   ActivityEventType,
@@ -8,7 +12,7 @@ import { emitActivityCreated } from "../events/activity-events";
 import type { ActivityEventRepository } from "../repositories/activity-event.repository";
 
 export interface RecordEventInput {
-  userId: ObjectId;
+  userId: ObjectIdString;
   type: ActivityEventType;
   title: string;
   description?: string;
@@ -28,15 +32,19 @@ export class ActivityEventService {
    * @returns The created activity event
    */
   async recordEvent(input: RecordEventInput): Promise<ActivityEvent> {
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedUserId = validateObjectId(input.userId, "userId");
+      const userObjectId = toObjectId(normalizedUserId, "userId");
+
       logger.debug("Recording activity event", {
-        userId: input.userId.toString(),
+        userId: normalizedUserId,
         type: input.type,
         title: input.title,
       });
 
       const event = await this.activityEventRepository.recordEvent({
-        userId: input.userId,
+        userId: userObjectId,
         type: input.type,
         title: input.title,
         description: input.description,
@@ -45,7 +53,7 @@ export class ActivityEventService {
 
       logger.info("Activity event recorded successfully", {
         eventId: event._id.toString(),
-        userId: input.userId.toString(),
+        userId: normalizedUserId,
         type: input.type,
       });
 
@@ -55,7 +63,7 @@ export class ActivityEventService {
       return event;
     } catch (error) {
       logger.error("Failed to record activity event", {
-        userId: input.userId.toString(),
+        userId: normalizedUserId ?? input.userId,
         type: input.type,
         error,
       });
@@ -72,32 +80,36 @@ export class ActivityEventService {
    * @returns Array of activity events (up to 100), sorted by most recent first
    */
   async getEventsForUser(
-    userId: ObjectId,
+    userId: string,
     startDate?: string,
     endDate?: string,
   ): Promise<ActivityEvent[]> {
+    let normalizedUserId: ObjectIdString | undefined;
     try {
+      normalizedUserId = validateObjectId(userId, "userId");
+      const userObjectId = toObjectId(normalizedUserId, "userId");
+
       logger.debug("Fetching activity events for user", {
-        userId: userId.toString(),
+        userId: normalizedUserId,
         startDate,
         endDate,
       });
 
       const events = await this.activityEventRepository.findByUserInDateRange(
-        userId,
+        userObjectId,
         startDate,
         endDate,
       );
 
       logger.debug("Activity events fetched successfully", {
-        userId: userId.toString(),
+        userId: normalizedUserId,
         count: events.length,
       });
 
       return events;
     } catch (error) {
       logger.error("Failed to fetch activity events", {
-        userId: userId.toString(),
+        userId: normalizedUserId ?? userId,
         error,
       });
       throw error;
