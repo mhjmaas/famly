@@ -1,0 +1,56 @@
+meta {
+  name: update settings
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/settings
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "enabledFeatures": [
+      "tasks",
+      "rewards",
+      "chat",
+      "calendar",
+      "shopping_list",
+      "recipes",
+      "diary",
+      "family_diary",
+      "ai_integration"
+    ],
+    "aiSettings": {
+      "apiEndpoint": "https://api.openai.com/v1",
+      "apiSecret": "sk-test-secret-key",
+      "modelName": "gpt-4",
+      "aiName": "Jarvis"
+    }
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+script:post-response {
+  try {
+    const body = res.body;
+
+    if (body?.enabledFeatures) {
+      console.log(`Updated enabled features: ${body.enabledFeatures.join(', ')}`);
+    }
+
+    if (body?.aiSettings) {
+      console.log(`Updated AI Name: ${body.aiSettings.aiName}`);
+      console.log(`Updated AI Model: ${body.aiSettings.modelName}`);
+      // Note: apiSecret is not returned for security reasons
+    }
+  } catch (error) {
+    console.log('Failed to update settings: ' + error?.message);
+  }
+}

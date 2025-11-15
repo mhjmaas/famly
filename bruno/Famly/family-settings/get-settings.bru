@@ -1,0 +1,33 @@
+meta {
+  name: get settings
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/settings
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+script:post-response {
+  try {
+    const body = res.body;
+
+    if (body?.enabledFeatures) {
+      console.log(`Enabled features: ${body.enabledFeatures.join(', ')}`);
+    }
+
+    if (body?.aiSettings) {
+      console.log(`AI Name: ${body.aiSettings.aiName}`);
+      console.log(`AI Model: ${body.aiSettings.modelName}`);
+    }
+  } catch (error) {
+    console.log('Failed to read settings: ' + error?.message);
+  }
+}
