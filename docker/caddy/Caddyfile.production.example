@@ -27,6 +27,27 @@ famly.local {
 		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
 	}
 
+	# Security headers for PWA
+	header {
+		# PWA security headers
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		# Remove server header for security
+		-Server
+	}
+
+	# Service worker specific headers
+	handle /sw.js {
+		header {
+			Content-Type "application/javascript; charset=utf-8"
+			Cache-Control "no-cache, no-store, must-revalidate"
+			Content-Security-Policy "default-src 'self'; script-src 'self'"
+			X-Content-Type-Options "nosniff"
+		}
+		reverse_proxy web:3000
+	}
+
 	# Socket.IO WebSocket connections - proxy to API service
 	# IMPORTANT: Use 'handle' not 'handle_path' to preserve the /socket.io/ path
 	handle /socket.io/* {
@@ -68,6 +89,27 @@ famly.local {
 # Production domain (example - configure with actual domain)
 famly.app {
 	# Caddy automatically obtains Let's Encrypt certificate
+
+	# Security headers for PWA
+	header {
+		# PWA security headers
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		# Remove server header for security
+		-Server
+	}
+
+	# Service worker specific headers
+	handle /sw.js {
+		header {
+			Content-Type "application/javascript; charset=utf-8"
+			Cache-Control "no-cache, no-store, must-revalidate"
+			Content-Security-Policy "default-src 'self'; script-src 'self'"
+			X-Content-Type-Options "nosniff"
+		}
+		reverse_proxy web:3000
+	}
 
 	# Socket.IO WebSocket connections - proxy to API service
 	# Socket.IO uses /socket.io/* paths for WebSocket connections

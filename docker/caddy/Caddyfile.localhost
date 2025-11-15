@@ -13,6 +13,27 @@ localhost {
 	# Use local mkcert certificates for development
 	tls /certs/localhost.pem /certs/localhost-key.pem
 
+	# Security headers for PWA
+	header {
+		# PWA security headers
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		# Remove server header for security
+		-Server
+	}
+
+	# Service worker specific headers
+	handle /sw.js {
+		header {
+			Content-Type "application/javascript; charset=utf-8"
+			Cache-Control "no-cache, no-store, must-revalidate"
+			Content-Security-Policy "default-src 'self'; script-src 'self'"
+			X-Content-Type-Options "nosniff"
+		}
+		reverse_proxy web:3000
+	}
+
 	# Socket.IO WebSocket connections - proxy to API service
 	# Socket.IO uses /socket.io/* paths for WebSocket connections
 	# Caddy automatically handles WebSocket upgrade requests
