@@ -1,0 +1,40 @@
+meta {
+  name: update features only
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/settings
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "enabledFeatures": [
+      "tasks",
+      "rewards",
+      "chat"
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
+
+script:post-response {
+  try {
+    const body = res.body;
+
+    if (body?.enabledFeatures) {
+      console.log(`Updated enabled features: ${body.enabledFeatures.join(', ')}`);
+    }
+
+    console.log('AI settings remain unchanged');
+  } catch (error) {
+    console.log('Failed to update features: ' + error?.message);
+  }
+}

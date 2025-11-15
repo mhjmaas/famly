@@ -11,6 +11,7 @@ import { seedDeploymentConfig } from "@modules/deployment-config";
 import { DiaryRepository } from "@modules/diary";
 import { FamilyRepository } from "@modules/family/repositories/family.repository";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
+import { FamilySettingsRepository } from "@modules/family/repositories/family-settings.repository";
 import { KarmaRepository } from "@modules/karma";
 import { authenticateSocket, createSocketServer } from "@modules/realtime";
 import { ShoppingListRepository } from "@modules/shopping-lists";
@@ -65,9 +66,11 @@ async function start() {
   logger.info("Initializing family module indexes...");
   const familyRepo = new FamilyRepository();
   const familyMembershipRepo = new FamilyMembershipRepository();
+  const familySettingsRepo = new FamilySettingsRepository();
   await Promise.all([
     familyRepo.ensureIndexes(),
     familyMembershipRepo.ensureIndexes(),
+    familySettingsRepo.ensureIndexes(),
   ]);
   logger.info("Family module indexes initialized successfully");
 

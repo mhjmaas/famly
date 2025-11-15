@@ -15,6 +15,10 @@ import {
 import { useDashboardNavigation } from "@/hooks/useDashboardNavigation";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { cn } from "@/lib/utils/style-utils";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchFamilies } from "@/store/slices/family.slice";
+import { fetchFamilySettings } from "@/store/slices/settings.slice";
+import { selectUser } from "@/store/slices/user.slice";
 import type { DashboardLayoutProps } from "@/types/dashboard-layout.types";
 import { DesktopSidebar } from "./sidebars/DesktopSidebar";
 import { MobileSidebar } from "./sidebars/MobileSidebar";
@@ -101,6 +105,8 @@ export function DashboardLayout({
   title,
   dict,
 }: DashboardLayoutProps) {
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
   const pathname = usePathname();
   const pathWithoutLocale = useMemo(
     () => pathname.replace(/^\/(en-US|nl-NL)/, ""),
@@ -108,14 +114,35 @@ export function DashboardLayout({
   );
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Fetch families and settings on mount
+  useEffect(() => {
+    dispatch(fetchFamilies());
+
+    // Also fetch settings if we have a familyId from user profile
+    const familyId = user?.families?.[0]?.familyId;
+    if (familyId) {
+      dispatch(fetchFamilySettings(familyId));
+    }
+  }, [dispatch, user?.families]);
+
   // Get navigation and user data from hooks
   const { navigationSections, validSectionNames } = useDashboardNavigation();
   const userProfile = useUserProfile(dict);
 
+  // Initialize with default expanded sections to avoid hydration mismatch
   const [expandedSections, setExpandedSections] = useState<string[]>(() =>
-    sanitizeExpandedSections(getInitialExpandedSections(), validSectionNames),
+    sanitizeExpandedSections([...DEFAULT_EXPANDED_SECTIONS], validSectionNames),
   );
   const desktopNavScrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Load expanded sections from sessionStorage after mount
+  useEffect(() => {
+    const stored = getInitialExpandedSections();
+    const sanitized = sanitizeExpandedSections(stored, validSectionNames);
+    if (!arraysAreEqual(sanitized, expandedSections)) {
+      setExpandedSections(sanitized);
+    }
+  }, [validSectionNames, expandedSections]); // Only run when validSectionNames or expandedSections changes
 
   useEffect(() => {
     if (typeof window === "undefined") {

@@ -13,7 +13,8 @@
       "@middleware/*": ["src/middleware/*"],
       "@modules/*": ["src/modules/*"],
       "@routes/*": ["src/routes/*"],
-      "@tests/*": ["tests/*"]
+      "@tests/*": ["tests/*"],
+      "@famly/shared": ["../../packages/shared/src/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "tests/**/*.ts"]

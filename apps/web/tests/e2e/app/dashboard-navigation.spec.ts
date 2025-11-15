@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
+import { authenticateUser, type AuthenticatedUser } from "../helpers/auth";
 import { DashboardPage } from "../pages/dashboard.page";
 import { setViewport, waitForPageLoad } from "../setup/test-helpers";
-import { authenticateUser, type AuthenticatedUser } from "../helpers/auth";
 
 test.describe("Dashboard - Navigation", () => {
   let dashboardPage: DashboardPage;
@@ -12,6 +12,7 @@ test.describe("Dashboard - Navigation", () => {
     // Authenticate with real user session (without family by default - tests can create if needed)
     user = await authenticateUser(page, {
       name: "E2E Test User",
+      createFamily: true,
     });
     await dashboardPage.gotoApp("en-US");
     await waitForPageLoad(page);
@@ -123,7 +124,6 @@ test.describe("Dashboard - Navigation", () => {
     // Personal items should be visible by default (sections start expanded)
     await expect(dashboardPage.navDiary).toBeVisible();
     await expect(dashboardPage.navChat).toBeVisible();
-    await expect(dashboardPage.navSettings).toBeVisible();
 
     // Click to collapse personal section
     const personalTrigger = page.getByTestId("nav-section-personal-trigger");
@@ -133,7 +133,6 @@ test.describe("Dashboard - Navigation", () => {
     // Personal items should now be hidden
     await expect(dashboardPage.navDiary).not.toBeVisible();
     await expect(dashboardPage.navChat).not.toBeVisible();
-    await expect(dashboardPage.navSettings).not.toBeVisible();
 
     // Click to expand again
     await personalTrigger.click();

@@ -8,7 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { DeploymentProvider } from "@/contexts/deployment-context";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
-import { getUserWithKarma } from "@/lib/dal";
+import { getUserWithKarmaAndSettings } from "@/lib/dal";
 import { getSessionCookie } from "@/lib/server-cookies";
 import { getDeploymentStatus } from "@/lib/utils/status-utils";
 import { StoreProvider } from "@/store/provider";
@@ -76,11 +76,14 @@ export default async function LocaleLayout({
   // Only try to fetch user data if we have a session cookie
   if (sessionCookie) {
     try {
-      // Use DAL to fetch user and karma data
+      // Use DAL to fetch user, karma, and settings data
       // The DAL handles caching, cookie forwarding, and error handling
-      const { user, karma } = await getUserWithKarma(lang);
+      const { user, karma, settings } = await getUserWithKarmaAndSettings(lang);
 
-      // Preload Redux state
+      // Get the first family ID for settings
+      const familyId = user.families?.[0]?.familyId;
+
+      // Preload Redux state with user, karma, and settings
       preloadedState = {
         user: {
           profile: user,
@@ -91,6 +94,16 @@ export default async function LocaleLayout({
           balances: {
             [user.id]: karma,
           },
+          isLoading: false,
+          error: null,
+        },
+        settings: {
+          settingsByFamily:
+            familyId && settings
+              ? {
+                  [familyId]: settings,
+                }
+              : {},
           isLoading: false,
           error: null,
         },

@@ -21,5 +21,6 @@ module.exports = {
     "^@modules/(.*)$": "<rootDir>/src/modules/$1",
     "^@routes/(.*)$": "<rootDir>/src/routes/$1",
     "^@tests/(.*)$": "<rootDir>/tests/$1",
+    "^@famly/shared$": "<rootDir>/../../packages/shared/src/index.ts",
   },
 };
