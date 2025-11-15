@@ -16,6 +16,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -23,6 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import type { Locale } from "@/i18n/config";
 import type { UserProfile } from "@/lib/api-client";
 import { logout, updateProfile } from "@/lib/api-client";
@@ -76,6 +86,7 @@ export function UserProfileCard({
 }: UserProfileCardProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   const age = user.birthdate ? calculateAge(user.birthdate) : null;
   const role = user.families?.[0]?.role || "Parent";
 
@@ -96,6 +107,10 @@ export function UserProfileCard({
     setIsEditOpen(true);
   };
 
+  const handleCloseEdit = () => {
+    setIsEditOpen(false);
+  };
+
   const handleSaveEdit = async () => {
     try {
       setIsSaving(true);
@@ -110,7 +125,7 @@ export function UserProfileCard({
       dispatch(setUser(response.user));
 
       // Close dialog
-      setIsEditOpen(false);
+      handleCloseEdit();
     } catch (error) {
       console.error("Failed to update profile:", error);
       // TODO: Show error message to user
@@ -215,16 +230,18 @@ export function UserProfileCard({
         </CardHeader>
       </Card>
 
-      {/* Edit Profile Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent>
-          <DialogHeader>
+      {/* Edit Profile Dialog/Drawer */}
+      {(() => {
+        const header = (
+          <>
             <DialogTitle>Edit Profile</DialogTitle>
             <DialogDescription>
               Update your profile information
             </DialogDescription>
-          </DialogHeader>
+          </>
+        );
 
+        const FormContent = (
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="edit-name">Name</Label>
@@ -264,11 +281,13 @@ export function UserProfileCard({
               </p>
             </div>
           </div>
+        );
 
-          <DialogFooter>
+        const footer = (
+          <>
             <Button
               variant="outline"
-              onClick={() => setIsEditOpen(false)}
+              onClick={handleCloseEdit}
               disabled={isSaving}
             >
               Cancel
@@ -279,9 +298,51 @@ export function UserProfileCard({
             >
               {isSaving ? "Saving..." : "Save Changes"}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </>
+        );
+
+        // Desktop: Dialog
+        if (isDesktop) {
+          return (
+            <Dialog open={isEditOpen} onOpenChange={handleCloseEdit}>
+              <DialogContent>
+                <DialogHeader>{header}</DialogHeader>
+                {FormContent}
+                <DialogFooter>{footer}</DialogFooter>
+              </DialogContent>
+            </Dialog>
+          );
+        }
+
+        // Mobile: Drawer
+        return (
+          <Drawer open={isEditOpen} onOpenChange={handleCloseEdit}>
+            <DrawerContent>
+              <DrawerHeader className="text-left">{header}</DrawerHeader>
+              <div className="px-4 pb-6 overflow-y-auto max-h-[60vh]">
+                {FormContent}
+              </div>
+              <DrawerFooter className="pt-2">
+                <Button
+                  onClick={handleSaveEdit}
+                  disabled={!formData.name || !formData.birthdate || isSaving}
+                >
+                  {isSaving ? "Saving..." : "Save Changes"}
+                </Button>
+                <DrawerClose asChild>
+                  <Button
+                    variant="outline"
+                    onClick={handleCloseEdit}
+                    disabled={isSaving}
+                  >
+                    Cancel
+                  </Button>
+                </DrawerClose>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+        );
+      })()}
     </>
   );
 }
