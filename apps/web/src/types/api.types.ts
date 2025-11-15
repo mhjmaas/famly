@@ -112,6 +112,28 @@ export interface AddFamilyMemberResponse {
   addedBy: string;
 }
 
+// Family Settings types
+export interface FamilySettings {
+  familyId: string;
+  enabledFeatures: string[];
+  aiSettings: {
+    apiEndpoint: string;
+    modelName: string;
+    aiName: string;
+    // apiSecret is never returned from the API for security
+  };
+}
+
+export interface UpdateFamilySettingsRequest {
+  enabledFeatures: string[];
+  aiSettings?: {
+    apiEndpoint: string;
+    apiSecret: string;
+    modelName: string;
+    aiName: string;
+  };
+}
+
 // Profile types
 export interface UserProfile {
   id: string;

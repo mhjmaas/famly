@@ -722,8 +722,119 @@
         "placeholder": "Chatpagina verschijnt binnenkort"
       },
       "settings": {
-        "title": "Instellingen",
-        "placeholder": "Instellingenpagina verschijnt binnenkort"
+        "title": "Gezinsinstellingen",
+        "description": "Configureer functies en AI voor je gezin",
+        "tabs": {
+          "features": "Functies",
+          "aiSettings": "AI-instellingen"
+        },
+        "featuresTab": {
+          "title": "Gezinsfuncties",
+          "description": "Schakel functies in of uit voor je gezin",
+          "features": {
+            "tasks": {
+              "label": "Taken",
+              "description": "Beheer gezinstaken en klusjes"
+            },
+            "rewards": {
+              "label": "Beloningen",
+              "description": "Volg karma en wissel beloningen in"
+            },
+            "shoppingLists": {
+              "label": "Boodschappenlijsten",
+              "description": "Werk samen aan boodschappenlijsten"
+            },
+            "recipes": {
+              "label": "Recepten",
+              "description": "Deel en ontdek familierecepten"
+            },
+            "locations": {
+              "label": "Locaties",
+              "description": "Volg locaties en reizen van gezinsleden"
+            },
+            "memories": {
+              "label": "Herinneringen",
+              "description": "Creëer en deel gezinsherinneringen"
+            },
+            "diary": {
+              "label": "Dagboek",
+              "description": "Persoonlijke dagboekitems voor elk lid"
+            },
+            "chat": {
+              "label": "Chat",
+              "description": "Gezinschat en berichtenuitwisseling"
+            },
+            "aiIntegration": {
+              "label": "AI-integratie",
+              "description": "Schakel AI-assistentfuncties in"
+            }
+          },
+          "about": {
+            "title": "Over Functies",
+            "description1": "Bepaal welke functies beschikbaar zijn voor je gezinsleden. Uitgeschakelde functies worden verborgen in de navigatie en zijn niet toegankelijk.",
+            "description2": "Ouders kunnen functies in- of uitschakelen op basis van gezinsbehoeften en voorkeuren."
+          }
+        },
+        "aiSettingsTab": {
+          "title": "AI-configuratie",
+          "description": "Verbind met een OpenAI-compatibel API-eindpunt om AI-chatfuncties in te schakelen",
+          "fields": {
+            "aiName": {
+              "label": "AI-naam",
+              "placeholder": "bijv., Jarvis, Alfred, Friday",
+              "helper": "Geef je AI-assistent een vriendelijke naam"
+            },
+            "apiEndpoint": {
+              "label": "API-eindpunt",
+              "placeholder": "https://api.openai.com/v1",
+              "helper": "OpenAI-compatibel API-eindpunt URL"
+            },
+            "apiSecret": {
+              "label": "API-geheim",
+              "placeholder": "sk-...",
+              "helper": "Je API-sleutel of geheim token (veilig opgeslagen)"
+            },
+            "modelName": {
+              "label": "Modelnaam",
+              "placeholder": "gpt-4, gpt-3.5-turbo, etc.",
+              "helper": "De model-ID om te gebruiken voor chat-voltooiingen"
+            }
+          },
+          "buttons": {
+            "save": "AI-instellingen Opslaan",
+            "saving": "Opslaan...",
+            "reset": "Terugzetten naar Standaard"
+          },
+          "about": {
+            "title": "Over AI-instellingen",
+            "description": "Met deze instellingen kun je Famly verbinden met elk OpenAI-compatibel API-eindpunt. Dit omvat:",
+            "providers": {
+              "openai": "OpenAI API (GPT-4, GPT-3.5, etc.)",
+              "azure": "Azure OpenAI Service",
+              "local": "Lokale LLM-servers (LM Studio, Ollama, etc.)",
+              "other": "Andere compatibele providers"
+            },
+            "securityNote": "Je API-gegevens worden veilig en versleuteld opgeslagen. Ze worden nooit blootgesteld in antwoorden."
+          }
+        },
+        "toast": {
+          "featureEnabled": "Functie Ingeschakeld",
+          "featureDisabled": "Functie Uitgeschakeld",
+          "featureEnabledDescription": "{feature} is ingeschakeld",
+          "featureDisabledDescription": "{feature} is uitgeschakeld",
+          "aiSettingsSaved": "AI-instellingen Opgeslagen",
+          "aiSettingsSavedDescription": "AI-instellingen voor {aiName} zijn succesvol opgeslagen",
+          "settingsUpdateError": "Instellingen Bijwerken Mislukt",
+          "settingsUpdateErrorDescription": "Er is een fout opgetreden bij het bijwerken van je instellingen. Probeer het opnieuw.",
+          "validationError": "Validatiefout",
+          "allFieldsRequired": "Alle velden zijn verplicht",
+          "invalidUrl": "Ongeldige URL",
+          "invalidUrlDescription": "Voer een geldig API-eindpunt URL in"
+        },
+        "errors": {
+          "unauthorized": "Alleen ouders hebben toegang tot instellingen",
+          "loadFailed": "Instellingen laden mislukt"
+        }
       }
     }
   },

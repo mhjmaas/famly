@@ -7,15 +7,17 @@
  * @see https://nextjs.org/docs/app/guides/authentication
  */
 
-import "server-only";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { i18n, type Locale } from "@/i18n/config";
+import "server-only";
 import {
   type ActivityEvent,
   ApiError,
+  type FamilySettings,
   getActivityEvents,
+  getFamilySettings,
   getKarmaBalance,
   getMe,
   type KarmaBalance,
@@ -207,5 +209,47 @@ export const getUserWithKarma = cache(
     const { user, cookieHeader } = await getAuthenticatedUserContext(locale);
     const karma = await resolveKarmaForUser(user, cookieHeader);
     return { user, karma };
+  },
+);
+
+/**
+ * Get user profile with karma and family settings
+ *
+ * Fetches user profile, karma balance, and family settings in parallel.
+ * This is used in the root layout to preload all necessary data for SSR.
+ *
+ * @returns Object containing user profile, karma balance, and family settings
+ */
+export const getUserWithKarmaAndSettings = cache(
+  async (
+    locale?: Locale,
+  ): Promise<{
+    user: UserProfile;
+    karma: number;
+    settings: FamilySettings | null;
+  }> => {
+    const { user, cookieHeader } = await getAuthenticatedUserContext(locale);
+
+    // Get the first family ID (users always have at least one family)
+    const familyId = user.families?.[0]?.familyId;
+
+    if (!familyId) {
+      // If no family, return user and karma only
+      const karma = await resolveKarmaForUser(user, cookieHeader);
+      return { user, karma, settings: null };
+    }
+
+    // Fetch karma and settings in parallel for optimal performance
+    const [karma, settings] = await Promise.all([
+      resolveKarmaForUser(user, cookieHeader),
+      getFamilySettings(familyId, cookieHeader).catch((error) => {
+        // Log error but don't fail the entire request
+        // Return null settings to fail open (all features enabled by default)
+        console.warn("Failed to fetch family settings:", error);
+        return null;
+      }),
+    ]);
+
+    return { user, karma, settings };
   },
 );

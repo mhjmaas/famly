@@ -22,8 +22,8 @@ services:
     image: minio/minio:latest
     container_name: famly-minio-test
     ports:
-      - '9002:9000'  # API (different port to avoid conflict)
-      - '9003:9001'  # Console
+      - "9002:9000" # API (different port to avoid conflict)
+      - "9003:9001" # Console
     environment:
       MINIO_ROOT_USER: famly-test-access
       MINIO_ROOT_PASSWORD: famly-test-secret-min-32-chars
@@ -65,10 +65,15 @@ services:
     volumes:
       # Mount source code to avoid rebuilding on changes
       - ../apps/api/src:/app/apps/api/src:ro
+      # Mount shared package (both package.json and source code needed for workspace)
+      - ../packages/shared/package.json:/app/packages/shared/package.json:ro
+      - ../packages/shared/src:/app/packages/shared/src:ro
+      # Mount config files
+      - ../apps/api/tsconfig.json:/app/apps/api/tsconfig.json:ro
       - ../apps/api/package.json:/app/apps/api/package.json:ro
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/v1/health"]
       interval: 5s
       timeout: 3s
-      retries: 10
+      retries: 60
       start_period: 30s

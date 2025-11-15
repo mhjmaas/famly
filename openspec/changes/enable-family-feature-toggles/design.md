@@ -133,65 +133,75 @@ export const selectIsFeatureEnabled = (familyId: string, feature: string) => (st
 
 ### Integration with Existing Store
 1. Add `settings` to root reducer in `store.ts`
-2. Fetch settings alongside families in initial load
+2. **Settings preloaded server-side in root layout** (alongside user/karma)
 3. Settings slice is independent of family slice
 
 ### Default Behavior
 If no settings exist in Redux (first load, new family):
 - **All features assumed enabled** (backwards compatibility)
-- Settings fetched on first family page load
-- Once fetched, cache in Redux for session
+- Settings preloaded via SSR in root layout
+- No client-side fetching needed
 
-## LocalStorage Strategy
+## Server-Side Rendering Strategy
 
 ### Purpose
-Prevent navigation layout shifts during initial render before Redux hydrates.
+Prevent navigation layout shifts by preloading settings server-side before first render.
 
-### Storage Format
+### Implementation
+Settings are fetched in the root layout (`apps/web/src/app/[lang]/layout.tsx`) using the Data Access Layer:
+
 ```typescript
-// Key: "famly-enabled-features-{familyId}"
-// Value: JSON array
-["tasks", "rewards", "diary", "chat"]
+const { user, karma, settings } = await getUserWithKarmaAndSettings(lang);
+
+preloadedState = {
+  user: { profile: user, isLoading: false, error: null },
+  karma: { balances: { [user.id]: karma }, isLoading: false, error: null },
+  settings: {
+    settingsByFamily: familyId && settings ? { [familyId]: settings } : {},
+    isLoading: false,
+    error: null,
+  },
+};
 ```
 
-### Sync Points
-1. **Read on Mount**: `useDashboardNavigation` checks localStorage first
-2. **Write on Settings Change**: After successful API update, write to localStorage
-3. **Write on Fetch**: After fetching from API, update localStorage
-4. **Clear on Logout**: Settings cleared when user logs out
-
-### Cache Invalidation
-- localStorage updated immediately after PUT request succeeds
-- No TTL needed (settings change infrequently)
-- Logout clears all family settings from localStorage
+### Benefits
+- **Zero layout shift**: Settings available before first render
+- **No localStorage needed**: Server provides fresh data every session
+- **Simpler architecture**: No sync logic between localStorage and Redux
+- **Better security**: Settings fetched server-side, can't be tampered
+- **Follows Next.js patterns**: Uses existing DAL and SSR preloading
 
 ## Navigation Filtering
 
 ### Implementation Location
-Modify `apps/web/src/hooks/useDashboardNavigation.ts`:
+Simplified `apps/web/src/hooks/useDashboardNavigation.ts`:
 
 ```typescript
 export function useDashboardNavigation() {
+  const user = useAppSelector(selectUser);
   const currentFamily = useAppSelector(selectCurrentFamily);
-  const enabledFeatures = useAppSelector(selectEnabledFeatures(currentFamily?.familyId));
   
-  // Read from localStorage as fallback
-  const cachedFeatures = useMemo(() => {
-    if (typeof window === 'undefined') return null;
-    const stored = localStorage.getItem(`famly-enabled-features-${currentFamily?.familyId}`);
-    return stored ? JSON.parse(stored) : null;
-  }, [currentFamily?.familyId]);
+  // Get familyId from either the full family data or user profile
+  const familyId = currentFamily?.familyId || user?.families?.[0]?.familyId;
   
-  const activeFeatures = enabledFeatures ?? cachedFeatures ?? ALL_FEATURES_DEFAULT;
+  // Get enabled features from Redux (preloaded via SSR in root layout)
+  // Falls back to all features if not loaded (backwards compatibility)
+  const enabledFeatures = useAppSelector(selectEnabledFeatures(familyId));
   
   const navigationSections = useMemo(
-    () => filterNavigationByFeatures(createNavigationSections(), activeFeatures),
-    [activeFeatures]
+    () => filterNavigationByFeatures(createNavigationSections(), enabledFeatures),
+    [enabledFeatures]
   );
   
   return { navigationSections, validSectionNames };
 }
 ```
+
+**Key Changes from Original Design:**
+- Removed localStorage fallback logic
+- Removed hydration workarounds (`useState`, `useEffect`)
+- Simplified to single Redux selector
+- Settings always available from SSR preload
 
 ### Filtering Rules
 - Features map to navigation items by key:
@@ -209,23 +219,52 @@ export function useDashboardNavigation() {
 - Dashboard home is **never filtered**
 
 ### Route Protection
-Add middleware to protected routes:
+Middleware-based route protection in `apps/web/src/proxy.ts`:
 
 ```typescript
-// In each feature's page.tsx server component
-async function checkFeatureEnabled(familyId: string, feature: string) {
-  const settings = await getSettings(familyId);
-  if (!settings.enabledFeatures.includes(feature)) {
-    redirect('/app'); // Redirect to dashboard if disabled
+// Feature-to-route mapping
+const FEATURE_ROUTES: Record<string, string> = {
+  tasks: "/app/tasks",
+  rewards: "/app/rewards",
+  shoppingLists: "/app/shopping-lists",
+  diary: "/app/diary",
+  chat: "/app/chat",
+  locations: "/app/locations",
+  memories: "/app/memories",
+  aiIntegration: "/app/ai-settings",
+};
+
+// In async proxy() function
+if (isProtectedRoute && isAuthenticated && sessionCookie) {
+  const featureKey = Object.keys(FEATURE_ROUTES).find((key) =>
+    pathWithoutLocale.startsWith(FEATURE_ROUTES[key]),
+  );
+
+  if (featureKey) {
+    const cookieString = `${sessionCookie.name}=${sessionCookie.value}`;
+    const settings = await getFamilySettingsForMiddleware(cookieString);
+
+    if (settings && !settings.enabledFeatures.includes(featureKey)) {
+      return NextResponse.redirect(dashboardUrl);
+    }
   }
 }
 ```
 
-**Design Decision: Client-side vs Server-side Route Protection**
-- ✅ **Chosen**: Both layers
+**Design Decision: Middleware vs Per-Page Checks**
+- ✅ **Chosen**: Middleware-only route protection
+  - Single check per request in middleware
   - Navigation filtering (client-side) for UX
-  - Server-side check in page.tsx for security
-- **Rationale**: Defense in depth. Users shouldn't see disabled features, but direct URLs must also be blocked.
+- **Rationale**: 
+  - Simpler: No per-page `requireFeatureEnabled()` calls
+  - More efficient: One check in middleware vs check on every page
+  - Centralized: Single source of truth for access control
+  - Follows Next.js patterns: Middleware is designed for this use case
+
+**Key Changes from Original Design:**
+- Removed per-page `requireFeatureEnabled()` utility
+- Removed `feature-guard.ts` file entirely
+- All route protection handled in middleware
 
 ## Settings Page UI Design
 

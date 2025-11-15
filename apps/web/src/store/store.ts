@@ -4,6 +4,7 @@ import claimsReducer from "./slices/claims.slice";
 import familyReducer from "./slices/family.slice";
 import karmaReducer from "./slices/karma.slice";
 import rewardsReducer from "./slices/rewards.slice";
+import settingsReducer from "./slices/settings.slice";
 import tasksReducer from "./slices/tasks.slice";
 import userReducer from "./slices/user.slice";
 
@@ -16,6 +17,7 @@ const rootReducer = combineReducers({
   rewards: rewardsReducer,
   claims: claimsReducer,
   activities: activitiesReducer,
+  settings: settingsReducer,
 });
 
 // Infer RootState from the rootReducer

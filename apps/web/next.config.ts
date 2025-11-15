@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -17,6 +18,14 @@ const nextConfig: NextConfig = {
         hostname: "**.example.com",
       },
     ],
+  },
+  webpack: (config) => {
+    // Resolve @famly/shared path for Turbopack
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@famly/shared": path.resolve(__dirname, "../../packages/shared/src"),
+    };
+    return config;
   },
 };
 

@@ -9,7 +9,7 @@ Implement a full-stack family feature toggle system that:
 2. Provides a settings UI for parents to enable/disable features
 3. Filters navigation and restricts access based on enabled features
 4. Includes AI integration settings in the same interface
-5. Persists enabled features in localStorage to prevent layout shifts
+5. **Preloads settings server-side via SSR to prevent layout shifts** (no localStorage needed)
 
 ## Scope
 This change introduces three main capabilities:
@@ -23,13 +23,14 @@ Frontend settings interface with two tabs:
 - **AI Settings Tab**: Configuration fields for OpenAI-compatible endpoints
 
 ### 3. **Feature-Based Navigation Filtering** (`web-feature-filtering`)
-Dynamic navigation that shows/hides menu items based on enabled features, with localStorage caching.
+Dynamic navigation that shows/hides menu items based on enabled features, with SSR preloading and middleware-based route protection.
 
 ## Design Considerations
 See [`design.md`](./design.md) for detailed architecture decisions including:
 - Database schema design (extensible array vs fixed fields)
 - Redux state management integration
-- localStorage sync strategy
+- **Server-side rendering (SSR) preloading strategy** (replaces localStorage)
+- Middleware-based route protection
 - Navigation filtering implementation
 
 ## Success Criteria

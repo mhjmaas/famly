@@ -30,6 +30,7 @@ module.exports = {
   },
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
+    "^@famly/shared$": "<rootDir>/../../packages/shared/src/index.ts",
   },
   setupFilesAfterEnv: ["<rootDir>/tests/unit/setup.ts"],
 };

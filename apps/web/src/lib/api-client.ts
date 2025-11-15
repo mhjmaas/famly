@@ -19,6 +19,7 @@ import type {
   CreateRewardRequest,
   CreateScheduleRequest,
   CreateTaskRequest,
+  FamilySettings,
   FamilyWithMembers,
   GrantKarmaRequest,
   GrantKarmaResponse,
@@ -30,6 +31,7 @@ import type {
   Task,
   TaskQueryParams,
   TaskSchedule,
+  UpdateFamilySettingsRequest,
   UpdateMemberRoleRequest,
   UpdateMemberRoleResponse,
   UpdateProfileRequest,
@@ -229,6 +231,32 @@ export async function addFamilyMember(
       body: data,
     },
   );
+}
+
+// Family Settings API
+
+export type {
+  FamilySettings,
+  UpdateFamilySettingsRequest,
+} from "@/types/api.types";
+
+export async function getFamilySettings(
+  familyId: string,
+  cookie?: string,
+): Promise<FamilySettings> {
+  return apiClient<FamilySettings>(`/v1/families/${familyId}/settings`, {
+    cookie,
+  });
+}
+
+export async function updateFamilySettings(
+  familyId: string,
+  data: UpdateFamilySettingsRequest,
+): Promise<FamilySettings> {
+  return apiClient<FamilySettings>(`/v1/families/${familyId}/settings`, {
+    method: "PUT",
+    body: data,
+  });
 }
 
 // Profile API

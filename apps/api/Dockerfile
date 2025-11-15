@@ -36,12 +36,16 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 # Copy package files for production install
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/apps/api/package.json ./apps/api/
+COPY --from=builder /app/packages/shared/package.json ./packages/shared/
 
 # Install production dependencies only (ignore scripts to skip husky)
 RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
 # Copy built application from builder
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
+
+# Copy shared package (needed for runtime imports after tsc-alias resolution)
+COPY --from=builder /app/packages ./packages
 
 # Set working directory to API app
 WORKDIR /app/apps/api

@@ -1,3 +1,4 @@
+import { getFeatureRoutes } from "@famly/shared";
 import { match } from "@formatjs/intl-localematcher";
 import Negotiator from "negotiator";
 import type { NextRequest } from "next/server";
@@ -39,7 +40,68 @@ function getLocale(request: NextRequest): Locale {
 const protectedRoutes = ["/app"];
 const authRoutes = ["/signin", "/get-started"];
 
-export function proxy(request: NextRequest) {
+// Feature-to-route mapping for feature toggle enforcement
+const FEATURE_ROUTES = getFeatureRoutes();
+
+/**
+ * Get family settings from API
+ * This is called in middleware to check feature access
+ * Uses the session cookie to authenticate the request
+ */
+async function getFamilySettingsForMiddleware(
+  sessionCookie: string,
+): Promise<{ enabledFeatures: string[] } | null> {
+  try {
+    // First, get the user to extract familyId
+    const API_BASE_URL =
+      process.env.API_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      "http://localhost:3001";
+
+    const meResponse = await fetch(`${API_BASE_URL}/v1/auth/me`, {
+      headers: {
+        Cookie: sessionCookie,
+      },
+      cache: "no-store", // Don't cache in middleware
+    });
+
+    if (!meResponse.ok) {
+      return null;
+    }
+
+    const meData = await meResponse.json();
+    const familyId = meData.user?.families?.[0]?.familyId;
+
+    if (!familyId) {
+      return null;
+    }
+
+    // Fetch family settings
+    const settingsResponse = await fetch(
+      `${API_BASE_URL}/v1/families/${familyId}/settings`,
+      {
+        headers: {
+          Cookie: sessionCookie,
+        },
+        cache: "no-store", // Don't cache in middleware
+      },
+    );
+
+    if (!settingsResponse.ok) {
+      // If settings fetch fails, fail open (allow all features)
+      return null;
+    }
+
+    const settings = await settingsResponse.json();
+    return settings;
+  } catch (error) {
+    // On error, fail open (allow all features)
+    console.warn("Failed to fetch settings in middleware:", error);
+    return null;
+  }
+}
+
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (
@@ -103,6 +165,29 @@ export function proxy(request: NextRequest) {
   if (isAuthRoute && isAuthenticated) {
     const appUrl = new URL(locale ? `/${locale}/app` : "/app", request.url);
     return NextResponse.redirect(appUrl);
+  }
+
+  // Feature access control - check if accessing a feature route
+  if (isProtectedRoute && isAuthenticated && sessionCookie) {
+    // Check if this path matches any feature route
+    const featureKey = Object.keys(FEATURE_ROUTES).find((key) =>
+      pathWithoutLocale.startsWith(FEATURE_ROUTES[key]),
+    );
+
+    if (featureKey) {
+      // Fetch settings to check if feature is enabled
+      const cookieString = `${sessionCookie.name}=${sessionCookie.value}`;
+      const settings = await getFamilySettingsForMiddleware(cookieString);
+
+      // If settings exist and feature is not enabled, redirect to dashboard
+      if (settings && !settings.enabledFeatures.includes(featureKey)) {
+        const dashboardUrl = new URL(
+          locale ? `/${locale}/app` : "/app",
+          request.url,
+        );
+        return NextResponse.redirect(dashboardUrl);
+      }
+    }
   }
 
   return NextResponse.next();
