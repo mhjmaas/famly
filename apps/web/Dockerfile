@@ -3,6 +3,17 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Build-time environment configuration for client-side URLs/keys
+ARG NEXT_PUBLIC_API_URL="http://localhost:3001"
+ARG NEXT_PUBLIC_WS_URL="http://localhost:3001"
+ARG NEXT_PUBLIC_VAPID_PUBLIC_KEY="your_public_key_here"
+ARG NEXT_PUBLIC_E2E_TEST="false"
+
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL}
+ENV NEXT_PUBLIC_VAPID_PUBLIC_KEY=${NEXT_PUBLIC_VAPID_PUBLIC_KEY}
+ENV NEXT_PUBLIC_E2E_TEST=${NEXT_PUBLIC_E2E_TEST}
+
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 

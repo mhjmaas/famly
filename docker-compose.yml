@@ -82,6 +82,11 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL}
+        NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-your_public_key_here}
+        NEXT_PUBLIC_E2E_TEST: ${NEXT_PUBLIC_E2E_TEST:-false}
     container_name: famly-web
     restart: unless-stopped
     # Port bindings are defined in docker-compose.override.yml for local access
