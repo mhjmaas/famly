@@ -5,6 +5,11 @@ import {
   toObjectId,
   validateObjectId,
 } from "@lib/objectid-utils";
+import { getUserName } from "@lib/user-utils";
+import {
+  createChatMessageNotification,
+  sendChatNotifications,
+} from "@modules/notifications";
 import type { Message, MessageDTO } from "../domain/message";
 import { toMessageDTO } from "../lib/message.mapper";
 import type { ChatRepository } from "../repositories/chat.repository";
@@ -127,6 +132,15 @@ export class MessageService {
             });
           }
         }
+
+        // Send notifications to other chat members
+        await this.notifyChatMembers(
+          chatObjectId,
+          normalizedChatId,
+          normalizedSenderId,
+          senderObjectId,
+          body,
+        );
       }
 
       const dto = toMessageDTO(message);
@@ -328,6 +342,51 @@ export class MessageService {
         error,
       });
       throw error;
+    }
+  }
+
+  /**
+   * Send chat message notifications to all members except the sender
+   * @private
+   */
+  private async notifyChatMembers(
+    chatObjectId: ReturnType<typeof toObjectId>,
+    normalizedChatId: ObjectIdString,
+    normalizedSenderId: ObjectIdString,
+    senderObjectId: ReturnType<typeof toObjectId>,
+    body: string,
+  ): Promise<void> {
+    try {
+      const memberships =
+        await this.membershipRepository.findByChat(chatObjectId);
+
+      if (memberships.length === 0) {
+        return;
+      }
+
+      const senderName = await getUserName(senderObjectId);
+
+      // Create notification with message preview (limit to 100 chars)
+      const messagePreview =
+        body.length > 100 ? `${body.substring(0, 100)}...` : body;
+      const notification = createChatMessageNotification(
+        senderName,
+        messagePreview,
+        normalizedChatId,
+      );
+
+      // Send to all members except the sender
+      const memberIds = memberships.map((m) => m.userId.toString());
+      await sendChatNotifications(memberIds, normalizedSenderId, notification, {
+        chatId: normalizedChatId,
+      });
+    } catch (error) {
+      logger.error("Failed to send chat message notifications", {
+        chatId: normalizedChatId,
+        senderId: normalizedSenderId,
+        error,
+      });
+      // Don't throw - notification failure shouldn't prevent message creation
     }
   }
 }

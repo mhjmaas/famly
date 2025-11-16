@@ -152,13 +152,3 @@ All settings modifications MUST be logged with timestamp, user, and changed fiel
 - **THEN** the system logs the change with `userId`, `familyId`, `timestamp`, and summary of changes
 - **AND** the log is accessible for audit purposes
 
-## MODIFIED Requirements
-
-### Requirement: Family creation initializes settings (extends family spec)
-When a new family is created, default settings MUST be automatically initialized.
-
-#### Scenario: New family gets default settings
-- **GIVEN** a user creates a new family
-- **WHEN** the family creation succeeds
-- **THEN** a settings document is created with all features enabled
-- **AND** the settings are immediately available via GET endpoint

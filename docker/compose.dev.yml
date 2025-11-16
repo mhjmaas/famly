@@ -65,6 +65,9 @@ services:
       MINIO_SECRET_KEY: famly-dev-secret-min-32-chars
       MINIO_BUCKET: famly-rewards
       MINIO_USE_SSL: "false"
+      # VAPID keys for push notifications
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
     volumes:
       # Mount source code for live reload
       - ../apps/api/src:/app/apps/api/src:delegated
@@ -109,6 +112,9 @@ services:
       MINIO_SECRET_KEY: famly-dev-secret-min-32-chars
       MINIO_BUCKET: famly-rewards
       MINIO_USE_SSL: "false"
+      # VAPID keys for push notifications
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
     volumes:
       # Mount source code for live reload
       - ../apps/web/src:/app/apps/web/src:delegated

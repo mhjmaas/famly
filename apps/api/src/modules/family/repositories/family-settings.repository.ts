@@ -12,7 +12,7 @@ export class FamilySettingsRepository {
   private collection: Collection<FamilySettings>;
 
   constructor() {
-    this.collection = getDb().collection<FamilySettings>("familySettings");
+    this.collection = getDb().collection<FamilySettings>("famly_settings");
   }
 
   /**

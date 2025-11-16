@@ -1,7 +1,8 @@
-# web-settings-page Specification Delta
+# web-settings-page Specification
 
-## ADDED Requirements
-
+## Purpose
+TBD - created by archiving change enable-family-feature-toggles. Update Purpose after archive.
+## Requirements
 ### Requirement: Settings page displays feature toggles and AI configuration
 Parents MUST have access to a settings page where they can manage enabled features and configure AI integration.
 
@@ -243,24 +244,3 @@ The settings page MUST be split into smaller, focused components for maintainabi
 - **AND** each component has a single clear responsibility
 - **AND** components are unit-testable in isolation
 
-## MODIFIED Requirements
-
-### Requirement: Dashboard navigation includes settings link (extends web-dashboard)
-The settings page MUST be accessible from the dashboard navigation menu.
-
-#### Scenario: Settings link appears in navigation
-- **GIVEN** a parent user viewing any page in the dashboard
-- **THEN** the navigation menu includes a "Settings" item
-- **AND** the item links to `/app/settings`
-- **AND** the Settings icon is displayed alongside the label
-- **AND** the item is highlighted when the current page is `/app/settings`
-
-### Requirement: Settings page replaces AI Settings page
-The existing "AI Settings" navigation item MUST be replaced with "Settings" that includes both features and AI configuration.
-
-#### Scenario: AI Settings navigation item is replaced
-- **GIVEN** the settings page is implemented
-- **WHEN** viewing the dashboard navigation
-- **THEN** there is no separate "AI Settings" menu item
-- **AND** the "Settings" item serves as the unified settings page
-- **AND** both feature toggles and AI settings are accessible from the same page

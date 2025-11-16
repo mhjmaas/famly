@@ -25,6 +25,26 @@ export type Dictionary = {
   languageSelector?: {
     ariaLabel: string;
   };
+  pwa: {
+    notifications: {
+      title: string;
+      description: string;
+      benefits: {
+        updates: string;
+        instant: string;
+        events: string;
+      };
+      allow: string;
+      notNow: string;
+    };
+    install: {
+      title: string;
+      description: string;
+      iosInstructions: string;
+      install: string;
+      later: string;
+    };
+  };
 };
 
 export interface NavigationItem {

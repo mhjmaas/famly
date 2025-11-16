@@ -24,6 +24,23 @@ jest.mock("../../../src/modules/karma/events/karma-events", () => ({
   emitKarmaDeducted: jest.fn(),
 }));
 
+// Mock user-utils to avoid mongo client initialization
+jest.mock("../../../src/lib/user-utils", () => ({
+  getUserName: jest.fn().mockResolvedValue("Test User"),
+}));
+
+// Mock notifications module
+jest.mock("../../../src/modules/notifications", () => ({
+  NotificationService: jest.fn().mockImplementation(() => ({
+    sendNotification: jest.fn().mockResolvedValue({ success: true }),
+    isVapidConfigured: jest.fn().mockReturnValue(false),
+  })),
+  createKarmaGrantNotification: jest.fn().mockReturnValue({
+    title: "Karma Received!",
+    body: "You received karma",
+  }),
+}));
+
 import { KarmaService } from "../../../src/modules/karma/services/karma.service";
 
 describe("KarmaService", () => {

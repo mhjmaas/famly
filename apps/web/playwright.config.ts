@@ -46,6 +46,8 @@ export default defineConfig({
     env: {
       // E2E tests use Docker API on port 3002
       NEXT_PUBLIC_API_URL: "http://localhost:3002",
+      // Disable PWA overlays (install prompt, notification drawer) during E2E tests
+      NEXT_PUBLIC_E2E_TEST: "true",
     },
   },
 

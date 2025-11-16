@@ -5,9 +5,14 @@ import {
   toObjectId,
   validateObjectId,
 } from "@lib/objectid-utils";
+import { getUserName } from "@lib/user-utils";
 import type { ActivityEventService } from "@modules/activity-events";
 import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
+import {
+  createKarmaGrantNotification,
+  sendToUser,
+} from "@modules/notifications";
 import { ObjectId } from "mongodb";
 import type {
   AwardKarmaInput,
@@ -32,10 +37,14 @@ export class KarmaService {
    * Creates a karma event and updates the member's total karma
    *
    * @param input - Award karma input with familyId, userId, amount, source, description, metadata
+   * @param skipNotification - If true, skip sending push notification (for combined notifications)
    * @returns The created karma event
    * @throws HttpError if user is not a family member
    */
-  async awardKarma(input: AwardKarmaInput): Promise<KarmaEvent> {
+  async awardKarma(
+    input: AwardKarmaInput,
+    skipNotification: boolean = false,
+  ): Promise<KarmaEvent> {
     let normalizedFamilyId: ObjectIdString | undefined;
     let normalizedUserId: ObjectIdString | undefined;
     try {
@@ -106,6 +115,17 @@ export class KarmaService {
 
       // Emit real-time event for karma award
       emitKarmaAwarded(karmaEvent);
+
+      // Send push notification to the user who received karma (unless skipped for combined notification)
+      if (!skipNotification) {
+        await this.notifyUserOfKarmaGrant(
+          normalizedUserId,
+          input.amount,
+          input.description,
+          input.metadata?.grantedBy,
+          karmaEvent._id.toString(),
+        );
+      }
 
       return karmaEvent;
     } catch (error) {
@@ -466,6 +486,41 @@ export class KarmaService {
       });
 
       throw error;
+    }
+  }
+
+  /**
+   * Send karma grant notification to a user
+   * @private
+   */
+  private async notifyUserOfKarmaGrant(
+    userId: ObjectIdString,
+    amount: number,
+    description: string | undefined,
+    grantedBy: string | undefined,
+    eventId: string,
+  ): Promise<void> {
+    try {
+      // Get the granter's name for the notification
+      let grantedByName = "A family member";
+      if (grantedBy) {
+        grantedByName = await getUserName(grantedBy);
+      }
+
+      const notification = createKarmaGrantNotification(
+        amount,
+        grantedByName,
+        description,
+      );
+
+      await sendToUser(userId, notification);
+    } catch (error) {
+      logger.error("Failed to send karma notification", {
+        eventId,
+        userId,
+        error,
+      });
+      // Don't throw - notification failure shouldn't prevent karma from being awarded
     }
   }
 }

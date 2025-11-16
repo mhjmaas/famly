@@ -11,8 +11,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-
 import { useDashboardNavigation } from "@/hooks/useDashboardNavigation";
+import { useIsE2ETest } from "@/hooks/useIsE2ETest";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { cn } from "@/lib/utils/style-utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -20,6 +20,9 @@ import { fetchFamilies } from "@/store/slices/family.slice";
 import { fetchFamilySettings } from "@/store/slices/settings.slice";
 import { selectUser } from "@/store/slices/user.slice";
 import type { DashboardLayoutProps } from "@/types/dashboard-layout.types";
+import { InstallPromptDrawer } from "../pwa/install-prompt-drawer";
+import { NotificationPermissionDrawer } from "../pwa/notification-permission-drawer";
+import { PWAProvider } from "../pwa/pwa-provider";
 import { DesktopSidebar } from "./sidebars/DesktopSidebar";
 import { MobileSidebar } from "./sidebars/MobileSidebar";
 import { TabletSidebar } from "./sidebars/TabletSidebar";
@@ -108,6 +111,7 @@ export function DashboardLayout({
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
   const pathname = usePathname();
+  const isE2ETest = useIsE2ETest();
   const pathWithoutLocale = useMemo(
     () => pathname.replace(/^\/(en-US|nl-NL)/, ""),
     [pathname],
@@ -136,13 +140,14 @@ export function DashboardLayout({
   const desktopNavScrollRef = useRef<HTMLDivElement | null>(null);
 
   // Load expanded sections from sessionStorage after mount
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Intentionally omitted to prevent infinite loop when expandedSections changes
   useEffect(() => {
     const stored = getInitialExpandedSections();
     const sanitized = sanitizeExpandedSections(stored, validSectionNames);
     if (!arraysAreEqual(sanitized, expandedSections)) {
       setExpandedSections(sanitized);
     }
-  }, [validSectionNames, expandedSections]); // Only run when validSectionNames or expandedSections changes
+  }, [validSectionNames]); // Only re-run when validSectionNames changes, DON'T add expandedSections to dependencies
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -240,6 +245,15 @@ export function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-background" data-testid="dashboard-layout">
+      {/* PWA Features - Disabled during E2E tests to prevent overlay interference */}
+      {!isE2ETest && (
+        <>
+          <PWAProvider />
+          <NotificationPermissionDrawer dictionary={dict.pwa.notifications} />
+          <InstallPromptDrawer dictionary={dict.pwa.install} />
+        </>
+      )}
+
       {/* Mobile Header - Only on small screens */}
       <div
         className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background border-b border-border"

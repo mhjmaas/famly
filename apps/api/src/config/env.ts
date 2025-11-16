@@ -43,6 +43,14 @@ const envSchema = z.object({
     .describe(
       "Deployment mode: saas (multi-tenant) or standalone (single-family)",
     ),
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY: z
+    .string()
+    .optional()
+    .describe("VAPID public key for push notifications"),
+  VAPID_PRIVATE_KEY: z
+    .string()
+    .optional()
+    .describe("VAPID private key for push notifications"),
 });
 
 type Env = z.infer<typeof envSchema>;
@@ -67,6 +75,8 @@ export function getEnv(): Env {
     MINIO_BUCKET: process.env.MINIO_BUCKET,
     MINIO_USE_SSL: process.env.MINIO_USE_SSL,
     DEPLOYMENT_MODE: process.env.DEPLOYMENT_MODE,
+    NEXT_PUBLIC_VAPID_PUBLIC_KEY: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY,
   };
 
   try {

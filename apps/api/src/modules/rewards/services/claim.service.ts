@@ -7,10 +7,16 @@ import {
   toObjectId,
   validateObjectId,
 } from "@lib/objectid-utils";
+import { getUserName } from "@lib/user-utils";
 import type { ActivityEventService } from "@modules/activity-events";
 import type { KarmaService } from "@modules/karma";
+import {
+  createRewardClaimNotification,
+  sendToUser,
+} from "@modules/notifications";
 import type { CreateTaskInput } from "@modules/tasks/domain/task";
 import type { TaskService } from "@modules/tasks/services/task.service";
+import type { ObjectId } from "mongodb";
 import type { ClaimDTO } from "../domain/reward";
 import {
   emitApprovalTaskCreated,
@@ -413,6 +419,14 @@ export class ClaimService {
 
       emitClaimCompleted(updatedClaim, normalizedCompletedBy);
 
+      // Send notification to the member who claimed the reward
+      await this.notifyMemberOfRewardClaim(
+        claim.memberId,
+        reward.name,
+        reward.karmaCost,
+        normalizedClaimId,
+      );
+
       return toClaimDTO(updatedClaim);
     } catch (error) {
       if (error instanceof HttpError) {
@@ -425,6 +439,37 @@ export class ClaimService {
         error,
       });
       throw error;
+    }
+  }
+
+  /**
+   * Send reward claim notification to a member
+   * @private
+   */
+  private async notifyMemberOfRewardClaim(
+    memberId: ObjectId,
+    rewardName: string,
+    karmaCost: number,
+    claimId: ObjectIdString,
+  ): Promise<void> {
+    try {
+      // Get the member's name for the notification
+      const memberName = await getUserName(memberId);
+
+      const notification = createRewardClaimNotification(
+        rewardName,
+        memberName,
+        karmaCost,
+      );
+
+      await sendToUser(fromObjectId(memberId), notification);
+    } catch (error) {
+      logger.error("Failed to send reward claim notification", {
+        claimId,
+        memberId: memberId.toString(),
+        error,
+      });
+      // Don't throw - notification failure shouldn't prevent claim completion
     }
   }
 }

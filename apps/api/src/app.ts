@@ -10,6 +10,7 @@ import { createMessageRoute } from "./modules/chat/routes/create-message.route";
 import { searchMessagesRoute } from "./modules/chat/routes/search-messages.route";
 import { createDiaryRouter } from "./modules/diary";
 import { createFamiliesRouter } from "./modules/family/routes";
+import { createNotificationsRouter } from "./modules/notifications";
 import { initializeRecipesModule } from "./modules/recipes/init";
 import { initializeRewardsIntegration } from "./modules/rewards/init";
 import { getTaskService } from "./modules/tasks/services/task.service.instance";
@@ -101,6 +102,9 @@ export const createApp = (): Express => {
 
   // Activity events routes (requires authentication)
   app.use("/v1/activity-events", activityEventsRouter());
+
+  // Notification routes (requires authentication for subscribe/unsubscribe)
+  app.use("/v1/notifications", createNotificationsRouter());
 
   // Error handling middleware (last)
   app.use(errorHandler);

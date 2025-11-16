@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { LanguageSelector } from "@/components/language-selector";
+import { NotificationToggle } from "@/components/notification-toggle";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { Locale } from "@/i18n/config";
 import type { ActivityEvent } from "@/lib/api-client";
@@ -34,6 +35,8 @@ interface ProfileViewProps {
       languageDescription: string;
       theme: string;
       themeDescription: string;
+      notifications: string;
+      notificationsDescription: string;
     };
     activity: {
       title: string;
@@ -125,6 +128,7 @@ export function ProfileView({ lang, initialEvents, dict }: ProfileViewProps) {
           className="hidden lg:flex items-center gap-3"
           data-testid="profile-desktop-preferences"
         >
+          <NotificationToggle ariaLabel="Toggle notifications" />
           <LanguageSelector lang={lang} ariaLabel="Select language" />
           <ThemeToggle />
         </div>
