@@ -16,6 +16,7 @@ import {
 } from "@modules/notifications";
 import type { CreateTaskInput } from "@modules/tasks/domain/task";
 import type { TaskService } from "@modules/tasks/services/task.service";
+import type { ObjectId } from "mongodb";
 import type { ClaimDTO } from "../domain/reward";
 import {
   emitApprovalTaskCreated,

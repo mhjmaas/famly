@@ -552,9 +552,8 @@ export class FamilyService {
     newMemberName: string,
   ): Promise<void> {
     try {
-      const familyObjectId = toObjectId(familyId, "familyId");
       const familyMembers =
-        await this.membershipRepository.findByFamily(familyObjectId);
+        await this.membershipRepository.findByFamily(familyId);
 
       if (familyMembers.length <= 1) {
         // No other members to notify
