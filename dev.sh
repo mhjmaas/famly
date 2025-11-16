@@ -269,18 +269,24 @@ else
         # Update to use development defaults with HTTP for fallback mode
         if [[ "$OSTYPE" == "darwin"* ]]; then
             # macOS (BSD sed)
-            sed -i '' "s|PROTOCOL=.*|PROTOCOL=http|g" "$ENV_FILE"
+            sed -i '' "s|PROTOCOL=.*|PROTOCOL=https|g" "$ENV_FILE"
             sed -i '' "s|BETTER_AUTH_SECRET=.*|BETTER_AUTH_SECRET=dev_better_auth_secret_min_32_chars_required_here|g" "$ENV_FILE"
-            sed -i '' "s|BETTER_AUTH_URL=.*|BETTER_AUTH_URL=http://localhost:3001|g" "$ENV_FILE"
-            sed -i '' "s|NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=http://localhost:3001|g" "$ENV_FILE"
-            sed -i '' "s|CLIENT_URL=.*|CLIENT_URL=http://localhost:3000|g" "$ENV_FILE"
+            sed -i '' "s|BETTER_AUTH_URL=.*|BETTER_AUTH_URL=https://localhost:8443/api|g" "$ENV_FILE"
+            sed -i '' "s|NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=https://localhost:8443/api|g" "$ENV_FILE"
+            sed -i '' "s|NEXT_PUBLIC_WS_URL=.*|NEXT_PUBLIC_WS_URL=https://localhost:8443|g" "$ENV_FILE"
+            sed -i '' "s|CLIENT_URL=.*|CLIENT_URL=https://localhost:8443|g" "$ENV_FILE"
+            sed -i '' "s|MINIO_ROOT_USER=.*|MINIO_ROOT_USER=famly-admin|g" "$ENV_FILE"
+            sed -i '' "s|MINIO_ROOT_PASSWORD=.*|MINIO_ROOT_PASSWORD=famly-dev-secret-min-32-chars|g" "$ENV_FILE"
         else
             # Linux (GNU sed)
-            sed -i "s|PROTOCOL=.*|PROTOCOL=http|g" "$ENV_FILE"
+            sed -i "s|PROTOCOL=.*|PROTOCOL=https|g" "$ENV_FILE"
             sed -i "s|BETTER_AUTH_SECRET=.*|BETTER_AUTH_SECRET=dev_better_auth_secret_min_32_chars_required_here|g" "$ENV_FILE"
-            sed -i "s|BETTER_AUTH_URL=.*|BETTER_AUTH_URL=http://localhost:3001|g" "$ENV_FILE"
-            sed -i "s|NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=http://localhost:3001|g" "$ENV_FILE"
-            sed -i "s|CLIENT_URL=.*|CLIENT_URL=http://localhost:3000|g" "$ENV_FILE"
+            sed -i "s|BETTER_AUTH_URL=.*|BETTER_AUTH_URL=https://localhost:8443/api|g" "$ENV_FILE"
+            sed -i "s|NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=https://localhost:8443/api|g" "$ENV_FILE"
+            sed -i "s|NEXT_PUBLIC_WS_URL=.*|NEXT_PUBLIC_WS_URL=https://localhost:8443|g" "$ENV_FILE"
+            sed -i "s|CLIENT_URL=.*|CLIENT_URL=https://localhost:8443|g" "$ENV_FILE"
+            sed -i "s|MINIO_ROOT_USER=.*|MINIO_ROOT_USER=famly-admin|g" "$ENV_FILE"
+            sed -i "s|MINIO_ROOT_PASSWORD=.*|MINIO_ROOT_PASSWORD=famly-dev-secret-min-32-chars|g" "$ENV_FILE"
         fi
 
         print_success "Created .env.dev with development defaults"

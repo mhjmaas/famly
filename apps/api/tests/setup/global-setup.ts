@@ -22,8 +22,8 @@ export default async function globalSetup() {
   process.env.DEPLOYMENT_MODE = "saas";
   // MinIO env vars will be set after container starts
   process.env.MINIO_ENDPOINT = "localhost:9000"; // Temporary, will be updated
-  process.env.MINIO_ACCESS_KEY = "famly-test-access";
-  process.env.MINIO_SECRET_KEY = "famly-test-secret-min-32-chars";
+  process.env.MINIO_ROOT_USER = "famly-test-access";
+  process.env.MINIO_ROOT_PASSWORD = "famly-test-secret-min-32-chars";
   process.env.MINIO_BUCKET = "famly-rewards-test";
   process.env.MINIO_USE_SSL = "false";
 
@@ -79,8 +79,8 @@ export default async function globalSetup() {
       BETTER_AUTH_URL: `http://localhost:${serverPort}`,
       DEPLOYMENT_MODE: "saas",
       MINIO_ENDPOINT: minioEndpoint,
-      MINIO_ACCESS_KEY: "famly-test-access",
-      MINIO_SECRET_KEY: "famly-test-secret-min-32-chars",
+      MINIO_ROOT_USER: "famly-test-access",
+      MINIO_ROOT_PASSWORD: "famly-test-secret-min-32-chars",
       MINIO_BUCKET: "famly-rewards-test",
       MINIO_USE_SSL: "false",
     },

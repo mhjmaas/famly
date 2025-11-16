@@ -52,19 +52,20 @@ services:
       minio:
         condition: service_healthy
     environment:
+      # Hardcoded Docker-internal values (not configurable)
       MONGODB_URI: mongodb://mongo:27017/famly
       NODE_ENV: production
       PORT: 3001
+      MINIO_ENDPOINT: minio:9000
+      MINIO_USE_SSL: "false"
+      # From .env
       CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL}
-      DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-saas}
-      MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
-      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-standalone}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       MINIO_BUCKET: ${MINIO_BUCKET:-famly-rewards}
-      MINIO_USE_SSL: "false"
-      # VAPID keys for push notifications
       NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
     healthcheck:
@@ -89,18 +90,18 @@ services:
       minio:
         condition: service_healthy
     environment:
+      # Hardcoded Docker-internal values (not configurable)
       NODE_ENV: production
       PORT: 3000
-      # Client-side API URL (browser requests through Caddy proxy)
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-      # Server-side API URL (direct internal Docker network connection)
       API_URL: http://api:3001
       MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
-      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
-      MINIO_BUCKET: ${MINIO_BUCKET:-famly-rewards}
       MINIO_USE_SSL: "false"
-      # VAPID keys for push notifications
+      # From .env
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET:-famly-rewards}
       NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
     healthcheck:
