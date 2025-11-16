@@ -1,4 +1,5 @@
 import { LanguageSelector } from "@/components/language-selector";
+import { NotificationSwitch } from "@/components/notification-switch";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Card, CardHeader } from "@/components/ui/card";
 import type { Locale } from "@/i18n/config";
@@ -12,6 +13,8 @@ interface PreferencesCardProps {
     languageDescription: string;
     theme: string;
     themeDescription: string;
+    notifications: string;
+    notificationsDescription: string;
   };
 }
 
@@ -53,6 +56,18 @@ export function PreferencesCard({ lang, dict }: PreferencesCardProps) {
             </p>
           </div>
           <ThemeToggle />
+        </div>
+        <div
+          className="flex items-center justify-between"
+          data-testid="preference-notifications"
+        >
+          <div>
+            <p className="font-medium">{dict.notifications}</p>
+            <p className="text-sm text-muted-foreground">
+              {dict.notificationsDescription}
+            </p>
+          </div>
+          <NotificationSwitch />
         </div>
       </div>
     </Card>

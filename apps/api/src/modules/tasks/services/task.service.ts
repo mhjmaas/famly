@@ -10,6 +10,10 @@ import { requireFamilyRole } from "@modules/auth/lib/require-family-role";
 import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type { KarmaService } from "@modules/karma";
+import {
+  createTaskCompletionNotification,
+  sendToUser,
+} from "@modules/notifications";
 import type { CreateTaskInput, Task, UpdateTaskInput } from "../domain/task";
 import {
   emitTaskAssigned,
@@ -309,14 +313,18 @@ export class TaskService {
         creditedUserId
       ) {
         try {
-          await this.karmaService.awardKarma({
-            familyId: fromObjectId(updatedTask.familyId),
-            userId: creditedUserId,
-            amount: updatedTask.metadata.karma,
-            source: "task_completion",
-            description: `Completed task "${updatedTask.name}"`,
-            metadata: { taskId: normalizedTaskId },
-          });
+          // Award karma but skip the default notification - we'll send a combined one
+          await this.karmaService.awardKarma(
+            {
+              familyId: fromObjectId(updatedTask.familyId),
+              userId: creditedUserId,
+              amount: updatedTask.metadata.karma,
+              source: "task_completion",
+              description: `Completed task "${updatedTask.name}"`,
+              metadata: { taskId: normalizedTaskId },
+            },
+            true, // skipNotification - we'll send a combined notification below
+          );
 
           logger.info("Karma awarded for task completion", {
             taskId: normalizedTaskId,
@@ -324,6 +332,14 @@ export class TaskService {
             triggeredBy: normalizedUserId,
             karma: updatedTask.metadata.karma,
           });
+
+          // Send combined notification with task completion and karma earned
+          await this.notifyUserOfTaskCompletion(
+            creditedUserId,
+            updatedTask.name,
+            updatedTask.metadata.karma,
+            normalizedTaskId,
+          );
         } catch (error) {
           logger.error("Failed to award karma for task completion", {
             taskId: normalizedTaskId,
@@ -502,6 +518,34 @@ export class TaskService {
         error,
       });
       throw error;
+    }
+  }
+
+  /**
+   * Send task completion notification to a user
+   * @private
+   */
+  private async notifyUserOfTaskCompletion(
+    userId: string,
+    taskName: string,
+    karmaEarned: number,
+    taskId: ObjectIdString,
+  ): Promise<void> {
+    try {
+      const notification = createTaskCompletionNotification(
+        taskName,
+        "You",
+        karmaEarned,
+      );
+
+      await sendToUser(userId, notification);
+    } catch (error) {
+      logger.error("Failed to send task completion notification", {
+        taskId,
+        userId,
+        error,
+      });
+      // Don't throw - notification failure shouldn't prevent task completion
     }
   }
 }

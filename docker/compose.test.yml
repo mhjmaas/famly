@@ -60,6 +60,9 @@ services:
       MINIO_SECRET_KEY: famly-test-secret-min-32-chars
       MINIO_BUCKET: famly-rewards-test
       MINIO_USE_SSL: "false"
+      # VAPID keys for push notifications (test keys)
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-test_vapid_public_key}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-test_vapid_private_key}
     working_dir: /app/apps/api
     command: pnpm dev
     volumes:

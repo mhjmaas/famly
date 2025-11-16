@@ -56,6 +56,9 @@ importers:
       uuid:
         specifier: ^13.0.0
         version: 13.0.0
+      web-push:
+        specifier: ^3.6.7
+        version: 3.6.7
       winston:
         specifier: ^3.14.2
         version: 3.18.3
@@ -99,6 +102,9 @@ importers:
       '@types/supertest':
         specifier: ^6.0.2
         version: 6.0.3
+      '@types/web-push':
+        specifier: ^3.6.4
+        version: 3.6.4
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@20.19.22)(ts-node@10.9.2(@types/node@20.19.22)(typescript@5.9.3))

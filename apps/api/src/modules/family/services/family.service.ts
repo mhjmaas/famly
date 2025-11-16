@@ -7,6 +7,7 @@ import {
   toObjectId,
   validateObjectId,
 } from "@lib/objectid-utils";
+import { getUserName } from "@lib/user-utils";
 import { getAuth } from "@modules/auth/better-auth";
 import { DeploymentConfigRepository } from "@modules/deployment-config/repositories/deployment-config.repository";
 import { DeploymentConfigService } from "@modules/deployment-config/services/deployment-config.service";
@@ -15,6 +16,10 @@ import {
   emitFamilyMemberRemoved,
   emitFamilyMemberRoleUpdated,
 } from "@modules/family/events/family-events";
+import {
+  createFamilyMemberAddedNotification,
+  sendFamilyNotifications,
+} from "@modules/notifications";
 import {
   type AddFamilyMemberRequest,
   type AddFamilyMemberResult,
@@ -293,6 +298,14 @@ export class FamilyService {
         input.role,
       );
 
+      // Send notifications to all existing family members about the new member
+      await this.notifyFamilyOfNewMember(
+        normalizedFamilyId,
+        newUserId,
+        normalizedAddedBy,
+        input.name,
+      );
+
       return toAddFamilyMemberResult(
         membership,
         normalizedFamilyId,
@@ -525,6 +538,51 @@ export class FamilyService {
         error,
       });
       throw error;
+    }
+  }
+
+  /**
+   * Notify family members of a new member being added
+   * @private
+   */
+  private async notifyFamilyOfNewMember(
+    familyId: ObjectIdString,
+    newMemberId: string,
+    addedBy: ObjectIdString,
+    newMemberName: string,
+  ): Promise<void> {
+    try {
+      const familyObjectId = toObjectId(familyId, "familyId");
+      const familyMembers =
+        await this.membershipRepository.findByFamily(familyObjectId);
+
+      if (familyMembers.length <= 1) {
+        // No other members to notify
+        return;
+      }
+
+      const adderName = await getUserName(addedBy);
+
+      const notification = createFamilyMemberAddedNotification(
+        newMemberName,
+        adderName,
+      );
+
+      // Send to all members except the one who was just added
+      const memberIds = familyMembers.map((m) => m.userId.toString());
+      await sendFamilyNotifications(memberIds, newMemberId, notification, {
+        familyId,
+        newMemberId,
+        addedBy,
+      });
+    } catch (error) {
+      logger.error("Failed to send family member added notifications", {
+        familyId,
+        newMemberId,
+        addedBy,
+        error,
+      });
+      // Don't throw - notification failure shouldn't prevent member addition
     }
   }
 }
