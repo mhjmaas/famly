@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { authenticate } from "../../auth/middleware/authenticate";
-import { sendNotificationRoute } from "./send-notification.route";
 import { subscribeRoute } from "./subscribe.route";
 import { unsubscribeRoute } from "./unsubscribe.route";
 
@@ -11,9 +10,9 @@ export function createNotificationsRouter(): Router {
   router.post("/subscribe", authenticate, subscribeRoute);
   router.delete("/unsubscribe", authenticate, unsubscribeRoute);
 
-  // Internal endpoint for sending notifications
-  // Note: In production, this should be restricted to internal services only
-  router.post("/send", sendNotificationRoute);
+  // Send notification endpoint (requires authentication)
+  // Note: This endpoint is currently unused - notifications are sent server-side via sendToUser()
+  // router.post("/send", authenticate, sendNotificationRoute);
 
   return router;
 }
