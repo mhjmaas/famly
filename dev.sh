@@ -42,6 +42,18 @@ command_exists() {
 # Print header
 print_header
 
+# Handle --reset flag to delete .env.dev and start fresh
+if [ "$1" == "--reset" ]; then
+    if [ -f ".env.dev" ]; then
+        print_info "Removing existing .env.dev file..."
+        rm ".env.dev"
+        print_success ".env.dev deleted - will regenerate with defaults"
+    else
+        print_info "No .env.dev file found to reset"
+    fi
+    echo ""
+fi
+
 # Step 1: Check if pnpm is installed
 print_info "Checking pnpm installation..."
 if ! command_exists pnpm; then
@@ -269,18 +281,24 @@ else
         # Update to use development defaults with HTTP for fallback mode
         if [[ "$OSTYPE" == "darwin"* ]]; then
             # macOS (BSD sed)
-            sed -i '' "s|PROTOCOL=.*|PROTOCOL=http|g" "$ENV_FILE"
+            sed -i '' "s|PROTOCOL=.*|PROTOCOL=https|g" "$ENV_FILE"
             sed -i '' "s|BETTER_AUTH_SECRET=.*|BETTER_AUTH_SECRET=dev_better_auth_secret_min_32_chars_required_here|g" "$ENV_FILE"
-            sed -i '' "s|BETTER_AUTH_URL=.*|BETTER_AUTH_URL=http://localhost:3001|g" "$ENV_FILE"
-            sed -i '' "s|NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=http://localhost:3001|g" "$ENV_FILE"
-            sed -i '' "s|CLIENT_URL=.*|CLIENT_URL=http://localhost:3000|g" "$ENV_FILE"
+            sed -i '' "s|BETTER_AUTH_URL=.*|BETTER_AUTH_URL=https://localhost:8443/api|g" "$ENV_FILE"
+            sed -i '' "s|NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=https://localhost:8443/api|g" "$ENV_FILE"
+            sed -i '' "s|NEXT_PUBLIC_WS_URL=.*|NEXT_PUBLIC_WS_URL=https://localhost:8443|g" "$ENV_FILE"
+            sed -i '' "s|CLIENT_URL=.*|CLIENT_URL=https://localhost:8443|g" "$ENV_FILE"
+            sed -i '' "s|MINIO_ROOT_USER=.*|MINIO_ROOT_USER=famly-admin|g" "$ENV_FILE"
+            sed -i '' "s|MINIO_ROOT_PASSWORD=.*|MINIO_ROOT_PASSWORD=famly-dev-secret-min-32-chars|g" "$ENV_FILE"
         else
             # Linux (GNU sed)
-            sed -i "s|PROTOCOL=.*|PROTOCOL=http|g" "$ENV_FILE"
+            sed -i "s|PROTOCOL=.*|PROTOCOL=https|g" "$ENV_FILE"
             sed -i "s|BETTER_AUTH_SECRET=.*|BETTER_AUTH_SECRET=dev_better_auth_secret_min_32_chars_required_here|g" "$ENV_FILE"
-            sed -i "s|BETTER_AUTH_URL=.*|BETTER_AUTH_URL=http://localhost:3001|g" "$ENV_FILE"
-            sed -i "s|NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=http://localhost:3001|g" "$ENV_FILE"
-            sed -i "s|CLIENT_URL=.*|CLIENT_URL=http://localhost:3000|g" "$ENV_FILE"
+            sed -i "s|BETTER_AUTH_URL=.*|BETTER_AUTH_URL=https://localhost:8443/api|g" "$ENV_FILE"
+            sed -i "s|NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=https://localhost:8443/api|g" "$ENV_FILE"
+            sed -i "s|NEXT_PUBLIC_WS_URL=.*|NEXT_PUBLIC_WS_URL=https://localhost:8443|g" "$ENV_FILE"
+            sed -i "s|CLIENT_URL=.*|CLIENT_URL=https://localhost:8443|g" "$ENV_FILE"
+            sed -i "s|MINIO_ROOT_USER=.*|MINIO_ROOT_USER=famly-admin|g" "$ENV_FILE"
+            sed -i "s|MINIO_ROOT_PASSWORD=.*|MINIO_ROOT_PASSWORD=famly-dev-secret-min-32-chars|g" "$ENV_FILE"
         fi
 
         print_success "Created .env.dev with development defaults"
@@ -289,7 +307,90 @@ else
     fi
 fi
 
-# Step 10: Show service info before starting
+# Step 10: Check and generate VAPID keys for push notifications
+print_info "Checking push notification configuration..."
+
+# Source .env.dev to get current VAPID keys
+if [ -f ".env.dev" ]; then
+    set -a
+    source .env.dev
+    set +a
+fi
+
+# Check if VAPID keys are set and valid (not placeholder values)
+VAPID_PUBLIC_VALID=false
+VAPID_PRIVATE_VALID=false
+
+if [ ! -z "$NEXT_PUBLIC_VAPID_PUBLIC_KEY" ] && [ "$NEXT_PUBLIC_VAPID_PUBLIC_KEY" != "your_public_key_here" ]; then
+    VAPID_PUBLIC_VALID=true
+fi
+
+if [ ! -z "$VAPID_PRIVATE_KEY" ] && [ "$VAPID_PRIVATE_KEY" != "your_private_key_here" ]; then
+    VAPID_PRIVATE_VALID=true
+fi
+
+if [ "$VAPID_PUBLIC_VALID" = false ] || [ "$VAPID_PRIVATE_VALID" = false ]; then
+    print_warning "Push notification VAPID keys are not configured"
+    echo ""
+    echo -e "${BLUE}Why are VAPID keys needed?${NC}"
+    echo "  VAPID (Voluntary Application Server Identification) keys enable push notifications"
+    echo "  in your application. Without them, notifications won't work in development."
+    echo ""
+    echo "They are:"
+    echo "  • Only used for development (not production secrets)"
+    echo "  • Automatically generated and stored in .env.dev"
+    echo "  • Safe to regenerate at any time"
+    echo ""
+    read -p "Generate VAPID keys now? (y/N): " VAPID_REPLY
+    echo ""
+
+    if [[ $VAPID_REPLY =~ ^[Yy]$ ]]; then
+        print_info "Generating VAPID keys..."
+        echo ""
+
+        # Run the command and capture output
+        VAPID_OUTPUT=$(npx web-push generate-vapid-keys 2>&1)
+
+        # Parse the output - keys are on the line after the labels
+        PUBLIC_KEY=$(echo "$VAPID_OUTPUT" | grep -A 1 "Public Key:" | tail -1 | xargs)
+        PRIVATE_KEY=$(echo "$VAPID_OUTPUT" | grep -A 1 "Private Key:" | tail -1 | xargs)
+
+        if [ ! -z "$PUBLIC_KEY" ] && [ ! -z "$PRIVATE_KEY" ]; then
+            # Update .env.dev with the generated keys
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                # macOS (BSD sed)
+                sed -i '' "s|NEXT_PUBLIC_VAPID_PUBLIC_KEY=.*|NEXT_PUBLIC_VAPID_PUBLIC_KEY=$PUBLIC_KEY|g" ".env.dev"
+                sed -i '' "s|VAPID_PRIVATE_KEY=.*|VAPID_PRIVATE_KEY=$PRIVATE_KEY|g" ".env.dev"
+                sed -i '' "s|VAPID_EMAIL=.*|VAPID_EMAIL=dev@famly.app|g" ".env.dev"
+            else
+                # Linux (GNU sed)
+                sed -i "s|NEXT_PUBLIC_VAPID_PUBLIC_KEY=.*|NEXT_PUBLIC_VAPID_PUBLIC_KEY=$PUBLIC_KEY|g" ".env.dev"
+                sed -i "s|VAPID_PRIVATE_KEY=.*|VAPID_PRIVATE_KEY=$PRIVATE_KEY|g" ".env.dev"
+                sed -i "s|VAPID_EMAIL=.*|VAPID_EMAIL=dev@famly.app|g" ".env.dev"
+            fi
+
+            print_success "VAPID keys generated and saved to .env.dev"
+            print_info "Push notifications are now enabled"
+        else
+            print_error "Failed to generate VAPID keys"
+            echo ""
+            echo "To generate keys manually, run:"
+            echo "  ${GREEN}npx web-push generate-vapid-keys${NC}"
+            echo ""
+        fi
+    else
+        print_warning "Skipping VAPID key generation"
+        echo ""
+        echo "To generate keys later, run:"
+        echo "  ${GREEN}npx web-push generate-vapid-keys${NC}"
+        echo ""
+    fi
+    echo ""
+else
+    print_success "VAPID keys are configured"
+fi
+
+# Step 11: Show service info before starting
 echo ""
 if [ "$PROTOCOL" == "https" ]; then
     echo -e "${GREEN}🚀 Starting development services with HTTPS (via Caddy):${NC}"
@@ -356,7 +457,7 @@ cleanup() {
     else
         print_info "Stopping all services (MongoDB, MinIO, API, Web)..."
     fi
-    $COMPOSE_CMD -p $PROJECT_NAME -f docker/compose.dev.yml --profile https stop
+    $COMPOSE_CMD -p $PROJECT_NAME --env-file .env.dev -f docker/compose.dev.yml --profile https stop
     print_success "All services stopped (data preserved)"
     exit 0
 }
@@ -375,11 +476,11 @@ fi
 
 # Start all services in detached mode first (to avoid MongoDB/MinIO logs)
 print_info "Starting infrastructure services (MongoDB, MinIO)..."
-$COMPOSE_CMD -p $PROJECT_NAME -f docker/compose.dev.yml up -d mongo minio --build
+$COMPOSE_CMD -p $PROJECT_NAME --env-file .env.dev -f docker/compose.dev.yml up -d mongo minio --build
 
 # Wait for health checks to pass
 print_info "Waiting for infrastructure to be healthy..."
-$COMPOSE_CMD -p $PROJECT_NAME -f docker/compose.dev.yml up -d --wait mongo minio
+$COMPOSE_CMD -p $PROJECT_NAME --env-file .env.dev -f docker/compose.dev.yml up -d --wait mongo minio
 
 # Now start API, Web, and optionally Caddy in attached mode (showing their logs)
 if [ "$PROTOCOL" == "https" ]; then
@@ -388,7 +489,7 @@ else
     print_info "Starting API and Web services (logs visible below)..."
 fi
 echo ""
-$COMPOSE_CMD -p $PROJECT_NAME -f docker/compose.dev.yml $COMPOSE_PROFILE up --build $SERVICES_TO_START
+$COMPOSE_CMD -p $PROJECT_NAME --env-file .env.dev -f docker/compose.dev.yml $COMPOSE_PROFILE up --build $SERVICES_TO_START
 
 # If we reach here, the up command exited normally (not via Ctrl+C)
 # Still run cleanup to be safe

@@ -62,8 +62,318 @@ get_local_ip() {
     fi
 }
 
+# Helper to update key/value pairs inside the generated .env file
+update_env_value() {
+    local search="$1"
+    local replace="$2"
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "s|$search|$replace|g" "$ENV_FILE"
+    else
+        sed -i "s|$search|$replace|g" "$ENV_FILE"
+    fi
+}
+
+setup_local_https() {
+    echo ""
+    print_info "Local HTTPS Setup (mkcert + LAN access)"
+    echo ""
+    echo "This mode keeps Famly on your home network while still using HTTPS."
+    echo ""
+    echo "⚠️  Important: Use a DNS name (e.g., famly.local), not a raw IP address."
+    echo "   Browsers have strict security for IP addresses that can cause issues."
+    echo "   You can add 'famly.local' to /etc/hosts pointing to your IP."
+    echo ""
+    echo "All devices must trust your mkcert CA to avoid HTTPS warnings."
+    echo ""
+
+    if ! command_exists mkcert; then
+        print_error "mkcert is required for local HTTPS."
+        echo ""
+        echo "Install mkcert first and rerun this script."
+        echo "  macOS:  brew install mkcert && mkcert -install"
+        echo "  Linux:  install mkcert + run mkcert -install"
+        echo ""
+        rm "$ENV_FILE"
+        exit 1
+    fi
+
+    if ! mkcert -CAROOT >/dev/null 2>&1; then
+        print_warning "mkcert CA is not installed yet."
+        echo "This installation is needed so browsers trust your certificates."
+        echo ""
+        read -p "Install the mkcert CA now? (y/N): " INSTALL_CA
+        if [[ $INSTALL_CA =~ ^[Yy]$ ]]; then
+            mkcert -install
+            print_success "mkcert CA installed"
+        else
+            print_warning "Continuing without installing CA. Browsers may show warnings."
+        fi
+        echo ""
+    fi
+
+    local default_host
+    default_host=$(get_local_ip)
+    read -p "Enter the IP or local DNS name to access Famly [${default_host}]: " LOCAL_HOST
+    LOCAL_HOST=$(echo "$LOCAL_HOST" | xargs)
+    if [ -z "$LOCAL_HOST" ]; then
+        LOCAL_HOST="$default_host"
+    fi
+
+    if [[ "$LOCAL_HOST" == *:* ]]; then
+        print_error "IPv6 addresses are not supported by this automation. Use IPv4 or a DNS name."
+        rm "$ENV_FILE"
+        exit 1
+    fi
+
+    read -p "Can every device on your network resolve ${LOCAL_HOST}? (y/n): " HAS_RESOLUTION
+    if [[ ! $HAS_RESOLUTION =~ ^[Yy]$ ]]; then
+        print_warning "Please reserve the IP or configure local DNS/hosts entries first."
+        rm "$ENV_FILE"
+        exit 1
+    fi
+
+    read -p "Enter a contact email for push notifications (VAPID): " LOCAL_EMAIL
+    if [ -z "$LOCAL_EMAIL" ]; then
+        print_error "Email cannot be empty!"
+        rm "$ENV_FILE"
+        exit 1
+    fi
+    echo ""
+
+    print_info "Generating secure secrets and VAPID keys..."
+    local MINIO_PASSWORD
+    local BETTER_AUTH_SECRET
+    MINIO_PASSWORD=$(generate_secret)
+    BETTER_AUTH_SECRET=$(generate_secret)
+
+    local VAPID_OUTPUT
+    VAPID_OUTPUT=$(npx web-push generate-vapid-keys 2>&1)
+    local VAPID_PUBLIC
+    local VAPID_PRIVATE
+    VAPID_PUBLIC=$(echo "$VAPID_OUTPUT" | grep -A 1 "Public Key:" | tail -1 | xargs)
+    VAPID_PRIVATE=$(echo "$VAPID_OUTPUT" | grep -A 1 "Private Key:" | tail -1 | xargs)
+
+    if [ -z "$VAPID_PUBLIC" ] || [ -z "$VAPID_PRIVATE" ]; then
+        print_error "Failed to generate VAPID keys!"
+        rm "$ENV_FILE"
+        exit 1
+    fi
+
+    local BASE_URL="https://${LOCAL_HOST}"
+    update_env_value "PROTOCOL=.*" "PROTOCOL=https"
+    update_env_value "CADDYFILE=.*" "CADDYFILE=Caddyfile.localhost.custom"
+    update_env_value "CLIENT_URL=.*" "CLIENT_URL=${BASE_URL}"
+    update_env_value "BETTER_AUTH_URL=.*" "BETTER_AUTH_URL=${BASE_URL}/api"
+    update_env_value "NEXT_PUBLIC_API_URL=.*" "NEXT_PUBLIC_API_URL=${BASE_URL}/api"
+    update_env_value "NEXT_PUBLIC_WS_URL=.*" "NEXT_PUBLIC_WS_URL=${BASE_URL}"
+    update_env_value "MINIO_ROOT_PASSWORD=.*" "MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}"
+    update_env_value "BETTER_AUTH_SECRET=.*" "BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}"
+    update_env_value "NEXT_PUBLIC_VAPID_PUBLIC_KEY=.*" "NEXT_PUBLIC_VAPID_PUBLIC_KEY=${VAPID_PUBLIC}"
+    update_env_value "VAPID_PRIVATE_KEY=.*" "VAPID_PRIVATE_KEY=${VAPID_PRIVATE}"
+    update_env_value "VAPID_EMAIL=.*" "VAPID_EMAIL=${LOCAL_EMAIL}"
+
+    local CERT_DIR="docker/caddy/certs"
+    local CERT_SAFE_NAME
+    CERT_SAFE_NAME=$(echo "$LOCAL_HOST" | tr -c 'A-Za-z0-9._-' '_')
+    local CERT_FILE="$CERT_DIR/${CERT_SAFE_NAME}.pem"
+    local KEY_FILE="$CERT_DIR/${CERT_SAFE_NAME}-key.pem"
+    mkdir -p "$CERT_DIR"
+
+    if [ ! -f "$CERT_FILE" ] || [ ! -f "$KEY_FILE" ]; then
+        print_info "Generating mkcert certificate for ${LOCAL_HOST}..."
+        mkcert -cert-file "$CERT_FILE" -key-file "$KEY_FILE" "$LOCAL_HOST" localhost 127.0.0.1 ::1
+        print_success "Certificates stored in $CERT_DIR/"
+    else
+        print_success "Reusing existing certificate for ${LOCAL_HOST}"
+    fi
+
+    local CADDY_TEMPLATE="docker/caddy/Caddyfile.localhost"
+    local CADDY_CUSTOM_FILE="docker/caddy/Caddyfile.localhost.custom"
+    cp "$CADDY_TEMPLATE" "$CADDY_CUSTOM_FILE"
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "s|^localhost {|localhost, ${LOCAL_HOST} {|" "$CADDY_CUSTOM_FILE"
+        sed -i '' "s|tls /certs/localhost.pem /certs/localhost-key.pem|tls /certs/${CERT_SAFE_NAME}.pem /certs/${CERT_SAFE_NAME}-key.pem|" "$CADDY_CUSTOM_FILE"
+    else
+        sed -i "s|^localhost {|localhost, ${LOCAL_HOST} {|" "$CADDY_CUSTOM_FILE"
+        sed -i "s|tls /certs/localhost.pem /certs/localhost-key.pem|tls /certs/${CERT_SAFE_NAME}.pem /certs/${CERT_SAFE_NAME}-key.pem|" "$CADDY_CUSTOM_FILE"
+    fi
+
+    LOCAL_HOST="$LOCAL_HOST" CADDY_CUSTOM_FILE="$CADDY_CUSTOM_FILE" python3 <<'PY'
+import os
+from pathlib import Path
+
+site_header = f"localhost, {os.environ['LOCAL_HOST']} {{"
+file_path = Path(os.environ['CADDY_CUSTOM_FILE'])
+text = file_path.read_text()
+if site_header in text and "bind 0.0.0.0" not in text:
+    text = text.replace(site_header, site_header + "\n\tbind 0.0.0.0", 1)
+    file_path.write_text(text)
+PY
+
+    print_success "Created $CADDY_CUSTOM_FILE"
+    echo ""
+    echo -e "${YELLOW}Next steps:${NC}"
+    echo "  • Install the mkcert CA on every device that will access Famly"
+    echo "    mkcert -CAROOT shows where the CA file lives"
+    echo "  • Optional: Add ${LOCAL_HOST} to your router's DNS/hosts for friendly access"
+    echo ""
+
+    SELECTED_LOCAL_HOST="$LOCAL_HOST"
+}
+
+setup_http01_challenge() {
+    echo ""
+    print_info "HTTP-01 Challenge Setup"
+    echo ""
+    echo "You will need:"
+    echo "  1. A registered domain (e.g., famly.example.com)"
+    echo "  2. DNS A record pointing to your public IP"
+    echo "  3. Router ports 80 and 443 forwarded to this server"
+    echo ""
+    read -p "Do you have these set up? (y/n): " HAS_SETUP
+    echo ""
+
+    if [[ ! $HAS_SETUP =~ ^[Yy]$ ]]; then
+        print_warning "Please configure DNS and port forwarding first."
+        echo ""
+        echo "See: docs/HTTPS_SETUP.md - Setup Option 1: HTTP-01 Challenge"
+        echo ""
+        rm "$ENV_FILE"
+        exit 1
+    fi
+
+    # Ask for domain
+    read -p "Enter your domain (e.g., famly.example.com): " DOMAIN
+    if [ -z "$DOMAIN" ]; then
+        print_error "Domain cannot be empty!"
+        rm "$ENV_FILE"
+        exit 1
+    fi
+    echo ""
+
+    # Ask for email for Let's Encrypt
+    read -p "Enter your email for Let's Encrypt notifications: " LE_EMAIL
+    if [ -z "$LE_EMAIL" ]; then
+        print_error "Email cannot be empty!"
+        rm "$ENV_FILE"
+        exit 1
+    fi
+    echo ""
+
+    # Generate secrets
+    print_info "Generating secure secrets and VAPID keys..."
+    MINIO_PASSWORD=$(generate_secret)
+    BETTER_AUTH_SECRET=$(generate_secret)
+
+    # Generate VAPID keys
+    VAPID_OUTPUT=$(npx web-push generate-vapid-keys 2>&1)
+    VAPID_PUBLIC=$(echo "$VAPID_OUTPUT" | grep -A 1 "Public Key:" | tail -1 | xargs)
+    VAPID_PRIVATE=$(echo "$VAPID_OUTPUT" | grep -A 1 "Private Key:" | tail -1 | xargs)
+
+    if [ -z "$VAPID_PUBLIC" ] || [ -z "$VAPID_PRIVATE" ]; then
+        print_error "Failed to generate VAPID keys!"
+        rm "$ENV_FILE"
+        exit 1
+    fi
+
+    # Update .env file with production settings
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS (BSD sed)
+        sed -i '' "s|CADDYFILE=Caddyfile.localhost|CADDYFILE=Caddyfile.production|g" "$ENV_FILE"
+        sed -i '' "s|MINIO_ROOT_PASSWORD=change-this-to-a-secure-password-min-32-chars|MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}|g" "$ENV_FILE"
+        sed -i '' "s|BETTER_AUTH_SECRET=change-this-to-a-secure-random-string-min-32-chars-required|BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}|g" "$ENV_FILE"
+        sed -i '' "s|CLIENT_URL=https://localhost:8443|CLIENT_URL=https://${DOMAIN}|g" "$ENV_FILE"
+        sed -i '' "s|BETTER_AUTH_URL=https://localhost:8443/api|BETTER_AUTH_URL=https://${DOMAIN}/api|g" "$ENV_FILE"
+        sed -i '' "s|NEXT_PUBLIC_API_URL=https://localhost:8443/api|NEXT_PUBLIC_API_URL=https://${DOMAIN}/api|g" "$ENV_FILE"
+        sed -i '' "s|NEXT_PUBLIC_WS_URL=https://localhost:8443|NEXT_PUBLIC_WS_URL=https://${DOMAIN}|g" "$ENV_FILE"
+        sed -i '' "s|NEXT_PUBLIC_VAPID_PUBLIC_KEY=.*|NEXT_PUBLIC_VAPID_PUBLIC_KEY=${VAPID_PUBLIC}|g" "$ENV_FILE"
+        sed -i '' "s|VAPID_PRIVATE_KEY=.*|VAPID_PRIVATE_KEY=${VAPID_PRIVATE}|g" "$ENV_FILE"
+        sed -i '' "s|VAPID_EMAIL=.*|VAPID_EMAIL=${LE_EMAIL}|g" "$ENV_FILE"
+    else
+        # Linux (GNU sed)
+        sed -i "s|CADDYFILE=Caddyfile.localhost|CADDYFILE=Caddyfile.production|g" "$ENV_FILE"
+        sed -i "s|MINIO_ROOT_PASSWORD=change-this-to-a-secure-password-min-32-chars|MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}|g" "$ENV_FILE"
+        sed -i "s|BETTER_AUTH_SECRET=change-this-to-a-secure-random-string-min-32-chars-required|BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}|g" "$ENV_FILE"
+        sed -i "s|CLIENT_URL=https://localhost:8443|CLIENT_URL=https://${DOMAIN}|g" "$ENV_FILE"
+        sed -i "s|BETTER_AUTH_URL=https://localhost:8443/api|BETTER_AUTH_URL=https://${DOMAIN}/api|g" "$ENV_FILE"
+        sed -i "s|NEXT_PUBLIC_API_URL=https://localhost:8443/api|NEXT_PUBLIC_API_URL=https://${DOMAIN}/api|g" "$ENV_FILE"
+        sed -i "s|NEXT_PUBLIC_WS_URL=https://localhost:8443|NEXT_PUBLIC_WS_URL=https://${DOMAIN}|g" "$ENV_FILE"
+        sed -i "s|NEXT_PUBLIC_VAPID_PUBLIC_KEY=.*|NEXT_PUBLIC_VAPID_PUBLIC_KEY=${VAPID_PUBLIC}|g" "$ENV_FILE"
+        sed -i "s|VAPID_PRIVATE_KEY=.*|VAPID_PRIVATE_KEY=${VAPID_PRIVATE}|g" "$ENV_FILE"
+        sed -i "s|VAPID_EMAIL=.*|VAPID_EMAIL=${LE_EMAIL}|g" "$ENV_FILE"
+    fi
+
+    print_success "Generated secrets and VAPID keys"
+    print_info "Configuration saved to .env file"
+    echo ""
+
+    # Create Caddyfile.production for HTTP-01
+    print_info "Creating Caddyfile.production for HTTP-01 challenge..."
+    CADDY_TEMPLATE="docker/caddy/Caddyfile.production.http01"
+    CADDY_FILE="docker/caddy/Caddyfile.production"
+
+    if [ ! -f "$CADDY_TEMPLATE" ]; then
+        print_error "Caddyfile template not found: $CADDY_TEMPLATE"
+        rm "$ENV_FILE"
+        exit 1
+    fi
+
+    # Copy template and replace placeholders
+    cp "$CADDY_TEMPLATE" "$CADDY_FILE"
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS (BSD sed)
+        sed -i '' "s|EMAIL_PLACEHOLDER|${LE_EMAIL}|g" "$CADDY_FILE"
+        sed -i '' "s|DOMAIN_PLACEHOLDER|${DOMAIN}|g" "$CADDY_FILE"
+    else
+        # Linux (GNU sed)
+        sed -i "s|EMAIL_PLACEHOLDER|${LE_EMAIL}|g" "$CADDY_FILE"
+        sed -i "s|DOMAIN_PLACEHOLDER|${DOMAIN}|g" "$CADDY_FILE"
+    fi
+
+    print_success "Created $CADDY_FILE"
+    echo ""
+    echo -e "${YELLOW}Next steps:${NC}"
+    echo "  1. Verify DNS A record points to your public IP:"
+    echo "     ${GREEN}dig ${DOMAIN}${NC}"
+    echo ""
+    echo "  2. Verify ports 80 and 443 are forwarded in your router"
+    echo ""
+    echo "  3. When ready, run:"
+    echo "     ${GREEN}./start.sh${NC}"
+    echo ""
+}
+
 # Print header
 print_header
+
+# Handle --reset flag to delete .env and Caddyfile.production and start fresh
+if [ "$1" == "--reset" ]; then
+    if [ -f ".env" ]; then
+        print_info "Removing existing .env file..."
+        rm ".env"
+        print_success ".env deleted - will regenerate with fresh secrets"
+    else
+        print_info "No .env file found to reset"
+    fi
+
+    if [ -f "docker/caddy/Caddyfile.production" ]; then
+        print_info "Removing existing Caddyfile.production..."
+        rm "docker/caddy/Caddyfile.production"
+        print_success "Caddyfile.production deleted - will regenerate with new domain"
+    else
+        print_info "No Caddyfile.production found to reset"
+    fi
+
+    if [ -f "docker/caddy/Caddyfile.localhost.custom" ]; then
+        print_info "Removing existing Caddyfile.localhost.custom..."
+        rm "docker/caddy/Caddyfile.localhost.custom"
+        print_success "Caddyfile.localhost.custom deleted - local HTTPS will be reconfigured"
+    fi
+    echo ""
+fi
 
 # Step 1: Check if Docker is installed
 print_info "Checking Docker installation..."
@@ -154,7 +464,8 @@ ENV_EXAMPLE=".env.example"
 if [ -f "$ENV_FILE" ]; then
     print_success "Found existing .env file"
 else
-    print_warning "No .env file found, creating one..."
+    print_warning "No .env file found, starting setup wizard..."
+    echo ""
 
     if [ ! -f "$ENV_EXAMPLE" ]; then
         print_error ".env.example file not found!"
@@ -164,34 +475,49 @@ else
     # Copy the example file
     cp "$ENV_EXAMPLE" "$ENV_FILE"
     print_success "Copied .env.example to .env"
+    echo ""
 
-    # Generate secrets
-    print_info "Generating secure secrets..."
-    MINIO_PASSWORD=$(generate_secret)
-    BETTER_AUTH_SECRET=$(generate_secret)
+    # Ask about deployment type
+    print_info "Choose your deployment option:"
+    echo ""
+    echo "  1) Local HTTPS (mkcert)"
+    echo "     - Best for: Home/LAN access without exposing the server"
+    echo "     - Provide an IP or local DNS entry (e.g., 192.168.1.20 or famly.local)"
+    echo ""
+    echo "  2) HTTP-01 Challenge (public domain via Let's Encrypt)"
+    echo "     - Best for: Internet-facing deployments with port forwarding"
+    echo "     - Requires ports 80/443 open to the internet"
+    echo ""
+    echo "  3) DNS-01 Challenge (advanced via DNS provider API)"
+    echo "     - Best for: VPN/internal domains without port exposure"
+    echo "     - Requires API tokens (Cloudflare, Route53, etc.)"
+    echo ""
+    read -p "Enter your choice (1-3): " DEPLOYMENT_TYPE
+    echo ""
 
-    # Get local IP for URLs
-    LOCAL_IP=$(get_local_ip)
+    case "$DEPLOYMENT_TYPE" in
+        1)
+            setup_local_https
+            ;;
+        2)
+            setup_http01_challenge
+            ;;
+        3)
+            print_warning "DNS-01 setup is not yet automated in this script."
+            echo ""
+            echo "Please refer to docs/HTTPS_SETUP.md for manual DNS-01 configuration."
+            echo "Or contact support for help."
+            echo ""
+            rm "$ENV_FILE"
+            exit 1
+            ;;
+        *)
+            print_error "Invalid choice. Please run again and select 1, 2, or 3."
+            rm "$ENV_FILE"
+            exit 1
+            ;;
+    esac
 
-    # Replace placeholders in .env file
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS (BSD sed)
-        sed -i '' "s|MINIO_ROOT_PASSWORD=change-this-to-a-secure-password-min-32-chars|MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}|g" "$ENV_FILE"
-        sed -i '' "s|BETTER_AUTH_SECRET=change-this-to-a-secure-random-string-min-32-chars-required|BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}|g" "$ENV_FILE"
-        sed -i '' "s|BETTER_AUTH_URL=http://localhost:3001|BETTER_AUTH_URL=http://${LOCAL_IP}:3001|g" "$ENV_FILE"
-        sed -i '' "s|NEXT_PUBLIC_API_URL=http://localhost:3001|NEXT_PUBLIC_API_URL=http://${LOCAL_IP}:3001|g" "$ENV_FILE"
-        sed -i '' "s|CLIENT_URL=http://localhost:3000|CLIENT_URL=http://${LOCAL_IP}:3000|g" "$ENV_FILE"
-    else
-        # Linux (GNU sed)
-        sed -i "s|MINIO_ROOT_PASSWORD=change-this-to-a-secure-password-min-32-chars|MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}|g" "$ENV_FILE"
-        sed -i "s|BETTER_AUTH_SECRET=change-this-to-a-secure-random-string-min-32-chars-required|BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}|g" "$ENV_FILE"
-        sed -i "s|BETTER_AUTH_URL=http://localhost:3001|BETTER_AUTH_URL=http://${LOCAL_IP}:3001|g" "$ENV_FILE"
-        sed -i "s|NEXT_PUBLIC_API_URL=http://localhost:3001|NEXT_PUBLIC_API_URL=http://${LOCAL_IP}:3001|g" "$ENV_FILE"
-        sed -i "s|CLIENT_URL=http://localhost:3000|CLIENT_URL=http://${LOCAL_IP}:3000|g" "$ENV_FILE"
-    fi
-
-    print_success "Generated and configured secrets"
-    print_info "Configuration saved to .env file"
 fi
 
 # Step 5: Check PROTOCOL setting
@@ -200,13 +526,25 @@ PROTOCOL=${PROTOCOL:-https}
 
 # Detect which Caddyfile to use for HTTPS mode
 if [ "$PROTOCOL" == "https" ]; then
-    if [ -f "docker/caddy/Caddyfile.production" ]; then
+    DESIRED_CADDYFILE=${CADDYFILE:-Caddyfile.localhost}
+
+    if [ -f "docker/caddy/$DESIRED_CADDYFILE" ]; then
+        export CADDYFILE="$DESIRED_CADDYFILE"
+        if [ "$CADDYFILE" == "Caddyfile.production" ]; then
+            HTTPS_MODE="custom domain (Let's Encrypt)"
+        elif [ "$CADDYFILE" == "Caddyfile.localhost" ]; then
+            HTTPS_MODE="localhost (mkcert)"
+        else
+            HTTPS_MODE="custom HTTPS config ($CADDYFILE)"
+        fi
+    elif [ -f "docker/caddy/Caddyfile.production" ]; then
         export CADDYFILE="Caddyfile.production"
         HTTPS_MODE="custom domain (Let's Encrypt)"
     else
-        export CADDYFILE="${CADDYFILE:-Caddyfile.localhost}"
+        export CADDYFILE="Caddyfile.localhost"
         HTTPS_MODE="localhost (mkcert)"
     fi
+
 fi
 
 echo ""
@@ -225,7 +563,7 @@ fi
 echo ""
 
 # Build and start services
-$COMPOSE_CMD up -d --build
+$COMPOSE_CMD --env-file .env up -d --build
 
 # Wait a moment for services to initialize
 sleep 2
@@ -241,6 +579,8 @@ WEB_PORT=${WEB_PORT:-3000}
 API_PORT=${API_PORT:-3001}
 MINIO_CONSOLE_PORT=${MINIO_CONSOLE_PORT:-9001}
 LOCAL_IP=$(get_local_ip)
+CLIENT_HOST=$(echo "$CLIENT_URL" | sed -E 's#https?://([^/]+)/?.*#\1#')
+CLIENT_HOST=${CLIENT_HOST:-localhost}
 
 echo -e "${GREEN}Access your Famly instance at:${NC}"
 echo ""
@@ -255,14 +595,25 @@ if [ "$PROTOCOL" == "https" ]; then
         echo -e "  ${BLUE}API:${NC}"
         echo -e "    • HTTPS: ${GREEN}https://${DOMAIN}/api${NC}"
     else
-        # Mode 2: Localhost with mkcert
+        # Mode 2: Local HTTPS with mkcert
         echo -e "  ${BLUE}Web Application:${NC}"
-        echo -e "    • HTTPS: ${GREEN}https://localhost${NC}"
-        echo -e "    • Network: https://${LOCAL_IP} (requires mkcert CA on device)"
-        echo ""
-        echo -e "  ${BLUE}API:${NC}"
-        echo -e "    • HTTPS: ${GREEN}https://localhost/api${NC}"
-        echo -e "    • Network: https://${LOCAL_IP}/api (requires mkcert CA on device)"
+        if [ "$CLIENT_HOST" != "localhost" ] && [ "$CLIENT_HOST" != "localhost:8443" ]; then
+            echo -e "    • HTTPS: ${GREEN}https://${CLIENT_HOST}${NC}"
+            echo -e "    • Localhost fallback: https://localhost"
+            echo ""
+            echo -e "  ${BLUE}API:${NC}"
+            echo -e "    • HTTPS: ${GREEN}https://${CLIENT_HOST}/api${NC}"
+            echo -e "    • Localhost fallback: https://localhost/api"
+            echo ""
+            echo -e "  ${BLUE}Reminder:${NC} Install the mkcert CA on every device that uses ${CLIENT_HOST}"
+        else
+            echo -e "    • HTTPS: ${GREEN}https://localhost${NC}"
+            echo -e "    • Network: https://${LOCAL_IP} (requires mkcert CA on device)"
+            echo ""
+            echo -e "  ${BLUE}API:${NC}"
+            echo -e "    • HTTPS: ${GREEN}https://localhost/api${NC}"
+            echo -e "    • Network: https://${LOCAL_IP}/api (requires mkcert CA on device)"
+        fi
     fi
 else
     echo -e "  ${BLUE}Web Application:${NC}"

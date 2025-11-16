@@ -27,8 +27,9 @@ services:
       - "9000:9000" # API
       - "9001:9001" # Console
     environment:
-      MINIO_ROOT_USER: famly-dev-access
-      MINIO_ROOT_PASSWORD: famly-dev-secret-min-32-chars
+      # From .env.dev
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-famly-admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-famly-dev-secret-min-32-chars}
     command: server /data --console-address ":9001"
     volumes:
       - minio-data:/data
@@ -53,21 +54,23 @@ services:
       minio:
         condition: service_healthy
     environment:
+      # Hardcoded Docker-internal values (not configurable)
       MONGODB_URI: mongodb://mongo:27017/famly
       NODE_ENV: development
       PORT: 3001
+      MINIO_ENDPOINT: minio:9000
+      MINIO_USE_SSL: "false"
+      # From .env.dev
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev_better_auth_secret_min_32_chars_required_here}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3001}
       CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}
-      DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-saas}
-      MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: famly-dev-access
-      MINIO_SECRET_KEY: famly-dev-secret-min-32-chars
-      MINIO_BUCKET: famly-rewards
-      MINIO_USE_SSL: "false"
-      # VAPID keys for push notifications
-      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY}
-      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      DEPLOYMENT_MODE: ${DEPLOYMENT_MODE:-standalone}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-famly-admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-famly-dev-secret-min-32-chars}
+      MINIO_BUCKET: ${MINIO_BUCKET:-famly-rewards}
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-your_public_key_here}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-your_private_key_here}
+      VAPID_EMAIL: ${VAPID_EMAIL:-support@famly.app}
     volumes:
       # Mount source code for live reload
       - ../apps/api/src:/app/apps/api/src:delegated
@@ -99,22 +102,21 @@ services:
       minio:
         condition: service_healthy
     environment:
+      # Hardcoded Docker-internal values (not configurable)
       NODE_ENV: development
       PORT: 3000
-      # Client-side API URL (browser requests through Caddy proxy or direct)
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
-      # Client-side WebSocket URL (browser WebSocket connections through Caddy proxy or direct)
-      NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-http://localhost:3001}
-      # Server-side API URL (direct internal Docker network connection)
       API_URL: http://api:3001
       MINIO_ENDPOINT: minio:9000
-      MINIO_ACCESS_KEY: famly-dev-access
-      MINIO_SECRET_KEY: famly-dev-secret-min-32-chars
-      MINIO_BUCKET: famly-rewards
       MINIO_USE_SSL: "false"
-      # VAPID keys for push notifications
-      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY}
-      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      # From .env.dev
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-http://localhost:3001}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-famly-admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-famly-dev-secret-min-32-chars}
+      MINIO_BUCKET: ${MINIO_BUCKET:-famly-rewards}
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-your_public_key_here}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-your_private_key_here}
+      VAPID_EMAIL: ${VAPID_EMAIL:-support@famly.app}
     volumes:
       # Mount source code for live reload
       - ../apps/web/src:/app/apps/web/src:delegated

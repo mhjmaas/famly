@@ -12,9 +12,23 @@ Deploy Famly on your local network or home server using Docker Compose.
 - At least 2GB of available RAM
 - Available ports: 3000 (web), 3001 (API), 9001 (MinIO Console)
 
-### ⚡ Quick Start (Automated)
+### ⚡ Quick Start (Choose Your Mode)
 
-The easiest way to get started is using our automated startup script:
+The easiest way to get started is using our automated setup scripts. Choose based on your needs:
+
+**For Development:** Use `./dev.sh`
+- Live code reloading for instant feedback
+- Perfect for active development
+- Access at https://localhost:8443
+
+**For Production:** Use `./start.sh`
+- Production-optimized builds
+- Guided wizard with three options:
+  - Local HTTPS (mkcert) for LAN-only deployments
+  - HTTP-01 (Let's Encrypt) for public domains
+  - DNS-01 (advanced, follow docs)
+
+### Setup Steps
 
 1. **Clone the repository**
 
@@ -23,136 +37,121 @@ The easiest way to get started is using our automated startup script:
    cd famly
    ```
 
-2. **Run the startup script**
-   ```bash
-   ./start-famly.sh
-   ```
-
-That's it! The script will:
-
-- Check if Docker is installed and running
-- Create a `.env` file with secure auto-generated secrets (if it doesn't exist)
-- Configure the application with your local network IP
-- Start all services
-- Display access URLs
-
-## 🚀 Deployment Modes
-
-Famly supports three deployment modes to fit different use cases:
-
-### Mode 1: Development (Local HTTPS with Hot Reload)
-
-**Use case:** Active development with live code reloading
-
-**Command:** `./dev.sh`
-
-**Features:**
-- ✅ Hot reload for API and Web (code changes apply instantly)
-- ✅ HTTPS via mkcert (localhost:8443)
-- ✅ Automatic certificate generation
-- ✅ Zero configuration required
-
-**Access:** https://localhost:8443
-
----
-
-### Mode 2: Production (Local HTTPS - Default)
-
-**Use case:** Running production build on localhost with HTTPS
-
-**Command:** `./start.sh`
-
-**Features:**
-- ✅ Production-optimized builds
-- ✅ HTTPS via mkcert (localhost:443)
-- ✅ Automatic certificate generation
-- ✅ Zero configuration required
-- ✅ Suitable for local network access
-
-**Access:** https://localhost
-
-**Note:** This mode uses `Caddyfile.localhost` with mkcert certificates. Perfect for secure local/network deployment without exposing to the internet.
-
----
-
-### Mode 3: Production (Custom Domain with Let's Encrypt)
-
-**Use case:** Internet-accessible deployment with your own domain
-
-**Setup:**
-
-1. **Copy the example Caddyfile:**
+2. **Install dependencies**
 
    ```bash
-   # For HTTP-01 challenge (simpler, requires port forwarding)
-   cp docker/caddy/Caddyfile.http01.example docker/caddy/Caddyfile.production
-   
-   # OR for DNS-01 challenge (more secure, no port exposure)
-   cp docker/caddy/Caddyfile.production.example docker/caddy/Caddyfile.production
+   pnpm install
    ```
 
-2. **Edit `docker/caddy/Caddyfile.production`:**
-
-   ```caddyfile
-   {
-       email your-email@example.com
-   }
-   
-   your-domain.com {
-       reverse_proxy web:3000 {
-           header_up Host {host}
-           header_up X-Real-IP {remote}
-           header_up X-Forwarded-For {remote}
-           header_up X-Forwarded-Proto {scheme}
-       }
-       
-       handle_path /api/* {
-           reverse_proxy api:3001 {
-               header_up Host {host}
-               header_up X-Real-IP {remote}
-               header_up X-Forwarded-For {remote}
-               header_up X-Forwarded-Proto {scheme}
-           }
-       }
-   }
-   ```
-
-3. **Update `.env`:**
+3. **Run your preferred script**
 
    ```bash
-   PROTOCOL=https
-   CADDYFILE=Caddyfile.production
-   CLIENT_URL=https://your-domain.com
-   BETTER_AUTH_URL=https://your-domain.com/api
-   NEXT_PUBLIC_API_URL=https://your-domain.com/api
-   ```
+   # For development
+   ./dev.sh
 
-4. **Configure DNS and run:**
-
-   ```bash
+   # OR for production
    ./start.sh
    ```
 
-   The script will automatically:
-   - Only expose Caddy ports 80 and 443
-   - Keep all internal services (API, Web, MinIO, MongoDB) secured behind Caddy
-   - Block direct access to internal ports
+The scripts will guide you through:
+- Checking prerequisites (Docker, pnpm)
+- Creating/updating configuration files
+- Optionally generating VAPID keys for push notifications
+- Starting all services
+
+That's it! The script will configure everything automatically.
+
+## 🚀 Deployment Modes
+
+Famly supports multiple deployment scenarios. The setup scripts (`./dev.sh` and `./start.sh`) guide you through choosing the right configuration for your needs.
+
+### Development Mode (`./dev.sh`)
+
+**Use case:** Active development with live code reloading
+
+**What the script does:**
+- ✅ Checks prerequisites (Docker, pnpm)
+- ✅ Creates `.env.dev` with sensible defaults
+- ✅ Optionally generates VAPID keys for push notifications
+- ✅ Starts MongoDB, MinIO, API, and Web containers
+- ✅ Enables hot reload (code changes apply instantly)
+- ✅ Shows only relevant logs
 
 **Features:**
-- ✅ Automatic Let's Encrypt SSL certificates
-- ✅ Auto-renewal (no maintenance needed)
-- ✅ Publicly trusted certificates
-- ✅ Internet-accessible
+- 🔥 **Live reload** - Code changes trigger automatic reloads
+- 🔍 **MongoDB exposed** - Connect MongoDB Compass to `mongodb://localhost:27017/famly`
+- 📦 **Containerized** - Everything runs in Docker
+- ✅ **HTTPS** - Automatic mkcert certificates (localhost:8443)
 
-**Access:** https://your-domain.com
+**Access:**
+- Web: https://localhost:8443
+- API: https://localhost:8443/api
+- MongoDB: mongodb://localhost:27017/famly
+- MinIO: https://localhost:8443/minio (credentials: famly-admin/famly-dev-secret-min-32-chars)
 
-**🔒 Security:** See [docs/SECURITY.md](./docs/SECURITY.md) for important production security guidelines, including:
-- Port exposure protection
-- Firewall configuration
-- Cookie security
-- HTTPS best practices
+---
 
-**📖 Detailed Setup:** See [docs/HTTPS_SETUP.md](./docs/HTTPS_SETUP.md) for complete instructions on DNS configuration, port forwarding, and troubleshooting.
+### Production Mode (`./start.sh`)
+
+**Use case:** Running Famly on your home server or deploying to the internet
+
+The `./start.sh` script presents options during setup:
+
+#### Option 1: Local HTTPS (Recommended for Home Use)
+
+**Perfect for:** Home servers, local network access, single family deployments
+
+- Uses mkcert for locally-trusted certificates tied to your LAN hostname
+- Access via `https://YOUR_LOCAL_HOST` (IPv4 like `192.168.1.50` or DNS such as `famly.local`)
+- Wizard prompts for the host/IP so every service, URL, and certificate matches your network
+- Database and files stored locally
+- No internet exposure required
+- Zero monthly costs
+
+**What the script does:**
+- Creates `.env` with your configuration
+- Prompts for LAN host + contact email, then generates mkcert certificates for both that host and `localhost`
+- Optionally sets up VAPID keys for push notifications
+- Starts all services in production mode
+
+> 💡 Remember to install the mkcert CA on each laptop/phone that will open `https://YOUR_LOCAL_HOST`, otherwise browsers will warn about the certificate.
+
+#### Option 2: Internet Access with Custom Domain
+
+**Perfect for:** Multi-family deployments, shared access over internet, custom domain
+
+- Uses Let's Encrypt for publicly-trusted certificates
+- Choose between HTTP-01 (simpler) or DNS-01 (more secure) challenge
+- When the wizard prompts, pick option 2 for HTTP-01 (option 3 for DNS-01 still references the manual guide)
+- Auto-renewal every 60 days
+- Requires custom domain and DNS configuration
+- Suitable for multi-user deployments
+
+**What the script does:**
+- Guides you through domain and email setup
+- Creates appropriate Caddyfile configuration
+- Generates VAPID keys if needed
+- Sets up Let's Encrypt certificates
+- Only exposes Caddy ports (80, 443)
+- Keeps internal services secured behind reverse proxy
+
+For detailed setup instructions, see [docs/HTTPS_SETUP.md](./docs/HTTPS_SETUP.md).
+
+---
+
+### Stopping Services
+
+```bash
+# From dev mode (when script is running, press Ctrl+C)
+# Or manually:
+docker compose -f docker/compose.dev.yml down
+
+# From production mode
+docker compose down
+
+# Remove all data (databases, files)
+docker compose down -v
+```
 
 ---
 
@@ -269,14 +268,63 @@ docker compose up -d
 
 ### Troubleshooting
 
-- **Services won't start**: Check if ports are already in use
-  ```bash
-  docker compose ps
-  docker compose logs
-  ```
-- **Can't connect from other devices**: Check firewall settings and ensure ports are open
-- **Authentication issues**: Verify `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` are correctly set
-- **Image upload issues**: Check MinIO is running and credentials are correct in `.env`
+#### Services won't start
+
+```bash
+# Check which services are running
+docker compose ps
+
+# View service logs
+docker compose logs -f api
+docker compose logs -f web
+
+# Check if ports are already in use
+lsof -i :3000  # Web port
+lsof -i :3001  # API port
+lsof -i :27017 # MongoDB port
+```
+
+#### Scripts won't run
+
+Make sure scripts are executable:
+
+```bash
+chmod +x ./dev.sh ./start.sh
+```
+
+#### Environment variable issues
+
+If services fail due to missing environment variables:
+
+1. Check that `./dev.sh` or `./start.sh` completed successfully
+2. Verify `.env.dev` or `.env` was created:
+   ```bash
+   ls -la .env.dev  # For development
+   ls -la .env      # For production
+   ```
+3. Ensure environment variables are properly formatted (no spaces around `=`)
+
+#### Push notification issues
+
+If push notifications aren't working:
+
+1. Check VAPID keys are generated and set in your environment file
+2. Verify `VAPID_EMAIL` is set correctly
+3. Ensure the app is accessed via HTTPS (required for push notifications)
+4. Check browser console for permission errors
+
+#### Can't connect from other devices
+
+- Check firewall settings on your server
+- Ensure ports 3000 and 3001 are open
+- For local HTTPS: Install mkcert certificates on client devices (see [docs/HTTPS_SETUP.md](./docs/HTTPS_SETUP.md))
+- For Let's Encrypt: Ensure DNS is properly configured
+
+#### Authentication/Database issues
+
+- Verify `BETTER_AUTH_SECRET` is set and at least 32 characters
+- Check MongoDB is running: `docker compose logs -f mongo`
+- Verify `DEPLOYMENT_MODE` is set correctly (`standalone` or `saas`)
 
 ## 🔒 HTTPS & SSL Certificates
 
@@ -304,8 +352,6 @@ See **[docs/HTTPS_SETUP.md](./docs/HTTPS_SETUP.md)** for:
 
 ## 💻 Local Development
 
-There are two ways to set up your local development environment:
-
 ### Prerequisites
 
 - **pnpm** - Fast, disk space efficient package manager
@@ -326,42 +372,38 @@ There are two ways to set up your local development environment:
 - **mkcert** (optional, for HTTPS) - Local certificate authority for trusted certificates
   - See HTTPS Setup section above for installation instructions
 
-### Option 1: Quick Start with Script (Recommended)
+### Quick Start with Script (Recommended)
 
-The easiest way to start development with live reload and automatic setup:
+The easiest way to start development with live reload:
 
 ```bash
 # Install dependencies
 pnpm install
 
-# Start all services (MongoDB, MinIO, API, Web) with live reload
+# Start development environment with live reload
 ./dev.sh
 ```
 
-**What this script does:**
-
-- ✅ Checks that pnpm and Docker are installed
-- ✅ Verifies Docker is running
-- ✅ Checks for port conflicts (3000, 3001, 9000, 9001, 27017)
-- ✅ Installs project dependencies if needed
-- ✅ Starts MongoDB and MinIO in the background
-- ✅ Starts API and Web containers with live reload enabled
-- ✅ Shows only API and Web logs in your console
-- ✅ Gracefully stops all services on `Ctrl+C`
+The script will:
+- Check prerequisites and setup
+- Create `.env.dev` file
+- Offer to generate VAPID keys for push notifications
+- Start all services with hot reload enabled
+- Show live logs
 
 **Features:**
 
-- 🔥 **Live reload** - Code changes trigger automatic reloads for both API (tsx watch) and Web (Next.js Turbopack)
-- 🔍 **MongoDB exposed** - Connect MongoDB Compass to `mongodb://localhost:27017/famly` for database inspection
-- 📦 **Containerized** - Everything runs in Docker, no need to install MongoDB or MinIO locally
-- 🎯 **Clean logs** - Only see API and Web output, infrastructure logs are hidden
+- 🔥 **Live reload** - Code changes apply instantly (API via tsx watch, Web via Next.js Turbopack)
+- 🔍 **MongoDB exposed** - Connect MongoDB Compass to `mongodb://localhost:27017/famly`
+- 📦 **Containerized** - No need to install MongoDB or MinIO locally
+- 🎯 **Clean logs** - Only see relevant service output
 
 **Access:**
 
-- Web Application: http://localhost:3000
-- API: http://localhost:3001
+- Web Application: https://localhost:8443
+- API: https://localhost:8443/api
 - MongoDB: mongodb://localhost:27017/famly
-- MinIO Console: http://localhost:9001 (credentials: `famly-dev-access` / `famly-dev-secret-min-32-chars`)
+- MinIO Console: https://localhost:8443/minio (credentials: famly-dev-access/famly-dev-secret-min-32-chars)
 
 **Useful commands:**
 
@@ -370,14 +412,17 @@ pnpm install
 docker compose -f docker/compose.dev.yml logs -f api
 docker compose -f docker/compose.dev.yml logs -f web
 
-# Stop all services
+# Stop all services (or press Ctrl+C in the dev.sh terminal)
 docker compose -f docker/compose.dev.yml down
 
 # Restart a specific service
 docker compose -f docker/compose.dev.yml restart api
+
+# Check MongoDB data
+docker exec famly-mongo mongosh -u root -p root --eval "db.getSiblingDB('famly').getCollectionNames()"
 ```
 
-### Option 2: Manual Setup (Advanced)
+### Manual Setup (Advanced)
 
 For more control, you can start each service manually:
 
@@ -503,44 +548,52 @@ pnpm run dev:web
 - Apple Family Sharing / Screen Time sync
 - Messaging app reminders (WhatsApp, Telegram)
 
-## 🚀 Getting Started
+## 📊 Configuration & Environment Variables
 
-[Coming soon - development in progress]
+The setup scripts (`./dev.sh` and `./start.sh`) automatically manage all configuration:
 
-## 📸 Screenshots
+### Automatic Configuration
 
-[Coming soon - screenshots of the app interface]
+- **`.env`** - Production environment (created by `./start.sh`)
+- **`.env.dev`** - Development environment (created by `./dev.sh`)
+- **`.env.example`** - Template with all available options
+- **`docker-compose.yml`** - Production services
+- **`docker/compose.dev.yml`** - Development services with live reload
+- **`Caddyfile.localhost`** - Local HTTPS reverse proxy (auto-generated)
+- **`Caddyfile.production`** - Production reverse proxy (created during setup)
 
-## 🛠️ Development
+### Important Environment Variables
 
-### Prerequisites
+Key variables managed automatically:
 
-- Node.js v16+
-- React Native CLI
-- Xcode (for iOS development)
-- Android Studio (for Android development)
+- **`VAPID_EMAIL`** - Email for push notification certificates (dev.sh: `dev@famly.app`, start.sh: your Let's Encrypt email)
+- **`BETTER_AUTH_SECRET`** - Authentication secret (auto-generated if needed)
+- **`MINIO_ROOT_PASSWORD`** - MinIO storage credentials
+- **`DEPLOYMENT_MODE`** - `standalone` (single family, default) or `saas` (multi-tenant)
 
-### Installation
+The scripts handle all of this automatically. You only need to provide input when asked (like your domain for production).
+
+### Push Notifications (VAPID Keys)
+
+Both `./dev.sh` and `./start.sh` offer to generate VAPID keys for push notifications:
 
 ```bash
-git clone https://github.com/yourusername/famly.git
-cd famly
-npm install
+# When prompted during setup
+Generate VAPID keys for push notifications? (Y/n): Y
 ```
 
-### Running the App
+The keys will be:
+- Saved to your environment file
+- Used to configure the VAPID_EMAIL setting
+- Required for web push notifications to work
 
-For iOS:
+### Manual Configuration (Advanced)
 
-```
-npx react-native run-ios
-```
+If you need to manually edit configuration files:
 
-For Android:
-
-```
-npx react-native run-android
-```
+1. Copy `.env.example` to `.env` or `.env.dev`
+2. Update the values as needed
+3. Ensure environment variables match between your `.env` file and `docker-compose.yml`
 
 ## 🤝 Contributing
 

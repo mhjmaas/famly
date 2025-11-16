@@ -13,8 +13,8 @@ const s3Client = new S3Client({
   region: "us-east-1",
   endpoint: `http${process.env.MINIO_USE_SSL === "true" ? "s" : ""}://${process.env.MINIO_ENDPOINT}`,
   credentials: {
-    accessKeyId: process.env.MINIO_ACCESS_KEY || "",
-    secretAccessKey: process.env.MINIO_SECRET_KEY || "",
+    accessKeyId: process.env.MINIO_ROOT_USER || "",
+    secretAccessKey: process.env.MINIO_ROOT_PASSWORD || "",
   },
   forcePathStyle: true,
 });

@@ -8,6 +8,7 @@ pnpm-debug.log*
 dist
 build
 .env
+.env.dev
 !.env.example
 *.log
 .DS_Store
@@ -19,3 +20,5 @@ docker/caddy/certs/*.pem
 
 # Production Caddyfile (user-specific configuration)
 docker/caddy/Caddyfile.production
+# Local custom Caddyfile (user-specific configuration)
+docker/caddy/Caddyfile.localhost.custom
