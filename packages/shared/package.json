@@ -2,13 +2,12 @@
   "name": "@famly/shared",
   "version": "1.0.0",
   "description": "Shared code and configuration for Famly applications",
-  "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./features": "./src/features.ts"
+    ".": "./src/index.js",
+    "./features": "./src/features.js"
   },
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
   "files": ["src"],
   "keywords": ["famly", "shared", "features"],
   "private": true

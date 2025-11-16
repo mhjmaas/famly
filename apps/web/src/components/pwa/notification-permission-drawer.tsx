@@ -66,18 +66,42 @@ export function NotificationPermissionDrawer({
   const handleAllow = async () => {
     setIsLoading(true);
     try {
+      // Check if VAPID key is configured
+      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapidKey || vapidKey === "your_public_key_here") {
+        const errorMsg =
+          "Push notifications are not configured. VAPID keys are missing.";
+        console.error("VAPID Configuration Error:", errorMsg);
+        return;
+      }
+
       // Request permission if not already granted
       const permission = await requestNotificationPermission();
 
       // If permission was granted, subscribe to notifications
       if (permission === "granted") {
-        const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-        if (vapidKey) {
-          await dispatch(subscribeToNotifications(vapidKey));
+        const result = await dispatch(subscribeToNotifications(vapidKey));
+
+        // Check if the subscription was successful
+        if (subscribeToNotifications.rejected.match(result)) {
+          const errorMsg =
+            (result.payload as string) ||
+            "Failed to subscribe to notifications";
+          console.error("Subscription Error:", errorMsg);
+          alert(`Failed to enable notifications: ${errorMsg}`);
+        } else {
+          console.log("Successfully subscribed to notifications");
         }
+      } else {
+        console.warn("Notification permission denied or dismissed by user");
       }
     } catch (error) {
-      console.error("Error enabling notifications:", error);
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : "Unknown error while enabling notifications";
+      console.error("Error enabling notifications:", errorMsg, error);
+      alert(`An error occurred while enabling notifications: ${errorMsg}`);
     } finally {
       setIsLoading(false);
     }

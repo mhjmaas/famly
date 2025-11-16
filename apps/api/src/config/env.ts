@@ -51,6 +51,13 @@ const envSchema = z.object({
     .string()
     .optional()
     .describe("VAPID private key for push notifications"),
+  VAPID_EMAIL: z
+    .string()
+    .email()
+    .default("support@famly.app")
+    .describe(
+      "Email address for VAPID certificate (used with push notifications)",
+    ),
 });
 
 type Env = z.infer<typeof envSchema>;
@@ -77,6 +84,7 @@ export function getEnv(): Env {
     DEPLOYMENT_MODE: process.env.DEPLOYMENT_MODE,
     NEXT_PUBLIC_VAPID_PUBLIC_KEY: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
     VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY,
+    VAPID_EMAIL: process.env.VAPID_EMAIL,
   };
 
   try {

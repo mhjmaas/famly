@@ -68,8 +68,9 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-famly-admin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-famly-dev-secret-min-32-chars}
       MINIO_BUCKET: ${MINIO_BUCKET:-famly-rewards}
-      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY}
-      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-your_public_key_here}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-your_private_key_here}
+      VAPID_EMAIL: ${VAPID_EMAIL:-support@famly.app}
     volumes:
       # Mount source code for live reload
       - ../apps/api/src:/app/apps/api/src:delegated
@@ -113,8 +114,9 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-famly-admin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-famly-dev-secret-min-32-chars}
       MINIO_BUCKET: ${MINIO_BUCKET:-famly-rewards}
-      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY}
-      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-your_public_key_here}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-your_private_key_here}
+      VAPID_EMAIL: ${VAPID_EMAIL:-support@famly.app}
     volumes:
       # Mount source code for live reload
       - ../apps/web/src:/app/apps/web/src:delegated

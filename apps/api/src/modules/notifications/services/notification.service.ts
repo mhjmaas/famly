@@ -35,7 +35,7 @@ export class NotificationService {
 
     try {
       webpush.setVapidDetails(
-        "mailto:support@famly.app",
+        `mailto:${env.VAPID_EMAIL}`,
         env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
         env.VAPID_PRIVATE_KEY,
       );

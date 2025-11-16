@@ -1,26 +1,16 @@
-# Production Caddyfile Example - HTTP-01 Challenge (Simple Setup)
-# Use this if your domain points to your home IP and ports 80/443 are forwarded
-# Copy this to Caddyfile.production and customize for your domain
-
 {
-	# IMPORTANT: Configure your email for Let's Encrypt notifications
-	email admin@famly.eu
+	email EMAIL_PLACEHOLDER
 
-	# Global security settings
-	# Automatically redirect HTTP to HTTPS (Caddy does this by default)
 	# Enable HTTP/2 and HTTP/3 for better performance
 	servers {
 		protocols h1 h2 h3
 	}
 }
 
-# Your public domain - Caddy automatically handles HTTP-01 challenge
-# Replace my.famly.eu with your actual domain
-my.famly.eu {
-	# Caddy automatically requests certificate from Let's Encrypt
-	# No additional TLS configuration needed for HTTP-01!
+DOMAIN_PLACEHOLDER {
+	# Caddy automatically obtains Let's Encrypt certificate via HTTP-01 challenge
 
-	# Security headers
+	# Security headers for PWA
 	header {
 		# Enable HSTS (force HTTPS for 1 year)
 		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
@@ -46,8 +36,6 @@ my.famly.eu {
 	}
 
 	# Socket.IO WebSocket connections - proxy to API service
-	# Socket.IO uses /socket.io/* paths for WebSocket connections
-	# Caddy automatically handles WebSocket upgrade requests
 	# IMPORTANT: Use 'handle' not 'handle_path' to preserve the /socket.io/ path
 	handle /socket.io/* {
 		reverse_proxy api:3001 {
@@ -84,21 +72,3 @@ my.famly.eu {
 		}
 	}
 }
-
-# To add multiple domains, just add another block:
-# another-domain.com {
-# 	reverse_proxy web:3000 {
-# 		header_up Host {host}
-# 		header_up X-Real-IP {remote}
-# 		header_up X-Forwarded-For {remote}
-# 		header_up X-Forwarded-Proto {scheme}
-# 	}
-# 	handle_path /api/* {
-# 		reverse_proxy api:3001 {
-# 			header_up Host {host}
-# 			header_up X-Real-IP {remote}
-# 			header_up X-Forwarded-For {remote}
-# 			header_up X-Forwarded-Proto {scheme}
-# 		}
-# 	}
-# }
