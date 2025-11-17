@@ -308,7 +308,7 @@ export function AddMemberDialog({
 
   // Mobile: Drawer
   return (
-    <Drawer open={isOpen} onOpenChange={handleClose}>
+    <Drawer open={isOpen} onOpenChange={handleClose} repositionInputs={false}>
       <DrawerContent>
         <DrawerHeader className="text-left">{header}</DrawerHeader>
         <div className="px-4 pb-6 overflow-y-auto max-h-[60vh]">

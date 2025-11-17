@@ -60,7 +60,11 @@ export function InstallPromptDrawer({ dictionary }: InstallPromptDrawerProps) {
   };
 
   return (
-    <Drawer open={isOpen} onOpenChange={(open) => !open && handleDismiss()}>
+    <Drawer
+      open={isOpen}
+      onOpenChange={(open) => !open && handleDismiss()}
+      repositionInputs={false}
+    >
       <DrawerContent data-testid="pwa-install-drawer">
         <DrawerHeader className="text-left">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">

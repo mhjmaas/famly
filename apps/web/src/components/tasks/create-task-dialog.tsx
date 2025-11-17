@@ -222,7 +222,11 @@ export function CreateTaskDialog({
 
   // Mobile: Drawer
   return (
-    <Drawer open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+    <Drawer
+      open={isOpen}
+      onOpenChange={(open) => !open && handleClose()}
+      repositionInputs={false}
+    >
       <DrawerContent data-testid="task-dialog">
         <DrawerHeader className="text-left">{header}</DrawerHeader>
         <div className="px-4 pb-6 overflow-y-auto max-h-[60vh]">
