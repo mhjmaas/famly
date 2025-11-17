@@ -611,24 +611,33 @@ export type {
  * Next.js will revalidate on each request in development
  * Revalidates every 24 hours in production for freshness
  */
-export async function fetchDeploymentStatus(): Promise<{
+export async function fetchDeploymentStatus(options?: {
+  cacheMode?: RequestCache;
+  nextRevalidateSeconds?: number;
+}): Promise<{
   mode: "saas" | "standalone";
   onboardingCompleted: boolean;
 }> {
-  const response = await fetch(`${API_BASE_URL}/v1/status`, {
+  const cacheMode = options?.cacheMode ?? "no-store";
+  const nextRevalidateSeconds = options?.nextRevalidateSeconds;
+
+  const requestInit: RequestInit & {
+    next?: { revalidate: number };
+  } = {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
     },
-    // Use force-cache for SSR optimization - status rarely changes
-    // Next.js will revalidate on each request in development
-    cache: "force-cache",
-    next: {
-      // Revalidate every 24 hours in production
-      // This balances freshness with performance
-      revalidate: 86400,
-    },
-  });
+    cache: cacheMode,
+  };
+
+  if (nextRevalidateSeconds !== undefined) {
+    requestInit.next = {
+      revalidate: nextRevalidateSeconds,
+    };
+  }
+
+  const response = await fetch(`${API_BASE_URL}/v1/status`, requestInit);
 
   if (!response.ok) {
     const contentType = response.headers.get("content-type");
