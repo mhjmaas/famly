@@ -13,6 +13,7 @@ import type {
   AddFamilyMemberResponse,
   ApiClientOptions,
   AuthResponse,
+  ChangePasswordRequest,
   Claim,
   CreateFamilyRequest,
   CreateFamilyResponse,
@@ -133,6 +134,7 @@ async function apiClient<T>(
 
 export type {
   AuthResponse,
+  ChangePasswordRequest,
   LoginRequest,
   RegisterRequest,
 } from "@/types/api.types";
@@ -154,6 +156,15 @@ export async function register(data: RegisterRequest): Promise<AuthResponse> {
 export async function logout(): Promise<void> {
   return apiClient<void>("/v1/auth/sign-out", {
     method: "POST",
+  });
+}
+
+export async function changePassword(
+  data: ChangePasswordRequest,
+): Promise<void> {
+  return apiClient<void>("/v1/auth/change-password", {
+    method: "POST",
+    body: data,
   });
 }
 

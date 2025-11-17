@@ -43,6 +43,30 @@ interface ProfileViewProps {
       subtitle: string;
       noEvents: string;
     };
+    security: {
+      changePassword: {
+        menuLabel: string;
+        title: string;
+        description: string;
+        currentLabel: string;
+        newLabel: string;
+        confirmLabel: string;
+        submit: string;
+        cancel: string;
+        successTitle: string;
+        successDescription: string;
+        errors: {
+          currentRequired: string;
+          newRequired: string;
+          confirmRequired: string;
+          mismatch: string;
+          minLength: string;
+          reuse: string;
+          invalidCurrent: string;
+          generic: string;
+        };
+      };
+    };
   };
 }
 
@@ -143,6 +167,7 @@ export function ProfileView({ lang, initialEvents, dict }: ProfileViewProps) {
           yearsOld: dict.yearsOld,
           parent: dict.parent,
           child: dict.child,
+          security: dict.security,
         }}
         lang={lang}
       />

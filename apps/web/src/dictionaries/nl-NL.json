@@ -864,6 +864,30 @@
       "noEvents": "Nog geen activiteit",
       "taskCompleted": "{taskName} voltooid",
       "rewardClaimed": "Beloning opgeëist: {rewardName}"
+    },
+    "security": {
+      "changePassword": {
+        "menuLabel": "Wachtwoord wijzigen",
+        "title": "Wachtwoord wijzigen",
+        "description": "Voer je huidige wachtwoord in en kies een nieuw wachtwoord. We melden je overal af voor extra veiligheid.",
+        "currentLabel": "Huidig wachtwoord",
+        "newLabel": "Nieuw wachtwoord",
+        "confirmLabel": "Bevestig nieuw wachtwoord",
+        "submit": "Wachtwoord bijwerken",
+        "cancel": "Annuleren",
+        "successTitle": "Wachtwoord bijgewerkt",
+        "successDescription": "We melden je nu af. Meld je opnieuw aan met je nieuwe wachtwoord.",
+        "errors": {
+          "currentRequired": "Vul je huidige wachtwoord in.",
+          "newRequired": "Vul een nieuw wachtwoord in.",
+          "confirmRequired": "Bevestig je nieuwe wachtwoord.",
+          "mismatch": "Wachtwoorden komen niet overeen.",
+          "minLength": "Wachtwoorden moeten minimaal 8 tekens lang zijn.",
+          "reuse": "Het nieuwe wachtwoord moet anders zijn dan het huidige wachtwoord.",
+          "invalidCurrent": "Het huidige wachtwoord is onjuist.",
+          "generic": "Het wijzigen van je wachtwoord is mislukt. Probeer het opnieuw."
+        }
+      }
     }
   },
   "pwa": {
