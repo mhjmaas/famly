@@ -4,7 +4,7 @@ import Link from "next/link";
 
 interface LogoComponentProps {
   showText?: boolean;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
   testId?: string;
 }
 
