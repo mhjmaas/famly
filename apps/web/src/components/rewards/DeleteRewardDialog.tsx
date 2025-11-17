@@ -83,7 +83,11 @@ export function DeleteRewardDialog({
 
   // Mobile: Drawer
   return (
-    <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Drawer
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+      repositionInputs={false}
+    >
       <DrawerContent data-testid="reward-delete-dialog">
         <DrawerHeader className="text-left">{header}</DrawerHeader>
         <DrawerFooter className="gap-2 pt-2">

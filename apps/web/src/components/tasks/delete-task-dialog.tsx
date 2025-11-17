@@ -97,7 +97,11 @@ export function DeleteTaskDialog({
 
   // Mobile: Drawer
   return (
-    <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Drawer
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+      repositionInputs={false}
+    >
       <DrawerContent data-testid="task-delete-dialog">
         <DrawerHeader className="text-left">{header}</DrawerHeader>
         <DrawerFooter className="gap-3 pt-2">

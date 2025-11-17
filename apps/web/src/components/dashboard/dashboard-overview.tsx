@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { canCompleteTask } from "@/lib/utils/task-completion-utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -100,6 +101,16 @@ export function DashboardOverview({ lang, dict }: DashboardOverviewProps) {
     }
   }, [dispatch, user, tasksLastFetch, rewardsLastFetch]);
 
+  const handleRefresh = useCallback(async () => {
+    if (!user?.families?.[0]?.familyId) return;
+
+    const familyId = user.families[0].familyId;
+    await Promise.all([
+      dispatch(fetchTasks(familyId)),
+      dispatch(fetchRewards(familyId)),
+    ]);
+  }, [dispatch, user]);
+
   const handleToggleComplete = useCallback(
     async (task: Task) => {
       if (!user?.families?.[0]?.familyId) return;
@@ -164,51 +175,53 @@ export function DashboardOverview({ lang, dict }: DashboardOverviewProps) {
   const dashboardDict = dict.dashboard.pages.dashboard;
 
   return (
-    <div className="space-y-6">
-      <DashboardHeader
-        firstName={firstName}
-        welcomeMessage={dashboardDict.welcome}
-        subtitle={dashboardDict.subtitle}
-      />
-
-      <DashboardSummaryCards
-        availableKarma={userKarma}
-        pendingTasksCount={pendingTasksCount}
-        potentialKarma={potentialKarma}
-        labels={{
-          availableKarma: dashboardDict.summary.availableKarma,
-          pendingTasks: dashboardDict.summary.pendingTasks,
-          potentialKarma: dashboardDict.summary.potentialKarma,
-        }}
-      />
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <PendingTasksSection
-          tasks={pendingTasks}
-          lang={lang}
-          labels={{
-            title: dashboardDict.sections.yourPendingTasks,
-            viewAll: dashboardDict.sections.viewAll,
-            emptyTitle: dashboardDict.emptyStates.noTasks,
-            emptyDescription: dashboardDict.emptyStates.noTasksDescription,
-          }}
-          onToggleComplete={handleToggleComplete}
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="space-y-6">
+        <DashboardHeader
+          firstName={firstName}
+          welcomeMessage={dashboardDict.welcome}
+          subtitle={dashboardDict.subtitle}
         />
 
-        <RewardProgressSection
-          rewards={favoritedRewards}
-          userKarma={userKarma}
-          lang={lang}
+        <DashboardSummaryCards
+          availableKarma={userKarma}
+          pendingTasksCount={pendingTasksCount}
+          potentialKarma={potentialKarma}
           labels={{
-            title: dashboardDict.sections.rewardProgress,
-            viewAll: dashboardDict.sections.viewAll,
-            emptyTitle: dashboardDict.emptyStates.noRewards,
-            emptyDescription: dashboardDict.emptyStates.noRewardsDescription,
-            ready: dashboardDict.reward.ready,
-            remaining: dashboardDict.reward.remaining,
+            availableKarma: dashboardDict.summary.availableKarma,
+            pendingTasks: dashboardDict.summary.pendingTasks,
+            potentialKarma: dashboardDict.summary.potentialKarma,
           }}
         />
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <PendingTasksSection
+            tasks={pendingTasks}
+            lang={lang}
+            labels={{
+              title: dashboardDict.sections.yourPendingTasks,
+              viewAll: dashboardDict.sections.viewAll,
+              emptyTitle: dashboardDict.emptyStates.noTasks,
+              emptyDescription: dashboardDict.emptyStates.noTasksDescription,
+            }}
+            onToggleComplete={handleToggleComplete}
+          />
+
+          <RewardProgressSection
+            rewards={favoritedRewards}
+            userKarma={userKarma}
+            lang={lang}
+            labels={{
+              title: dashboardDict.sections.rewardProgress,
+              viewAll: dashboardDict.sections.viewAll,
+              emptyTitle: dashboardDict.emptyStates.noRewards,
+              emptyDescription: dashboardDict.emptyStates.noRewardsDescription,
+              ready: dashboardDict.reward.ready,
+              remaining: dashboardDict.reward.remaining,
+            }}
+          />
+        </div>
       </div>
-    </div>
+    </PullToRefresh>
   );
 }

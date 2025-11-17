@@ -168,7 +168,7 @@ export function EditRoleDialog({
 
   // Mobile: Drawer
   return (
-    <Drawer open={isOpen} onOpenChange={onClose}>
+    <Drawer open={isOpen} onOpenChange={onClose} repositionInputs={false}>
       <DrawerContent>
         <DrawerHeader className="text-left">{header}</DrawerHeader>
         <div className="px-4 pb-6 overflow-y-auto max-h-[60vh]">

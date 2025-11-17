@@ -159,7 +159,11 @@ export function EditProfileDialog({
   }
 
   return (
-    <Drawer open={open} onOpenChange={(next) => !next && handleClose()}>
+    <Drawer
+      open={open}
+      onOpenChange={(next) => !next && handleClose()}
+      repositionInputs={false}
+    >
       <DrawerContent>
         <DrawerHeader className="text-left">{header}</DrawerHeader>
         <div className="px-4 pb-6 overflow-y-auto max-h-[60vh]">{fields}</div>

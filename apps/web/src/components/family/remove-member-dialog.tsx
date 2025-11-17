@@ -139,7 +139,7 @@ export function RemoveMemberDialog({
 
   // Mobile: Drawer
   return (
-    <Drawer open={isOpen} onOpenChange={onClose}>
+    <Drawer open={isOpen} onOpenChange={onClose} repositionInputs={false}>
       <DrawerContent>
         <DrawerHeader className="text-left">{header}</DrawerHeader>
         <DrawerFooter className="gap-2 pt-2">

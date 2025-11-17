@@ -310,7 +310,7 @@ export function RewardDialog({
 
   // Mobile: Drawer
   return (
-    <Drawer open={isOpen} onOpenChange={handleClose}>
+    <Drawer open={isOpen} onOpenChange={handleClose} repositionInputs={false}>
       <DrawerContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <DrawerHeader className="text-left">{header}</DrawerHeader>

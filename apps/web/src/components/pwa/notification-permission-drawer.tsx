@@ -174,7 +174,11 @@ export function NotificationPermissionDrawer({
     <>
       {!isLargeScreen && (
         /* Mobile/Tablet Drawer */
-        <Drawer open={isOpen} onOpenChange={(open) => !open && handleDismiss()}>
+        <Drawer
+          open={isOpen}
+          onOpenChange={(open) => !open && handleDismiss()}
+          repositionInputs={false}
+        >
           <DrawerContent data-testid="pwa-permission-drawer">
             <DrawerHeader className="text-left">
               {header}
