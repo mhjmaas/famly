@@ -349,7 +349,7 @@ if [ "$VAPID_PUBLIC_VALID" = false ] || [ "$VAPID_PRIVATE_VALID" = false ]; then
         echo ""
 
         # Run the command and capture output
-        VAPID_OUTPUT=$(npx web-push generate-vapid-keys 2>&1)
+        VAPID_OUTPUT=$(npx --yes web-push generate-vapid-keys 2>&1)
 
         # Parse the output - keys are on the line after the labels
         PUBLIC_KEY=$(echo "$VAPID_OUTPUT" | grep -A 1 "Public Key:" | tail -1 | xargs)

@@ -74,6 +74,36 @@ update_env_value() {
     fi
 }
 
+ensure_secret_value() {
+    local key="$1"
+    local placeholder="$2"
+
+    if [ ! -f "$ENV_FILE" ]; then
+        return
+    fi
+
+    local current_line
+    current_line=$(grep -E "^${key}=" "$ENV_FILE" || true)
+
+    local current_value
+    current_value="${current_line#*=}"
+
+    if [ -z "$current_line" ]; then
+        local new_secret
+        new_secret=$(generate_secret)
+        echo "${key}=${new_secret}" >> "$ENV_FILE"
+        print_success "Generated secure value for ${key}"
+        return
+    fi
+
+    if [ -z "$current_value" ] || [ "$current_value" == "$placeholder" ]; then
+        local new_secret
+        new_secret=$(generate_secret)
+        update_env_value "^${key}=.*" "${key}=${new_secret}"
+        print_success "Generated secure value for ${key}"
+    fi
+}
+
 setup_local_https() {
     echo ""
     print_info "Local HTTPS Setup (mkcert + LAN access)"
@@ -148,7 +178,7 @@ setup_local_https() {
     BETTER_AUTH_SECRET=$(generate_secret)
 
     local VAPID_OUTPUT
-    VAPID_OUTPUT=$(npx web-push generate-vapid-keys 2>&1)
+    VAPID_OUTPUT=$(npx --yes web-push generate-vapid-keys 2>&1)
     local VAPID_PUBLIC
     local VAPID_PRIVATE
     VAPID_PUBLIC=$(echo "$VAPID_OUTPUT" | grep -A 1 "Public Key:" | tail -1 | xargs)
@@ -164,7 +194,7 @@ setup_local_https() {
     update_env_value "PROTOCOL=.*" "PROTOCOL=https"
     update_env_value "CADDYFILE=.*" "CADDYFILE=Caddyfile.localhost.custom"
     update_env_value "CLIENT_URL=.*" "CLIENT_URL=${BASE_URL}"
-    update_env_value "BETTER_AUTH_URL=.*" "BETTER_AUTH_URL=${BASE_URL}/api"
+    update_env_value "BETTER_AUTH_URL=.*" "BETTER_AUTH_URL=${BASE_URL}"
     update_env_value "NEXT_PUBLIC_API_URL=.*" "NEXT_PUBLIC_API_URL=${BASE_URL}/api"
     update_env_value "NEXT_PUBLIC_WS_URL=.*" "NEXT_PUBLIC_WS_URL=${BASE_URL}"
     update_env_value "MINIO_ROOT_PASSWORD=.*" "MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}"
@@ -268,7 +298,7 @@ setup_http01_challenge() {
     BETTER_AUTH_SECRET=$(generate_secret)
 
     # Generate VAPID keys
-    VAPID_OUTPUT=$(npx web-push generate-vapid-keys 2>&1)
+    VAPID_OUTPUT=$(npx --yes web-push generate-vapid-keys 2>&1)
     VAPID_PUBLIC=$(echo "$VAPID_OUTPUT" | grep -A 1 "Public Key:" | tail -1 | xargs)
     VAPID_PRIVATE=$(echo "$VAPID_OUTPUT" | grep -A 1 "Private Key:" | tail -1 | xargs)
 
@@ -279,31 +309,18 @@ setup_http01_challenge() {
     fi
 
     # Update .env file with production settings
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS (BSD sed)
-        sed -i '' "s|CADDYFILE=Caddyfile.localhost|CADDYFILE=Caddyfile.production|g" "$ENV_FILE"
-        sed -i '' "s|MINIO_ROOT_PASSWORD=change-this-to-a-secure-password-min-32-chars|MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}|g" "$ENV_FILE"
-        sed -i '' "s|BETTER_AUTH_SECRET=change-this-to-a-secure-random-string-min-32-chars-required|BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}|g" "$ENV_FILE"
-        sed -i '' "s|CLIENT_URL=https://localhost:8443|CLIENT_URL=https://${DOMAIN}|g" "$ENV_FILE"
-        sed -i '' "s|BETTER_AUTH_URL=https://localhost:8443/api|BETTER_AUTH_URL=https://${DOMAIN}/api|g" "$ENV_FILE"
-        sed -i '' "s|NEXT_PUBLIC_API_URL=https://localhost:8443/api|NEXT_PUBLIC_API_URL=https://${DOMAIN}/api|g" "$ENV_FILE"
-        sed -i '' "s|NEXT_PUBLIC_WS_URL=https://localhost:8443|NEXT_PUBLIC_WS_URL=https://${DOMAIN}|g" "$ENV_FILE"
-        sed -i '' "s|NEXT_PUBLIC_VAPID_PUBLIC_KEY=.*|NEXT_PUBLIC_VAPID_PUBLIC_KEY=${VAPID_PUBLIC}|g" "$ENV_FILE"
-        sed -i '' "s|VAPID_PRIVATE_KEY=.*|VAPID_PRIVATE_KEY=${VAPID_PRIVATE}|g" "$ENV_FILE"
-        sed -i '' "s|VAPID_EMAIL=.*|VAPID_EMAIL=${LE_EMAIL}|g" "$ENV_FILE"
-    else
-        # Linux (GNU sed)
-        sed -i "s|CADDYFILE=Caddyfile.localhost|CADDYFILE=Caddyfile.production|g" "$ENV_FILE"
-        sed -i "s|MINIO_ROOT_PASSWORD=change-this-to-a-secure-password-min-32-chars|MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}|g" "$ENV_FILE"
-        sed -i "s|BETTER_AUTH_SECRET=change-this-to-a-secure-random-string-min-32-chars-required|BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}|g" "$ENV_FILE"
-        sed -i "s|CLIENT_URL=https://localhost:8443|CLIENT_URL=https://${DOMAIN}|g" "$ENV_FILE"
-        sed -i "s|BETTER_AUTH_URL=https://localhost:8443/api|BETTER_AUTH_URL=https://${DOMAIN}/api|g" "$ENV_FILE"
-        sed -i "s|NEXT_PUBLIC_API_URL=https://localhost:8443/api|NEXT_PUBLIC_API_URL=https://${DOMAIN}/api|g" "$ENV_FILE"
-        sed -i "s|NEXT_PUBLIC_WS_URL=https://localhost:8443|NEXT_PUBLIC_WS_URL=https://${DOMAIN}|g" "$ENV_FILE"
-        sed -i "s|NEXT_PUBLIC_VAPID_PUBLIC_KEY=.*|NEXT_PUBLIC_VAPID_PUBLIC_KEY=${VAPID_PUBLIC}|g" "$ENV_FILE"
-        sed -i "s|VAPID_PRIVATE_KEY=.*|VAPID_PRIVATE_KEY=${VAPID_PRIVATE}|g" "$ENV_FILE"
-        sed -i "s|VAPID_EMAIL=.*|VAPID_EMAIL=${LE_EMAIL}|g" "$ENV_FILE"
-    fi
+    local BASE_URL="https://${DOMAIN}"
+    update_env_value "PROTOCOL=.*" "PROTOCOL=https"
+    update_env_value "CADDYFILE=.*" "CADDYFILE=Caddyfile.production"
+    update_env_value "MINIO_ROOT_PASSWORD=.*" "MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}"
+    update_env_value "BETTER_AUTH_SECRET=.*" "BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}"
+    update_env_value "CLIENT_URL=.*" "CLIENT_URL=${BASE_URL}"
+    update_env_value "BETTER_AUTH_URL=.*" "BETTER_AUTH_URL=${BASE_URL}"
+    update_env_value "NEXT_PUBLIC_API_URL=.*" "NEXT_PUBLIC_API_URL=${BASE_URL}/api"
+    update_env_value "NEXT_PUBLIC_WS_URL=.*" "NEXT_PUBLIC_WS_URL=${BASE_URL}"
+    update_env_value "NEXT_PUBLIC_VAPID_PUBLIC_KEY=.*" "NEXT_PUBLIC_VAPID_PUBLIC_KEY=${VAPID_PUBLIC}"
+    update_env_value "VAPID_PRIVATE_KEY=.*" "VAPID_PRIVATE_KEY=${VAPID_PRIVATE}"
+    update_env_value "VAPID_EMAIL=.*" "VAPID_EMAIL=${LE_EMAIL}"
 
     print_success "Generated secrets and VAPID keys"
     print_info "Configuration saved to .env file"
@@ -519,6 +536,9 @@ else
     esac
 
 fi
+
+ensure_secret_value "BETTER_AUTH_SECRET" "change-this-to-a-secure-random-string-min-32-chars-required"
+ensure_secret_value "MINIO_ROOT_PASSWORD" "change-this-to-a-secure-password-min-32-chars"
 
 # Step 5: Check PROTOCOL setting
 source "$ENV_FILE" 2>/dev/null || true

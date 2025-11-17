@@ -3,7 +3,6 @@
  * Provides cached access to deployment status with fallback behavior
  */
 
-import { cache } from "react";
 import { fetchDeploymentStatus } from "@/lib/api-client";
 
 export type DeploymentMode = "saas" | "standalone";
@@ -14,27 +13,77 @@ export interface DeploymentStatus {
 }
 
 /**
- * Fetch deployment status (mode and onboarding completion)
- * This is an unauthenticated endpoint
- *
- * Uses React cache() to deduplicate requests during SSR.
- * This means multiple components can call this function during a single render,
- * but only one actual API request will be made.
- *
- * Falls back to SaaS mode if API is unavailable (e.g., during E2E test startup).
+ * Deployment status is fetched without caching until onboarding completes.
+ * Once onboarding is done we store the status in-memory to avoid extra API calls.
+ * We also keep a short-lived in-flight promise to dedupe concurrent requests.
  */
-export const getDeploymentStatus = cache(
-  async (): Promise<DeploymentStatus> => {
-    try {
-      return await fetchDeploymentStatus();
-    } catch (error) {
-      // Fallback to SaaS mode if API is unavailable
-      // This handles cases like E2E test startup where API isn't ready yet
-      console.warn("API unavailable, falling back to SaaS mode:", error);
-      return { mode: "saas", onboardingCompleted: false };
+const NEXT_CACHE_REVALIDATE_SECONDS = 60 * 60 * 24; // 24 hours
+
+let completedStatusCache: DeploymentStatus | null = null;
+let inflightStatusPromise: Promise<DeploymentStatus> | null = null;
+
+async function fetchFreshStatus(
+  useNextCache: boolean,
+): Promise<DeploymentStatus> {
+  try {
+    const status = await fetchDeploymentStatus({
+      cacheMode: useNextCache ? "force-cache" : "no-store",
+      nextRevalidateSeconds: useNextCache
+        ? NEXT_CACHE_REVALIDATE_SECONDS
+        : undefined,
+    });
+    if (status.onboardingCompleted) {
+      completedStatusCache = status;
+    } else {
+      completedStatusCache = null;
     }
-  },
-);
+
+    // Warm the Next.js cache once onboarding completes so future processes can reuse it
+    if (!useNextCache && status.onboardingCompleted) {
+      fetchDeploymentStatus({
+        cacheMode: "force-cache",
+        nextRevalidateSeconds: NEXT_CACHE_REVALIDATE_SECONDS,
+      }).catch((error) =>
+        console.warn("Failed to warm deployment status cache:", error),
+      );
+    }
+    return status;
+  } catch (error) {
+    console.warn("API unavailable, falling back to SaaS mode:", error);
+    completedStatusCache = null;
+    return { mode: "saas", onboardingCompleted: false };
+  }
+}
+
+export async function getDeploymentStatus(
+  options: { forceRefresh?: boolean } = {},
+): Promise<DeploymentStatus> {
+  const { forceRefresh = false } = options;
+
+  if (!forceRefresh && completedStatusCache) {
+    return completedStatusCache;
+  }
+
+  if (!forceRefresh && inflightStatusPromise) {
+    return inflightStatusPromise;
+  }
+
+  const useNextCache =
+    !forceRefresh && completedStatusCache?.onboardingCompleted === true;
+
+  const requestPromise = fetchFreshStatus(useNextCache);
+
+  if (!forceRefresh) {
+    inflightStatusPromise = requestPromise;
+    requestPromise.finally(() => {
+      if (inflightStatusPromise === requestPromise) {
+        inflightStatusPromise = null;
+      }
+    });
+  }
+
+  return requestPromise;
+}
 
 /**
  * Check if the application is in standalone mode
