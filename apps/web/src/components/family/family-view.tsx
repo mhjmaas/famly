@@ -4,6 +4,7 @@ import { Plus, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import type { FamilyMember } from "@/lib/api-client";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -151,6 +152,10 @@ export function FamilyView({ mobileActionTrigger, dict }: FamilyViewProps) {
     }
   }, [mobileActionTrigger]);
 
+  const handleRefresh = async () => {
+    await dispatch(fetchFamilies());
+  };
+
   const handleEditRole = (member: FamilyMember) => {
     setSelectedMember(member);
     setIsEditRoleDialogOpen(true);
@@ -187,111 +192,113 @@ export function FamilyView({ mobileActionTrigger, dict }: FamilyViewProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1
-            className="hidden sm:block text-3xl font-bold text-foreground"
-            data-testid="family-title"
-          >
-            {dict.pages.family.title}
-          </h1>
-          <p
-            className="text-muted-foreground text-center sm:text-left"
-            data-testid="family-description"
-          >
-            {dict.pages.family.description}
-          </p>
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="flex flex-col gap-6">
+        {/* Header */}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1
+              className="hidden sm:block text-3xl font-bold text-foreground"
+              data-testid="family-title"
+            >
+              {dict.pages.family.title}
+            </h1>
+            <p
+              className="text-muted-foreground text-center sm:text-left"
+              data-testid="family-description"
+            >
+              {dict.pages.family.description}
+            </p>
+          </div>
+          {isParent && (
+            <Button
+              onClick={() => setIsAddMemberDialogOpen(true)}
+              className="hidden sm:flex"
+              data-testid="add-member-button"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {dict.pages.family.addMember}
+            </Button>
+          )}
         </div>
+
+        {members.length === 0 ? (
+          <Card data-testid="family-empty-state">
+            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+              <UserPlus className="h-16 w-16 mb-4 text-muted-foreground opacity-50" />
+              <p className="text-lg font-medium mb-1">
+                {dict.pages.family.emptyState.title}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {dict.pages.family.emptyState.description}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div
+            className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+            data-testid="family-members-grid"
+          >
+            {members.map((member) => (
+              <FamilyMemberCard
+                key={member.memberId}
+                member={member}
+                currentUserRole={currentUserRole}
+                onEditRole={handleEditRole}
+                onRemove={handleRemove}
+                onGiveKarma={handleGiveKarma}
+                dict={dict.pages.family}
+              />
+            ))}
+          </div>
+        )}
+
         {isParent && (
           <Button
             onClick={() => setIsAddMemberDialogOpen(true)}
-            className="hidden sm:flex"
-            data-testid="add-member-button"
+            className="w-full sm:hidden"
+            data-testid="add-member-button-mobile"
           >
             <Plus className="mr-2 h-4 w-4" />
             {dict.pages.family.addMember}
           </Button>
         )}
-      </div>
 
-      {members.length === 0 ? (
-        <Card data-testid="family-empty-state">
-          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <UserPlus className="h-16 w-16 mb-4 text-muted-foreground opacity-50" />
-            <p className="text-lg font-medium mb-1">
-              {dict.pages.family.emptyState.title}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {dict.pages.family.emptyState.description}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div
-          className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
-          data-testid="family-members-grid"
-        >
-          {members.map((member) => (
-            <FamilyMemberCard
-              key={member.memberId}
-              member={member}
-              currentUserRole={currentUserRole}
-              onEditRole={handleEditRole}
-              onRemove={handleRemove}
-              onGiveKarma={handleGiveKarma}
+        {currentFamily && (
+          <>
+            <EditRoleDialog
+              isOpen={isEditRoleDialogOpen}
+              onClose={() => setIsEditRoleDialogOpen(false)}
+              member={selectedMember}
+              familyId={currentFamily.familyId}
               dict={dict.pages.family}
             />
-          ))}
-        </div>
-      )}
 
-      {isParent && (
-        <Button
-          onClick={() => setIsAddMemberDialogOpen(true)}
-          className="w-full sm:hidden"
-          data-testid="add-member-button-mobile"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          {dict.pages.family.addMember}
-        </Button>
-      )}
+            <RemoveMemberDialog
+              isOpen={isRemoveMemberDialogOpen}
+              onClose={() => setIsRemoveMemberDialogOpen(false)}
+              member={selectedMember}
+              familyId={currentFamily.familyId}
+              dict={dict.pages.family}
+            />
 
-      {currentFamily && (
-        <>
-          <EditRoleDialog
-            isOpen={isEditRoleDialogOpen}
-            onClose={() => setIsEditRoleDialogOpen(false)}
-            member={selectedMember}
-            familyId={currentFamily.familyId}
-            dict={dict.pages.family}
-          />
+            <GiveKarmaDialog
+              isOpen={isGiveKarmaDialogOpen}
+              onClose={() => setIsGiveKarmaDialogOpen(false)}
+              member={selectedMember}
+              familyId={currentFamily.familyId}
+              dict={dict.pages.family}
+            />
 
-          <RemoveMemberDialog
-            isOpen={isRemoveMemberDialogOpen}
-            onClose={() => setIsRemoveMemberDialogOpen(false)}
-            member={selectedMember}
-            familyId={currentFamily.familyId}
-            dict={dict.pages.family}
-          />
-
-          <GiveKarmaDialog
-            isOpen={isGiveKarmaDialogOpen}
-            onClose={() => setIsGiveKarmaDialogOpen(false)}
-            member={selectedMember}
-            familyId={currentFamily.familyId}
-            dict={dict.pages.family}
-          />
-
-          <AddMemberDialog
-            isOpen={isAddMemberDialogOpen}
-            onClose={() => setIsAddMemberDialogOpen(false)}
-            familyId={currentFamily.familyId}
-            dict={dict.pages.family}
-          />
-        </>
-      )}
-    </div>
+            <AddMemberDialog
+              isOpen={isAddMemberDialogOpen}
+              onClose={() => setIsAddMemberDialogOpen(false)}
+              familyId={currentFamily.familyId}
+              dict={dict.pages.family}
+            />
+          </>
+        )}
+      </div>
+    </PullToRefresh>
   );
 }

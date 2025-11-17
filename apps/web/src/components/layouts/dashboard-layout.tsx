@@ -261,7 +261,13 @@ export function DashboardLayout({
       >
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            <LogoComponent testId="mobile-logo" />
+            <LogoComponent
+              testId="mobile-logo"
+              onClick={(e) => {
+                e.preventDefault();
+                setMobileOpen(true);
+              }}
+            />
             {title && (
               <>
                 <span className="text-muted-foreground">•</span>

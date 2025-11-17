@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import type { Dictionary } from "@/i18n/types";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -65,6 +66,11 @@ export function RewardsView({
     dispatch(fetchRewards(familyId));
     dispatch(fetchClaims(familyId));
   }, [dispatch, familyId]);
+
+  const handleRefresh = async () => {
+    await dispatch(fetchRewards(familyId));
+    await dispatch(fetchClaims(familyId));
+  };
 
   const handleCreateClick = () => {
     setDialogMode("create");
@@ -185,88 +191,90 @@ export function RewardsView({
   }
 
   return (
-    <div className="space-y-6" data-testid="rewards-view">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="hidden sm:block text-3xl font-bold">{t.title}</h1>
-          <p className="text-muted-foreground text-center sm:text-left">
-            {t.description}
-          </p>
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="space-y-6" data-testid="rewards-view">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="hidden sm:block text-3xl font-bold">{t.title}</h1>
+            <p className="text-muted-foreground text-center sm:text-left">
+              {t.description}
+            </p>
+          </div>
+          {userRole === "parent" && (
+            <Button
+              onClick={handleCreateClick}
+              className="hidden sm:flex gap-2"
+              data-testid="create-reward-button"
+            >
+              <Plus className="h-4 w-4" />
+              {t.actions.createButton}
+            </Button>
+          )}
         </div>
+
+        <KarmaBalanceCard karma={userKarma} dict={dict} />
+
+        {rewards.length === 0 ? (
+          <EmptyState
+            userRole={userRole}
+            onCreateClick={handleCreateClick}
+            dict={dict}
+          />
+        ) : (
+          <RewardsGrid
+            rewards={rewards}
+            claims={claims}
+            userRole={userRole}
+            userId={userId}
+            userKarma={userKarma}
+            onClaim={handleClaimClick}
+            onEdit={handleEditClick}
+            onDelete={handleDeleteClick}
+            onToggleFavourite={handleToggleFavourite}
+            onCancelClaim={handleCancelClaim}
+            dict={dict}
+          />
+        )}
+
         {userRole === "parent" && (
           <Button
             onClick={handleCreateClick}
-            className="hidden sm:flex gap-2"
-            data-testid="create-reward-button"
+            className="w-full sm:hidden gap-2"
+            data-testid="create-reward-button-mobile"
           >
             <Plus className="h-4 w-4" />
             {t.actions.createButton}
           </Button>
         )}
+
+        <RewardDialog
+          isOpen={dialogOpen}
+          mode={dialogMode}
+          reward={editingReward}
+          onSubmit={handleDialogSubmit}
+          onClose={() => setDialogOpen(false)}
+          dict={dict}
+        />
+
+        <ClaimConfirmationSheet
+          reward={claimingReward}
+          isOpen={claimSheetOpen}
+          onConfirm={handleClaimConfirm}
+          onCancel={() => {
+            setClaimSheetOpen(false);
+            setClaimingReward(null);
+          }}
+          dict={dict}
+        />
+
+        <DeleteRewardDialog
+          isOpen={!!deleteConfirmReward}
+          reward={deleteConfirmReward}
+          onClose={() => setDeleteConfirmReward(null)}
+          onConfirm={handleDeleteConfirm}
+          dict={dict}
+        />
       </div>
-
-      <KarmaBalanceCard karma={userKarma} dict={dict} />
-
-      {rewards.length === 0 ? (
-        <EmptyState
-          userRole={userRole}
-          onCreateClick={handleCreateClick}
-          dict={dict}
-        />
-      ) : (
-        <RewardsGrid
-          rewards={rewards}
-          claims={claims}
-          userRole={userRole}
-          userId={userId}
-          userKarma={userKarma}
-          onClaim={handleClaimClick}
-          onEdit={handleEditClick}
-          onDelete={handleDeleteClick}
-          onToggleFavourite={handleToggleFavourite}
-          onCancelClaim={handleCancelClaim}
-          dict={dict}
-        />
-      )}
-
-      {userRole === "parent" && (
-        <Button
-          onClick={handleCreateClick}
-          className="w-full sm:hidden gap-2"
-          data-testid="create-reward-button-mobile"
-        >
-          <Plus className="h-4 w-4" />
-          {t.actions.createButton}
-        </Button>
-      )}
-
-      <RewardDialog
-        isOpen={dialogOpen}
-        mode={dialogMode}
-        reward={editingReward}
-        onSubmit={handleDialogSubmit}
-        onClose={() => setDialogOpen(false)}
-        dict={dict}
-      />
-
-      <ClaimConfirmationSheet
-        reward={claimingReward}
-        isOpen={claimSheetOpen}
-        onConfirm={handleClaimConfirm}
-        onCancel={() => {
-          setClaimSheetOpen(false);
-          setClaimingReward(null);
-        }}
-        dict={dict}
-      />
-
-      <DeleteRewardDialog
-        isOpen={!!deleteConfirmReward}
-        reward={deleteConfirmReward}
-        onClose={() => setDeleteConfirmReward(null)}
-        onConfirm={handleDeleteConfirm}
-        dict={dict}
-      />
-    </div>
+    </PullToRefresh>
   );
 }
