@@ -224,6 +224,9 @@
         "password": {
           "label": "Wachtwoord",
           "placeholder": "Vul uw wachtwoord in"
+        },
+        "rememberMe": {
+          "label": "Ingelogd blijven"
         }
       },
       "submit": {

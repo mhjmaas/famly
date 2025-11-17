@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Locale } from "@/i18n/config";
@@ -34,6 +35,7 @@ export function SignInForm({ locale, dict, commonDict }: SignInFormProps) {
   const dispatch = useAppDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,7 +46,7 @@ export function SignInForm({ locale, dict, commonDict }: SignInFormProps) {
 
     try {
       // Login
-      await login({ email, password });
+      await login({ email, password, rememberMe });
 
       // Fetch user data and populate Redux store
       const meResponse = await getMe();
@@ -119,6 +121,21 @@ export function SignInForm({ locale, dict, commonDict }: SignInFormProps) {
               required
               data-testid="signin-password"
             />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="remember-me"
+              checked={rememberMe}
+              onCheckedChange={(value) => setRememberMe(Boolean(value))}
+              disabled={isLoading}
+              data-testid="signin-remember-me"
+            />
+            <Label
+              htmlFor="remember-me"
+              className="text-sm text-muted-foreground"
+            >
+              {dict.fields.rememberMe.label}
+            </Label>
           </div>
           <Button
             type="submit"
