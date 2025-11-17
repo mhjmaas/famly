@@ -44,7 +44,7 @@ export function createLoginRoute(): Router {
           body: {
             email: req.body.email,
             password: req.body.password,
-            rememberMe: req.body.rememberMe || false,
+            rememberMe: req.body.rememberMe ?? true,
           },
           headers: fromNodeHeaders(req.headers),
           asResponse: true,
