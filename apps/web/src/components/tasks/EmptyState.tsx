@@ -36,7 +36,7 @@ export function EmptyState({ filter, onCreateTask, dict }: EmptyStateProps) {
         </p>
         <Button
           onClick={onCreateTask}
-          className="gap-2"
+          className="hidden sm:flex gap-2"
           data-testid="tasks-empty-create"
         >
           <Plus className="h-4 w-4" />
