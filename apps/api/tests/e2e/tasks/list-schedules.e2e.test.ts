@@ -135,8 +135,10 @@ describe("E2E: GET /v1/families/:familyId/tasks/schedules", () => {
 
       expect(listResponse.status).toBe(200);
       expect(listResponse.body).toHaveLength(1);
-      // lastGeneratedDate should be undefined initially
-      expect(listResponse.body[0].lastGeneratedDate).toBeUndefined();
+      // A task is generated immediately, so lastGeneratedDate should be populated
+      expect(listResponse.body[0].lastGeneratedDate).toEqual(
+        expect.any(String),
+      );
     });
   });
 

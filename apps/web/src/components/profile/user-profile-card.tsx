@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit, LogOut, MoreVertical, Sparkles } from "lucide-react";
+import { Edit, KeyRound, LogOut, MoreVertical, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -8,35 +8,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-} from "@/components/ui/drawer";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import type { Locale } from "@/i18n/config";
 import type { UserProfile } from "@/lib/api-client";
-import { logout, updateProfile } from "@/lib/api-client";
+import { logout } from "@/lib/api-client";
 import { calculateAge } from "@/lib/utils/family-utils";
 import { useAppDispatch } from "@/store/hooks";
-import { clearUser, setUser } from "@/store/slices/user.slice";
+import { clearUser } from "@/store/slices/user.slice";
+import { ChangePasswordDialog } from "./change-password-dialog";
+import { EditProfileDialog } from "./edit-profile-dialog";
 
 interface UserProfileCardProps {
   user: UserProfile;
@@ -46,6 +30,30 @@ interface UserProfileCardProps {
     yearsOld: string;
     parent: string;
     child: string;
+    security: {
+      changePassword: {
+        menuLabel: string;
+        title: string;
+        description: string;
+        currentLabel: string;
+        newLabel: string;
+        confirmLabel: string;
+        submit: string;
+        cancel: string;
+        successTitle: string;
+        successDescription: string;
+        errors: {
+          currentRequired: string;
+          newRequired: string;
+          confirmRequired: string;
+          mismatch: string;
+          minLength: string;
+          reuse: string;
+          invalidCurrent: string;
+          generic: string;
+        };
+      };
+    };
   };
   lang: Locale;
 }
@@ -59,23 +67,6 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-/**
- * Convert ISO date string to YYYY-MM-DD format for HTML date input
- */
-function formatDateForInput(isoDate?: string): string {
-  if (!isoDate) return "";
-
-  try {
-    const date = new Date(isoDate);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  } catch {
-    return "";
-  }
-}
-
 export function UserProfileCard({
   user,
   karma,
@@ -84,66 +75,20 @@ export function UserProfileCard({
 }: UserProfileCardProps) {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const isDesktop = useMediaQuery("(min-width: 768px)");
   const age = user.birthdate ? calculateAge(user.birthdate) : null;
   const role = user.families?.[0]?.role || "Parent";
+  const roleLabel = role.toLowerCase() === "parent" ? dict.parent : dict.child;
 
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState({
-    name: user.name,
-    birthdate: formatDateForInput(user.birthdate),
-    role: role,
-  });
-
-  const handleOpenEdit = () => {
-    setFormData({
-      name: user.name,
-      birthdate: formatDateForInput(user.birthdate),
-      role: role,
-    });
-    setIsEditOpen(true);
-  };
-
-  const handleCloseEdit = () => {
-    setIsEditOpen(false);
-  };
-
-  const handleSaveEdit = async () => {
-    try {
-      setIsSaving(true);
-
-      // Call API to update profile
-      const response = await updateProfile({
-        name: formData.name,
-        birthdate: formData.birthdate,
-      });
-
-      // Update Redux store with new user data
-      dispatch(setUser(response.user));
-
-      // Close dialog
-      handleCloseEdit();
-    } catch (error) {
-      console.error("Failed to update profile:", error);
-      // TODO: Show error message to user
-      alert("Failed to update profile. Please try again.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
-      // Better-auth's sign-out endpoint automatically clears session cookies
       await logout();
-      // Clear user from Redux store
       dispatch(clearUser());
-      // Redirect to sign-in page
       router.push(`/${lang}/signin`);
     } catch (error) {
       console.error("Logout failed:", error);
-      // Even if logout fails on the server, clear local state and redirect
       dispatch(clearUser());
       router.push(`/${lang}/signin`);
     }
@@ -182,7 +127,7 @@ export function UserProfileCard({
                     }
                     data-testid="profile-user-role"
                   >
-                    {role.toLowerCase() === "parent" ? dict.parent : dict.child}
+                    {roleLabel}
                   </Badge>
                 </div>
                 <div
@@ -211,9 +156,20 @@ export function UserProfileCard({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleOpenEdit} className="gap-2">
+                <DropdownMenuItem
+                  onClick={() => setIsEditOpen(true)}
+                  className="gap-2"
+                >
                   <Edit className="h-4 w-4" />
                   Edit Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setIsChangePasswordOpen(true)}
+                  className="gap-2"
+                  data-testid="profile-change-password"
+                >
+                  <KeyRound className="h-4 w-4" />
+                  {dict.security.changePassword.menuLabel}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={handleLogout}
@@ -228,119 +184,19 @@ export function UserProfileCard({
         </CardHeader>
       </Card>
 
-      {/* Edit Profile Dialog/Drawer */}
-      {(() => {
-        const header = (
-          <>
-            <DialogTitle>Edit Profile</DialogTitle>
-            <DialogDescription>
-              Update your profile information
-            </DialogDescription>
-          </>
-        );
+      <EditProfileDialog
+        user={user}
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        roleLabel={roleLabel}
+      />
 
-        const FormContent = (
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Name</Label>
-              <Input
-                id="edit-name"
-                placeholder="Enter name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-birthdate">Birthdate</Label>
-              <Input
-                id="edit-birthdate"
-                type="date"
-                value={formData.birthdate}
-                onChange={(e) =>
-                  setFormData({ ...formData, birthdate: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-role">Role</Label>
-              <Input
-                id="edit-role"
-                value={formData.role}
-                disabled
-                className="bg-muted"
-              />
-              <p className="text-xs text-muted-foreground">
-                Role cannot be changed here. Contact a family admin to update
-                your role.
-              </p>
-            </div>
-          </div>
-        );
-
-        const footer = (
-          <>
-            <Button
-              variant="outline"
-              onClick={handleCloseEdit}
-              disabled={isSaving}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSaveEdit}
-              disabled={!formData.name || !formData.birthdate || isSaving}
-            >
-              {isSaving ? "Saving..." : "Save Changes"}
-            </Button>
-          </>
-        );
-
-        // Desktop: Dialog
-        if (isDesktop) {
-          return (
-            <Dialog open={isEditOpen} onOpenChange={handleCloseEdit}>
-              <DialogContent>
-                <DialogHeader>{header}</DialogHeader>
-                {FormContent}
-                <DialogFooter>{footer}</DialogFooter>
-              </DialogContent>
-            </Dialog>
-          );
-        }
-
-        // Mobile: Drawer
-        return (
-          <Drawer open={isEditOpen} onOpenChange={handleCloseEdit}>
-            <DrawerContent>
-              <DrawerHeader className="text-left">{header}</DrawerHeader>
-              <div className="px-4 pb-6 overflow-y-auto max-h-[60vh]">
-                {FormContent}
-              </div>
-              <DrawerFooter className="pt-2">
-                <Button
-                  onClick={handleSaveEdit}
-                  disabled={!formData.name || !formData.birthdate || isSaving}
-                >
-                  {isSaving ? "Saving..." : "Save Changes"}
-                </Button>
-                <DrawerClose asChild>
-                  <Button
-                    variant="outline"
-                    onClick={handleCloseEdit}
-                    disabled={isSaving}
-                  >
-                    Cancel
-                  </Button>
-                </DrawerClose>
-              </DrawerFooter>
-            </DrawerContent>
-          </Drawer>
-        );
-      })()}
+      <ChangePasswordDialog
+        open={isChangePasswordOpen}
+        onOpenChange={setIsChangePasswordOpen}
+        dict={dict.security.changePassword}
+        lang={lang}
+      />
     </>
   );
 }

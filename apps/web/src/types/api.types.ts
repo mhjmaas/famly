@@ -38,6 +38,12 @@ export interface AuthResponse {
   sessionToken: string | null;
 }
 
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  revokeOtherSessions?: boolean;
+}
+
 // Family types
 export interface CreateFamilyRequest {
   name: string;

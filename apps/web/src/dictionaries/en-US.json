@@ -864,6 +864,30 @@
       "noEvents": "No activity yet",
       "taskCompleted": "Completed {taskName}",
       "rewardClaimed": "Claimed reward: {rewardName}"
+    },
+    "security": {
+      "changePassword": {
+        "menuLabel": "Change Password",
+        "title": "Change Password",
+        "description": "Enter your current password and choose a new one. We'll sign you out everywhere for security.",
+        "currentLabel": "Current Password",
+        "newLabel": "New Password",
+        "confirmLabel": "Confirm New Password",
+        "submit": "Update Password",
+        "cancel": "Cancel",
+        "successTitle": "Password updated",
+        "successDescription": "You're being signed out. Please sign in again with your new password.",
+        "errors": {
+          "currentRequired": "Enter your current password.",
+          "newRequired": "Enter a new password.",
+          "confirmRequired": "Confirm your new password.",
+          "mismatch": "Passwords do not match.",
+          "minLength": "Passwords must be at least 8 characters.",
+          "reuse": "New password must be different from the current password.",
+          "invalidCurrent": "Current password is incorrect.",
+          "generic": "We couldn't update your password. Please try again."
+        }
+      }
     }
   },
   "pwa": {

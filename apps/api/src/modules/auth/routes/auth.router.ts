@@ -1,6 +1,7 @@
 import { toNodeHandler } from "better-auth/node";
 import { Router } from "express";
 import { getAuth } from "../better-auth";
+import { createChangePasswordRoute } from "./change-password.route";
 import { createLoginRoute } from "./login.route";
 import { createMeRoute } from "./me.route";
 import { createRegisterRoute } from "./register.route";
@@ -14,6 +15,7 @@ export function createAuthRouter(): Router {
   router.use(createLoginRoute());
   router.use(createMeRoute());
   router.use(createUpdateProfileRoute());
+  router.use(createChangePasswordRoute());
 
   // Mount Better Auth handler for all other endpoints:
   // - GET /token - Get new JWT access token
