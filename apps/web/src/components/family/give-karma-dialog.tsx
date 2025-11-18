@@ -50,7 +50,6 @@ interface GiveKarmaDialogProps {
       messageRequired: string;
       cancel: string;
       submit: string;
-      success: string;
     };
     errors: {
       grantKarmaFailed: string;
