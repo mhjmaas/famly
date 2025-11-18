@@ -371,4 +371,286 @@ describe("E2E: Task Karma Authorization", () => {
       expect(successResponse.body.metadata?.karma).toBeUndefined();
     });
   });
+
+  describe("PATCH /v1/families/:familyId/tasks/:taskId - Update Task Karma Authorization", () => {
+    it("should allow parent to update task and add karma reward", async () => {
+      const setup = await setupTestFamily(baseUrl, testCounter, {
+        userName: "Parent User",
+        familyName: "Task Update Test",
+      });
+
+      // Create a task without karma first
+      const createResponse = await request(baseUrl)
+        .post(`/v1/families/${setup.familyId}/tasks`)
+        .set("Authorization", `Bearer ${setup.token}`)
+        .send({
+          name: "Task without karma",
+          description: "Initial task",
+          assignment: {
+            type: "role",
+            role: "child",
+          },
+        });
+
+      expect(createResponse.status).toBe(201);
+      const taskId = createResponse.body._id;
+
+      // Parent updates to add karma
+      const updateResponse = await request(baseUrl)
+        .patch(`/v1/families/${setup.familyId}/tasks/${taskId}`)
+        .set("Authorization", `Bearer ${setup.token}`)
+        .send({
+          metadata: {
+            karma: 50,
+          },
+        });
+
+      expect(updateResponse.status).toBe(200);
+      expect(updateResponse.body.metadata?.karma).toBe(50);
+    });
+
+    it("should prevent child from updating task to add karma reward", async () => {
+      const { familyId, parentToken, childToken } =
+        await setupFamilyWithMembers(baseUrl, testCounter, {
+          familyName: "Child Update Karma Test",
+          parentName: "Parent",
+          childName: "Child",
+        });
+
+      // Parent creates a task without karma
+      const createResponse = await request(baseUrl)
+        .post(`/v1/families/${familyId}/tasks`)
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({
+          name: "Task without karma",
+          assignment: {
+            type: "role",
+            role: "child",
+          },
+        });
+
+      expect(createResponse.status).toBe(201);
+      const taskId = createResponse.body._id;
+
+      // Child attempts to add karma (should fail)
+      const updateResponse = await request(baseUrl)
+        .patch(`/v1/families/${familyId}/tasks/${taskId}`)
+        .set("Authorization", `Bearer ${childToken}`)
+        .send({
+          metadata: {
+            karma: 50,
+          },
+        });
+
+      expect(updateResponse.status).toBe(403);
+      expect(updateResponse.body.error).toContain(
+        "Only parents can set karma on tasks",
+      );
+    });
+
+    it("should allow child to update task without modifying karma", async () => {
+      const { familyId, parentToken, childToken } =
+        await setupFamilyWithMembers(baseUrl, testCounter, {
+          familyName: "Child Update Name Test",
+          parentName: "Parent",
+          childName: "Child",
+        });
+
+      // Parent creates a task
+      const createResponse = await request(baseUrl)
+        .post(`/v1/families/${familyId}/tasks`)
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({
+          name: "Original name",
+          assignment: {
+            type: "role",
+            role: "child",
+          },
+        });
+
+      expect(createResponse.status).toBe(201);
+      const taskId = createResponse.body._id;
+
+      // Child updates task name (should succeed)
+      const updateResponse = await request(baseUrl)
+        .patch(`/v1/families/${familyId}/tasks/${taskId}`)
+        .set("Authorization", `Bearer ${childToken}`)
+        .send({
+          name: "Updated by child",
+        });
+
+      expect(updateResponse.status).toBe(200);
+      expect(updateResponse.body.name).toBe("Updated by child");
+      expect(updateResponse.body.metadata?.karma).toBeUndefined();
+    });
+
+    it("should prevent child from modifying existing task karma", async () => {
+      const { familyId, parentToken, childToken } =
+        await setupFamilyWithMembers(baseUrl, testCounter, {
+          familyName: "Modify Karma Test",
+          parentName: "Parent",
+          childName: "Child",
+        });
+
+      // Parent creates task WITH karma
+      const createResponse = await request(baseUrl)
+        .post(`/v1/families/${familyId}/tasks`)
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({
+          name: "Task with karma",
+          assignment: {
+            type: "role",
+            role: "child",
+          },
+          metadata: {
+            karma: 50,
+          },
+        });
+
+      expect(createResponse.status).toBe(201);
+      const taskId = createResponse.body._id;
+
+      // Child attempts to change karma value (should fail)
+      const updateResponse = await request(baseUrl)
+        .patch(`/v1/families/${familyId}/tasks/${taskId}`)
+        .set("Authorization", `Bearer ${childToken}`)
+        .send({
+          metadata: {
+            karma: 100, // Try to increase karma
+          },
+        });
+
+      expect(updateResponse.status).toBe(403);
+      expect(updateResponse.body.error).toContain(
+        "Only parents can set karma on tasks",
+      );
+    });
+  });
+
+  describe("PATCH /v1/families/:familyId/tasks/schedules/:scheduleId - Update Schedule Karma Authorization", () => {
+    it("should allow parent to update schedule and add karma reward", async () => {
+      const setup = await setupTestFamily(baseUrl, testCounter, {
+        userName: "Parent User",
+        familyName: "Schedule Update Test",
+      });
+
+      // Create a schedule without karma first
+      const createResponse = await request(baseUrl)
+        .post(`/v1/families/${setup.familyId}/tasks/schedules`)
+        .set("Authorization", `Bearer ${setup.token}`)
+        .send({
+          name: "Weekly chores",
+          assignment: {
+            type: "role",
+            role: "child",
+          },
+          schedule: {
+            daysOfWeek: [1, 3, 5],
+            weeklyInterval: 1,
+            startDate: new Date().toISOString(),
+          },
+        });
+
+      expect(createResponse.status).toBe(201);
+      const scheduleId = createResponse.body._id;
+
+      // Parent updates to add karma
+      const updateResponse = await request(baseUrl)
+        .patch(`/v1/families/${setup.familyId}/tasks/schedules/${scheduleId}`)
+        .set("Authorization", `Bearer ${setup.token}`)
+        .send({
+          metadata: {
+            karma: 25,
+          },
+        });
+
+      expect(updateResponse.status).toBe(200);
+      expect(updateResponse.body.metadata?.karma).toBe(25);
+    });
+
+    it("should prevent child from updating schedule to add karma reward", async () => {
+      const { familyId, parentToken, childToken } =
+        await setupFamilyWithMembers(baseUrl, testCounter, {
+          familyName: "Child Schedule Karma Test",
+          parentName: "Parent",
+          childName: "Child",
+        });
+
+      // Parent creates a schedule without karma
+      const createResponse = await request(baseUrl)
+        .post(`/v1/families/${familyId}/tasks/schedules`)
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({
+          name: "Weekly chores",
+          assignment: {
+            type: "role",
+            role: "child",
+          },
+          schedule: {
+            daysOfWeek: [1, 3, 5],
+            weeklyInterval: 1,
+            startDate: new Date().toISOString(),
+          },
+        });
+
+      expect(createResponse.status).toBe(201);
+      const scheduleId = createResponse.body._id;
+
+      // Child attempts to add karma (should fail)
+      const updateResponse = await request(baseUrl)
+        .patch(`/v1/families/${familyId}/tasks/schedules/${scheduleId}`)
+        .set("Authorization", `Bearer ${childToken}`)
+        .send({
+          metadata: {
+            karma: 25,
+          },
+        });
+
+      expect(updateResponse.status).toBe(403);
+      expect(updateResponse.body.error).toContain(
+        "Only parents can set karma on schedules",
+      );
+    });
+
+    it("should allow child to update schedule without modifying karma", async () => {
+      const { familyId, parentToken, childToken } =
+        await setupFamilyWithMembers(baseUrl, testCounter, {
+          familyName: "Child Schedule Update Test",
+          parentName: "Parent",
+          childName: "Child",
+        });
+
+      // Parent creates a schedule
+      const createResponse = await request(baseUrl)
+        .post(`/v1/families/${familyId}/tasks/schedules`)
+        .set("Authorization", `Bearer ${parentToken}`)
+        .send({
+          name: "Original schedule",
+          assignment: {
+            type: "role",
+            role: "child",
+          },
+          schedule: {
+            daysOfWeek: [1, 3, 5],
+            weeklyInterval: 1,
+            startDate: new Date().toISOString(),
+          },
+        });
+
+      expect(createResponse.status).toBe(201);
+      const scheduleId = createResponse.body._id;
+
+      // Child updates schedule name (should succeed)
+      const updateResponse = await request(baseUrl)
+        .patch(`/v1/families/${familyId}/tasks/schedules/${scheduleId}`)
+        .set("Authorization", `Bearer ${childToken}`)
+        .send({
+          name: "Updated by child",
+        });
+
+      expect(updateResponse.status).toBe(200);
+      expect(updateResponse.body.name).toBe("Updated by child");
+      expect(updateResponse.body.metadata?.karma).toBeUndefined();
+    });
+  });
 });

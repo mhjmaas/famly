@@ -112,8 +112,15 @@ describe("E2E: GET /v1/families/:familyId/tasks/schedules", () => {
     });
 
     it("should include lastGeneratedDate when present", async () => {
-      // This would be set by the task generation cron job
-      // For now, we just verify the field structure
+      // Schedule that matches today's date so a task is generated immediately
+      const today = new Date();
+      const startDate = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate(),
+      );
+      const dayOfWeek = today.getDay();
+
       const response = await request(baseUrl)
         .post(`/v1/families/${familyId}/tasks/schedules`)
         .set("Authorization", `Bearer ${authToken}`)
@@ -121,9 +128,9 @@ describe("E2E: GET /v1/families/:familyId/tasks/schedules", () => {
           name: "Test Schedule",
           assignment: { type: "unassigned" },
           schedule: {
-            daysOfWeek: [1],
+            daysOfWeek: [dayOfWeek],
             weeklyInterval: 1,
-            startDate: "2025-01-01T00:00:00Z",
+            startDate: startDate.toISOString(),
           },
         });
 
