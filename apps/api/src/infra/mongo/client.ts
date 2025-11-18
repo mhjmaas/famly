@@ -26,13 +26,13 @@ export async function connectMongo(): Promise<Db> {
 
   try {
     await client.connect();
-    logger.info("Connected to MongoDB");
+    logger.debug("Connected to MongoDB");
 
     db = client.db("famly");
 
     // Verify connection
     await db.admin().ping();
-    logger.info("MongoDB ping successful");
+    logger.debug("MongoDB ping successful");
 
     return db;
   } catch (error) {
@@ -50,7 +50,7 @@ export async function disconnectMongo(): Promise<void> {
     await client.close();
     client = null;
     db = null;
-    logger.info("Disconnected from MongoDB");
+    logger.debug("Disconnected from MongoDB");
   }
 }
 
