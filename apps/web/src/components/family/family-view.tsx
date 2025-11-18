@@ -75,7 +75,6 @@ interface FamilyViewProps {
           messageRequired: string;
           cancel: string;
           submit: string;
-          success: string;
         };
         addMemberDialog: {
           title: string;

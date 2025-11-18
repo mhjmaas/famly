@@ -1,7 +1,12 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
-import { type ObjectIdString, validateObjectId } from "@lib/objectid-utils";
+import {
+  fromObjectId,
+  type ObjectIdString,
+  validateObjectId,
+} from "@lib/objectid-utils";
 import type { ActivityEventService } from "@modules/activity-events";
+import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type {
   CreateScheduleInput,
@@ -40,6 +45,18 @@ export class ScheduleService {
       });
 
       await this.verifyFamilyMembership(normalizedFamilyId, normalizedUserId);
+
+      // Check karma authorization: only parents can set karma on schedules
+      if (input.metadata?.karma) {
+        const membership = await this.membershipRepository.findByFamilyAndUser(
+          normalizedFamilyId,
+          normalizedUserId,
+        );
+
+        if (!membership || membership.role !== FamilyRole.Parent) {
+          throw HttpError.forbidden("Only parents can set karma on tasks");
+        }
+      }
 
       const schedule = await this.scheduleRepository.createSchedule(
         normalizedFamilyId,
@@ -83,10 +100,17 @@ export class ScheduleService {
             schedule,
             new Date(),
           );
+          // Refetch schedule to get the updated lastGeneratedDate
+          const scheduleIdString = fromObjectId(schedule._id);
+          const updatedSchedule =
+            await this.scheduleRepository.findScheduleById(scheduleIdString);
+          if (updatedSchedule) {
+            return updatedSchedule;
+          }
         } catch (error) {
           logger.error("Failed to generate initial task for new schedule", {
-            scheduleId: schedule._id.toString(),
-            familyId,
+            scheduleId: fromObjectId(schedule._id),
+            familyId: normalizedFamilyId,
             error,
           });
         }
@@ -218,6 +242,18 @@ export class ScheduleService {
 
       if (existingSchedule.familyId.toString() !== normalizedFamilyId) {
         throw HttpError.forbidden("Schedule does not belong to this family");
+      }
+
+      // Check karma authorization: only parents can set/modify karma on schedules
+      if (input.metadata?.karma) {
+        const membership = await this.membershipRepository.findByFamilyAndUser(
+          normalizedFamilyId,
+          normalizedUserId,
+        );
+
+        if (!membership || membership.role !== FamilyRole.Parent) {
+          throw HttpError.forbidden("Only parents can set karma on schedules");
+        }
       }
 
       const updatedSchedule = await this.scheduleRepository.updateSchedule(

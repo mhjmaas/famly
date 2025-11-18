@@ -295,6 +295,7 @@ export function DashboardLayout({
                 side="left"
                 className="p-0 w-72 h-full flex flex-col"
                 data-testid="mobile-drawer"
+                largeCloseButton={true}
               >
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                 <MobileSidebar

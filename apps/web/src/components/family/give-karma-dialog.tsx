@@ -50,7 +50,6 @@ interface GiveKarmaDialogProps {
       messageRequired: string;
       cancel: string;
       submit: string;
-      success: string;
     };
     errors: {
       grantKarmaFailed: string;
@@ -115,7 +114,6 @@ export function GiveKarmaDialog({
         }),
       ).unwrap();
 
-      toast.success(dict.giveKarmaDialog.success);
       handleClose();
     } catch (_err) {
       toast.error(dict.errors.grantKarmaFailed, {

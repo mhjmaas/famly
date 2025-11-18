@@ -50,6 +50,7 @@ interface CreateTaskDialogProps {
   handleCreateSchedule: () => Promise<void>;
   handleUpdateTask: (taskId: string) => Promise<void>;
   familyMembers: Array<{ id: string; name: string; role: "parent" | "child" }>;
+  userRole: "parent" | "child";
   dict: Dictionary;
 }
 
@@ -77,6 +78,7 @@ export function CreateTaskDialog({
   handleCreateSchedule,
   handleUpdateTask,
   familyMembers,
+  userRole,
   dict,
 }: CreateTaskDialogProps) {
   const [taskType, setTaskType] = useState<TaskType>("single");
@@ -124,6 +126,7 @@ export function CreateTaskDialog({
               showKarma={showKarma}
               setShowKarma={setShowKarma}
               familyMembers={familyMembers}
+              userRole={userRole}
               dict={dict}
             />
           </TabsContent>
@@ -144,6 +147,7 @@ export function CreateTaskDialog({
               showKarma={showKarma}
               setShowKarma={setShowKarma}
               familyMembers={familyMembers}
+              userRole={userRole}
               dict={dict}
             />
           </TabsContent>
@@ -163,6 +167,7 @@ export function CreateTaskDialog({
           showKarma={showKarma}
           setShowKarma={setShowKarma}
           familyMembers={familyMembers}
+          userRole={userRole}
           dict={dict}
         />
       )}

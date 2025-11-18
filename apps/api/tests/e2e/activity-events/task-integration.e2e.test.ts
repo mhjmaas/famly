@@ -18,13 +18,13 @@ describe("E2E: Activity Events - Task Integration", () => {
   describe("Task Creation Events", () => {
     it("should create activity event when non-recurring task is created", async () => {
       testCounter++;
-      const { familyId, childUserId, childToken } =
+      const { familyId, parentUserId, parentToken, childUserId } =
         await setupFamilyWithMembers(baseUrl, testCounter);
 
-      // Create a non-recurring task
+      // Create a non-recurring task (parent creates it with karma)
       const taskResponse = await request(baseUrl)
         .post(`/v1/families/${familyId}/tasks`)
-        .set("Authorization", `Bearer ${childToken}`)
+        .set("Authorization", `Bearer ${parentToken}`)
         .send({
           name: "Take out the trash",
           description: "Weekly chore",
@@ -35,10 +35,10 @@ describe("E2E: Activity Events - Task Integration", () => {
 
       expect(taskResponse.body.name).toBe("Take out the trash");
 
-      // Verify activity event was created
+      // Verify activity event was created for the parent who created the task
       const eventsResponse = await request(baseUrl)
         .get("/v1/activity-events")
-        .set("Authorization", `Bearer ${childToken}`)
+        .set("Authorization", `Bearer ${parentToken}`)
         .expect(200);
 
       expect(eventsResponse.body).toHaveLength(1);
@@ -46,7 +46,7 @@ describe("E2E: Activity Events - Task Integration", () => {
         type: "TASK",
         title: "Take out the trash",
         description: "Created Take out the trash",
-        userId: childUserId,
+        userId: parentUserId,
         metadata: { karma: 10 },
       });
       expect(eventsResponse.body[0]).toHaveProperty("id");
@@ -88,13 +88,13 @@ describe("E2E: Activity Events - Task Integration", () => {
   describe("Task Completion Events", () => {
     it("should create activity event when task is completed", async () => {
       testCounter++;
-      const { familyId, childUserId, childToken } =
+      const { familyId, parentToken, childToken, childUserId } =
         await setupFamilyWithMembers(baseUrl, testCounter);
 
-      // Create a task
+      // Create a task (parent creates with karma)
       const taskResponse = await request(baseUrl)
         .post(`/v1/families/${familyId}/tasks`)
-        .set("Authorization", `Bearer ${childToken}`)
+        .set("Authorization", `Bearer ${parentToken}`)
         .send({
           name: "Do homework",
           assignment: { type: "member", memberId: childUserId },
@@ -104,39 +104,31 @@ describe("E2E: Activity Events - Task Integration", () => {
 
       const taskId = taskResponse.body._id;
 
-      // Complete the task
+      // Parent completes the task (for member-assigned tasks, only parent can complete them)
       await request(baseUrl)
         .patch(`/v1/families/${familyId}/tasks/${taskId}`)
-        .set("Authorization", `Bearer ${childToken}`)
+        .set("Authorization", `Bearer ${parentToken}`)
         .send({
           completedAt: new Date().toISOString(),
         })
         .expect(200);
 
-      // Verify activity events were created (creation + completion)
-      const eventsResponse = await request(baseUrl)
+      // Verify activity events were created (parent creation + child completion since task is member-assigned to child)
+      const childEventsResponse = await request(baseUrl)
         .get("/v1/activity-events")
         .set("Authorization", `Bearer ${childToken}`)
         .expect(200);
 
-      expect(eventsResponse.body).toHaveLength(2);
-
-      // Most recent event should be completion
-      expect(eventsResponse.body[0]).toMatchObject({
-        type: "TASK",
-        title: "Do homework",
-        description: "Completed Do homework",
-        userId: childUserId,
-        metadata: { karma: 20 },
-      });
-
-      // Older event should be creation
-      expect(eventsResponse.body[1]).toMatchObject({
-        type: "TASK",
-        title: "Do homework",
-        description: "Created Do homework",
-        userId: childUserId,
-        metadata: { karma: 20 },
+      // Child should see completion event (task was assigned to them)
+      expect(childEventsResponse.body.length).toBeGreaterThan(0);
+      const completionEvent = childEventsResponse.body.find((e: any) =>
+        e.description?.startsWith("Completed"),
+      );
+      expect(completionEvent).toBeDefined();
+      expect(completionEvent?.title).toBe("Do homework");
+      expect(completionEvent?.metadata).toEqual({
+        karma: 20,
+        triggeredBy: expect.any(String),
       });
     });
 

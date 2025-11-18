@@ -71,6 +71,18 @@ export class TaskService {
         membershipRepository: this.membershipRepository,
       });
 
+      // Check if user is trying to set karma - only parents can do this
+      if (input.metadata?.karma) {
+        const membership = await this.membershipRepository.findByFamilyAndUser(
+          normalizedFamilyId,
+          normalizedUserId,
+        );
+
+        if (!membership || membership.role !== FamilyRole.Parent) {
+          throw HttpError.forbidden("Only parents can set karma on tasks");
+        }
+      }
+
       const task = await this.taskRepository.createTask(
         normalizedFamilyId,
         input,
@@ -258,6 +270,18 @@ export class TaskService {
 
       if (existingTask.familyId.toString() !== normalizedFamilyId) {
         throw HttpError.forbidden("Task does not belong to this family");
+      }
+
+      // Check karma authorization: only parents can set/modify karma on tasks
+      if (input.metadata?.karma) {
+        const membership = await this.membershipRepository.findByFamilyAndUser(
+          normalizedFamilyId,
+          normalizedUserId,
+        );
+
+        if (!membership || membership.role !== FamilyRole.Parent) {
+          throw HttpError.forbidden("Only parents can set karma on tasks");
+        }
       }
 
       // Authorization guard: if completing a member-assigned task, only the assignee or a parent can do it

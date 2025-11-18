@@ -391,6 +391,7 @@ export function TasksView({
           handleCreateSchedule={taskForm.handleCreateSchedule}
           handleUpdateTask={taskForm.handleUpdateTask}
           familyMembers={familyMembers}
+          userRole={userRole}
           dict={dict}
         />
 

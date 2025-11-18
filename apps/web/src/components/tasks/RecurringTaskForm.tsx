@@ -29,6 +29,7 @@ interface RecurringTaskFormProps {
   showKarma: boolean;
   setShowKarma: (show: boolean) => void;
   familyMembers: Array<{ id: string; name: string; role: "parent" | "child" }>;
+  userRole: "parent" | "child";
   dict: Dictionary;
 }
 
@@ -47,6 +48,7 @@ export function RecurringTaskForm({
   showKarma,
   setShowKarma,
   familyMembers,
+  userRole,
   dict,
 }: RecurringTaskFormProps) {
   const nameId = useId();
@@ -199,34 +201,35 @@ export function RecurringTaskForm({
         </div>
       )}
 
-      {!showKarma ? (
-        <Button
-          type="button"
-          variant="ghost"
-          className="gap-2 text-muted-foreground hover:text-foreground"
-          onClick={() => setShowKarma(true)}
-          data-testid="task-add-karma"
-        >
-          <Plus className="h-4 w-4" />
-          {t.create.fields.karma.add}
-        </Button>
-      ) : (
-        <div className="space-y-2">
-          <Label htmlFor={karmaId}>{t.create.fields.karma.label}</Label>
-          <Input
-            id={karmaId}
-            type="number"
-            min="0"
-            max="1000"
-            placeholder={t.create.fields.karma.placeholder}
-            value={formData.karma}
-            onChange={(e) =>
-              setFormData({ ...formData, karma: e.target.value })
-            }
-            data-testid="task-karma-input"
-          />
-        </div>
-      )}
+      {userRole === "parent" &&
+        (!showKarma ? (
+          <Button
+            type="button"
+            variant="ghost"
+            className="gap-2 text-muted-foreground hover:text-foreground"
+            onClick={() => setShowKarma(true)}
+            data-testid="task-add-karma"
+          >
+            <Plus className="h-4 w-4" />
+            {t.create.fields.karma.add}
+          </Button>
+        ) : (
+          <div className="space-y-2">
+            <Label htmlFor={karmaId}>{t.create.fields.karma.label}</Label>
+            <Input
+              id={karmaId}
+              type="number"
+              min="0"
+              max="1000"
+              placeholder={t.create.fields.karma.placeholder}
+              value={formData.karma}
+              onChange={(e) =>
+                setFormData({ ...formData, karma: e.target.value })
+              }
+              data-testid="task-karma-input"
+            />
+          </div>
+        ))}
     </div>
   );
 }
