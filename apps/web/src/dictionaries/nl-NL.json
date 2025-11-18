@@ -416,8 +416,7 @@
           "messagePlaceholder": "Leg uit waarom je karma geeft of aftrekt...",
           "messageRequired": "Bericht is verplicht",
           "cancel": "Annuleren",
-          "submit": "Karma Geven",
-          "success": "Karma succesvol bijgewerkt"
+          "submit": "Karma Geven"
         },
         "addMemberDialog": {
           "title": "Gezinslid Toevoegen",

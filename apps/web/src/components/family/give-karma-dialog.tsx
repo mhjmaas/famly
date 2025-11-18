@@ -115,7 +115,6 @@ export function GiveKarmaDialog({
         }),
       ).unwrap();
 
-      toast.success(dict.giveKarmaDialog.success);
       handleClose();
     } catch (_err) {
       toast.error(dict.errors.grantKarmaFailed, {

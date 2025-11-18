@@ -416,8 +416,7 @@
           "messagePlaceholder": "Explain why you're giving or deducting karma...",
           "messageRequired": "Message is required",
           "cancel": "Cancel",
-          "submit": "Give Karma",
-          "success": "Karma updated successfully"
+          "submit": "Give Karma"
         },
         "addMemberDialog": {
           "title": "Add Family Member",

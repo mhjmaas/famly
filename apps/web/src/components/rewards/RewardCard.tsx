@@ -66,10 +66,10 @@ export function RewardCard({
 
   return (
     <Card
-      className="overflow-hidden hover:shadow-lg transition-shadow"
+      className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col p-0 gap-0"
       data-testid="reward-card"
     >
-      <div className="relative aspect-video w-full overflow-hidden bg-muted">
+      <div className="relative aspect-video w-full overflow-hidden bg-muted rounded-t-xl">
         <RewardImage imageUrl={reward.imageUrl} name={reward.name} />
         <div className="absolute top-2 left-2 right-2 flex justify-between">
           <Button
