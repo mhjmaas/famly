@@ -1,3 +1,4 @@
+import { healthCheckLimiter } from "@middleware/rate-limiter";
 import { Router } from "express";
 
 export const createHealthRouter = (): Router => {
@@ -23,7 +24,7 @@ export const createHealthRouter = (): Router => {
    *                   type: string
    *                   example: "ok"
    */
-  router.get("/health", (_req, res) => {
+  router.get("/health", healthCheckLimiter, (_req, res) => {
     res.status(200).json({ status: "ok" });
   });
 

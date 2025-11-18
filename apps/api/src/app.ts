@@ -1,7 +1,6 @@
 import { errorHandler } from "@middleware/error-handler";
 import {
   authLimiter,
-  healthCheckLimiter,
   searchLimiter,
   standardLimiter,
 } from "@middleware/rate-limiter";
@@ -93,10 +92,10 @@ export const createApp = (): Express => {
   app.use(standardLimiter);
 
   // Health check endpoint (before auth setup since health check doesn't need DB)
-  app.use("/v1", healthCheckLimiter, createHealthRouter());
+  app.use("/v1", createHealthRouter());
 
   // Status endpoint (unauthenticated, returns deployment mode and onboarding status)
-  app.use("/v1", healthCheckLimiter, createStatusRouter());
+  app.use("/v1", createStatusRouter());
 
   // Auth routes (Better Auth manages its own indexes)
   app.use("/v1/auth", authLimiter, createAuthRouter());

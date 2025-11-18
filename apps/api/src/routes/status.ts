@@ -1,3 +1,4 @@
+import { healthCheckLimiter } from "@middleware/rate-limiter";
 import { DeploymentConfigRepository } from "@modules/deployment-config/repositories/deployment-config.repository";
 import { DeploymentConfigService } from "@modules/deployment-config/services/deployment-config.service";
 import {
@@ -34,6 +35,7 @@ export const createStatusRouter = (): Router => {
    */
   router.get(
     "/status",
+    healthCheckLimiter,
     async (_req: Request, res: Response, next: NextFunction) => {
       try {
         const repository = new DeploymentConfigRepository();
