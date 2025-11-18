@@ -74,8 +74,11 @@ services:
     volumes:
       # Mount source code for live reload
       - ../apps/api/src:/app/apps/api/src:delegated
-      # Mount shared package source code
+      # Mount shared package source and compiled output (with config for tsc watcher)
       - ../packages/shared/src:/app/packages/shared/src:delegated
+      - ../packages/shared/dist:/app/packages/shared/dist:delegated
+      - ../packages/shared/tsconfig.json:/app/packages/shared/tsconfig.json:ro
+      - ../packages/shared/package.json:/app/packages/shared/package.json:ro
       # Mount config files
       - ../apps/api/tsconfig.json:/app/apps/api/tsconfig.json:ro
       # Mount package.json files (read-only to prevent accidental changes)
@@ -83,9 +86,8 @@ services:
       - ../package.json:/app/package.json:ro
       - ../pnpm-lock.yaml:/app/pnpm-lock.yaml:ro
       - ../pnpm-workspace.yaml:/app/pnpm-workspace.yaml:ro
-      # Use named volume for node_modules (better performance)
-      - api-node-modules:/app/node_modules
-      - api-app-node-modules:/app/apps/api/node_modules
+      # Note: node_modules are NOT mounted - we use the ones from the Docker image
+      # This prevents caching issues when dependencies change
     networks:
       - famly-dev-network
 
@@ -121,8 +123,11 @@ services:
       # Mount source code for live reload
       - ../apps/web/src:/app/apps/web/src:delegated
       - ../apps/web/public:/app/apps/web/public:delegated
-      # Mount shared package source code
+      # Mount shared package source and compiled output (with config for tsc watcher)
       - ../packages/shared/src:/app/packages/shared/src:delegated
+      - ../packages/shared/dist:/app/packages/shared/dist:delegated
+      - ../packages/shared/tsconfig.json:/app/packages/shared/tsconfig.json:ro
+      - ../packages/shared/package.json:/app/packages/shared/package.json:ro
       # Mount config files
       - ../apps/web/next.config.ts:/app/apps/web/next.config.ts:ro
       - ../apps/web/tsconfig.json:/app/apps/web/tsconfig.json:ro
@@ -133,9 +138,8 @@ services:
       - ../package.json:/app/package.json:ro
       - ../pnpm-lock.yaml:/app/pnpm-lock.yaml:ro
       - ../pnpm-workspace.yaml:/app/pnpm-workspace.yaml:ro
-      # Use named volumes for node_modules (better performance)
-      - web-node-modules:/app/node_modules
-      - web-app-node-modules:/app/apps/web/node_modules
+      # Note: node_modules are NOT mounted - we use the ones from the Docker image
+      # This prevents caching issues when dependencies change
     networks:
       - famly-dev-network
 
@@ -164,10 +168,6 @@ services:
 volumes:
   mongo-data: {}
   minio-data: {}
-  api-node-modules: {}
-  api-app-node-modules: {}
-  web-node-modules: {}
-  web-app-node-modules: {}
   caddy-data: {}
 
 networks:

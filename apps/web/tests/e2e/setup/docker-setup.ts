@@ -1,12 +1,13 @@
-import { exec } from "node:child_process";
+import { execFile } from "node:child_process";
 import path from "node:path";
 import { promisify } from "node:util";
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 // Path from project root to docker compose file
 const PROJECT_ROOT = path.resolve(__dirname, "../../../../..");
 const DOCKER_COMPOSE_FILE = path.join(PROJECT_ROOT, "docker/compose.test.yml");
+const DOCKER_PROJECT_NAME = "famly-test";
 const MAX_WAIT_TIME = 60000; // 60 seconds
 const CHECK_INTERVAL = 2000; // 2 seconds
 
@@ -17,10 +18,14 @@ export async function startDockerServices(): Promise<void> {
   console.log("Starting Docker Compose test environment...");
 
   try {
-    // Start services
-    await execAsync(`docker compose -f ${DOCKER_COMPOSE_FILE} up -d`, {
-      cwd: PROJECT_ROOT,
-    });
+    // Start services - using execFile with array args prevents shell injection
+    await execFileAsync(
+      "docker",
+      ["compose", "-f", DOCKER_COMPOSE_FILE, "-p", DOCKER_PROJECT_NAME, "up", "-d"],
+      {
+        cwd: PROJECT_ROOT,
+      }
+    );
 
     // Wait for services to be healthy
     await waitForServices();
@@ -39,9 +44,14 @@ export async function stopDockerServices(): Promise<void> {
   console.log("Stopping Docker Compose test environment...");
 
   try {
-    await execAsync(`docker compose -f ${DOCKER_COMPOSE_FILE} down -v`, {
-      cwd: PROJECT_ROOT,
-    });
+    // Using execFile with array args prevents shell injection
+    await execFileAsync(
+      "docker",
+      ["compose", "-f", DOCKER_COMPOSE_FILE, "-p", DOCKER_PROJECT_NAME, "down", "-v"],
+      {
+        cwd: PROJECT_ROOT,
+      }
+    );
     console.log("Docker Compose test environment stopped");
   } catch (error) {
     console.error("Failed to stop Docker services:", error);
@@ -59,10 +69,11 @@ async function waitForServices(): Promise<void> {
 
   while (Date.now() - startTime < MAX_WAIT_TIME) {
     try {
-      // Check Docker container health status
-      const { stdout } = await execAsync(
-        'docker inspect --format="{{.State.Health.Status}}" famly-api-test',
-        { cwd: PROJECT_ROOT },
+      // Check Docker container health status - using execFile prevents shell injection
+      const { stdout } = await execFileAsync(
+        "docker",
+        ["inspect", "--format={{.State.Health.Status}}", "famly-api-test"],
+        { cwd: PROJECT_ROOT }
       );
 
       const healthStatus = stdout.trim();
@@ -102,7 +113,8 @@ async function waitForServices(): Promise<void> {
  */
 export async function isDockerRunning(): Promise<boolean> {
   try {
-    await execAsync("docker info");
+    // Using execFile prevents shell injection
+    await execFileAsync("docker", ["info"]);
     return true;
   } catch {
     return false;

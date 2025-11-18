@@ -16,6 +16,9 @@ COPY packages ./packages
 # Install all dependencies
 RUN pnpm install --frozen-lockfile
 
+# Build shared package first (required for API imports)
+RUN pnpm --filter @famly/shared build
+
 # Set working directory to API app
 WORKDIR /app/apps/api
 
@@ -44,8 +47,9 @@ RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 # Copy built application from builder
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 
-# Copy shared package (needed for runtime imports after tsc-alias resolution)
-COPY --from=builder /app/packages ./packages
+# Copy built shared package (needed for runtime imports)
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /app/packages/shared/package.json ./packages/shared/
 
 # Set working directory to API app
 WORKDIR /app/apps/api
