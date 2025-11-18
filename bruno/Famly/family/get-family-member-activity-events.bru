@@ -1,0 +1,98 @@
+meta {
+  name: Get Family Member Activity Events
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/v1/families/:currentFamilyId/members/:memberId/activity-events
+  body: none
+  auth: inherit
+}
+
+params:path {
+  currentFamilyId: {{currentFamilyId}}
+  memberId: {{otherUserId}}
+}
+
+query {
+  ~startDate: 2024-01-01
+  ~endDate: 2024-12-31
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  # Get Family Member Activity Events
+
+  Retrieve activity events for a specific family member. This endpoint allows parents and children to view activity trails of other family members.
+
+  ## Path Parameters
+
+  - `familyId` (string, required): The family ID (use `currentFamilyId` variable)
+  - `memberId` (string, required): The family member ID whose activities to retrieve
+
+  ## Query Parameters
+
+  - `startDate` (string, optional): Start date in YYYY-MM-DD format (inclusive)
+  - `endDate` (string, optional): End date in YYYY-MM-DD format (inclusive)
+
+  If neither startDate nor endDate is provided, all events are returned (up to 100 limit).
+
+  ## Authorization
+
+  - Requires authentication (Bearer token)
+  - Requesting user must be a member of the specified family
+  - Both Parent and Child roles can view family member activities
+
+  ## Response
+
+  Returns an array of activity events for the specified family member, sorted by createdAt (newest first).
+
+  Each activity event contains:
+  - `id`: Unique identifier
+  - `userId`: ID of the family member
+  - `type`: Event type (TASK, SHOPPING_LIST, KARMA, RECIPE, DIARY, FAMILY_DIARY, REWARD)
+  - `title`: Event title
+  - `description`: Event description (nullable)
+  - `metadata`: Optional metadata object with karma value (nullable)
+  - `createdAt`: Creation timestamp (ISO 8601)
+
+  ## Examples
+
+  ### Task Created by Family Member
+  ```json
+  {
+    "id": "507f1f77bcf86cd799439011",
+    "userId": "507f1f77bcf86cd799439012",
+    "type": "TASK",
+    "title": "Clean room",
+    "description": "Created Clean room",
+    "metadata": null,
+    "createdAt": "2024-11-03T20:00:00.000Z"
+  }
+  ```
+
+  ### Task Completed
+  ```json
+  {
+    "id": "507f1f77bcf86cd799439013",
+    "userId": "507f1f77bcf86cd799439012",
+    "type": "TASK",
+    "title": "Clean room",
+    "description": "Completed Clean room",
+    "metadata": null,
+    "createdAt": "2024-11-03T20:05:00.000Z"
+  }
+  ```
+
+  ## Status Codes
+
+  - `200`: Activity events retrieved successfully
+  - `400`: Invalid familyId, memberId, or date parameters
+  - `401`: Unauthorized (missing or invalid token)
+  - `403`: Forbidden (user is not a member of the specified family)
+  - `404`: Family member not found in the specified family
+}

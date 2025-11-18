@@ -1,9 +1,11 @@
+import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import {
   type ObjectIdString,
   toObjectId,
   validateObjectId,
 } from "@lib/objectid-utils";
+import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type {
   ActivityEvent,
   ActivityEventType,
@@ -22,7 +24,10 @@ export interface RecordEventInput {
 }
 
 export class ActivityEventService {
-  constructor(private activityEventRepository: ActivityEventRepository) {}
+  constructor(
+    private activityEventRepository: ActivityEventRepository,
+    private membershipRepository?: FamilyMembershipRepository,
+  ) {}
 
   /**
    * Record a new activity event
@@ -110,6 +115,105 @@ export class ActivityEventService {
     } catch (error) {
       logger.error("Failed to fetch activity events", {
         userId: normalizedUserId ?? userId,
+        error,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get activity events for a specific family member
+   * Validates that the requesting user is a member of the specified family
+   * and that the target member is also in the same family
+   *
+   * @param requestingUserId - The ID of the user making the request
+   * @param familyId - The family ID
+   * @param memberId - The target member ID whose events to retrieve
+   * @param startDate - Optional start date in YYYY-MM-DD format
+   * @param endDate - Optional end date in YYYY-MM-DD format
+   * @returns Array of activity events (up to 100), sorted by most recent first
+   * @throws HttpError.badRequest if IDs are invalid
+   * @throws HttpError.forbidden if requesting user is not a member of the family
+   * @throws HttpError.notFound if family or member not found in family
+   */
+  async getEventsForFamilyMember(
+    requestingUserId: string,
+    familyId: string,
+    memberId: string,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<ActivityEvent[]> {
+    let normalizedRequestingUserId: ObjectIdString | undefined;
+    let normalizedFamilyId: ObjectIdString | undefined;
+    let normalizedMemberId: ObjectIdString | undefined;
+
+    try {
+      // Validate all IDs
+      normalizedRequestingUserId = validateObjectId(
+        requestingUserId,
+        "requestingUserId",
+      );
+      normalizedFamilyId = validateObjectId(familyId, "familyId");
+      normalizedMemberId = validateObjectId(memberId, "memberId");
+
+      logger.debug("Fetching activity events for family member", {
+        requestingUserId: normalizedRequestingUserId,
+        familyId: normalizedFamilyId,
+        memberId: normalizedMemberId,
+        startDate,
+        endDate,
+      });
+
+      // Verify membership repository is available
+      if (!this.membershipRepository) {
+        throw HttpError.internalServerError(
+          "Family membership repository not configured",
+        );
+      }
+
+      // Verify requesting user is a member of the family
+      const requestingUserMembership =
+        await this.membershipRepository.findByFamilyAndUser(
+          normalizedFamilyId,
+          normalizedRequestingUserId,
+        );
+
+      if (!requestingUserMembership) {
+        throw HttpError.forbidden("You are not a member of this family");
+      }
+
+      // Verify target member is in the same family
+      const targetMembership =
+        await this.membershipRepository.findByFamilyAndUser(
+          normalizedFamilyId,
+          normalizedMemberId,
+        );
+
+      if (!targetMembership) {
+        throw HttpError.notFound("Family member not found");
+      }
+
+      // Retrieve activity events for the target member
+      const memberObjectId = toObjectId(normalizedMemberId, "memberId");
+      const events = await this.activityEventRepository.findByUserInDateRange(
+        memberObjectId,
+        startDate,
+        endDate,
+      );
+
+      logger.debug("Activity events fetched successfully for family member", {
+        requestingUserId: normalizedRequestingUserId,
+        familyId: normalizedFamilyId,
+        memberId: normalizedMemberId,
+        count: events.length,
+      });
+
+      return events;
+    } catch (error) {
+      logger.error("Failed to fetch activity events for family member", {
+        requestingUserId: normalizedRequestingUserId ?? requestingUserId,
+        familyId: normalizedFamilyId ?? familyId,
+        memberId: normalizedMemberId ?? memberId,
         error,
       });
       throw error;
