@@ -2,6 +2,7 @@ import { errorHandler } from "@middleware/error-handler";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type Express } from "express";
+import expressOasGenerator from "express-oas-generator";
 import { getEnv } from "./config/env";
 import { activityEventsRouter } from "./modules/activity-events/routes/activity-events.router";
 import { createAuthRouter } from "./modules/auth/routes/auth.router";
@@ -19,7 +20,16 @@ import { createStatusRouter } from "./routes/status";
 
 export const createApp = (): Express => {
   const app = express();
+
   const env = getEnv();
+
+  /** place handleResponses as the very first middleware (only in development) */
+  if (env.NODE_ENV === "development") {
+    expressOasGenerator.handleResponses(
+      app,
+      {} as expressOasGenerator.HandleResponsesOptions,
+    );
+  }
 
   // Initialize module integrations
   // This must happen before routes are mounted
@@ -108,6 +118,11 @@ export const createApp = (): Express => {
 
   // Error handling middleware (last)
   app.use(errorHandler);
+
+  /** place handleRequests as the very last middleware (only in development) */
+  if (env.NODE_ENV === "development") {
+    expressOasGenerator.handleRequests();
+  }
 
   return app;
 };
