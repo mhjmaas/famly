@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   output: "standalone",
   turbopack: {
     root: path.resolve(__dirname, "..", ".."),
+    resolveAlias: {
+      "@famly/shared": "../../packages/shared/dist",
+    },
   },
   images: {
     remotePatterns: [
@@ -23,10 +26,10 @@ const nextConfig: NextConfig = {
     ],
   },
   webpack: (config) => {
-    // Resolve @famly/shared path for Turbopack
+    // Resolve @famly/shared path for webpack
     config.resolve.alias = {
       ...config.resolve.alias,
-      "@famly/shared": path.resolve(__dirname, "../../packages/shared/src"),
+      "@famly/shared": path.resolve(__dirname, "../../packages/shared/dist"),
     };
     return config;
   },

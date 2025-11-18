@@ -42,17 +42,27 @@ command_exists() {
 # Print header
 print_header
 
-# Handle --reset flag to delete .env.dev and start fresh
-if [ "$1" == "--reset" ]; then
-    if [ -f ".env.dev" ]; then
-        print_info "Removing existing .env.dev file..."
-        rm ".env.dev"
-        print_success ".env.dev deleted - will regenerate with defaults"
-    else
-        print_info "No .env.dev file found to reset"
-    fi
-    echo ""
-fi
+# Parse command line flags
+BUILD_FLAG=""
+for arg in "$@"; do
+    case $arg in
+        --reset)
+            if [ -f ".env.dev" ]; then
+                print_info "Removing existing .env.dev file..."
+                rm ".env.dev"
+                print_success ".env.dev deleted - will regenerate with defaults"
+            else
+                print_info "No .env.dev file found to reset"
+            fi
+            echo ""
+            ;;
+        --build)
+            BUILD_FLAG="--no-cache"
+            print_info "Clean rebuild enabled (--no-cache)"
+            echo ""
+            ;;
+    esac
+done
 
 # Step 1: Check if pnpm is installed
 print_info "Checking pnpm installation..."
@@ -472,6 +482,13 @@ if [ "$PROTOCOL" == "https" ]; then
 else
     COMPOSE_PROFILE=""
     SERVICES_TO_START="api web"
+fi
+
+# Build images if --build flag is set
+if [ ! -z "$BUILD_FLAG" ]; then
+    print_info "Building images with --no-cache..."
+    $COMPOSE_CMD -p $PROJECT_NAME --env-file .env.dev -f docker/compose.dev.yml build $BUILD_FLAG
+    echo ""
 fi
 
 # Start all services in detached mode first (to avoid MongoDB/MinIO logs)

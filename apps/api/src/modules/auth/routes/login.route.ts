@@ -15,6 +15,49 @@ import {
 import { getAuth } from "../better-auth";
 
 /**
+ * @swagger
+ * /v1/auth/login:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Login with email and password
+ *     description: Authenticate user and create session (public endpoint)
+ *     security: []  # Override global security - no authentication required
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 minLength: 8
+ *               rememberMe:
+ *                 type: boolean
+ *                 default: false
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *                 session:
+ *                   type: object
+ *                 accessToken:
+ *                   type: string
+ *                 sessionToken:
+ *                   type: string
+ *       401:
+ *         description: Invalid credentials
+ *
  * Login route using better-auth's built-in email/password sign-in.
  *
  * Request body:

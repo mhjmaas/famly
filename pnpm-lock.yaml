@@ -152,6 +152,9 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.927.0
         version: 3.927.0
+      '@famly/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@formatjs/intl-localematcher':
         specifier: ^0.6.2
         version: 0.6.2
@@ -307,7 +310,11 @@ importers:
         specifier: ^5
         version: 5.9.3
 
-  packages/shared: {}
+  packages/shared:
+    devDependencies:
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
 
 packages:
 
