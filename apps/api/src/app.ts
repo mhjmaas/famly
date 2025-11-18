@@ -20,13 +20,16 @@ import { createStatusRouter } from "./routes/status";
 
 export const createApp = (): Express => {
   const app = express();
-  /** place handleResponses as the very first middleware */
-  expressOasGenerator.handleResponses(
-    app,
-    {} as expressOasGenerator.HandleResponsesOptions,
-  );
 
   const env = getEnv();
+
+  /** place handleResponses as the very first middleware (only in development) */
+  if (env.NODE_ENV === "development") {
+    expressOasGenerator.handleResponses(
+      app,
+      {} as expressOasGenerator.HandleResponsesOptions,
+    );
+  }
 
   // Initialize module integrations
   // This must happen before routes are mounted
@@ -116,8 +119,10 @@ export const createApp = (): Express => {
   // Error handling middleware (last)
   app.use(errorHandler);
 
-  /** place handleRequests as the very last middleware */
-  expressOasGenerator.handleRequests();
+  /** place handleRequests as the very last middleware (only in development) */
+  if (env.NODE_ENV === "development") {
+    expressOasGenerator.handleRequests();
+  }
 
   return app;
 };
