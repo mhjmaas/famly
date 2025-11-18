@@ -311,3 +311,132 @@ export async function switchUser(
 export async function clearAuthentication(page: Page): Promise<void> {
   await page.context().clearCookies();
 }
+
+/**
+ * Creates a parent with a family and adds a child user to that family
+ *
+ * @param page - Playwright page object
+ * @param parentOptions - Options for creating parent user
+ * @param childOptions - Options for creating child user (name and birthdate)
+ * @returns Object with parentUser, childUser, and familyId
+ *
+ * @example
+ * ```typescript
+ * test('should test family features', async ({ page }) => {
+ *   const { parentUser, childUser, familyId } = await createFamilyWithMembers(page, {
+ *     name: "Parent",
+ *     familyName: "Test Family",
+ *   }, {
+ *     name: "Child",
+ *     birthdate: "2008-06-15",
+ *   });
+ * });
+ * ```
+ */
+export async function createFamilyWithMembers(
+  page: Page,
+  parentOptions: AuthenticateOptions = {},
+  childOptions: {
+    name?: string;
+    birthdate?: string;
+    password?: string;
+  } = {},
+): Promise<{
+  parentUser: AuthenticatedUser;
+  childUser: AuthenticatedUser;
+  familyId: string;
+}> {
+  // Create parent with family
+  const parentUser = await authenticateUser(page, {
+    ...parentOptions,
+    createFamily: true,
+  });
+
+  if (!parentUser.familyId) {
+    throw new Error("Failed to create family for parent user");
+  }
+
+  // Generate unique child email
+  userCounter++;
+  const childEmail = `e2etest.child.${pid}.${randomSuffix}.${userCounter}@example.com`;
+  const childPassword = childOptions.password || "TestPassword123!";
+  const childName = childOptions.name || "Child User";
+  const childBirthdate = childOptions.birthdate || "2008-06-15";
+
+  // Add child to parent's family (creates new user in the family)
+  const addMemberResponse = await fetch(
+    `${API_URL}/v1/families/${parentUser.familyId}/members`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${parentUser.sessionToken}`,
+      },
+      body: JSON.stringify({
+        email: childEmail,
+        password: childPassword,
+        name: childName,
+        birthdate: childBirthdate,
+        role: "Child",
+      }),
+    }
+  );
+
+  if (!addMemberResponse.ok) {
+    const error = await addMemberResponse.text();
+    throw new Error(
+      `Failed to add child to family: ${addMemberResponse.status} ${error}`
+    );
+  }
+
+  // Login as child to get session token
+  const childLoginResponse = await fetch(`${API_URL}/v1/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: childEmail,
+      password: childPassword,
+    }),
+  });
+
+  if (!childLoginResponse.ok) {
+    const error = await childLoginResponse.text();
+    throw new Error(`Failed to login as child: ${childLoginResponse.status} ${error}`);
+  }
+
+  const setCookieHeaders = childLoginResponse.headers.getSetCookie();
+  const childSessionToken = extractSessionCookie(setCookieHeaders);
+
+  if (!childSessionToken) {
+    throw new Error("No session token found in child login response");
+  }
+
+  // Set child's session in browser context
+  await page.context().addCookies([
+    {
+      name: "better-auth.session_token",
+      value: childSessionToken,
+      domain: "localhost",
+      path: "/",
+      httpOnly: true,
+      sameSite: "Lax",
+    },
+  ]);
+
+  const childUser: AuthenticatedUser = {
+    userId: "", // We don't have the child's user ID from the response
+    email: childEmail,
+    password: childPassword,
+    name: childName,
+    familyId: parentUser.familyId,
+    sessionToken: childSessionToken,
+  };
+
+  return {
+    parentUser,
+    childUser,
+    familyId: parentUser.familyId,
+  };
+}

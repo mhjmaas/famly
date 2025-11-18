@@ -71,6 +71,18 @@ export class TaskService {
         membershipRepository: this.membershipRepository,
       });
 
+      // Check if user is trying to set karma - only parents can do this
+      if (input.metadata?.karma) {
+        const membership = await this.membershipRepository.findByFamilyAndUser(
+          normalizedFamilyId,
+          normalizedUserId,
+        );
+
+        if (!membership || membership.role !== FamilyRole.Parent) {
+          throw HttpError.forbidden("Only parents can set karma on tasks");
+        }
+      }
+
       const task = await this.taskRepository.createTask(
         normalizedFamilyId,
         input,

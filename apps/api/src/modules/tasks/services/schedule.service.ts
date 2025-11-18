@@ -2,6 +2,7 @@ import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import { type ObjectIdString, validateObjectId } from "@lib/objectid-utils";
 import type { ActivityEventService } from "@modules/activity-events";
+import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type {
   CreateScheduleInput,
@@ -40,6 +41,18 @@ export class ScheduleService {
       });
 
       await this.verifyFamilyMembership(normalizedFamilyId, normalizedUserId);
+
+      // Check karma authorization: only parents can set karma on schedules
+      if (input.metadata?.karma) {
+        const membership = await this.membershipRepository.findByFamilyAndUser(
+          normalizedFamilyId,
+          normalizedUserId,
+        );
+
+        if (!membership || membership.role !== FamilyRole.Parent) {
+          throw HttpError.forbidden("Only parents can set karma on tasks");
+        }
+      }
 
       const schedule = await this.scheduleRepository.createSchedule(
         normalizedFamilyId,
