@@ -1,5 +1,10 @@
 import { errorHandler } from "@middleware/error-handler";
-import cookieParser from "cookie-parser";
+import {
+  authLimiter,
+  healthCheckLimiter,
+  searchLimiter,
+  standardLimiter,
+} from "@middleware/rate-limiter";
 import cors from "cors";
 import express, { type Express } from "express";
 import expressOasGenerator from "express-oas-generator";
@@ -84,17 +89,17 @@ export const createApp = (): Express => {
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-  // Parse cookies (Better Auth handles its own cookie signing)
-  app.use(cookieParser());
+  // Apply standard rate limiting to all routes
+  app.use(standardLimiter);
 
   // Health check endpoint (before auth setup since health check doesn't need DB)
-  app.use("/v1", createHealthRouter());
+  app.use("/v1", healthCheckLimiter, createHealthRouter());
 
   // Status endpoint (unauthenticated, returns deployment mode and onboarding status)
-  app.use("/v1", createStatusRouter());
+  app.use("/v1", healthCheckLimiter, createStatusRouter());
 
   // Auth routes (Better Auth manages its own indexes)
-  app.use("/v1/auth", createAuthRouter());
+  app.use("/v1/auth", authLimiter, createAuthRouter());
 
   // Diary routes (requires authentication)
   app.use("/v1/diary", createDiaryRouter());
@@ -108,7 +113,7 @@ export const createApp = (): Express => {
 
   // Message routes (requires authentication) - mounted at /v1/messages and /v1/search
   app.use("/v1", createMessageRoute());
-  app.use("/v1/search", searchMessagesRoute());
+  app.use("/v1/search", searchLimiter, searchMessagesRoute());
 
   // Activity events routes (requires authentication)
   app.use("/v1/activity-events", activityEventsRouter());
