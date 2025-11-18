@@ -7,6 +7,7 @@ import { createTasksRouter } from "@modules/tasks";
 import { Router } from "express";
 import { createAddMemberRoute } from "./add-member.route";
 import { createCreateFamilyRoute } from "./create-family.route";
+import { createGetFamilyMemberActivityEventsRoute } from "./get-family-member-activity-events.route";
 import { createGetMemberKarmaRoute } from "./get-member-karma.route";
 import { createGetSettingsRoute } from "./get-settings.route";
 import { createListFamiliesRoute } from "./list-families.route";
@@ -25,6 +26,7 @@ import { createUpdateSettingsRoute } from "./update-settings.route";
  * - DELETE /v1/families/:familyId/members/:memberId - Remove a member from a family
  * - GET /v1/families/:familyId/settings - Get family settings
  * - PUT /v1/families/:familyId/settings - Update family settings
+ * - GET /v1/families/:familyId/members/:memberId/activity-events - Get activity events for family member (mounted via createGetFamilyMemberActivityEventsRoute)
  * - GET/POST /v1/families/:familyId/diary/* - Family diary endpoints (mounted via createFamilyDiaryRouter)
  * - GET/POST /v1/families/:familyId/tasks/* - Tasks endpoints (mounted via createTasksRouter)
  * - GET/POST /v1/families/:familyId/karma/* - Karma endpoints (mounted via createKarmaRouter)
@@ -59,6 +61,9 @@ export function createFamiliesRouter(): Router {
 
   // Mount karma router for /:familyId/karma/* paths
   router.use("/:familyId/karma", createKarmaRouter());
+
+  // Mount family member activity events route for /:familyId/members/:memberId/activity-events
+  router.use("/:familyId", createGetFamilyMemberActivityEventsRoute());
 
   // Mount convenience karma route for /:familyId/members/:memberId/karma
   router.use("/:familyId", createGetMemberKarmaRoute());

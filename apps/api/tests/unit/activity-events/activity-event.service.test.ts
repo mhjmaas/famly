@@ -1,254 +1,315 @@
 import { ObjectId } from "mongodb";
-import { fromObjectId } from "../../../src/lib/objectid-utils";
-import type { ActivityEvent } from "../../../src/modules/activity-events/domain/activity-event";
-import type { ActivityEventRepository } from "../../../src/modules/activity-events/repositories/activity-event.repository";
+import type { ActivityEvent } from "@/modules/activity-events/domain/activity-event";
+import type { ActivityEventRepository } from "@/modules/activity-events/repositories/activity-event.repository";
+import { FamilyRole } from "@/modules/family/domain/family";
+import type { FamilyMembershipRepository } from "@/modules/family/repositories/family-membership.repository";
 
-// Mock logger to avoid environment variable dependencies
-jest.mock("../../../src/lib/logger", () => ({
+// Mock logger to avoid environment variable requirements
+jest.mock("@lib/logger", () => ({
   logger: {
-    debug: jest.fn(),
     info: jest.fn(),
+    debug: jest.fn(),
     error: jest.fn(),
   },
 }));
 
-// Mock activity events to avoid realtime dependencies
-jest.mock(
-  "../../../src/modules/activity-events/events/activity-events",
-  () => ({
-    emitActivityCreated: jest.fn(),
-  }),
-);
+// Mock realtime module to avoid better-auth dependency
+jest.mock("@modules/realtime", () => ({
+  emitToUserRooms: jest.fn(),
+}));
 
-import { ActivityEventService } from "../../../src/modules/activity-events/services/activity-event.service";
+// Mock activity events to avoid realtime dependencies
+jest.mock("@modules/activity-events/events/activity-events", () => ({
+  emitActivityCreated: jest.fn(),
+}));
+
+// Must be imported after mocking dependencies
+import { ActivityEventService } from "@/modules/activity-events/services/activity-event.service";
 
 describe("ActivityEventService", () => {
   let service: ActivityEventService;
-  let mockRepository: jest.Mocked<ActivityEventRepository>;
+  let mockActivityRepository: jest.Mocked<ActivityEventRepository>;
+  let mockMembershipRepository: jest.Mocked<FamilyMembershipRepository>;
 
   beforeEach(() => {
-    mockRepository = {
+    mockActivityRepository = {
       recordEvent: jest.fn(),
       findByUserInDateRange: jest.fn(),
-      ensureIndexes: jest.fn(),
     } as unknown as jest.Mocked<ActivityEventRepository>;
 
-    service = new ActivityEventService(mockRepository);
+    mockMembershipRepository = {
+      findByFamilyAndUser: jest.fn(),
+      findByUser: jest.fn(),
+      findByFamily: jest.fn(),
+      findByFamilyIds: jest.fn(),
+      insertMembership: jest.fn(),
+      updateMemberRole: jest.fn(),
+      deleteMembership: jest.fn(),
+      ensureIndexes: jest.fn(),
+    } as unknown as jest.Mocked<FamilyMembershipRepository>;
+
+    service = new ActivityEventService(
+      mockActivityRepository,
+      mockMembershipRepository,
+    );
   });
 
-  describe("recordEvent", () => {
-    it("records an activity event with all fields", async () => {
-      const userId = new ObjectId();
-      const userIdString = fromObjectId(userId);
-      const eventId = new ObjectId();
-      const createdAt = new Date();
+  describe("getEventsForFamilyMember", () => {
+    const requestingUserId = "507f1f77bcf86cd799439001";
+    const familyId = "507f1f77bcf86cd799439002";
+    const memberId = "507f1f77bcf86cd799439003";
+    const startDate = "2025-01-01";
+    const endDate = "2025-01-31";
 
-      const input = {
-        userId: userIdString,
-        type: "TASK" as const,
-        title: "Take out the trash",
-        description: "Completed take out the trash",
-        metadata: { karma: 10 },
-      };
-
-      const expectedEvent: ActivityEvent = {
-        _id: eventId,
-        userId,
+    const mockActivityEvents: ActivityEvent[] = [
+      {
+        _id: new ObjectId("507f1f77bcf86cd799439010"),
+        userId: new ObjectId(memberId),
         type: "TASK",
-        title: "Take out the trash",
-        description: "Completed take out the trash",
+        title: "Complete homework",
+        description: "Completed Complete homework",
         metadata: { karma: 10 },
-        createdAt,
-      };
+        createdAt: new Date("2025-01-15T10:00:00Z"),
+      },
+      {
+        _id: new ObjectId("507f1f77bcf86cd799439011"),
+        userId: new ObjectId(memberId),
+        type: "TASK",
+        title: "Do chores",
+        description: "Created Do chores",
+        createdAt: new Date("2025-01-10T14:00:00Z"),
+      },
+    ];
 
-      mockRepository.recordEvent.mockResolvedValue(expectedEvent);
+    it("should return activity events for family member when authorized", async () => {
+      // Mock both users as members of the same family
+      mockMembershipRepository.findByFamilyAndUser
+        .mockResolvedValueOnce({
+          _id: new ObjectId(),
+          familyId: new ObjectId(familyId),
+          userId: new ObjectId(requestingUserId),
+          role: FamilyRole.Parent,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .mockResolvedValueOnce({
+          _id: new ObjectId(),
+          familyId: new ObjectId(familyId),
+          userId: new ObjectId(memberId),
+          role: FamilyRole.Child,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
 
-      const result = await service.recordEvent(input);
+      mockActivityRepository.findByUserInDateRange.mockResolvedValue(
+        mockActivityEvents,
+      );
 
-      expect(mockRepository.recordEvent).toHaveBeenCalledWith(
+      const result = await service.getEventsForFamilyMember(
+        requestingUserId,
+        familyId,
+        memberId,
+        startDate,
+        endDate,
+      );
+
+      expect(result).toEqual(mockActivityEvents);
+      expect(mockMembershipRepository.findByFamilyAndUser).toHaveBeenCalledWith(
+        familyId,
+        requestingUserId,
+      );
+      expect(mockMembershipRepository.findByFamilyAndUser).toHaveBeenCalledWith(
+        familyId,
+        memberId,
+      );
+      expect(mockActivityRepository.findByUserInDateRange).toHaveBeenCalledWith(
+        expect.any(Object),
+        startDate,
+        endDate,
+      );
+    });
+
+    it("should throw forbidden error when requesting user is not a family member", async () => {
+      mockMembershipRepository.findByFamilyAndUser.mockResolvedValueOnce(null);
+
+      await expect(
+        service.getEventsForFamilyMember(
+          requestingUserId,
+          familyId,
+          memberId,
+          startDate,
+          endDate,
+        ),
+      ).rejects.toThrow(
         expect.objectContaining({
-          userId: expect.any(ObjectId),
-          type: "TASK",
-          title: "Take out the trash",
-          description: "Completed take out the trash",
-          metadata: { karma: 10 },
+          message: "You are not a member of this family",
+          statusCode: 403,
         }),
       );
-      const repoInput = mockRepository.recordEvent.mock.calls[0][0];
-      expect(repoInput.userId.toHexString()).toBe(userIdString);
-      expect(result).toEqual(expectedEvent);
     });
 
-    it("records an event without optional fields", async () => {
-      const userId = new ObjectId();
-      const userIdString = fromObjectId(userId);
-      const eventId = new ObjectId();
+    it("should throw not found error when target member is not in family", async () => {
+      // Requesting user is a member
+      mockMembershipRepository.findByFamilyAndUser
+        .mockResolvedValueOnce({
+          _id: new ObjectId(),
+          familyId: new ObjectId(familyId),
+          userId: new ObjectId(requestingUserId),
+          role: FamilyRole.Parent,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        // Target member is not a member
+        .mockResolvedValueOnce(null);
 
-      const input = {
-        userId: userIdString,
-        type: "RECIPE" as const,
-        title: "Created new recipe",
-      };
-
-      const expectedEvent: ActivityEvent = {
-        _id: eventId,
-        userId,
-        type: "RECIPE",
-        title: "Created new recipe",
-        createdAt: new Date(),
-      };
-
-      mockRepository.recordEvent.mockResolvedValue(expectedEvent);
-
-      const result = await service.recordEvent(input);
-
-      expect(mockRepository.recordEvent).toHaveBeenCalledWith(
+      await expect(
+        service.getEventsForFamilyMember(
+          requestingUserId,
+          familyId,
+          memberId,
+          startDate,
+          endDate,
+        ),
+      ).rejects.toThrow(
         expect.objectContaining({
-          userId: expect.any(ObjectId),
-          type: "RECIPE",
-          title: "Created new recipe",
+          message: "Family member not found",
+          statusCode: 404,
         }),
       );
-      const repoInput = mockRepository.recordEvent.mock.calls[0][0];
-      expect(repoInput.userId.toHexString()).toBe(userIdString);
-      expect(result).toEqual(expectedEvent);
     });
 
-    it("propagates repository errors", async () => {
-      const userId = new ObjectId();
-      const userIdString = fromObjectId(userId);
-      const input = {
-        userId: userIdString,
-        type: "TASK" as const,
-        title: "Test task",
-      };
-
-      const error = new Error("Database error");
-      mockRepository.recordEvent.mockRejectedValue(error);
-
-      await expect(service.recordEvent(input)).rejects.toThrow(
-        "Database error",
+    it("should throw internal error when membership repository is not available", async () => {
+      const serviceWithoutRepo = new ActivityEventService(
+        mockActivityRepository,
       );
-      expect(mockRepository.recordEvent).toHaveBeenCalledWith(
-        expect.objectContaining({ userId: expect.any(ObjectId) }),
+
+      await expect(
+        serviceWithoutRepo.getEventsForFamilyMember(
+          requestingUserId,
+          familyId,
+          memberId,
+          startDate,
+          endDate,
+        ),
+      ).rejects.toThrow(
+        expect.objectContaining({
+          message: "Family membership repository not configured",
+          statusCode: 500,
+        }),
       );
-      const repoInput = mockRepository.recordEvent.mock.calls[0][0];
-      expect(repoInput.userId.toHexString()).toBe(userIdString);
     });
-  });
 
-  describe("getEventsForUser", () => {
-    it("fetches events without date filters", async () => {
-      const userId = new ObjectId();
-      const userIdString = fromObjectId(userId);
-      const events: ActivityEvent[] = [
-        {
+    it("should validate all object IDs", async () => {
+      const invalidUserId = "not-an-id";
+
+      await expect(
+        service.getEventsForFamilyMember(
+          invalidUserId,
+          familyId,
+          memberId,
+          startDate,
+          endDate,
+        ),
+      ).rejects.toThrow();
+    });
+
+    it("should handle empty event results", async () => {
+      mockMembershipRepository.findByFamilyAndUser
+        .mockResolvedValueOnce({
           _id: new ObjectId(),
-          userId,
-          type: "TASK",
-          title: "Task 1",
-          createdAt: new Date("2024-01-15T10:00:00Z"),
-        },
-      ];
-
-      mockRepository.findByUserInDateRange.mockResolvedValue(events);
-
-      const result = await service.getEventsForUser(userIdString);
-
-      expect(mockRepository.findByUserInDateRange).toHaveBeenCalledWith(
-        expect.any(ObjectId),
-        undefined,
-        undefined,
-      );
-      const repoArg = mockRepository.findByUserInDateRange.mock.calls[0][0];
-      expect(repoArg.toHexString()).toBe(userIdString);
-      expect(result).toEqual(events);
-    });
-
-    it("fetches events with a start date", async () => {
-      const userId = new ObjectId();
-      const userIdString = fromObjectId(userId);
-      const events: ActivityEvent[] = [];
-
-      mockRepository.findByUserInDateRange.mockResolvedValue(events);
-
-      const result = await service.getEventsForUser(userIdString, "2024-01-15");
-
-      expect(mockRepository.findByUserInDateRange).toHaveBeenCalledWith(
-        expect.any(ObjectId),
-        "2024-01-15",
-        undefined,
-      );
-      const repoArg = mockRepository.findByUserInDateRange.mock.calls[0][0];
-      expect(repoArg.toHexString()).toBe(userIdString);
-      expect(result).toEqual(events);
-    });
-
-    it("fetches events with an end date", async () => {
-      const userId = new ObjectId();
-      const userIdString = fromObjectId(userId);
-
-      mockRepository.findByUserInDateRange.mockResolvedValue([]);
-
-      await service.getEventsForUser(userIdString, undefined, "2024-01-31");
-
-      expect(mockRepository.findByUserInDateRange).toHaveBeenCalledWith(
-        expect.any(ObjectId),
-        undefined,
-        "2024-01-31",
-      );
-      const repoArg = mockRepository.findByUserInDateRange.mock.calls[0][0];
-      expect(repoArg.toHexString()).toBe(userIdString);
-    });
-
-    it("fetches events within a date range", async () => {
-      const userId = new ObjectId();
-      const userIdString = fromObjectId(userId);
-      const events: ActivityEvent[] = [
-        {
+          familyId: new ObjectId(familyId),
+          userId: new ObjectId(requestingUserId),
+          role: FamilyRole.Parent,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .mockResolvedValueOnce({
           _id: new ObjectId(),
-          userId,
-          type: "DIARY",
-          title: "Diary entry",
-          createdAt: new Date("2024-01-20T10:00:00Z"),
-        },
-      ];
+          familyId: new ObjectId(familyId),
+          userId: new ObjectId(memberId),
+          role: FamilyRole.Child,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
 
-      mockRepository.findByUserInDateRange.mockResolvedValue(events);
+      mockActivityRepository.findByUserInDateRange.mockResolvedValue([]);
 
-      const result = await service.getEventsForUser(
-        userIdString,
-        "2024-01-01",
-        "2024-01-31",
+      const result = await service.getEventsForFamilyMember(
+        requestingUserId,
+        familyId,
+        memberId,
+        startDate,
+        endDate,
       );
 
-      expect(mockRepository.findByUserInDateRange).toHaveBeenCalledWith(
-        expect.any(ObjectId),
-        "2024-01-01",
-        "2024-01-31",
-      );
-      const repoArg = mockRepository.findByUserInDateRange.mock.calls[0][0];
-      expect(repoArg.toHexString()).toBe(userIdString);
-      expect(result).toEqual(events);
+      expect(result).toEqual([]);
     });
 
-    it("propagates repository errors", async () => {
-      const userId = new ObjectId();
-      const userIdString = fromObjectId(userId);
-      const error = new Error("Database error");
+    it("should pass date filters correctly to repository", async () => {
+      mockMembershipRepository.findByFamilyAndUser
+        .mockResolvedValueOnce({
+          _id: new ObjectId(),
+          familyId: new ObjectId(familyId),
+          userId: new ObjectId(requestingUserId),
+          role: FamilyRole.Parent,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .mockResolvedValueOnce({
+          _id: new ObjectId(),
+          familyId: new ObjectId(familyId),
+          userId: new ObjectId(memberId),
+          role: FamilyRole.Child,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
 
-      mockRepository.findByUserInDateRange.mockRejectedValue(error);
+      mockActivityRepository.findByUserInDateRange.mockResolvedValue([]);
 
-      await expect(service.getEventsForUser(userIdString)).rejects.toThrow(
-        "Database error",
+      await service.getEventsForFamilyMember(
+        requestingUserId,
+        familyId,
+        memberId,
+        startDate,
+        endDate,
       );
-      expect(mockRepository.findByUserInDateRange).toHaveBeenCalledWith(
-        expect.any(ObjectId),
-        undefined,
-        undefined,
+
+      const callArgs =
+        mockActivityRepository.findByUserInDateRange.mock.calls[0];
+      expect(callArgs[1]).toBe(startDate);
+      expect(callArgs[2]).toBe(endDate);
+    });
+
+    it("should work with child role as well", async () => {
+      mockMembershipRepository.findByFamilyAndUser
+        .mockResolvedValueOnce({
+          _id: new ObjectId(),
+          familyId: new ObjectId(familyId),
+          userId: new ObjectId(requestingUserId),
+          role: FamilyRole.Child,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .mockResolvedValueOnce({
+          _id: new ObjectId(),
+          familyId: new ObjectId(familyId),
+          userId: new ObjectId(memberId),
+          role: FamilyRole.Child,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+
+      mockActivityRepository.findByUserInDateRange.mockResolvedValue(
+        mockActivityEvents,
       );
-      const repoArg = mockRepository.findByUserInDateRange.mock.calls[0][0];
-      expect(repoArg.toHexString()).toBe(userIdString);
+
+      const result = await service.getEventsForFamilyMember(
+        requestingUserId,
+        familyId,
+        memberId,
+      );
+
+      expect(result).toEqual(mockActivityEvents);
     });
   });
 });
