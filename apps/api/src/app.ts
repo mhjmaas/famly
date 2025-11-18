@@ -88,14 +88,16 @@ export const createApp = (): Express => {
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-  // Apply standard rate limiting to all routes
-  app.use(standardLimiter);
-
   // Health check endpoint (before auth setup since health check doesn't need DB)
+  // Mounted before standardLimiter to use its own more lenient rate limit (300 req/15min)
   app.use("/v1", createHealthRouter());
 
   // Status endpoint (unauthenticated, returns deployment mode and onboarding status)
+  // Mounted before standardLimiter to use its own more lenient rate limit (300 req/15min)
   app.use("/v1", createStatusRouter());
+
+  // Apply standard rate limiting to all other routes
+  app.use(standardLimiter);
 
   // Auth routes (Better Auth manages its own indexes)
   app.use("/v1/auth", authLimiter, createAuthRouter());

@@ -20,6 +20,7 @@
   ],
   "scripts": {
     "build": "tsc --build",
+    "dev": "tsc --build --watch",
     "clean": "rm -rf dist"
   },
   "keywords": [

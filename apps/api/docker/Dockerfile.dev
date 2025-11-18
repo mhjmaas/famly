@@ -18,11 +18,18 @@ COPY packages ./packages
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
+# Build shared package (required for package.json main: ./dist/index.js)
+RUN pnpm --filter @famly/shared build
+
+# Copy and set up entrypoint script
+COPY apps/api/docker/dev-entrypoint.sh /app/dev-entrypoint.sh
+RUN chmod +x /app/dev-entrypoint.sh
+
 # Set working directory to API app
 WORKDIR /app/apps/api
 
 # Expose port
 EXPOSE 3001
 
-# Run dev server with tsx watch
-CMD ["pnpm", "dev"]
+# Run entrypoint script (starts shared watcher + dev server)
+CMD ["/app/dev-entrypoint.sh"]
