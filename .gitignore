@@ -14,6 +14,11 @@ build
 .DS_Store
 coverage
 
+# Generated OpenAPI spec (development only)
+api-spec.json
+
+tsconfig.tsbuildinfo
+
 # HTTPS certificates (mkcert generated)
 docker/caddy/certs/*.pem
 !docker/caddy/certs/.gitkeep

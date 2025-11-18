@@ -2,13 +2,34 @@
   "name": "@famly/shared",
   "version": "1.0.0",
   "description": "Shared code and configuration for Famly applications",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.js",
-    "./features": "./src/features.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./features": {
+      "types": "./dist/features.d.ts",
+      "default": "./dist/features.js"
+    }
   },
-  "main": "./src/index.js",
-  "types": "./src/index.d.ts",
-  "files": ["src"],
-  "keywords": ["famly", "shared", "features"],
-  "private": true
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc --build",
+    "dev": "tsc --build --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "famly",
+    "shared",
+    "features"
+  ],
+  "private": true,
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
 }

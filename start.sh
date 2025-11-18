@@ -366,31 +366,41 @@ setup_http01_challenge() {
 # Print header
 print_header
 
-# Handle --reset flag to delete .env and Caddyfile.production and start fresh
-if [ "$1" == "--reset" ]; then
-    if [ -f ".env" ]; then
-        print_info "Removing existing .env file..."
-        rm ".env"
-        print_success ".env deleted - will regenerate with fresh secrets"
-    else
-        print_info "No .env file found to reset"
-    fi
+# Parse command line flags
+BUILD_FLAG=""
+for arg in "$@"; do
+    case $arg in
+        --reset)
+            if [ -f ".env" ]; then
+                print_info "Removing existing .env file..."
+                rm ".env"
+                print_success ".env deleted - will regenerate with fresh secrets"
+            else
+                print_info "No .env file found to reset"
+            fi
 
-    if [ -f "docker/caddy/Caddyfile.production" ]; then
-        print_info "Removing existing Caddyfile.production..."
-        rm "docker/caddy/Caddyfile.production"
-        print_success "Caddyfile.production deleted - will regenerate with new domain"
-    else
-        print_info "No Caddyfile.production found to reset"
-    fi
+            if [ -f "docker/caddy/Caddyfile.production" ]; then
+                print_info "Removing existing Caddyfile.production..."
+                rm "docker/caddy/Caddyfile.production"
+                print_success "Caddyfile.production deleted - will regenerate with new domain"
+            else
+                print_info "No Caddyfile.production found to reset"
+            fi
 
-    if [ -f "docker/caddy/Caddyfile.localhost.custom" ]; then
-        print_info "Removing existing Caddyfile.localhost.custom..."
-        rm "docker/caddy/Caddyfile.localhost.custom"
-        print_success "Caddyfile.localhost.custom deleted - local HTTPS will be reconfigured"
-    fi
-    echo ""
-fi
+            if [ -f "docker/caddy/Caddyfile.localhost.custom" ]; then
+                print_info "Removing existing Caddyfile.localhost.custom..."
+                rm "docker/caddy/Caddyfile.localhost.custom"
+                print_success "Caddyfile.localhost.custom deleted - local HTTPS will be reconfigured"
+            fi
+            echo ""
+            ;;
+        --build)
+            BUILD_FLAG="--no-cache"
+            print_info "Clean rebuild enabled (--no-cache)"
+            echo ""
+            ;;
+    esac
+done
 
 # Step 1: Check if Docker is installed
 print_info "Checking Docker installation..."
@@ -581,6 +591,13 @@ else
     print_success "HTTP mode (Caddy will serve on port 80)"
 fi
 echo ""
+
+# Build images if --build flag is set
+if [ ! -z "$BUILD_FLAG" ]; then
+    print_info "Building images with --no-cache..."
+    $COMPOSE_CMD --env-file .env build $BUILD_FLAG
+    echo ""
+fi
 
 # Build and start services
 $COMPOSE_CMD --env-file .env up -d --build

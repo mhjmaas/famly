@@ -30,6 +30,8 @@ DOMAIN_PLACEHOLDER {
 	header {
 		# Enable HSTS (force HTTPS for 1 year)
 		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		# Content Security Policy - comprehensive protection
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' wss: https:; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self';"
 		# PWA security headers
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
@@ -73,6 +75,7 @@ DOMAIN_PLACEHOLDER {
 	}
 
 	# API routes - strip /api prefix and proxy to Express API service
+	# CORS headers from Express API are automatically preserved and passed through
 	handle_path /api/* {
 		reverse_proxy api:3001 {
 			header_up Host {host}

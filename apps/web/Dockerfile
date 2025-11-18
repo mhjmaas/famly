@@ -27,6 +27,9 @@ COPY packages ./packages
 # Install all dependencies
 RUN pnpm install --frozen-lockfile
 
+# Build shared package first (required for web imports)
+RUN pnpm --filter @famly/shared build
+
 # Set working directory to web app
 WORKDIR /app/apps/web
 

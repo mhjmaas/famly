@@ -225,7 +225,7 @@ export function RewardDialog({
               {/* biome-ignore lint/performance/noImgElement: Next/Image cannot display blob preview URLs without additional configuration */}
               <img
                 src={imagePreview}
-                alt={t.fields.image.preview}
+                alt={t.fields.image.preview || "Reward image preview"}
                 className="max-h-48 rounded-md border"
                 data-testid="reward-image-preview"
               />
