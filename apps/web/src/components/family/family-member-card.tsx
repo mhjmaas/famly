@@ -22,9 +22,14 @@ interface FamilyMemberCardProps {
       viewDetails: string;
     };
   };
+  lang: string;
 }
 
-export function FamilyMemberCard({ member, dict }: FamilyMemberCardProps) {
+export function FamilyMemberCard({
+  member,
+  dict,
+  lang,
+}: FamilyMemberCardProps) {
   const age = calculateAge(member.birthdate);
   const initials = getInitials(member.name);
 
@@ -89,7 +94,7 @@ export function FamilyMemberCard({ member, dict }: FamilyMemberCardProps) {
             className="gap-2"
             data-testid="member-view-details-link"
           >
-            <Link href={`/app/family/${member.memberId}`}>
+            <Link href={`/${lang}/app/family/${member.memberId}`}>
               {dict.memberCard.viewDetails}
               <ArrowRight className="h-4 w-4" />
             </Link>

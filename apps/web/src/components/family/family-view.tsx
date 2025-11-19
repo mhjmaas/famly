@@ -114,9 +114,14 @@ interface FamilyViewProps {
       };
     };
   };
+  lang: string;
 }
 
-export function FamilyView({ mobileActionTrigger, dict }: FamilyViewProps) {
+export function FamilyView({
+  mobileActionTrigger,
+  dict,
+  lang,
+}: FamilyViewProps) {
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
   const currentFamily = useAppSelector(selectCurrentFamily);
@@ -237,6 +242,7 @@ export function FamilyView({ mobileActionTrigger, dict }: FamilyViewProps) {
                 key={member.memberId}
                 member={member}
                 dict={dict.pages.family}
+                lang={lang}
               />
             ))}
           </div>
