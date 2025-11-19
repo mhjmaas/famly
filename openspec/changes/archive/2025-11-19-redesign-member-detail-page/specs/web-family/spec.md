@@ -1,8 +1,5 @@
-# web-family Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change implement-family-page. Update Purpose after archive.
-## Requirements
 ### Requirement: Display family members in card layout
 The web application MUST display all family members in a responsive card grid with member details and navigation to detail pages.
 
@@ -91,183 +88,21 @@ The web application MUST display all family members in a responsive card grid wi
 - **THEN** the members are arranged in a 1-column grid
 - **AND** cards stack vertically
 
-### Requirement: Add new family member
-Parents MUST be able to add new family members through a dialog form that collects email, password, name, birthdate, and role.
+## REMOVED Requirements
 
-#### Scenario: Open add member dialog from desktop button
-- **GIVEN** an authenticated parent user on desktop (viewport >= 1024px)
-- **WHEN** the user clicks the "Add Member" button in the page header
-- **THEN** the Add Member dialog opens
-- **AND** the dialog displays "Add Family Member" title
-- **AND** the dialog shows form fields: Email, Password, Name, Birthdate, Role
-- **AND** all fields are empty
-- **AND** Role defaults to "Child"
+### Requirement: Update member role
+**Reason**: Role editing functionality moved to member detail page
+**Migration**: Users must navigate to member detail page to edit roles
 
-#### Scenario: Open add member dialog from mobile button
-- **GIVEN** an authenticated parent user on mobile (viewport < 768px)
-- **WHEN** the user clicks the "+" icon button in the mobile header
-- **THEN** the Add Member dialog opens with the same form fields
+### Requirement: Remove family member
+**Reason**: Member removal functionality moved to member detail page
+**Migration**: Users must navigate to member detail page to remove members
 
-#### Scenario: Add new child member
-- **GIVEN** an authenticated parent user viewing the add member dialog
-- **WHEN** the user fills in:
-  - Email: "newkid@example.com"
-  - Password: "securepass123"
-  - Name: "New Kid"
-  - Birthdate: "2015-03-20"
-  - Role: "Child"
-- **AND** clicks "Add Member"
-- **THEN** the API request POST /v1/families/{familyId}/members is sent with the form data
-- **AND** the dialog shows a loading state during the request
-- **AND** on success, a success message "Member added successfully" is displayed
-- **AND** the dialog closes
-- **AND** the families list is refetched
-- **AND** the new member appears in the member grid
+### Requirement: Grant or deduct karma
+**Reason**: Karma management functionality moved to member detail page
+**Migration**: Users must navigate to member detail page to grant or deduct karma
 
-#### Scenario: Add new parent member
-- **GIVEN** an authenticated parent user viewing the add member dialog
-- **WHEN** the user fills in all fields and selects Role "Parent"
-- **AND** clicks "Add Member"
-- **THEN** the new parent member is added to the family
-
-#### Scenario: Validation error for missing email
-- **GIVEN** an authenticated parent user viewing the add member dialog
-- **WHEN** the user submits the form without entering an email
-- **THEN** a validation error "Email is required" or similar is displayed
-- **AND** the submit button is disabled or form submission is prevented
-
-#### Scenario: Validation error for invalid email
-- **GIVEN** an authenticated parent user viewing the add member dialog
-- **WHEN** the user enters an invalid email format (e.g., "notanemail")
-- **THEN** a validation error "Please enter a valid email address" is displayed
-
-#### Scenario: Validation error for short password
-- **GIVEN** an authenticated parent user viewing the add member dialog
-- **WHEN** the user enters a password with less than 8 characters
-- **THEN** a validation error "Password must be at least 8 characters" is displayed
-
-#### Scenario: Validation error for missing name
-- **GIVEN** an authenticated parent user viewing the add member dialog
-- **WHEN** the user submits the form without entering a name
-- **THEN** a validation error "Name is required" or similar is displayed
-
-#### Scenario: Validation error for missing birthdate
-- **GIVEN** an authenticated parent user viewing the add member dialog
-- **WHEN** the user submits the form without selecting a birthdate
-- **THEN** a validation error "Birthdate is required" or similar is displayed
-
-#### Scenario: Validation error for future birthdate
-- **GIVEN** an authenticated parent user viewing the add member dialog
-- **WHEN** the user selects a birthdate in the future
-- **THEN** a validation error "Birthdate cannot be in the future" is displayed
-
-#### Scenario: Cancel add member dialog
-- **GIVEN** an authenticated parent user viewing the add member dialog
-- **WHEN** the user clicks "Cancel"
-- **THEN** the dialog closes
-- **AND** no API request is made
-- **AND** form inputs are reset
-
-#### Scenario: Error handling for add member
-- **GIVEN** an authenticated parent user attempting to add a member
-- **WHEN** the API request fails with a 400 error (e.g., email already exists)
-- **THEN** an error message from the API is displayed
-- **AND** the dialog remains open
-- **AND** the user can correct the input and retry
-
-#### Scenario: Add member button hidden for child users
-- **GIVEN** an authenticated child user
-- **WHEN** viewing the family page
-- **THEN** the "Add Member" button is not visible
-- **AND** the "+" icon button is not visible on mobile
-
-### Requirement: Internationalization support
-All UI text MUST be translatable and display in the user's selected language (English or Dutch).
-
-#### Scenario: Family page displays in English
-- **GIVEN** a user with language preference set to English
-- **WHEN** the user views the family page
-- **THEN** all text displays in English
-- **AND** the page title shows "Family Members"
-- **AND** buttons show "Add Member", "Edit Role", "Remove", "Give Karma"
-- **AND** dialog titles and descriptions are in English
-
-#### Scenario: Family page displays in Dutch
-- **GIVEN** a user with language preference set to Dutch
-- **WHEN** the user views the family page
-- **THEN** all text displays in Dutch
-- **AND** the page title shows the Dutch translation
-- **AND** buttons show Dutch translations
-- **AND** dialog titles and descriptions are in Dutch
-
-#### Scenario: Error messages are translated
-- **GIVEN** a user with language preference set to Dutch
-- **WHEN** an error occurs (e.g., "Failed to load family members")
-- **THEN** the error message displays in Dutch
-
-### Requirement: Redux state management
-Family data MUST be managed through a Redux slice with async thunks for all API operations.
-
-#### Scenario: Family slice initialized with null state
-- **GIVEN** the Redux store is created
-- **WHEN** the family slice initializes
-- **THEN** the initial state has `families: null`, `currentFamily: null`, `isLoading: false`, `error: null`
-- **AND** all operation states are initialized to `{ isLoading: false, error: null }`
-
-#### Scenario: Fetch families thunk dispatched
-- **GIVEN** the family page mounts
-- **WHEN** the `fetchFamilies` async thunk is dispatched
-- **THEN** the Redux state sets `isLoading: true`
-- **AND** the API client calls GET /v1/families
-- **AND** on success, the Redux state updates `families` with response data
-- **AND** the Redux state sets `isLoading: false`
-- **AND** the `currentFamily` selector returns `families[0]`
-
-#### Scenario: Update member role thunk success
-- **GIVEN** the Redux store has families loaded
-- **WHEN** the `updateMemberRole` async thunk is dispatched with familyId, memberId, and new role
-- **THEN** the Redux state sets `operations.updateRole.isLoading: true`
-- **AND** the API client calls PATCH /v1/families/{familyId}/members/{memberId}
-- **AND** on success, the `fetchFamilies` thunk is dispatched to refetch data
-- **AND** the Redux state sets `operations.updateRole.isLoading: false`
-
-#### Scenario: Remove member thunk success
-- **GIVEN** the Redux store has families loaded
-- **WHEN** the `removeFamilyMember` async thunk is dispatched
-- **THEN** the Redux state sets `operations.removeMember.isLoading: true`
-- **AND** the API client calls DELETE /v1/families/{familyId}/members/{memberId}
-- **AND** on success, the `fetchFamilies` thunk is dispatched to refetch data
-- **AND** the Redux state sets `operations.removeMember.isLoading: false`
-
-#### Scenario: Grant karma thunk success
-- **GIVEN** the Redux store has families loaded
-- **WHEN** the `grantMemberKarma` async thunk is dispatched with amount and description
-- **THEN** the Redux state sets `operations.grantKarma.isLoading: true`
-- **AND** the API client calls POST /v1/families/{familyId}/karma/grant
-- **AND** on success, the `fetchFamilies` thunk is dispatched to refetch data
-- **AND** the Redux state sets `operations.grantKarma.isLoading: false`
-
-#### Scenario: Add member thunk success
-- **GIVEN** the Redux store has families loaded
-- **WHEN** the `addFamilyMember` async thunk is dispatched with member data
-- **THEN** the Redux state sets `operations.addMember.isLoading: true`
-- **AND** the API client calls POST /v1/families/{familyId}/members
-- **AND** on success, the `fetchFamilies` thunk is dispatched to refetch data
-- **AND** the Redux state sets `operations.addMember.isLoading: false`
-
-#### Scenario: Thunk error handling
-- **GIVEN** any async thunk is dispatched
-- **WHEN** the API request fails with an ApiError
-- **THEN** the Redux state sets the corresponding operation error with the error message
-- **AND** the Redux state sets the corresponding operation `isLoading: false`
-- **AND** the families data remains unchanged
-
-#### Scenario: Selectors return correct data
-- **GIVEN** the Redux store has families loaded
-- **WHEN** the `selectFamilyMembers` selector is called
-- **THEN** it returns the members array from currentFamily
-- **AND** the `selectOperationLoading('updateRole')` selector returns the loading state for role updates
-- **AND** the `selectOperationError('grantKarma')` selector returns the error for karma grants
+## ADDED Requirements
 
 ### Requirement: Member detail page display
 The web application MUST provide a dedicated detail page for each family member showing comprehensive information and management options.
@@ -643,4 +478,3 @@ The web application MUST break down the member detail page into smaller, logical
 - **WHEN** the karma grant section renders
 - **THEN** the karma card is implemented as a separate component
 - **AND** the component is reusable and testable
-

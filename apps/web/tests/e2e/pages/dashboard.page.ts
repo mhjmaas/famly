@@ -222,8 +222,9 @@ export class DashboardPage {
    * Get available karma amount
    */
   async getKarmaAmount(): Promise<number> {
-    const text = await this.karmaAmount.textContent();
-    return parseInt(text || "0", 10);
+      const text = await this.karmaAmount.textContent();
+      const match = text?.match(/[-]?\d+/); // Match optional minus sign followed by digits
+      return match ? Number(match[0]) : 0;
   }
 
   /**

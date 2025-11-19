@@ -11,6 +11,7 @@ export class FamilyPage {
     readonly pageDescription: Locator;
     readonly addMemberButton: Locator;
     readonly addMemberButtonMobile: Locator;
+    readonly mobilePageTitle: Locator;
 
     // Empty state
     readonly emptyState: Locator;
@@ -24,24 +25,11 @@ export class FamilyPage {
     readonly memberAge: Locator;
     readonly memberRole: Locator;
     readonly memberKarma: Locator;
-    readonly memberActionsButton: Locator;
-
-    // Member actions dropdown
-    readonly actionGiveKarma: Locator;
-    readonly actionEditRole: Locator;
-    readonly actionRemoveMember: Locator;
+    readonly memberViewDetailsLink: Locator;
 
     // Dialogs
     readonly dialog: Locator;
     readonly alertDialog: Locator;
-
-    // Give Karma Dialog elements
-    readonly karmaTypePositive: Locator;
-    readonly karmaTypeNegative: Locator;
-    readonly karmaAmountInput: Locator;
-    readonly karmaMessageInput: Locator;
-    readonly karmaSubmitButton: Locator;
-    readonly karmaCancelButton: Locator;
 
     // Add Member Dialog elements
     readonly addMemberEmail: Locator;
@@ -62,6 +50,7 @@ export class FamilyPage {
         this.pageDescription = page.getByTestId("family-description");
         this.addMemberButton = page.getByTestId("add-member-button");
         this.addMemberButtonMobile = page.getByTestId("add-member-button-mobile");
+        this.mobilePageTitle = page.getByTestId("mobile-page-title");
 
         // Empty state
         this.emptyState = page.getByTestId("family-empty-state");
@@ -75,24 +64,11 @@ export class FamilyPage {
         this.memberAge = page.getByTestId("member-age");
         this.memberRole = page.getByTestId("member-role");
         this.memberKarma = page.getByTestId("member-karma");
-        this.memberActionsButton = page.getByTestId("member-actions-button");
-
-        // Member actions
-        this.actionGiveKarma = page.getByTestId("action-give-karma");
-        this.actionEditRole = page.getByTestId("action-edit-role");
-        this.actionRemoveMember = page.getByTestId("action-remove-member");
+        this.memberViewDetailsLink = page.getByTestId("member-view-details-link");
 
         // Dialogs
         this.dialog = page.getByRole("dialog");
         this.alertDialog = page.getByRole("alertdialog");
-
-        // Give Karma Dialog elements
-        this.karmaTypePositive = page.getByTestId("karma-type-positive");
-        this.karmaTypeNegative = page.getByTestId("karma-type-negative");
-        this.karmaAmountInput = page.getByTestId("karma-amount-input");
-        this.karmaMessageInput = page.getByTestId("karma-message-input");
-        this.karmaSubmitButton = page.getByTestId("karma-submit-button");
-        this.karmaCancelButton = page.getByTestId("karma-cancel-button");
 
         // Add Member Dialog elements
         this.addMemberEmail = page.getByTestId("add-member-email");
@@ -129,6 +105,23 @@ export class FamilyPage {
     }
 
     /**
+     * Wait for member cards to be visible
+     * @param timeout - Maximum time to wait in milliseconds (default: 10000)
+     */
+    async waitForMemberCards(timeout = 10000): Promise<void> {
+        await this.memberCards.first().waitFor({ state: 'visible', timeout });
+    }
+
+    /**
+     * Wait for a specific member card to be visible by index
+     * @param index - Index of the member card (default: 0)
+     * @param timeout - Maximum time to wait in milliseconds (default: 10000)
+     */
+    async waitForMemberCard(index = 0, timeout = 10000): Promise<void> {
+        await this.memberCards.nth(index).waitFor({ state: 'visible', timeout });
+    }
+
+    /**
      * Check if empty state is visible
      */
     async hasEmptyState(): Promise<boolean> {
@@ -151,36 +144,10 @@ export class FamilyPage {
     }
 
     /**
-     * Open actions menu for a specific member (by index)
+     * Click view details link for a member
      */
-    async openMemberActions(memberIndex = 0) {
-        await this.memberActionsButton.nth(memberIndex).click();
-        // Wait for dropdown menu to appear after opening actions
-        await this.page.locator('[role="menu"]').first().waitFor({ state: "visible", timeout: 2000 });
-    }
-
-    /**
-     * Click give karma action
-     */
-    async clickGiveKarma() {
-        await this.actionGiveKarma.click();
-        await this.dialog.waitFor({ state: "visible", timeout: 5000 });
-    }
-
-    /**
-     * Click edit role action
-     */
-    async clickEditRole() {
-        await this.actionEditRole.click();
-        await this.dialog.waitFor({ state: "visible", timeout: 5000 });
-    }
-
-    /**
-     * Click remove member action
-     */
-    async clickRemoveMember() {
-        await this.actionRemoveMember.click();
-        await this.alertDialog.waitFor({ state: "visible", timeout: 5000 });
+    async clickViewDetails(memberIndex = 0) {
+        await this.memberViewDetailsLink.nth(memberIndex).click();
     }
 
     /**
@@ -241,34 +208,6 @@ export class FamilyPage {
         await this.addMemberSubmit.click();
     }
 
-    /**
-     * Fill give karma form
-     */
-    async fillGiveKarmaForm(data: {
-        type: "positive" | "negative";
-        amount: number;
-        message: string;
-    }) {
-        // Select karma type
-        const radioButton = data.type === "positive" ? this.karmaTypePositive : this.karmaTypeNegative;
-        await radioButton.click();
-
-        // Wait a bit for the state to update
-        await this.page.waitForTimeout(100);
-
-        // Fill amount
-        await this.karmaAmountInput.fill(data.amount.toString());
-
-        // Fill message
-        await this.karmaMessageInput.fill(data.message);
-    }
-
-    /**
-     * Submit give karma form
-     */
-    async submitGiveKarma() {
-        await this.karmaSubmitButton.click();
-    }
 
     /**
      * Wait for dialog to close

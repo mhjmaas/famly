@@ -369,7 +369,7 @@
       },
       "family": {
         "title": "Gezinsleden",
-        "description": "Beheer je gezinsleden",
+        "description": "Uw gezinsleden",
         "addMember": "Lid Toevoegen",
         "emptyState": {
           "title": "Nog geen gezinsleden",
@@ -380,8 +380,9 @@
           "karma": "Karma",
           "roleParent": "Ouder",
           "roleChild": "Kind",
+          "viewDetails": "Bekijk Details",
           "actions": {
-            "giveKarma": "Karma Geven",
+            "giveKarma": "Geef Karma",
             "editRole": "Rol Bewerken",
             "remove": "Verwijderen"
           }
@@ -444,11 +445,36 @@
           "addMemberFailed": "Kan lid niet toevoegen",
           "unauthorized": "Je hebt geen toestemming om deze actie uit te voeren",
           "notFound": "Lid niet gevonden",
-          "invalidAmount": "Bedrag moet tussen 1 en 100.000 zijn",
-          "invalidEmail": "Voer een geldig e-mailadres in",
+          "invalidAmount": "Ongeldig karma-bedrag",
+          "invalidEmail": "Ongeldig e-mailadres",
           "passwordTooShort": "Wachtwoord moet minimaal 8 tekens zijn",
-          "invalidDate": "Voer een geldige datum in",
+          "invalidDate": "Ongeldige datum",
           "futureDateNotAllowed": "Geboortedatum kan niet in de toekomst liggen"
+        }
+      },
+      "memberDetail": {
+        "title": "Liddetails",
+        "backToFamily": "Terug naar Gezin",
+        "breadcrumbs": {
+          "familyMembers": "Gezinsleden"
+        },
+        "tabs": {
+          "giveKarma": "Karma uitdelen"
+        },
+        "actions": {
+          "editMember": "Lid Bewerken",
+          "removeMember": "Lid Verwijderen"
+        },
+        "karmaCard": {
+          "amountLabel": "Karma Bedrag",
+          "amountPlaceholder": "bijv., 25 of -10",
+          "amountHelper": "Gebruik positieve of negatieve getallen",
+          "descriptionLabel": "Beschrijving *",
+          "descriptionPlaceholder": "Leg uit waarom je karma geeft of aftrekt...",
+          "giveButton": "Geef Karma",
+          "deductButton": "Trek Karma af",
+          "success": "Karma succesvol bijgewerkt",
+          "error": "Kan karma niet bijwerken"
         }
       },
       "tasks": {

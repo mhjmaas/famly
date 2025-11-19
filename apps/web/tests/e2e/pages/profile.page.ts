@@ -105,10 +105,10 @@ export class ProfilePage {
    * Get the displayed karma amount
    */
   async getKarmaAmount(): Promise<string | null> {
-    const karmaText = await this.karmaAmount.textContent();
-    // Extract number from "X Karma" or "X Points"
-    const match = karmaText?.match(/\d+/);
-    return match ? match[0] : null;
+      const karmaText = await this.karmaAmount.textContent();
+      // Extract number from "X Karma" or "X Points" (handles both positive and negative)
+      const match = karmaText?.match(/[-]?\d+/);
+      return match ? match[0] : null;
   }
 
   /**

@@ -329,6 +329,23 @@ export async function getActivityEvents(
   return apiClient<ActivityEvent[]>(endpoint, { cookie });
 }
 
+export async function getFamilyMemberActivityEvents(
+  familyId: string,
+  memberId: string,
+  startDate?: string,
+  endDate?: string,
+  cookie?: string,
+): Promise<ActivityEvent[]> {
+  const params = new URLSearchParams();
+  if (startDate) params.set("startDate", startDate);
+  if (endDate) params.set("endDate", endDate);
+
+  const queryString = params.toString();
+  const endpoint = `/v1/families/${familyId}/members/${memberId}/activity-events${queryString ? `?${queryString}` : ""}`;
+
+  return apiClient<ActivityEvent[]>(endpoint, { cookie });
+}
+
 // ============= Tasks API =============
 
 export type {

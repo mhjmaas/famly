@@ -296,3 +296,6 @@ export const selectOperationLoading =
 export const selectOperationError =
   (operation: keyof FamilyState["operations"]) => (state: RootState) =>
     state.family.operations[operation].error;
+export const selectFamilyMemberById =
+  (memberId: string) => (state: RootState) =>
+    state.family.currentFamily?.members.find((m) => m.memberId === memberId);

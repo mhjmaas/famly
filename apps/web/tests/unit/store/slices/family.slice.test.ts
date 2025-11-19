@@ -11,6 +11,7 @@ import familyReducer, {
   selectFamilies,
   selectFamilyError,
   selectFamilyLoading,
+  selectFamilyMemberById,
   selectFamilyMembers,
   selectOperationError,
   selectOperationLoading,
@@ -595,6 +596,33 @@ describe("family.slice", () => {
         store.dispatch(clearFamily());
         const state = store.getState() as unknown as RootState;
         expect(selectFamilyMembers(state)).toEqual([]);
+      });
+    });
+
+    describe("selectFamilyMemberById", () => {
+      it("should return member when found", () => {
+        const state = store.getState() as unknown as RootState;
+        const member = selectFamilyMemberById("member-1")(state);
+        expect(member).toEqual(mockMember1);
+      });
+
+      it("should return second member when requested", () => {
+        const state = store.getState() as unknown as RootState;
+        const member = selectFamilyMemberById("member-2")(state);
+        expect(member).toEqual(mockMember2);
+      });
+
+      it("should return undefined when member not found", () => {
+        const state = store.getState() as unknown as RootState;
+        const member = selectFamilyMemberById("non-existent")(state);
+        expect(member).toBeUndefined();
+      });
+
+      it("should return undefined when no current family", () => {
+        store.dispatch(clearFamily());
+        const state = store.getState() as unknown as RootState;
+        const member = selectFamilyMemberById("member-1")(state);
+        expect(member).toBeUndefined();
       });
     });
 
