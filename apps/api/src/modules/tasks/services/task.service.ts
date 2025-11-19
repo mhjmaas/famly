@@ -102,6 +102,7 @@ export class TaskService {
           await this.activityEventService.recordEvent({
             userId: normalizedUserId,
             type: "TASK",
+            detail: "CREATED",
             title: task.name,
             description: `Created ${task.name}`,
             metadata: task.metadata?.karma

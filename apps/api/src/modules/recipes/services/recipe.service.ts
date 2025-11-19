@@ -64,6 +64,7 @@ export class RecipeService {
             type: "RECIPE",
             title: recipe.name,
             description: recipe.description,
+            detail: "CREATED",
           });
         } catch (error) {
           logger.error("Failed to record activity event for recipe creation", {

@@ -40,6 +40,7 @@ export class ActivityEventRepository {
       _id: new ObjectId(),
       userId: input.userId,
       type: input.type,
+      detail: input.detail,
       title: input.title,
       description: input.description,
       metadata: input.metadata,

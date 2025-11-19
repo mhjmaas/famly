@@ -42,6 +42,7 @@ export class DiaryService {
         "DIARY",
         `Diary entry for ${input.date}`,
         input.entry,
+        "CREATED",
       );
 
       return entry;
@@ -192,6 +193,7 @@ export class DiaryService {
         "FAMILY_DIARY",
         `Family diary entry for ${input.date}`,
         input.entry,
+        "CREATED",
       );
 
       return entry;
@@ -362,6 +364,7 @@ export class DiaryService {
     type: "DIARY" | "FAMILY_DIARY",
     title: string,
     entryText: string,
+    detail?: string,
   ): Promise<void> {
     if (!this.activityEventService) {
       return;
@@ -373,6 +376,7 @@ export class DiaryService {
         type,
         title,
         description: entryText.substring(0, 100),
+        detail,
       });
     } catch (error) {
       logger.error("Failed to record diary activity event", {

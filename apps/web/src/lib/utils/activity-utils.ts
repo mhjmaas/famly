@@ -126,3 +126,49 @@ export function getActivityEventBgColor(type: ActivityEvent["type"]): string {
       return "bg-muted text-muted-foreground";
   }
 }
+
+/**
+ * Determines whether karma indicators should be displayed for an activity event
+ * Based on the combination of event type and detail
+ *
+ * Shows karma for:
+ * - TASK + COMPLETED (with positive karma)
+ * - REWARD + CLAIMED (with negative karma deduction)
+ * - KARMA + AWARDED (with positive karma)
+ *
+ * Hides karma for:
+ * - All CREATED events (task, shopping list, recipe, diary)
+ * - TASK + GENERATED (auto-generated tasks)
+ * - REWARD + COMPLETED (completion doesn't show karma)
+ * - Events without detail field (legacy events - graceful fallback shows karma)
+ *
+ * @param event - The activity event to check
+ * @returns true if karma indicators should be shown, false otherwise
+ */
+export function shouldShowKarma(event: ActivityEvent): boolean {
+  // If no detail field, default to showing karma (backward compatibility with legacy events)
+  if (!event.detail) {
+    return true;
+  }
+
+  // Show karma only for specific type + detail combinations
+  switch (event.type) {
+    case "TASK":
+      // Only show karma for completed tasks
+      return event.detail === "COMPLETED";
+    case "REWARD":
+      // Only show karma for claimed rewards (deduction)
+      return event.detail === "CLAIMED";
+    case "KARMA":
+      // Only show karma for awarded karma events
+      return event.detail === "AWARDED";
+    case "SHOPPING_LIST":
+    case "RECIPE":
+    case "DIARY":
+    case "FAMILY_DIARY":
+      // Never show karma for creation events
+      return false;
+    default:
+      return true;
+  }
+}

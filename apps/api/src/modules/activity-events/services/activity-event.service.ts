@@ -16,10 +16,12 @@ import type { ActivityEventRepository } from "../repositories/activity-event.rep
 export interface RecordEventInput {
   userId: ObjectIdString;
   type: ActivityEventType;
+  detail?: string;
   title: string;
   description?: string;
   metadata?: {
     karma?: number;
+    triggeredBy?: ObjectIdString;
   };
 }
 
@@ -45,21 +47,44 @@ export class ActivityEventService {
       logger.debug("Recording activity event", {
         userId: normalizedUserId,
         type: input.type,
+        detail: input.detail,
         title: input.title,
       });
+
+      // Convert triggeredBy if present
+      let triggeredByObjectId: ObjectIdString | undefined;
+      if (input.metadata?.triggeredBy) {
+        triggeredByObjectId = validateObjectId(
+          input.metadata.triggeredBy,
+          "triggeredBy",
+        );
+      }
+
+      // Only include metadata if there's actual data
+      const metadata: Record<string, any> | undefined =
+        input.metadata?.karma || triggeredByObjectId
+          ? {
+              karma: input.metadata?.karma,
+              triggeredBy: triggeredByObjectId
+                ? toObjectId(triggeredByObjectId, "triggeredBy")
+                : undefined,
+            }
+          : undefined;
 
       const event = await this.activityEventRepository.recordEvent({
         userId: userObjectId,
         type: input.type,
+        detail: input.detail,
         title: input.title,
         description: input.description,
-        metadata: input.metadata,
+        metadata,
       });
 
       logger.info("Activity event recorded successfully", {
         eventId: event._id.toString(),
         userId: normalizedUserId,
         type: input.type,
+        detail: input.detail,
       });
 
       // Emit activity created event

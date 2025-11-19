@@ -41,6 +41,7 @@ export class ActivityEventHook implements TaskCompletionHook {
       await this.activityEventService.recordEvent({
         userId: normalizedCreditedUserId,
         type: "TASK",
+        detail: "COMPLETED",
         title: task.name,
         description: `Completed ${task.name}`,
         metadata: Object.keys(metadata).length > 0 ? metadata : undefined,

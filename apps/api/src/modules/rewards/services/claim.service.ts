@@ -162,6 +162,7 @@ export class ClaimService {
               type: "REWARD",
               title: reward.name,
               description: `Claimed reward for ${reward.karmaCost} karma`,
+              detail: "CLAIMED",
               metadata: { karma: -reward.karmaCost },
             });
           } catch (error) {

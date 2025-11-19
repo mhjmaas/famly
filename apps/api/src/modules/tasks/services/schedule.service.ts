@@ -76,6 +76,7 @@ export class ScheduleService {
           await this.activityEventService.recordEvent({
             userId: normalizedUserId,
             type: "TASK",
+            detail: "CREATED",
             title: schedule.name,
             description: schedule.description,
             metadata: schedule.metadata?.karma

@@ -43,6 +43,8 @@ describe("E2E: Activity Events - Family Member Activity Trails", () => {
         title: "Child's task",
         userId: childUserId,
       });
+      expect(eventsResponse.body[0]).toHaveProperty("detail");
+      expect(eventsResponse.body[0].detail).toBe("CREATED");
     });
 
     it("should allow child to view sibling's activity events", async () => {
@@ -94,6 +96,8 @@ describe("E2E: Activity Events - Family Member Activity Trails", () => {
         title: "First child's task",
         userId: childUserId,
       });
+      expect(eventsResponse.body[0]).toHaveProperty("detail");
+      expect(eventsResponse.body[0].detail).toBe("CREATED");
     });
 
     it("should allow user to view their own activity events via family endpoint", async () => {
@@ -122,6 +126,8 @@ describe("E2E: Activity Events - Family Member Activity Trails", () => {
         title: "Parent's task",
         userId: parentUserId,
       });
+      expect(eventsResponse.body[0]).toHaveProperty("detail");
+      expect(eventsResponse.body[0].detail).toBe("CREATED");
     });
 
     it("should support date range filtering for family member events", async () => {
@@ -308,7 +314,9 @@ describe("E2E: Activity Events - Family Member Activity Trails", () => {
       expect(eventsResponse.body).toHaveLength(2);
       // Most recent should be first
       expect(eventsResponse.body[0].title).toBe("Second task");
+      expect(eventsResponse.body[0].detail).toBe("CREATED");
       expect(eventsResponse.body[1].title).toBe("First task");
+      expect(eventsResponse.body[1].detail).toBe("CREATED");
     });
   });
 });
