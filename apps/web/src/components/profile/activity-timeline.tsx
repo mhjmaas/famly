@@ -6,6 +6,7 @@ import {
   getActivityEventColor,
   getActivityEventIcon,
   groupEventsByDate,
+  shouldShowKarma,
 } from "@/lib/utils/activity-utils";
 
 interface ActivityTimelineProps {
@@ -120,7 +121,7 @@ export function ActivityTimeline({
                           </div>
 
                           {/* Karma Change */}
-                          {karma !== undefined && (
+                          {shouldShowKarma(event) && karma !== undefined && (
                             <div
                               className={`flex items-center gap-2 font-semibold text-base ${colorClass}`}
                             >

@@ -32,6 +32,7 @@ describe("activities.slice", () => {
     type: "TASK",
     title: "Complete homework",
     description: "Finished math homework",
+    detail: "COMPLETED",
     metadata: {},
     createdAt: "2024-01-01T10:00:00Z",
   };
@@ -42,6 +43,7 @@ describe("activities.slice", () => {
     type: "KARMA",
     title: "Karma awarded",
     description: "Bonus karma for good behavior",
+    detail: "AWARDED",
     metadata: { karma: 50 },
     createdAt: "2024-01-01T11:00:00Z",
   };
@@ -52,6 +54,7 @@ describe("activities.slice", () => {
     type: "REWARD",
     title: "Claimed Ice Cream",
     description: "Claimed reward for 100 karma",
+    detail: "CLAIMED",
     metadata: {},
     createdAt: "2024-01-01T12:00:00Z",
   };
@@ -285,6 +288,72 @@ describe("activities.slice", () => {
       const activities = selectActivities(state);
 
       expect(activities[0].metadata).toEqual({ karma: 50 });
+    });
+  });
+
+  describe("activity detail field", () => {
+    it("should preserve detail field in Redux state", async () => {
+      mockedGetActivityEvents.mockResolvedValueOnce([
+        mockActivityTask,
+        mockActivityKarma,
+        mockActivityReward,
+      ]);
+
+      await store.dispatch(fetchActivityEvents());
+      const state = store.getState() as unknown as RootState;
+      const activities = selectActivities(state);
+
+      expect(activities[0].detail).toBe("COMPLETED");
+      expect(activities[1].detail).toBe("AWARDED");
+      expect(activities[2].detail).toBe("CLAIMED");
+    });
+
+    it("should handle activities with different detail values", async () => {
+      const activitiesWithDetails = [
+        { ...mockActivityTask, detail: "CREATED" as const },
+        { ...mockActivityKarma, detail: "AWARDED" as const },
+        { ...mockActivityReward, detail: "CLAIMED" as const },
+      ];
+
+      mockedGetActivityEvents.mockResolvedValueOnce(activitiesWithDetails);
+      await store.dispatch(fetchActivityEvents());
+      const state = store.getState() as unknown as RootState;
+      const activities = selectActivities(state);
+
+      const detailValues = activities.map((a) => a.detail);
+      expect(detailValues).toEqual(["CREATED", "AWARDED", "CLAIMED"]);
+    });
+
+    it("should gracefully handle missing detail field", async () => {
+      const activityWithoutDetail: ActivityEvent = {
+        id: "activity-4",
+        userId: "user-123",
+        type: "TASK",
+        title: "Task without detail",
+        description: "No detail field",
+        metadata: null,
+        createdAt: "2024-01-01T13:00:00Z",
+      };
+
+      mockedGetActivityEvents.mockResolvedValueOnce([activityWithoutDetail]);
+      await store.dispatch(fetchActivityEvents());
+      const state = store.getState() as unknown as RootState;
+      const activities = selectActivities(state);
+
+      expect(activities).toHaveLength(1);
+      expect(activities[0].detail).toBeUndefined();
+    });
+
+    it("should maintain detail field through state selectors", async () => {
+      mockedGetActivityEvents.mockResolvedValueOnce([mockActivityTask]);
+      await store.dispatch(fetchActivityEvents());
+
+      const state = store.getState() as unknown as RootState;
+      const activities = selectActivities(state);
+      const taskActivity = activities.find((a) => a.type === "TASK");
+
+      expect(taskActivity).toBeDefined();
+      expect(taskActivity?.detail).toBe("COMPLETED");
     });
   });
 });

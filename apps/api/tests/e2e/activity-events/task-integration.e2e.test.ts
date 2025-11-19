@@ -42,15 +42,17 @@ describe("E2E: Activity Events - Task Integration", () => {
         .expect(200);
 
       expect(eventsResponse.body).toHaveLength(1);
-      expect(eventsResponse.body[0]).toMatchObject({
+      const event = eventsResponse.body[0];
+      expect(event).toMatchObject({
         type: "TASK",
         title: "Take out the trash",
         description: "Created Take out the trash",
         userId: parentUserId,
         metadata: { karma: 10 },
       });
-      expect(eventsResponse.body[0]).toHaveProperty("id");
-      expect(eventsResponse.body[0]).toHaveProperty("createdAt");
+      expect(event.detail).toBe("CREATED");
+      expect(event).toHaveProperty("id");
+      expect(event).toHaveProperty("createdAt");
     });
 
     it("should create activity event when task is created without optional fields", async () => {
@@ -126,6 +128,7 @@ describe("E2E: Activity Events - Task Integration", () => {
       );
       expect(completionEvent).toBeDefined();
       expect(completionEvent?.title).toBe("Do homework");
+      expect(completionEvent?.detail).toBe("COMPLETED");
       expect(completionEvent?.metadata).toEqual({
         karma: 20,
         triggeredBy: expect.any(String),
@@ -208,6 +211,7 @@ describe("E2E: Activity Events - Task Integration", () => {
         e.description?.includes("Completed Homework for child"),
       );
       expect(childCompletionEvent).toBeDefined();
+      expect(childCompletionEvent.detail).toBe("COMPLETED");
       expect(childCompletionEvent.userId).toBe(childUserId);
 
       // Parent should NOT see a "Completed Homework for child" event

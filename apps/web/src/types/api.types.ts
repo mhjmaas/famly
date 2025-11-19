@@ -193,10 +193,12 @@ export interface ActivityEvent {
   id: string;
   userId: string;
   type: ActivityEventType;
+  detail?: string; // Granular action type (e.g., "CREATED", "COMPLETED")
   title: string;
   description: string | null;
   metadata: {
     karma?: number;
+    triggeredBy?: string; // User who triggered the action if different from credited user
   } | null;
   createdAt: string; // ISO 8601 timestamp
 }

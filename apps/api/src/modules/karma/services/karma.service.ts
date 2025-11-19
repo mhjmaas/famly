@@ -103,6 +103,7 @@ export class KarmaService {
             type: "KARMA",
             title: "Karma awarded",
             description: input.description || `Received ${input.amount} karma`,
+            detail: "AWARDED",
             metadata: { karma: input.amount },
           });
         } catch (error) {

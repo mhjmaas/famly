@@ -148,5 +148,74 @@ describe("ActivityEvent Mapper", () => {
       expect(event._id.toHexString()).toBe(originalId);
       expect(event.title).toBe(originalTitle);
     });
+
+    it("should map detail field from domain to DTO correctly", () => {
+      const eventId = new ObjectId();
+      const userId = new ObjectId();
+      const createdAt = new Date("2024-01-15T10:30:00.000Z");
+
+      const event: ActivityEvent = {
+        _id: eventId,
+        userId,
+        type: "TASK",
+        title: "Task with detail",
+        description: "Task description",
+        detail: "CREATED",
+        metadata: {},
+        createdAt,
+      };
+
+      const dto = toActivityEventDTO(event);
+
+      expect(dto.detail).toBe("CREATED");
+    });
+
+    it("should map different detail values correctly", () => {
+      const details = ["CREATED", "COMPLETED", "CLAIMED", "AWARDED"];
+
+      for (const detailValue of details) {
+        const event: ActivityEvent = {
+          _id: new ObjectId(),
+          userId: new ObjectId(),
+          type: "TASK",
+          title: `Task with ${detailValue}`,
+          detail: detailValue,
+          createdAt: new Date(),
+        };
+
+        const dto = toActivityEventDTO(event);
+        expect(dto.detail).toBe(detailValue);
+      }
+    });
+
+    it("should handle missing detail field for backward compatibility", () => {
+      const event: ActivityEvent = {
+        _id: new ObjectId(),
+        userId: new ObjectId(),
+        type: "TASK",
+        title: "Task without detail",
+        createdAt: new Date(),
+      };
+
+      const dto = toActivityEventDTO(event);
+
+      expect(dto.detail).toBeUndefined();
+    });
+
+    it("should include detail field when present", () => {
+      const event: ActivityEvent = {
+        _id: new ObjectId(),
+        userId: new ObjectId(),
+        type: "REWARD",
+        title: "Reward claimed",
+        detail: "CLAIMED",
+        createdAt: new Date(),
+      };
+
+      const dto = toActivityEventDTO(event);
+
+      expect(dto).toHaveProperty("detail");
+      expect(dto.detail).toBe("CLAIMED");
+    });
   });
 });

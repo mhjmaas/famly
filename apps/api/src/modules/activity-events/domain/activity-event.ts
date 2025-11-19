@@ -20,10 +20,12 @@ export interface ActivityEvent {
   _id: ObjectId;
   userId: ObjectId;
   type: ActivityEventType;
+  detail?: string; // Granular action type (e.g., "CREATED", "COMPLETED")
   title: string; // Max 200 chars
   description?: string; // Optional, max 2000 chars
   metadata?: {
     karma?: number; // Optional karma value
+    triggeredBy?: ObjectId; // Optional: user who triggered the action
   };
   createdAt: Date;
 }
@@ -34,10 +36,12 @@ export interface ActivityEvent {
 export interface RecordActivityEventInput {
   userId: ObjectId;
   type: ActivityEventType;
+  detail?: string;
   title: string;
   description?: string;
   metadata?: {
     karma?: number;
+    triggeredBy?: ObjectId;
   };
 }
 
@@ -48,10 +52,12 @@ export interface ActivityEventDTO {
   id: string;
   userId: string;
   type: ActivityEventType;
+  detail?: string;
   title: string;
   description: string | null;
   metadata: {
     karma?: number;
+    triggeredBy?: string;
   } | null;
   createdAt: string; // ISO 8601 timestamp
 }

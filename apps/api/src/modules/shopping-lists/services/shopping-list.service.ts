@@ -67,6 +67,7 @@ export class ShoppingListService {
         "SHOPPING_LIST",
         shoppingList.name,
         `Created shopping list with ${shoppingList.items.length} items`,
+        "CREATED",
       );
 
       return shoppingList;
@@ -556,6 +557,7 @@ export class ShoppingListService {
     type: "SHOPPING_LIST",
     title: string,
     description: string,
+    detail?: string,
   ): Promise<void> {
     if (!this.activityEventService) {
       return;
@@ -567,6 +569,7 @@ export class ShoppingListService {
         type,
         title,
         description,
+        detail,
       });
     } catch (error) {
       logger.error("Failed to record shopping list activity event", {
