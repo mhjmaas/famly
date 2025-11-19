@@ -58,6 +58,7 @@ interface MemberDetailViewProps {
           amountLabel: string;
           amountPlaceholder: string;
           amountHelper: string;
+          deductButton: string;
           descriptionLabel: string;
           descriptionPlaceholder: string;
           giveButton: string;

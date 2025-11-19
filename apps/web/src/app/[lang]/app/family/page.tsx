@@ -18,7 +18,7 @@ export default async function FamilyPage({ params }: PageProps) {
       lang={lang}
       title={dict.dashboard.pages.family.title}
     >
-      <FamilyView dict={dict.dashboard} lang={lang} />
+      <FamilyView dict={dict.dashboard} />
     </DashboardLayout>
   );
 }
