@@ -4,13 +4,14 @@
 TBD - created by archiving change implement-family-page. Update Purpose after archive.
 ## Requirements
 ### Requirement: Display family members in card layout
-The web application MUST display all family members in a responsive card grid with member details.
+The web application MUST display all family members in a responsive card grid with member details and navigation to detail pages.
 
 #### Scenario: Family members displayed on page load
 - **GIVEN** an authenticated parent user in a family with 3 members
 - **WHEN** the user navigates to `/app/family`
 - **THEN** the page displays 3 member cards in a grid layout
 - **AND** each card shows member avatar with initials, name, calculated age, role badge, and karma count
+- **AND** each card is clickable to navigate to the member detail page
 
 #### Scenario: Member avatar shows initials
 - **GIVEN** a family member named "John Doe"
@@ -36,17 +37,23 @@ The web application MUST display all family members in a responsive card grid wi
 - **THEN** the card displays "150" next to a Sparkles icon
 - **AND** the icon uses primary color with fill
 
-#### Scenario: Actions dropdown visible for parent users
+#### Scenario: Card is clickable and navigates to detail page
+- **GIVEN** an authenticated user viewing a member card
+- **WHEN** the user clicks on the card
+- **THEN** the browser navigates to `/app/family/{memberId}`
+- **AND** the member detail page loads
+
+#### Scenario: Card has hover state indicating clickability
+- **GIVEN** an authenticated user viewing a member card
+- **WHEN** the user hovers over the card
+- **THEN** the card displays a hover effect (shadow or background change)
+- **AND** the cursor changes to pointer
+
+#### Scenario: Actions dropdown removed from member cards
 - **GIVEN** an authenticated parent user
 - **WHEN** viewing a member card
-- **THEN** a dropdown menu button (three dots) is visible
-- **AND** the dropdown contains "Give Karma", "Edit Role", and "Remove" options
-
-#### Scenario: Actions dropdown hidden for child users
-- **GIVEN** an authenticated child user
-- **WHEN** viewing a member card
-- **THEN** no dropdown menu button is visible
-- **AND** the card displays information only (no actions)
+- **THEN** no dropdown menu button (three dots) is visible
+- **AND** the card only displays information and navigation
 
 #### Scenario: Empty state when no members
 - **GIVEN** a family with only the current user as a member
@@ -83,176 +90,6 @@ The web application MUST display all family members in a responsive card grid wi
 - **WHEN** displaying 6 family members
 - **THEN** the members are arranged in a 1-column grid
 - **AND** cards stack vertically
-
-### Requirement: Update member role
-Parents MUST be able to update any family member's role between Parent and Child through a dialog interface.
-
-#### Scenario: Open edit role dialog
-- **GIVEN** an authenticated parent user
-- **WHEN** the user clicks "Edit Role" in a member's dropdown menu
-- **THEN** the Edit Role dialog opens
-- **AND** the dialog displays the member's current name
-- **AND** the dialog shows a role selector with "Parent" and "Child" options
-- **AND** the current role is pre-selected
-
-#### Scenario: Update role from Child to Parent
-- **GIVEN** an authenticated parent user viewing the edit role dialog for a Child member
-- **WHEN** the user selects "Parent" and clicks "Save Changes"
-- **THEN** the API request PATCH /v1/families/{familyId}/members/{memberId} is sent with { "role": "Parent" }
-- **AND** the dialog shows a loading state during the request
-- **AND** on success, a success message "Member role updated successfully" is displayed
-- **AND** the dialog closes
-- **AND** the member card updates to show "Parent" role badge
-
-#### Scenario: Update role from Parent to Child
-- **GIVEN** an authenticated parent user viewing the edit role dialog for a Parent member
-- **WHEN** the user selects "Child" and clicks "Save Changes"
-- **THEN** the API request PATCH /v1/families/{familyId}/members/{memberId} is sent with { "role": "Child" }
-- **AND** on success, the member card updates to show "Child" role badge
-
-#### Scenario: Save button disabled when role unchanged
-- **GIVEN** an authenticated parent user viewing the edit role dialog
-- **WHEN** the selected role matches the member's current role
-- **THEN** the "Save Changes" button is disabled
-
-#### Scenario: Cancel edit role dialog
-- **GIVEN** an authenticated parent user viewing the edit role dialog
-- **WHEN** the user clicks "Cancel"
-- **THEN** the dialog closes
-- **AND** no API request is made
-- **AND** the member's role remains unchanged
-
-#### Scenario: Error handling for role update
-- **GIVEN** an authenticated parent user attempting to update a role
-- **WHEN** the API request fails with a 403 error
-- **THEN** an error message "You don't have permission to perform this action" is displayed
-- **AND** the dialog remains open
-- **AND** the member's role remains unchanged
-
-#### Scenario: Role update for non-existent member
-- **GIVEN** an authenticated parent user attempting to update a role
-- **WHEN** the API request fails with a 404 error
-- **THEN** an error message "Member not found" is displayed
-
-### Requirement: Remove family member
-Parents MUST be able to remove family members through a confirmation dialog with safeguards against removing the last parent.
-
-#### Scenario: Open remove member dialog
-- **GIVEN** an authenticated parent user
-- **WHEN** the user clicks "Remove" in a member's dropdown menu
-- **THEN** an AlertDialog opens
-- **AND** the dialog displays "Remove Family Member" title
-- **AND** the dialog shows "Are you sure you want to remove {name} from the family?" description
-- **AND** the dialog shows "This action cannot be undone." warning
-- **AND** the dialog has "Cancel" and "Remove Member" buttons
-
-#### Scenario: Confirm member removal
-- **GIVEN** an authenticated parent user viewing the remove member dialog
-- **AND** the family has at least 2 parents or the target is a child
-- **WHEN** the user clicks "Remove Member"
-- **THEN** the API request DELETE /v1/families/{familyId}/members/{memberId} is sent
-- **AND** the dialog shows a loading state during the request
-- **AND** on success, a success message "Member removed successfully" is displayed
-- **AND** the dialog closes
-- **AND** the member card is removed from the grid
-- **AND** the family members list is updated
-
-#### Scenario: Cancel member removal
-- **GIVEN** an authenticated parent user viewing the remove member dialog
-- **WHEN** the user clicks "Cancel"
-- **THEN** the dialog closes
-- **AND** no API request is made
-- **AND** the member remains in the family
-
-#### Scenario: Prevent removing last parent
-- **GIVEN** an authenticated parent user
-- **AND** the family has exactly 1 parent member
-- **WHEN** the user attempts to remove that parent member
-- **THEN** an error message "Cannot remove the last parent from the family" is displayed
-- **AND** the remove action is prevented
-
-#### Scenario: Error handling for member removal
-- **GIVEN** an authenticated parent user attempting to remove a member
-- **WHEN** the API request fails with a 403 error
-- **THEN** an error message "You don't have permission to perform this action" is displayed
-- **AND** the dialog remains open
-- **AND** the member is not removed
-
-#### Scenario: Removal of non-existent member
-- **GIVEN** an authenticated parent user attempting to remove a member
-- **WHEN** the API request fails with a 404 error
-- **THEN** an error message "Member not found" is displayed
-
-### Requirement: Grant or deduct karma
-Parents MUST be able to grant positive or negative karma to family members with a required explanatory message through a dialog interface.
-
-#### Scenario: Open give karma dialog
-- **GIVEN** an authenticated parent user
-- **WHEN** the user clicks "Give Karma" in a member's dropdown menu
-- **THEN** the Give Karma dialog opens
-- **AND** the dialog displays "Give Karma to {name}" title
-- **AND** the dialog shows radio buttons for "Positive (Award)" and "Negative (Deduct)" karma type
-- **AND** "Positive" is selected by default
-- **AND** the dialog shows an amount number input
-- **AND** the dialog shows a message textarea with "Message is required" label
-
-#### Scenario: Grant positive karma
-- **GIVEN** an authenticated parent user viewing the give karma dialog
-- **AND** the member has 100 karma
-- **WHEN** the user selects "Positive", enters amount "50", enters message "Great job on homework"
-- **AND** clicks "Give Karma"
-- **THEN** the API request POST /v1/families/{familyId}/karma/grant is sent with { "userId": "{memberId}", "amount": 50, "description": "Great job on homework" }
-- **AND** the dialog shows a loading state during the request
-- **AND** on success, a success message "Karma updated successfully" is displayed
-- **AND** the dialog closes
-- **AND** the member card updates to show karma "150"
-
-#### Scenario: Deduct karma (negative amount)
-- **GIVEN** an authenticated parent user viewing the give karma dialog
-- **AND** the member has 100 karma
-- **WHEN** the user selects "Negative", enters amount "30", enters message "Forgot to clean room"
-- **AND** clicks "Give Karma"
-- **THEN** the API request POST /v1/families/{familyId}/karma/grant is sent with { "userId": "{memberId}", "amount": -30, "description": "Forgot to clean room" }
-- **AND** on success, the member card updates to show karma "70"
-
-#### Scenario: Validation error for empty message
-- **GIVEN** an authenticated parent user viewing the give karma dialog
-- **WHEN** the user enters amount "50" but leaves message empty
-- **AND** clicks "Give Karma"
-- **THEN** the submit button is disabled
-- **OR** a validation error "Message is required" is displayed
-
-#### Scenario: Validation error for zero amount
-- **GIVEN** an authenticated parent user viewing the give karma dialog
-- **WHEN** the user enters amount "0"
-- **THEN** a validation error "Amount must be between 1 and 100,000" is displayed
-- **AND** the submit button is disabled
-
-#### Scenario: Validation error for excessive amount
-- **GIVEN** an authenticated parent user viewing the give karma dialog
-- **WHEN** the user enters amount "100001"
-- **THEN** a validation error "Amount must be between 1 and 100,000" is displayed
-- **AND** the submit button is disabled
-
-#### Scenario: Validation error for message too long
-- **GIVEN** an authenticated parent user viewing the give karma dialog
-- **WHEN** the user enters a message exceeding 500 characters
-- **THEN** a validation error is displayed
-- **AND** the submit button is disabled
-
-#### Scenario: Cancel give karma dialog
-- **GIVEN** an authenticated parent user viewing the give karma dialog
-- **WHEN** the user clicks "Cancel"
-- **THEN** the dialog closes
-- **AND** no API request is made
-- **AND** the member's karma remains unchanged
-- **AND** form inputs are reset
-
-#### Scenario: Error handling for karma grant
-- **GIVEN** an authenticated parent user attempting to grant karma
-- **WHEN** the API request fails with a 403 error
-- **THEN** an error message "You don't have permission to perform this action" is displayed
-- **AND** the dialog remains open
 
 ### Requirement: Add new family member
 Parents MUST be able to add new family members through a dialog form that collects email, password, name, birthdate, and role.
@@ -431,4 +268,379 @@ Family data MUST be managed through a Redux slice with async thunks for all API 
 - **THEN** it returns the members array from currentFamily
 - **AND** the `selectOperationLoading('updateRole')` selector returns the loading state for role updates
 - **AND** the `selectOperationError('grantKarma')` selector returns the error for karma grants
+
+### Requirement: Member detail page display
+The web application MUST provide a dedicated detail page for each family member showing comprehensive information and management options.
+
+#### Scenario: Navigate to member detail page
+- **GIVEN** an authenticated user viewing the family members page
+- **WHEN** the user clicks on a member card for member with ID "member123"
+- **THEN** the browser navigates to `/app/family/member123`
+- **AND** the member detail page loads
+
+#### Scenario: Member detail page displays header information
+- **GIVEN** an authenticated user viewing member detail page for "John Doe" born "2010-05-15"
+- **WHEN** the page renders
+- **THEN** the page displays "John Doe" as the main heading (h1)
+- **AND** the page displays "15 years old" as the description below the name
+- **AND** the heading and description are left-aligned
+
+#### Scenario: Member detail page displays avatar and karma in top-right
+- **GIVEN** an authenticated user viewing member detail page for "John Doe" with 245 karma
+- **WHEN** the page renders
+- **THEN** an avatar with initials "JD" displays in the top-right corner
+- **AND** the karma amount "245 Karma" displays next to the avatar with a Sparkles icon
+- **AND** the karma display has a subtle background (primary/5 opacity)
+
+#### Scenario: Breadcrumb navigation on detail page
+- **GIVEN** an authenticated user viewing member detail page for "John Doe"
+- **WHEN** the page renders
+- **THEN** breadcrumb navigation displays at the top
+- **AND** the breadcrumb shows "Family Members > John Doe"
+- **AND** "Family Members" is a clickable link to `/app/family`
+- **AND** "John Doe" is the current page (not clickable)
+
+#### Scenario: Back button on mobile
+- **GIVEN** an authenticated user on mobile (viewport < 1024px)
+- **WHEN** viewing the member detail page
+- **THEN** a "Back to Family" button displays with an arrow icon
+- **AND** clicking the button navigates to `/app/family`
+
+#### Scenario: Back button hidden on desktop
+- **GIVEN** an authenticated user on desktop (viewport >= 1024px)
+- **WHEN** viewing the member detail page
+- **THEN** the "Back to Family" button is hidden
+- **AND** breadcrumb navigation is used instead
+
+#### Scenario: Actions dropdown for parent users positioned at tab level
+- **GIVEN** an authenticated parent user viewing a member detail page
+- **WHEN** the page renders
+- **THEN** a dropdown menu button (three dots) displays at the same level as the tabs
+- **AND** the dropdown is aligned to the right
+- **AND** the dropdown is outside the tab content area
+- **AND** the dropdown contains "Edit Member" and "Remove Member" options
+
+#### Scenario: Actions dropdown hidden for child users
+- **GIVEN** an authenticated child user viewing a member detail page
+- **WHEN** the page renders
+- **THEN** no dropdown menu button is visible
+
+#### Scenario: Edit member dialog from detail page reuses existing component
+- **GIVEN** an authenticated parent user viewing member detail page
+- **WHEN** the user clicks "Edit Member" from the dropdown
+- **THEN** the existing `EditRoleDialog` component opens
+- **AND** the dialog functions identically to the family overview implementation
+- **AND** on successful role update, the member detail page refreshes with updated data
+
+#### Scenario: Remove member dialog from detail page reuses existing component
+- **GIVEN** an authenticated parent user viewing member detail page
+- **WHEN** the user clicks "Remove Member" from the dropdown
+- **THEN** the existing `RemoveMemberDialog` component opens
+- **AND** the dialog functions identically to the family overview implementation
+- **AND** on successful removal, the user is redirected to `/app/family`
+
+### Requirement: Member detail tabs navigation
+The web application MUST provide tab navigation on the member detail page with a "Give Karma" tab and actions menu at the same level.
+
+#### Scenario: Tabs display with actions menu at same level
+- **GIVEN** an authenticated parent user viewing a member detail page
+- **WHEN** the page renders
+- **THEN** a flex container displays below the header
+- **AND** the tabs component is center-aligned within the container
+- **AND** the actions dropdown menu is right-aligned within the same container
+- **AND** both tabs and actions menu are at the same vertical level
+- **AND** a single tab labeled "Give Karma" is visible
+
+#### Scenario: Give Karma tab is selected by default
+- **GIVEN** an authenticated user viewing a member detail page
+- **WHEN** the page renders
+- **THEN** the "Give Karma" tab is selected by default
+- **AND** the karma grant card displays in the tab content area
+
+#### Scenario: Actions menu positioned outside tab content
+- **GIVEN** an authenticated parent user viewing a member detail page
+- **WHEN** the page renders
+- **THEN** the actions dropdown menu is not inside the tab content area
+- **AND** the menu is accessible regardless of which tab is active
+
+### Requirement: Simplified karma grant card
+The web application MUST provide a simplified karma grant interface that accepts positive or negative amounts directly without radio button selection.
+
+#### Scenario: Karma card displays on Give Karma tab
+- **GIVEN** an authenticated parent user viewing the Give Karma tab
+- **WHEN** the tab content renders
+- **THEN** a card displays with karma grant form
+- **AND** the card contains a karma amount input field
+- **AND** the card contains a description textarea
+- **AND** the card contains a "Give Karma" button with Sparkles icon
+
+#### Scenario: Karma amount input accepts positive and negative numbers
+- **GIVEN** an authenticated parent user viewing the karma grant card
+- **WHEN** the user enters "25" in the amount field
+- **THEN** the input accepts the value
+- **WHEN** the user enters "-10" in the amount field
+- **THEN** the input accepts the value
+
+#### Scenario: Helper text explains positive/negative input
+- **GIVEN** an authenticated parent user viewing the karma grant card
+- **WHEN** the karma amount field renders
+- **THEN** helper text displays below the input
+- **AND** the text explains "Use positive or negative numbers"
+
+#### Scenario: Description field is required
+- **GIVEN** an authenticated parent user viewing the karma grant card
+- **WHEN** the description field renders
+- **THEN** the field label includes "Description *" indicating it's required
+- **AND** a placeholder suggests "Explain why you're giving or deducting karma..."
+
+#### Scenario: Grant positive karma from detail page
+- **GIVEN** an authenticated parent user viewing karma card for member with 100 karma
+- **WHEN** the user enters amount "50" and description "Great job on homework"
+- **AND** clicks "Give Karma"
+- **THEN** the API request POST /v1/families/{familyId}/karma/grant is sent with { "userId": "{memberId}", "amount": 50, "description": "Great job on homework" }
+- **AND** the button shows loading state during the request
+- **AND** on success, a success toast displays "Karma updated successfully"
+- **AND** the member's karma updates to "150"
+- **AND** the form inputs are cleared
+
+#### Scenario: Deduct karma with negative amount
+- **GIVEN** an authenticated parent user viewing karma card for member with 100 karma
+- **WHEN** the user enters amount "-30" and description "Forgot to clean room"
+- **AND** clicks "Give Karma"
+- **THEN** the API request POST /v1/families/{familyId}/karma/grant is sent with { "userId": "{memberId}", "amount": -30, "description": "Forgot to clean room" }
+- **AND** on success, the member's karma updates to "70"
+
+#### Scenario: Validation error for empty description
+- **GIVEN** an authenticated parent user viewing the karma grant card
+- **WHEN** the user enters amount "50" but leaves description empty
+- **AND** attempts to submit
+- **THEN** the "Give Karma" button is disabled
+- **OR** a validation error displays
+
+#### Scenario: Validation error for zero amount
+- **GIVEN** an authenticated parent user viewing the karma grant card
+- **WHEN** the user enters amount "0"
+- **THEN** a validation error displays
+- **AND** the submit button is disabled
+
+#### Scenario: Karma grant disabled for child users
+- **GIVEN** an authenticated child user viewing a member detail page
+- **WHEN** the karma grant card renders
+- **THEN** the "Give Karma" button is disabled
+- **OR** the entire karma grant section is hidden
+
+#### Scenario: Error handling for karma grant
+- **GIVEN** an authenticated parent user attempting to grant karma
+- **WHEN** the API request fails
+- **THEN** an error toast displays with the error message
+- **AND** the form remains populated with the user's input
+- **AND** the user can retry
+
+### Requirement: Member activity timeline
+The web application MUST display a chronological timeline of the member's activity on their detail page.
+
+#### Scenario: Activity timeline displays below karma card
+- **GIVEN** an authenticated user viewing a member detail page
+- **WHEN** the page renders
+- **THEN** an "Activity Timeline" section displays below the karma card
+- **AND** the section has a heading "Activity Timeline"
+- **AND** the section has a subtitle "Recent tasks, rewards, and karma changes"
+
+#### Scenario: Activity timeline shows member-specific events
+- **GIVEN** an authenticated user viewing member detail page for member "member123"
+- **WHEN** the activity timeline renders
+- **THEN** only events related to "member123" are displayed
+- **AND** events are fetched from `/v1/activity-events` filtered by user ID
+- **AND** events are sorted by timestamp descending (most recent first)
+
+#### Scenario: Activity timeline reuses profile component
+- **GIVEN** the member detail page implementation
+- **WHEN** rendering the activity timeline
+- **THEN** the `ActivityTimeline` component from the profile page is reused
+- **AND** the component receives member-specific events as props
+- **AND** the component displays identically to the profile page timeline
+
+#### Scenario: Activity events grouped by date
+- **GIVEN** an activity timeline with events from multiple dates
+- **WHEN** the timeline renders
+- **THEN** events are grouped under date headers
+- **AND** each date header displays the full date format "Monday, November 3, 2025"
+- **AND** events under each date are sorted by time descending
+
+#### Scenario: Task completion event displays in timeline
+- **GIVEN** a member who completed task "Grocery shopping" with +15 karma
+- **WHEN** the activity timeline renders
+- **THEN** the event displays with a CheckCircle2 icon
+- **AND** the task name displays as the heading
+- **AND** the karma change displays as "+15" in green with upward arrow
+
+#### Scenario: Reward claim event displays in timeline
+- **GIVEN** a member who claimed reward "Extra Screen Time" with -50 karma
+- **WHEN** the activity timeline renders
+- **THEN** the event displays with a Gift icon
+- **AND** the reward name displays as the heading
+- **AND** the karma change displays as "-50" in red with downward arrow
+
+#### Scenario: Karma given event displays in timeline
+- **GIVEN** a member who received karma with description "Great behavior"
+- **WHEN** the activity timeline renders
+- **THEN** the event displays with a Sparkles icon
+- **AND** the description displays
+- **AND** the karma change displays with appropriate color and arrow
+
+#### Scenario: Empty activity timeline
+- **GIVEN** a member with no activity events
+- **WHEN** the activity timeline renders
+- **THEN** an empty state message displays
+- **AND** the message encourages activity participation
+
+### Requirement: Redux state management for member details
+The web application MUST provide Redux selectors and state management for member detail page operations.
+
+#### Scenario: Select member by ID
+- **GIVEN** the Redux store has families loaded with member "member123"
+- **WHEN** the selector `selectFamilyMemberById('member123')` is called
+- **THEN** the selector returns the member object with all details
+- **AND** the selector returns null if the member is not found
+
+#### Scenario: Karma grant updates both slices
+- **GIVEN** the Redux store has families and karma loaded
+- **WHEN** the `grantMemberKarma` thunk completes successfully
+- **THEN** the `fetchFamilies` thunk is dispatched to refresh family data
+- **AND** the karma slice is updated with the new balance
+- **AND** both the family view and detail page reflect the updated karma
+
+### Requirement: Internationalization for member detail page
+All UI text on the member detail page MUST be translatable and display in the user's selected language.
+
+#### Scenario: Member detail page displays in English
+- **GIVEN** a user with language preference set to English
+- **WHEN** viewing a member detail page
+- **THEN** breadcrumb shows "Family Members"
+- **AND** back button shows "Back to Family"
+- **AND** tab shows "Give Karma"
+- **AND** karma card labels are in English
+- **AND** activity timeline heading is "Activity Timeline"
+
+#### Scenario: Member detail page displays in Dutch
+- **GIVEN** a user with language preference set to Dutch
+- **WHEN** viewing a member detail page
+- **THEN** all text displays in Dutch translations
+- **AND** breadcrumb shows Dutch translation for "Family Members"
+- **AND** all labels, buttons, and messages use Dutch translations
+
+#### Scenario: Validation messages are translated
+- **GIVEN** a user with language preference set to Dutch
+- **WHEN** a validation error occurs
+- **THEN** the error message displays in Dutch
+
+#### Scenario: Success messages are translated
+- **GIVEN** a user with language preference set to Dutch
+- **WHEN** karma is granted successfully
+- **THEN** the success toast displays in Dutch
+
+### Requirement: E2E testing with page object pattern
+The web application MUST include comprehensive E2E tests for the member detail page using page objects and data-testid attributes.
+
+#### Scenario: Page object provides locators
+- **GIVEN** the E2E test suite
+- **WHEN** the `FamilyMemberDetailPage` page object is used
+- **THEN** the page object provides locators for all interactive elements
+- **AND** all locators use data-testid attributes
+- **AND** the page object provides helper methods for common actions
+
+#### Scenario: E2E test navigates to detail page
+- **GIVEN** an E2E test for member detail navigation
+- **WHEN** the test clicks on a member card
+- **THEN** the test verifies navigation to the detail page
+- **AND** the test verifies the member name displays correctly
+
+#### Scenario: E2E test grants karma
+- **GIVEN** an E2E test for karma grant
+- **WHEN** the test enters amount and description
+- **AND** clicks "Give Karma"
+- **THEN** the test verifies the success message
+- **AND** the test verifies the karma amount updates
+
+#### Scenario: E2E test validates required fields
+- **GIVEN** an E2E test for validation
+- **WHEN** the test attempts to submit with empty description
+- **THEN** the test verifies the button is disabled or error displays
+
+#### Scenario: E2E test verifies activity timeline
+- **GIVEN** an E2E test for activity timeline
+- **WHEN** the detail page loads
+- **THEN** the test verifies activity events display
+- **AND** the test verifies events are grouped by date
+
+### Requirement: Unit test coverage for Redux
+The web application MUST achieve 100% unit test coverage for all Redux code related to member details.
+
+#### Scenario: Unit test for selectFamilyMemberById
+- **GIVEN** a unit test for the member selector
+- **WHEN** the selector is called with a valid member ID
+- **THEN** the test verifies the correct member is returned
+- **WHEN** the selector is called with an invalid ID
+- **THEN** the test verifies null is returned
+
+#### Scenario: Unit test for karma grant thunk
+- **GIVEN** a unit test for the grantMemberKarma thunk
+- **WHEN** the thunk is dispatched with valid data
+- **THEN** the test verifies the API is called correctly
+- **AND** the test verifies fetchFamilies is dispatched
+- **AND** the test verifies state updates correctly
+
+#### Scenario: Unit test for error handling
+- **GIVEN** a unit test for karma grant error handling
+- **WHEN** the API call fails
+- **THEN** the test verifies the error is stored in state
+- **AND** the test verifies loading state is reset
+
+### Requirement: Responsive design for member detail page
+The web application MUST ensure the member detail page is fully responsive across all breakpoints.
+
+#### Scenario: Mobile layout (< 768px)
+- **GIVEN** a user viewing the detail page on mobile
+- **WHEN** the page renders
+- **THEN** the header stacks vertically
+- **AND** the avatar and karma display below the name
+- **AND** the back button is visible
+- **AND** breadcrumbs are hidden
+- **AND** all cards are full width
+
+#### Scenario: Tablet layout (768px - 1023px)
+- **GIVEN** a user viewing the detail page on tablet
+- **WHEN** the page renders
+- **THEN** the layout is similar to desktop
+- **AND** the back button is hidden
+- **AND** breadcrumbs are visible
+
+#### Scenario: Desktop layout (>= 1024px)
+- **GIVEN** a user viewing the detail page on desktop
+- **WHEN** the page renders
+- **THEN** the header displays with name/age on left and avatar/karma on right
+- **AND** breadcrumbs are visible
+- **AND** the back button is hidden
+- **AND** cards have appropriate max-width and spacing
+
+### Requirement: Component decomposition
+The web application MUST break down the member detail page into smaller, logical components following existing patterns.
+
+#### Scenario: Header component is separate
+- **GIVEN** the member detail page implementation
+- **WHEN** the page renders
+- **THEN** the header section is implemented as a separate component
+- **AND** the component is reusable and testable
+
+#### Scenario: Actions dropdown is separate
+- **GIVEN** the member detail page implementation
+- **WHEN** the actions menu renders
+- **THEN** the dropdown is implemented as a separate component
+- **AND** the component handles edit and delete actions
+
+#### Scenario: Karma card is separate
+- **GIVEN** the member detail page implementation
+- **WHEN** the karma grant section renders
+- **THEN** the karma card is implemented as a separate component
+- **AND** the component is reusable and testable
 

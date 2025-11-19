@@ -97,7 +97,7 @@ export function UserProfileCard({
   return (
     <>
       <Card data-testid="user-profile-card">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-0">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-6">
               <Avatar className="h-24 w-24" data-testid="profile-user-avatar">

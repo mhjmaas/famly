@@ -380,6 +380,7 @@
           "karma": "Karma",
           "roleParent": "Parent",
           "roleChild": "Child",
+          "viewDetails": "View Details",
           "actions": {
             "giveKarma": "Give Karma",
             "editRole": "Edit Role",
@@ -444,11 +445,36 @@
           "addMemberFailed": "Failed to add member",
           "unauthorized": "You don't have permission to perform this action",
           "notFound": "Member not found",
-          "invalidAmount": "Amount must be between 1 and 100,000",
-          "invalidEmail": "Please enter a valid email address",
+          "invalidAmount": "Invalid karma amount",
+          "invalidEmail": "Invalid email address",
           "passwordTooShort": "Password must be at least 8 characters",
-          "invalidDate": "Please enter a valid date",
+          "invalidDate": "Invalid date",
           "futureDateNotAllowed": "Birthdate cannot be in the future"
+        }
+      },
+      "memberDetail": {
+        "title": "Member Details",
+        "backToFamily": "Back to Family",
+        "breadcrumbs": {
+          "familyMembers": "Family Members"
+        },
+        "tabs": {
+          "giveKarma": "Give Karma"
+        },
+        "actions": {
+          "editMember": "Edit Member",
+          "removeMember": "Remove Member"
+        },
+        "karmaCard": {
+          "amountLabel": "Karma Amount",
+          "amountPlaceholder": "e.g., 25 or -10",
+          "amountHelper": "Use positive or negative numbers",
+          "descriptionLabel": "Description *",
+          "descriptionPlaceholder": "Explain why you're giving or deducting karma...",
+          "giveButton": "Give Karma",
+          "deductButton": "Deduct Karma",
+          "success": "Karma updated successfully",
+          "error": "Failed to update karma"
         }
       },
       "tasks": {

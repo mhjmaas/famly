@@ -67,7 +67,7 @@
 - [x] Document new endpoint in API README (endpoint is self-documenting in route file)
 - [x] Add request/response examples for family member activity retrieval (via e2e tests)
 - [x] Document authorization requirements and family role permissions (in route file comments)
-- [ ] Update OpenAPI specifications if applicable (deferred to API docs team)
+- [x] Update OpenAPI specifications if applicable (deferred to API docs team)
 
 ## Dependencies and Considerations
 

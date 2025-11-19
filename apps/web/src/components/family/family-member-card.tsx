@@ -1,16 +1,11 @@
 "use client";
 
-import { MoreVertical, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
+import Link from "next/link";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import type { FamilyMember } from "@/lib/api-client";
 import { calculateAge, getInitials } from "@/lib/utils/family-utils";
 import { useAppSelector } from "@/store/hooks";
@@ -18,34 +13,18 @@ import { selectKarmaBalance } from "@/store/slices/karma.slice";
 
 interface FamilyMemberCardProps {
   member: FamilyMember;
-  currentUserRole: "Parent" | "Child";
-  onEditRole: (member: FamilyMember) => void;
-  onRemove: (member: FamilyMember) => void;
-  onGiveKarma: (member: FamilyMember) => void;
   dict: {
     memberCard: {
       yearsOld: string;
       karma: string;
       roleParent: string;
       roleChild: string;
-      actions: {
-        giveKarma: string;
-        editRole: string;
-        remove: string;
-      };
+      viewDetails: string;
     };
   };
 }
 
-export function FamilyMemberCard({
-  member,
-  currentUserRole,
-  onEditRole,
-  onRemove,
-  onGiveKarma,
-  dict,
-}: FamilyMemberCardProps) {
-  const isParent = currentUserRole === "Parent";
+export function FamilyMemberCard({ member, dict }: FamilyMemberCardProps) {
   const age = calculateAge(member.birthdate);
   const initials = getInitials(member.name);
 
@@ -57,7 +36,7 @@ export function FamilyMemberCard({
       className="hover:shadow-lg transition-shadow"
       data-testid="family-member-card"
     >
-      <CardContent className="p-6">
+      <CardContent>
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
@@ -77,41 +56,6 @@ export function FamilyMemberCard({
               </p>
             </div>
           </div>
-          {isParent && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  data-testid="member-actions-button"
-                >
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => onGiveKarma(member)}
-                  data-testid="action-give-karma"
-                >
-                  {dict.memberCard.actions.giveKarma}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onEditRole(member)}
-                  data-testid="action-edit-role"
-                >
-                  {dict.memberCard.actions.editRole}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onRemove(member)}
-                  className="text-destructive focus:text-destructive"
-                  data-testid="action-remove-member"
-                >
-                  {dict.memberCard.actions.remove}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t">
@@ -135,6 +79,21 @@ export function FamilyMemberCard({
             <Sparkles className="h-5 w-5 fill-primary" />
             <span className="font-semibold text-base">{memberKarma}</span>
           </div>
+        </div>
+
+        <div className="mt-4 pt-4 border-t flex justify-end">
+          <Button
+            variant="ghost"
+            size="sm"
+            asChild
+            className="gap-2"
+            data-testid="member-view-details-link"
+          >
+            <Link href={`/app/family/${member.memberId}`}>
+              {dict.memberCard.viewDetails}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </CardContent>
     </Card>

@@ -2,10 +2,15 @@
 
 import { Plus, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
-import type { FamilyMember } from "@/lib/api-client";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchFamilies,
@@ -16,10 +21,7 @@ import {
 } from "@/store/slices/family.slice";
 import { selectUser } from "@/store/slices/user.slice";
 import { AddMemberDialog } from "./add-member-dialog";
-import { EditRoleDialog } from "./edit-role-dialog";
 import { FamilyMemberCard } from "./family-member-card";
-import { GiveKarmaDialog } from "./give-karma-dialog";
-import { RemoveMemberDialog } from "./remove-member-dialog";
 
 interface FamilyViewProps {
   mobileActionTrigger?: number;
@@ -38,6 +40,7 @@ interface FamilyViewProps {
           karma: string;
           roleParent: string;
           roleChild: string;
+          viewDetails: string;
           actions: {
             giveKarma: string;
             editRole: string;
@@ -121,14 +124,7 @@ export function FamilyView({ mobileActionTrigger, dict }: FamilyViewProps) {
   const isLoading = useAppSelector(selectFamilyLoading);
   const error = useAppSelector(selectFamilyError);
 
-  const [isEditRoleDialogOpen, setIsEditRoleDialogOpen] = useState(false);
-  const [isRemoveMemberDialogOpen, setIsRemoveMemberDialogOpen] =
-    useState(false);
-  const [isGiveKarmaDialogOpen, setIsGiveKarmaDialogOpen] = useState(false);
   const [isAddMemberDialogOpen, setIsAddMemberDialogOpen] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(
-    null,
-  );
 
   // Get current user's role in the current family
   const currentUserRole =
@@ -153,21 +149,6 @@ export function FamilyView({ mobileActionTrigger, dict }: FamilyViewProps) {
 
   const handleRefresh = async () => {
     await dispatch(fetchFamilies());
-  };
-
-  const handleEditRole = (member: FamilyMember) => {
-    setSelectedMember(member);
-    setIsEditRoleDialogOpen(true);
-  };
-
-  const handleRemove = (member: FamilyMember) => {
-    setSelectedMember(member);
-    setIsRemoveMemberDialogOpen(true);
-  };
-
-  const handleGiveKarma = (member: FamilyMember) => {
-    setSelectedMember(member);
-    setIsGiveKarmaDialogOpen(true);
   };
 
   // Only show loading state on initial load (when members is empty)
@@ -221,6 +202,19 @@ export function FamilyView({ mobileActionTrigger, dict }: FamilyViewProps) {
           )}
         </div>
 
+        {/* Breadcrumbs - Desktop */}
+        <div className="hidden lg:block" data-testid="breadcrumb-navigation">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbPage data-testid="breadcrumb-family-page">
+                  {dict.pages.family.title}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+
         {members.length === 0 ? (
           <Card data-testid="family-empty-state">
             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
@@ -242,10 +236,6 @@ export function FamilyView({ mobileActionTrigger, dict }: FamilyViewProps) {
               <FamilyMemberCard
                 key={member.memberId}
                 member={member}
-                currentUserRole={currentUserRole}
-                onEditRole={handleEditRole}
-                onRemove={handleRemove}
-                onGiveKarma={handleGiveKarma}
                 dict={dict.pages.family}
               />
             ))}
@@ -264,38 +254,12 @@ export function FamilyView({ mobileActionTrigger, dict }: FamilyViewProps) {
         )}
 
         {currentFamily && (
-          <>
-            <EditRoleDialog
-              isOpen={isEditRoleDialogOpen}
-              onClose={() => setIsEditRoleDialogOpen(false)}
-              member={selectedMember}
-              familyId={currentFamily.familyId}
-              dict={dict.pages.family}
-            />
-
-            <RemoveMemberDialog
-              isOpen={isRemoveMemberDialogOpen}
-              onClose={() => setIsRemoveMemberDialogOpen(false)}
-              member={selectedMember}
-              familyId={currentFamily.familyId}
-              dict={dict.pages.family}
-            />
-
-            <GiveKarmaDialog
-              isOpen={isGiveKarmaDialogOpen}
-              onClose={() => setIsGiveKarmaDialogOpen(false)}
-              member={selectedMember}
-              familyId={currentFamily.familyId}
-              dict={dict.pages.family}
-            />
-
-            <AddMemberDialog
-              isOpen={isAddMemberDialogOpen}
-              onClose={() => setIsAddMemberDialogOpen(false)}
-              familyId={currentFamily.familyId}
-              dict={dict.pages.family}
-            />
-          </>
+          <AddMemberDialog
+            isOpen={isAddMemberDialogOpen}
+            onClose={() => setIsAddMemberDialogOpen(false)}
+            familyId={currentFamily.familyId}
+            dict={dict.pages.family}
+          />
         )}
       </div>
     </PullToRefresh>

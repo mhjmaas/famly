@@ -34,7 +34,7 @@ export function DesktopSidebar({
     <div className="flex flex-col h-full" data-testid="desktop-nav-content">
       {/* Logo */}
       <div className="p-6 border-b border-border">
-        <LogoComponent testId="desktop-logo" />
+        <LogoComponent href="/" testId="desktop-logo" />
       </div>
 
       {/* Navigation */}
