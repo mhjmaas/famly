@@ -1,0 +1,10 @@
+{
+  "dashboard": {
+    "pages": {
+      "aiSettings": {
+        "title": "AI-instellingen",
+        "placeholder": "Pagina AI-instellingen verschijnt binnenkort"
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "dashboard": {
+    "pages": {
+      "diary": {
+        "title": "Diary",
+        "placeholder": "Diary page coming soon"
+      }
+    }
+  }
+}

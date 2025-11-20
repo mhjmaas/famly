@@ -1,0 +1,59 @@
+{
+  "features": {
+    "title": "Everything Your Family Needs",
+    "description": "From daily tasks to cherished memories, Famly brings all aspects of family life together in one secure platform.",
+    "cards": {
+      "personalDiary": {
+        "title": "Personal Diary",
+        "description": "Capture your thoughts and memories in a private, secure space."
+      },
+      "familyMessaging": {
+        "title": "Family Messaging",
+        "description": "Stay connected with secure, private messaging for your family."
+      },
+      "locationSharing": {
+        "title": "Location Sharing",
+        "description": "Know where your loved ones are with optional real-time location sharing."
+      },
+      "tasksAndChores": {
+        "title": "Tasks & Chores",
+        "description": "Organize household responsibilities and track completion."
+      },
+      "sharedMemories": {
+        "title": "Shared Memories",
+        "description": "Create a family timeline of photos, videos, and special moments."
+      },
+      "shoppingLists": {
+        "title": "Shopping Lists",
+        "description": "Collaborative shopping lists that sync across all family members."
+      },
+      "recipeManagement": {
+        "title": "Recipe Management",
+        "description": "Store and share your favorite family recipes in one place."
+      },
+      "allowanceRewards": {
+        "title": "Allowance & Rewards",
+        "description": "Manage allowances and reward systems for completed tasks."
+      },
+      "aiIntegration": {
+        "title": "AI Integration",
+        "description": "Optional AI features to help with meal planning, scheduling, and more."
+      },
+      "smartHomeIntegration": {
+        "title": "Smart Home Integration",
+        "description": "Connect with Home Assistant and other home management platforms."
+      }
+    },
+    "highlight": {
+      "title": "Built for Modern Families",
+      "description": "Whether you're coordinating schedules, sharing grocery lists, or preserving precious memories, Famly adapts to your family's unique needs.",
+      "bullets": {
+        "intuitiveInterface": "Intuitive interface for all ages",
+        "worksOnAllDevices": "Works on all devices",
+        "offlineFirstDesign": "Offline-first design",
+        "customizable": "Customizable for your family"
+      },
+      "badge": "Your Family Hub"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "dashboard": {
+    "pages": {
+      "calendar": {
+        "title": "Calendar",
+        "placeholder": "Calendar page coming soon"
+      }
+    }
+  }
+}

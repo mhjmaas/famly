@@ -1,0 +1,50 @@
+{
+  "pricing": {
+    "title": "Choose Your Path",
+    "description": "Whether you prefer complete control or hassle-free convenience, we've got you covered.",
+    "selfHosted": {
+      "title": "Self-Hosted",
+      "price": {
+        "amount": "Free",
+        "note": "Forever"
+      },
+      "cta": "Get Docker Setup",
+      "disclaimer": "Requires your own server or NAS",
+      "features": {
+        "completeDataOwnership": "Complete data ownership",
+        "hostOnYourHardware": "Host on your own hardware",
+        "oneCommandDockerSetup": "One-command Docker setup",
+        "unlimitedFamilyMembers": "Unlimited family members",
+        "allFeaturesIncluded": "All features included",
+        "freeForever": "Free forever",
+        "communitySupport": "Community support",
+        "regularUpdates": "Regular updates"
+      }
+    },
+    "cloud": {
+      "badge": "BETA",
+      "title": "Cloud Hosted",
+      "price": {
+        "amount": "€5",
+        "interval": "per member/month",
+        "note": "Billed monthly"
+      },
+      "cta": "Start Free Trial",
+      "disclaimer": "14-day free trial • No credit card required",
+      "features": {
+        "managedHosting": "Managed hosting",
+        "automaticBackups": "Automatic backups",
+        "zeroMaintenance": "Zero maintenance",
+        "uptimeSla": "99.9% uptime SLA",
+        "allFeaturesIncluded": "All features included",
+        "prioritySupport": "Priority support",
+        "earlyAccess": "Early access to new features",
+        "cancelAnytime": "Cancel anytime"
+      }
+    },
+    "featureNote": {
+      "title": "Same Features, Different Hosting",
+      "description": "Both options include all Famly features. The only difference is who manages the infrastructure. Self-hosting gives you complete control, while cloud hosting offers convenience. You can even start with cloud and migrate to self-hosted later!"
+    }
+  }
+}

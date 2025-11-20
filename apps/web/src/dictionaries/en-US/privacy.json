@@ -1,0 +1,38 @@
+{
+  "privacy": {
+    "badge": "Privacy Guaranteed",
+    "title": "Privacy Isn't Optional",
+    "description": "In a world where your data is constantly harvested, we take a different approach. Your family's privacy is our top priority—not an afterthought.",
+    "cards": {
+      "yourDataYourControl": {
+        "title": "Your Data, Your Control",
+        "description": "We never sell, share, or use your data for advertising. Your family information belongs to you alone."
+      },
+      "endToEndEncryption": {
+        "title": "End-to-End Encryption",
+        "description": "All sensitive data is encrypted both in transit and at rest, ensuring maximum security."
+      },
+      "selfHostingFreedom": {
+        "title": "Self-Hosting Freedom",
+        "description": "Host Famly on your own infrastructure with our easy Docker setup. Complete control, zero compromises."
+      },
+      "zeroTracking": {
+        "title": "Zero Tracking",
+        "description": "No analytics, no tracking pixels, no third-party scripts. We respect your privacy completely."
+      },
+      "dataPortability": {
+        "title": "Data Portability",
+        "description": "Export your data anytime in standard formats. No lock-in, no barriers to leaving."
+      },
+      "openSource": {
+        "title": "Open Source",
+        "description": "Our code is open for inspection. Verify our security claims and contribute to the project."
+      }
+    },
+    "promise": {
+      "title": "Our Privacy Promise",
+      "description": "We will <strong>never</strong> sell your data. We will <strong>never</strong> use it for advertising. We will <strong>never</strong> share it with third parties. Your family's information is sacred, and we treat it that way. This isn't just a policy—it's our core principle.",
+      "linkLabel": "Read our full privacy policy →"
+    }
+  }
+}

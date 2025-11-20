@@ -5,8 +5,8 @@ import { i18n } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/types";
 
 const dictionaries: Record<Locale, () => Promise<Dictionary>> = {
-  "en-US": () => import("./en-US.json").then((module) => module.default),
-  "nl-NL": () => import("./nl-NL.json").then((module) => module.default),
+  "en-US": () => import("./en-US").then((module) => module.default),
+  "nl-NL": () => import("./nl-NL").then((module) => module.default),
 };
 
 export async function getDictionary(locale: Locale): Promise<Dictionary> {

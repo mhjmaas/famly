@@ -1,0 +1,39 @@
+{
+  "footer": {
+    "brandName": "Famly",
+    "tagline": "Privacy-eerst gezinsbeheer. Uw data blijft voor altijd van u.",
+    "sections": {
+      "product": {
+        "title": "Product",
+        "links": {
+          "features": "Functies",
+          "pricing": "Prijzen",
+          "roadmap": "Roadmap",
+          "changelog": "Changelog"
+        }
+      },
+      "resources": {
+        "title": "Resources",
+        "links": {
+          "documentation": "Documentatie",
+          "selfHostingGuide": "Zelf-hostinggids",
+          "apiReference": "API-referentie",
+          "community": "Community"
+        }
+      },
+      "company": {
+        "title": "Bedrijf",
+        "links": {
+          "about": "Over",
+          "blog": "Blog",
+          "privacyPolicy": "Privacyverklaring",
+          "termsOfService": "Servicevoorwaarden"
+        }
+      }
+    },
+    "bottom": {
+      "prefix": "© {year} Famly. Gemaakt met",
+      "suffix": "voor gezinnen."
+    }
+  }
+}

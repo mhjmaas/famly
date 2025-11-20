@@ -1,5 +1,5 @@
-import type enUS from "@/dictionaries/en-US.json";
-import type nlNL from "@/dictionaries/nl-NL.json";
+import type enUS from "@/dictionaries/en-US";
+import type nlNL from "@/dictionaries/nl-NL";
 
 export type Dictionary = typeof enUS | typeof nlNL;
 

@@ -1,0 +1,131 @@
+{
+  "dashboard": {
+    "pages": {
+      "tasks": {
+        "title": "Taken",
+        "description": "Beheer de taken en klusjes van je gezin",
+        "newTask": "Nieuwe Taak",
+        "filters": {
+          "myTasks": "Mijn Taken",
+          "all": "Alle Taken",
+          "active": "Actief",
+          "completed": "Voltooid"
+        },
+        "emptyState": {
+          "title": "Nog geen taken",
+          "myTasks": "Er zijn nog geen taken aan jou toegewezen",
+          "default": "Maak je eerste taak om te beginnen met gezinsorganisatie",
+          "cta": "Taak Aanmaken"
+        },
+        "create": {
+          "title": "Nieuwe Taak Aanmaken",
+          "description": "Voeg een nieuwe taak toe voor je gezin",
+          "tabs": {
+            "single": "Enkele Taak",
+            "recurring": "Terugkerende Taak"
+          },
+          "fields": {
+            "name": {
+              "label": "Taaknaam",
+              "placeholder": "bijv., Vuilnis buitenzetten",
+              "required": "verplicht"
+            },
+            "description": {
+              "label": "Beschrijving",
+              "placeholder": "Voeg eventuele extra details toe...",
+              "add": "Beschrijving"
+            },
+            "dueDate": {
+              "label": "Vervaldatum",
+              "add": "Vervaldatum"
+            },
+            "assignment": {
+              "label": "Toewijzen Aan",
+              "add": "Toewijzing",
+              "unassigned": "Niet toegewezen",
+              "allParents": "Alle Ouders",
+              "allChildren": "Alle Kinderen"
+            },
+            "karma": {
+              "label": "Karmapunten",
+              "placeholder": "bijv., 10",
+              "add": "Karma"
+            },
+            "schedule": {
+              "title": "Terugkerend Schema",
+              "repeatOn": "Herhaal op",
+              "frequency": "Frequentie",
+              "every1Week": "Elke week",
+              "every2Weeks": "Elke 2 weken",
+              "every3Weeks": "Elke 3 weken",
+              "every4Weeks": "Elke 4 weken"
+            }
+          },
+          "buttons": {
+            "cancel": "Annuleren",
+            "create": "Taak Aanmaken",
+            "creating": "Aan het aanmaken..."
+          },
+          "success": "Taak succesvol aangemaakt",
+          "error": "Taak aanmaken mislukt"
+        },
+        "edit": {
+          "title": "Taak Bewerken",
+          "description": "Werk de taakdetails bij",
+          "buttons": {
+            "cancel": "Annuleren",
+            "update": "Taak Bijwerken",
+            "updating": "Aan het bijwerken..."
+          },
+          "success": "Taak succesvol bijgewerkt",
+          "error": "Taak bijwerken mislukt"
+        },
+        "delete": {
+          "title": "Taak Verwijderen",
+          "description": "Weet je zeker dat je deze taak wilt verwijderen?",
+          "recurringTitle": "Terugkerende Taak Verwijderen",
+          "recurringDescription": "Dit is een terugkerende taak. Wil je alleen deze instantie verwijderen of alle toekomstige voorvallen?",
+          "buttons": {
+            "cancel": "Annuleren",
+            "deleteOne": "Alleen Deze Taak Verwijderen",
+            "deleteAll": "Alle Terugkerende Taken Verwijderen"
+          },
+          "successSingle": "Taak verwijderd",
+          "successRecurring": "Terugkerende taken verwijderd",
+          "error": "Taak verwijderen mislukt"
+        },
+        "complete": {
+          "success": "Taak voltooid",
+          "successWithKarma": "Goed gedaan! Je hebt {karma} karmapunten verdiend",
+          "reopen": "Taak heropend"
+        },
+        "claim": {
+          "button": "Claim Taak",
+          "success": "Je hebt \"{name}\" geclaimd"
+        },
+        "badges": {
+          "unassigned": "Niet toegewezen",
+          "allParents": "Alle Ouders",
+          "allChildren": "Alle Kinderen",
+          "recurring": "Terugkerend",
+          "karma": "{amount} Karma"
+        },
+        "menu": {
+          "edit": "Bewerken",
+          "delete": "Verwijderen"
+        },
+        "days": {
+          "mon": "Ma",
+          "tue": "Di",
+          "wed": "Wo",
+          "thu": "Do",
+          "fri": "Vr",
+          "sat": "Za",
+          "sun": "Zo"
+        },
+        "loading": "Taken laden...",
+        "error": "Taken laden mislukt"
+      }
+    }
+  }
+}

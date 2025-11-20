@@ -1,0 +1,59 @@
+{
+  "features": {
+    "title": "Alles wat uw gezin nodig heeft",
+    "description": "Van dagelijkse taken tot gekoesterde herinneringen: Famly brengt alles rondom het gezinsleven samen in één veilig platform.",
+    "cards": {
+      "personalDiary": {
+        "title": "Persoonlijk dagboek",
+        "description": "Leg gedachten en herinneringen vast in een private en veilige omgeving."
+      },
+      "familyMessaging": {
+        "title": "Gezinsberichten",
+        "description": "Blijf verbonden met veilige, private communicatie voor uw hele gezin."
+      },
+      "locationSharing": {
+        "title": "Locatie delen",
+        "description": "Weet waar uw dierbaren zijn met optionele realtime locatie-updates."
+      },
+      "tasksAndChores": {
+        "title": "Taken & klusjes",
+        "description": "Organiseer huishoudelijke verantwoordelijkheden en volg de voortgang."
+      },
+      "sharedMemories": {
+        "title": "Gedeelde herinneringen",
+        "description": "Maak een gezinstijdlijn met foto's, video's en bijzondere momenten."
+      },
+      "shoppingLists": {
+        "title": "Boodschappenlijsten",
+        "description": "Samenwerkingslijsten die automatisch synchroniseren met het hele gezin."
+      },
+      "recipeManagement": {
+        "title": "Receptbeheer",
+        "description": "Bewaar en deel favoriete familierecepten op één plek."
+      },
+      "allowanceRewards": {
+        "title": "Zakgeld & beloningen",
+        "description": "Beheer zakgeld en beloningssystemen voor afgeronde taken."
+      },
+      "aiIntegration": {
+        "title": "AI-integratie",
+        "description": "Optionele AI-functies voor maaltijdplanning, roosters en meer."
+      },
+      "smartHomeIntegration": {
+        "title": "Slimme integraties",
+        "description": "Koppel met Home Assistant en andere oplossingen voor thuisbeheer."
+      }
+    },
+    "highlight": {
+      "title": "Gemaakt voor moderne gezinnen",
+      "description": "Of u nu agenda's afstemt, boodschappenlijsten deelt of herinneringen bewaart: Famly past zich aan de unieke behoeften van uw gezin aan.",
+      "bullets": {
+        "intuitiveInterface": "Intuïtieve interface voor alle leeftijden",
+        "worksOnAllDevices": "Werkt op al uw apparaten",
+        "offlineFirstDesign": "Offline-first ontwerp",
+        "customizable": "Aanpasbaar voor uw gezin"
+      },
+      "badge": "Uw gezinscentrum"
+    }
+  }
+}

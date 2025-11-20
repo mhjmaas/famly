@@ -1,0 +1,22 @@
+{
+  "dashboard": {
+    "navigation": {
+      "dashboard": "Dashboard",
+      "family": "Gezin",
+      "members": "Leden",
+      "tasks": "Taken",
+      "shoppingLists": "Boodschappenlijsten",
+      "rewards": "Beloningen",
+      "calendar": "Agenda",
+      "locations": "Locaties",
+      "memories": "Herinneringen",
+      "aiSettings": "AI-instellingen",
+      "personal": "Persoonlijk",
+      "diary": "Dagboek",
+      "chat": "Chat",
+      "settings": "Instellingen",
+      "soon": "Binnenkort",
+      "karma": "{count} Karma"
+    }
+  }
+}

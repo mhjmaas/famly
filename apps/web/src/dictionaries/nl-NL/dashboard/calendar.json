@@ -1,0 +1,10 @@
+{
+  "dashboard": {
+    "pages": {
+      "calendar": {
+        "title": "Agenda",
+        "placeholder": "Agendapagina verschijnt binnenkort"
+      }
+    }
+  }
+}
