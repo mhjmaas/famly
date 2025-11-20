@@ -14,9 +14,14 @@ import { i18n, type Locale, localeLabels } from "@/i18n/config";
 type LanguageSelectorProps = {
   lang: Locale;
   ariaLabel: string;
+  onLocaleChange?: (locale: Locale) => Promise<void> | void;
 };
 
-export function LanguageSelector({ lang, ariaLabel }: LanguageSelectorProps) {
+export function LanguageSelector({
+  lang,
+  ariaLabel,
+  onLocaleChange,
+}: LanguageSelectorProps) {
   const params = useParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -30,9 +35,18 @@ export function LanguageSelector({ lang, ariaLabel }: LanguageSelectorProps) {
   }, [lang, params]);
 
   const handleLocaleChange = useCallback(
-    (newLocale: Locale) => {
+    async (newLocale: Locale) => {
       if (newLocale === currentLocale) {
         return;
+      }
+
+      // Persist preference if provided (best-effort)
+      if (onLocaleChange) {
+        try {
+          await onLocaleChange(newLocale);
+        } catch {
+          // Ignore persistence errors; still change route
+        }
       }
 
       const segments = pathname?.split("/").filter(Boolean) ?? [];
@@ -48,7 +62,7 @@ export function LanguageSelector({ lang, ariaLabel }: LanguageSelectorProps) {
       const query = searchParams?.toString();
       router.push(query ? `${newPathname}?${query}` : newPathname);
     },
-    [currentLocale, pathname, router, searchParams],
+    [currentLocale, pathname, router, searchParams, onLocaleChange],
   );
 
   return (

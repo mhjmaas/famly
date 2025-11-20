@@ -26,6 +26,7 @@ export const registerValidator = z.object({
       (val) => !Number.isNaN(new Date(val).getTime()),
       "Birthdate must be a valid date",
     ),
+  language: z.enum(["en-US", "nl-NL"]).optional(),
 });
 
 export type RegisterInput = z.infer<typeof registerValidator>;

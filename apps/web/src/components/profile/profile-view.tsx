@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { LanguageSelector } from "@/components/language-selector";
 import { NotificationToggle } from "@/components/notification-toggle";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { usePersistLanguage } from "@/hooks/use-persist-language";
 import type { Locale } from "@/i18n/config";
 import type { ActivityEvent } from "@/lib/api-client";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -72,6 +73,7 @@ interface ProfileViewProps {
 
 export function ProfileView({ lang, initialEvents, dict }: ProfileViewProps) {
   const dispatch = useAppDispatch();
+  const persistLanguage = usePersistLanguage();
   const user = useAppSelector(selectUser);
   const isLoading = useAppSelector(selectUserLoading);
   const karma = useAppSelector(selectKarmaBalance(user?.id || ""));
@@ -153,7 +155,11 @@ export function ProfileView({ lang, initialEvents, dict }: ProfileViewProps) {
           data-testid="profile-desktop-preferences"
         >
           <NotificationToggle ariaLabel="Toggle notifications" />
-          <LanguageSelector lang={lang} ariaLabel="Select language" />
+          <LanguageSelector
+            lang={lang}
+            ariaLabel="Select language"
+            onLocaleChange={persistLanguage}
+          />
           <ThemeToggle />
         </div>
       </div>

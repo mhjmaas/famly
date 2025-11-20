@@ -44,3 +44,8 @@ pnpm install
 - `npm run dev` - Start development server with hot reload
 - `npm start` - Start production server
 - `npm test` - Run Jest test suite
+
+### User profile fields
+
+- Core fields stored on the Better Auth user document include `name`, `birthdate`, and `language` (supported values: `en-US`, `nl-NL`).
+- Auth endpoints (`/v1/auth/register`, `/v1/auth/login`, `/v1/auth/me`) surface `user.language`; PATCH `/v1/auth/me` can update it for logged-in users.

@@ -2,6 +2,7 @@ import { LanguageSelector } from "@/components/language-selector";
 import { NotificationSwitch } from "@/components/notification-switch";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Card, CardHeader } from "@/components/ui/card";
+import { usePersistLanguage } from "@/hooks/use-persist-language";
 import type { Locale } from "@/i18n/config";
 
 interface PreferencesCardProps {
@@ -19,6 +20,8 @@ interface PreferencesCardProps {
 }
 
 export function PreferencesCard({ lang, dict }: PreferencesCardProps) {
+  const persistLanguage = usePersistLanguage();
+
   return (
     <Card data-testid="preferences-card">
       <CardHeader>
@@ -43,7 +46,11 @@ export function PreferencesCard({ lang, dict }: PreferencesCardProps) {
               {dict.languageDescription}
             </p>
           </div>
-          <LanguageSelector lang={lang} ariaLabel={dict.language} />
+          <LanguageSelector
+            lang={lang}
+            ariaLabel={dict.language}
+            onLocaleChange={persistLanguage}
+          />
         </div>
         <div
           className="flex items-center justify-between"

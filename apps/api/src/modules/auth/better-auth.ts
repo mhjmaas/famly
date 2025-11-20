@@ -78,6 +78,11 @@ function initAuth() {
           required: true,
           input: true, // Allow users to provide value during signup
         },
+        language: {
+          type: "string" as const,
+          required: false,
+          input: true,
+        },
       },
     },
 
@@ -99,6 +104,7 @@ function initAuth() {
               ...user,
               // Include additionalFields from database
               birthdate: fullUser?.birthdate ?? null,
+              language: fullUser?.language ?? "en-US",
             },
             session,
           };

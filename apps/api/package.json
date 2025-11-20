@@ -15,7 +15,7 @@
     "test:watch": "jest --config jest.config.unit.js --watch",
     "test:coverage": "jest --config jest.config.unit.js --coverage",
     "lint": "biome check",
-    "lint:write": "biome check --write",
+    "lint:fix": "biome check --write",
     "format": "biome format --write",
     "prepare": "husky"
   },

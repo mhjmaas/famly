@@ -7,6 +7,7 @@ export interface LoginRequest {
   email: string;
   password: string;
   rememberMe?: boolean;
+  language?: string;
 }
 
 export interface RegisterRequest {
@@ -14,6 +15,7 @@ export interface RegisterRequest {
   password: string;
   name: string;
   birthdate: string; // ISO 8601 format YYYY-MM-DD
+  language?: string;
 }
 
 export interface AuthResponse {
@@ -25,6 +27,7 @@ export interface AuthResponse {
     emailVerified: boolean;
     createdAt: string;
     updatedAt: string;
+    language?: string;
     families?: Array<{
       id: string;
       name: string;
@@ -149,6 +152,7 @@ export interface UserProfile {
   emailVerified: boolean;
   createdAt: string;
   updatedAt: string;
+  language?: string;
   families: Array<{
     familyId: string;
     name: string;
@@ -163,8 +167,9 @@ export interface MeResponse {
 }
 
 export interface UpdateProfileRequest {
-  name: string;
-  birthdate: string; // ISO 8601 format YYYY-MM-DD
+  name?: string;
+  birthdate?: string; // ISO 8601 format YYYY-MM-DD
+  language?: string;
 }
 
 export interface UpdateProfileResponse {

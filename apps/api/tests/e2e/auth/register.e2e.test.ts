@@ -164,6 +164,52 @@ describe("E2E: POST /v1/auth/register", () => {
       expect(response.body).toHaveProperty("error");
       expect(response.body.error).toContain("Name");
     });
+
+    it("should store provided language preference and return it", async () => {
+      const response = await request(baseUrl).post("/v1/auth/register").send({
+        email: "languser@example.com",
+        password: "SecurePassword123!",
+        name: "Lang User",
+        birthdate: "1990-01-15",
+        language: "nl-NL",
+      });
+
+      expect(response.status).toBe(201);
+      expect(response.body.user.language).toBe("nl-NL");
+
+      // Verify persisted via /me
+      const cookies = response.headers["set-cookie"];
+      const cookieArray = Array.isArray(cookies)
+        ? cookies
+        : cookies
+          ? [cookies]
+          : [];
+      const sessionCookie = cookieArray.find((c: string) =>
+        c.includes(SESSION_COOKIE_PREFIX),
+      );
+
+      const meResponse = await request(baseUrl)
+        .get("/v1/auth/me")
+        .set("Cookie", sessionCookie ?? "");
+
+      expect(meResponse.status).toBe(200);
+      expect(meResponse.body.user.language).toBe("nl-NL");
+    });
+
+    it("should default language from Accept-Language when not provided", async () => {
+      const response = await request(baseUrl)
+        .post("/v1/auth/register")
+        .set("Accept-Language", "nl-NL,en;q=0.8")
+        .send({
+          email: "langheader@example.com",
+          password: "SecurePassword123!",
+          name: "Lang Header",
+          birthdate: "1990-02-02",
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.user.language).toBe("nl-NL");
+    });
   });
 
   describe("Mobile Flow (Bearer Token)", () => {

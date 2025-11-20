@@ -152,6 +152,44 @@ describe("E2E: GET /v1/auth/me", () => {
     });
   });
 
+  describe("Preference updates", () => {
+    it("should update language via PATCH /v1/auth/me and persist", async () => {
+      const registerResponse = await request(baseUrl)
+        .post("/v1/auth/register")
+        .send({
+          email: "langpatch@example.com",
+          password: "SecurePassword123!",
+          name: "Lang Patch",
+          birthdate: "1992-05-10",
+        });
+
+      const cookies = registerResponse.headers["set-cookie"];
+      const cookieArray = Array.isArray(cookies)
+        ? cookies
+        : cookies
+          ? [cookies]
+          : [];
+      const sessionCookie = cookieArray.find((c: string) =>
+        c.includes(SESSION_COOKIE_PREFIX),
+      );
+
+      const patchResponse = await request(baseUrl)
+        .patch("/v1/auth/me")
+        .set("Cookie", sessionCookie ?? "")
+        .send({ language: "nl-NL" });
+
+      expect(patchResponse.status).toBe(200);
+      expect(patchResponse.body.user.language).toBe("nl-NL");
+
+      const meResponse = await request(baseUrl)
+        .get("/v1/auth/me")
+        .set("Cookie", sessionCookie ?? "");
+
+      expect(meResponse.status).toBe(200);
+      expect(meResponse.body.user.language).toBe("nl-NL");
+    });
+  });
+
   describe("Authentication Type Detection", () => {
     it("should correctly identify cookie-based authentication", async () => {
       const loginResponse = await request(baseUrl)

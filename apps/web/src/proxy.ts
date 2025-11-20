@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { i18n, type Locale } from "@/i18n/config";
 
 const PUBLIC_FILE = /\.(.*)$/;
+const SUPPORTED_LOCALES = new Set<Locale>(i18n.locales);
 
 function getLocale(request: NextRequest): Locale {
   // Parse the Accept-Language header and match against supported locales.
@@ -34,6 +35,49 @@ function getLocale(request: NextRequest): Locale {
   return (
     i18n.locales.includes(locale as Locale) ? locale : i18n.defaultLocale
   ) as Locale;
+}
+
+async function getStoredLanguageFromSession(
+  request: NextRequest,
+): Promise<Locale | null> {
+  const sessionCookie =
+    request.cookies.get("__Secure-better-auth.session_token") ||
+    request.cookies.get("better-auth.session_token");
+
+  if (!sessionCookie) {
+    return null;
+  }
+
+  try {
+    const API_BASE_URL =
+      process.env.API_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      "http://localhost:3001";
+
+    const meResponse = await fetch(`${API_BASE_URL}/v1/auth/me`, {
+      headers: {
+        Cookie: `${sessionCookie.name}=${sessionCookie.value}`,
+      },
+      cache: "no-store",
+    });
+
+    if (!meResponse.ok) {
+      return null;
+    }
+
+    const meData = (await meResponse.json()) as {
+      user?: { language?: string };
+    };
+
+    const lang = meData.user?.language;
+    if (lang && SUPPORTED_LOCALES.has(lang as Locale)) {
+      return lang as Locale;
+    }
+  } catch (error) {
+    console.warn("Failed to fetch stored language in middleware:", error);
+  }
+
+  return null;
 }
 
 // Define protected and public routes
@@ -103,6 +147,7 @@ async function getFamilySettingsForMiddleware(
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const storedLanguagePromise = getStoredLanguageFromSession(request);
 
   if (
     PUBLIC_FILE.test(pathname) ||
@@ -117,7 +162,8 @@ export async function proxy(request: NextRequest) {
   });
 
   if (pathnameIsMissingLocale) {
-    const locale = getLocale(request);
+    const storedLanguage = await storedLanguagePromise;
+    const locale = storedLanguage ?? getLocale(request);
     const redirectURL = new URL(
       pathname === "/" ? `/${locale}` : `/${locale}${pathname}`,
       request.url,
@@ -129,6 +175,22 @@ export async function proxy(request: NextRequest) {
   // Extract locale from pathname (e.g., /en-US/signin -> en-US)
   const localeMatch = pathname.match(/^\/([a-z]{2}-[A-Z]{2})(\/|$)/);
   const locale = localeMatch ? localeMatch[1] : null;
+
+  // If user preference exists and differs from path locale, redirect to preferred locale
+  const storedLanguage = await storedLanguagePromise;
+  if (
+    storedLanguage &&
+    locale &&
+    storedLanguage !== locale &&
+    SUPPORTED_LOCALES.has(storedLanguage)
+  ) {
+    const redirectURL = new URL(
+      `/${storedLanguage}${pathname.replace(`/${locale}`, "") || ""}`,
+      request.url,
+    );
+    redirectURL.search = request.nextUrl.search;
+    return NextResponse.redirect(redirectURL);
+  }
 
   // Get the path without locale prefix
   const pathWithoutLocale = locale

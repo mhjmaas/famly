@@ -75,6 +75,8 @@ export interface AuthenticateOptions {
   birthdate?: string;
   /** Family name if creating family (default: "Test Family") */
   familyName?: string;
+  /** Preferred language to store with the user (default: undefined → backend default) */
+  language?: "en-US" | "nl-NL";
 }
 
 /**
@@ -116,6 +118,7 @@ export async function authenticateUser(
     password = "TestPassword123!",
     birthdate = "1990-01-15",
     familyName = "Test Family",
+    language,
   } = options;
 
   const email = generateTestEmail(emailPrefix);
@@ -131,6 +134,7 @@ export async function authenticateUser(
       password,
       name,
       birthdate,
+      ...(language ? { language } : {}),
     }),
   });
 
