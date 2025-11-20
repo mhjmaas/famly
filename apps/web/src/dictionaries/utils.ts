@@ -1,3 +1,7 @@
+export type DeepPartial<T> = T extends object
+  ? { [K in keyof T]?: DeepPartial<T[K]> }
+  : T;
+
 type Mergeable = Record<string, unknown>;
 
 const isPlainObject = (value: unknown): value is Mergeable =>
@@ -26,7 +30,7 @@ const mergeInto = (target: Mergeable, source?: Mergeable): Mergeable => {
 };
 
 export function deepMerge<T extends Mergeable>(
-  ...objects: Array<Partial<T>>
+  ...objects: Array<DeepPartial<T>>
 ): T {
   return objects.reduce<Mergeable>((acc, obj) => mergeInto(acc, obj), {}) as T;
 }
