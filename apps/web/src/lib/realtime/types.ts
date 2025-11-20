@@ -190,11 +190,58 @@ export interface ActivityEventPayloads {
 }
 
 // Combined event payloads type
+// Contribution Goal Events
+export interface ContributionGoalEventPayloads {
+  "contribution_goal.deducted": {
+    goalId: string;
+    familyId: string;
+    memberId: string;
+    goal: {
+      _id: string;
+      familyId: string;
+      memberId: string;
+      weekStartDate: string;
+      title: string;
+      description: string;
+      maxKarma: number;
+      currentKarma: number;
+      deductions: Array<{
+        _id: string;
+        amount: number;
+        reason: string;
+        deductedBy: string;
+        createdAt: string;
+      }>;
+    };
+    deduction: {
+      _id: string;
+      amount: number;
+      reason: string;
+      deductedBy: string;
+      createdAt: string;
+    };
+  };
+  "contribution_goal.awarded": {
+    goalId: string;
+    familyId: string;
+    memberId: string;
+    karmaAwarded: number;
+    goalTitle: string;
+  };
+  "contribution_goal.updated": {
+    goalId: string;
+    familyId: string;
+    memberId: string;
+    action: "CREATED" | "UPDATED" | "DELETED";
+  };
+}
+
 export type RealtimeEventPayloads = TaskEventPayloads &
   KarmaEventPayloads &
   RewardEventPayloads &
   FamilyEventPayloads &
-  ActivityEventPayloads;
+  ActivityEventPayloads &
+  ContributionGoalEventPayloads;
 
 // Connection states
 export enum ConnectionState {

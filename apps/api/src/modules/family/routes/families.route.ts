@@ -1,3 +1,4 @@
+import { createContributionGoalsRouter } from "@modules/contribution-goals";
 import { createFamilyDiaryRouter } from "@modules/diary";
 import { createKarmaRouter } from "@modules/karma";
 import { createRecipesRouter } from "@modules/recipes";
@@ -61,6 +62,9 @@ export function createFamiliesRouter(): Router {
 
   // Mount karma router for /:familyId/karma/* paths
   router.use("/:familyId/karma", createKarmaRouter());
+
+  // Mount contribution goals router for /:familyId/contribution-goals/* paths
+  router.use("/:familyId/contribution-goals", createContributionGoalsRouter());
 
   // Mount family member activity events route for /:familyId/members/:memberId/activity-events
   router.use("/:familyId", createGetFamilyMemberActivityEventsRoute());

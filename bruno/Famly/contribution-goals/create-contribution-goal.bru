@@ -1,0 +1,57 @@
+meta {
+  name: Create Contribution Goal
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/contribution-goals
+  body: json
+  auth: inherit
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "memberId": "{{otherUserId}}",
+    "title": "Keep room tidy",
+    "description": "Maintain a clean room and help with dishes",
+    "maxKarma": 120
+  }
+}
+
+script:post-response {
+  try {
+    const body = res.body;
+
+    if (body?._id) {
+      bru.setEnvVar('currentContributionGoalId', body._id);
+    }
+    if (body?.memberId) {
+      bru.setEnvVar('currentContributionGoalMemberId', body.memberId);
+    }
+  } catch (error) {
+    console.log('Failed to persist contribution goal context: ' + error?.message);
+  }
+}
+
+docs {
+  # Create Contribution Goal
+
+  Creates a weekly contribution goal for a family member. Only parents can create goals.
+
+  ## Request Body
+  - `memberId` (string, required): Member to assign the goal to
+  - `title` (string, required, 1-200 chars)
+  - `description` (string, optional, up to 2000 chars)
+  - `maxKarma` (integer, 1-10000): Potential karma for the week before deductions
+
+  ## Responses
+  - `201 Created`: Returns the created ContributionGoalDTO
+  - `400 Bad Request`: Validation or missing fields
+  - `401 Unauthorized`: Missing/invalid token
+  - `403 Forbidden`: User is not a parent in the family
+}

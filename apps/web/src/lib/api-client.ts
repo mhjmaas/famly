@@ -9,12 +9,15 @@
 
 import type {
   ActivityEvent,
+  AddDeductionRequest,
   AddFamilyMemberRequest,
   AddFamilyMemberResponse,
   ApiClientOptions,
   AuthResponse,
   ChangePasswordRequest,
   Claim,
+  ContributionGoal,
+  CreateContributionGoalRequest,
   CreateFamilyRequest,
   CreateFamilyResponse,
   CreateRewardRequest,
@@ -32,6 +35,7 @@ import type {
   Task,
   TaskQueryParams,
   TaskSchedule,
+  UpdateContributionGoalRequest,
   UpdateFamilySettingsRequest,
   UpdateMemberRoleRequest,
   UpdateMemberRoleResponse,
@@ -671,4 +675,98 @@ export async function fetchDeploymentStatus(options?: {
   }
 
   return response.json();
+}
+
+// ============================================================================
+// Contribution Goals
+// ============================================================================
+
+/**
+ * Create a new contribution goal for a family member
+ */
+export async function createContributionGoal(
+  familyId: string,
+  data: CreateContributionGoalRequest,
+  options?: ApiClientOptions,
+): Promise<ContributionGoal> {
+  return apiClient<ContributionGoal>(
+    `/v1/families/${familyId}/contribution-goals`,
+    {
+      method: "POST",
+      body: data,
+      ...options,
+    },
+  );
+}
+
+/**
+ * Get a contribution goal for a family member
+ */
+export async function getContributionGoal(
+  familyId: string,
+  memberId: string,
+  options?: ApiClientOptions,
+): Promise<ContributionGoal> {
+  return apiClient<ContributionGoal>(
+    `/v1/families/${familyId}/contribution-goals/${memberId}`,
+    {
+      method: "GET",
+      ...options,
+    },
+  );
+}
+
+/**
+ * Update a contribution goal
+ */
+export async function updateContributionGoal(
+  familyId: string,
+  memberId: string,
+  data: UpdateContributionGoalRequest,
+  options?: ApiClientOptions,
+): Promise<ContributionGoal> {
+  return apiClient<ContributionGoal>(
+    `/v1/families/${familyId}/contribution-goals/${memberId}`,
+    {
+      method: "PUT",
+      body: data,
+      ...options,
+    },
+  );
+}
+
+/**
+ * Delete a contribution goal
+ */
+export async function deleteContributionGoal(
+  familyId: string,
+  memberId: string,
+  options?: ApiClientOptions,
+): Promise<void> {
+  return apiClient<void>(
+    `/v1/families/${familyId}/contribution-goals/${memberId}`,
+    {
+      method: "DELETE",
+      ...options,
+    },
+  );
+}
+
+/**
+ * Add a deduction to a contribution goal
+ */
+export async function addDeduction(
+  familyId: string,
+  memberId: string,
+  data: AddDeductionRequest,
+  options?: ApiClientOptions,
+): Promise<ContributionGoal> {
+  return apiClient<ContributionGoal>(
+    `/v1/families/${familyId}/contribution-goals/${memberId}/deductions`,
+    {
+      method: "POST",
+      body: data,
+      ...options,
+    },
+  );
 }

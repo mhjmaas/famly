@@ -459,7 +459,8 @@
           "familyMembers": "Gezinsleden"
         },
         "tabs": {
-          "giveKarma": "Karma uitdelen"
+          "giveKarma": "Karma uitdelen",
+          "contributionGoal": "Gezinsbijdrage-doel"
         },
         "actions": {
           "editMember": "Lid Bewerken",
@@ -933,6 +934,58 @@
       "iosInstructions": "Tik op de deel-knop en selecteer 'Zet op beginscherm' om Famly te installeren",
       "install": "App Installeren",
       "later": "Misschien Later"
+    }
+  },
+  "contributionGoals": {
+    "emptyState": {
+      "title": "Gezinsbijdrage-doel Instellen",
+      "description": "Stel een wekelijks doel in voor {memberName} om karma te verdienen door te helpen in huis.",
+      "action": "Doel Instellen"
+    },
+    "card": {
+      "title": "Gezinsbijdrage-doel",
+      "weekOf": "Week van {date}",
+      "karma": "Karma",
+      "deductionsCount": "{count} minpunten in rekening gebracht",
+      "noDeductions": "Nog geen minpunten!",
+      "onTrack": "op schema",
+      "latestReduction": "Laatste minpunt"
+    },
+    "deduction": {
+      "reasonPlaceholder": "Reden (bijv. Lichten aan gelaten)",
+      "action": "Minpunt toevoegen",
+      "success": "Minpunt toegevoegd",
+      "successDescription": "Minpunt is geregistreerd.",
+      "errorTitle": "Fout",
+      "errorInvalidInput": "Geef een reden en een geldig bedrag op.",
+      "errorFailed": "Minpunt toevoegen mislukt"
+    },
+    "dialog": {
+      "editTitle": "Bijdrage-doel Bewerken",
+      "createTitle": "Bijdrage-doel Aanmaken",
+      "description": "Stel een wekelijks doel in voor {memberName} om karma te verdienen door te helpen in huis.",
+      "titleLabel": "Titel",
+      "titlePlaceholder": "Wekelijkse gezinsbijdrage",
+      "descriptionLabel": "Beschrijving",
+      "descriptionPlaceholder": "Help deze week in huis",
+      "maxKarmaLabel": "Maximum Karma",
+      "cancel": "Annuleren",
+      "create": "Doel Aanmaken",
+      "update": "Doel Bijwerken",
+      "deleteTitle": "Bijdrage-doel Verwijderen",
+      "deleteDescription": "Weet je zeker dat je dit gezinsbijdrage-doel wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "delete": "Verwijderen",
+      "invalidKarma": "Ongeldig karma-bedrag",
+      "invalidKarmaDescription": "Karma moet tussen 1 en 10.000 zijn",
+      "goalUpdated": "Doel bijgewerkt",
+      "goalUpdatedDescription": "Gezinsbijdrage-doel is succesvol bijgewerkt",
+      "goalCreated": "Doel aangemaakt",
+      "goalCreatedDescription": "Gezinsbijdrage-doel is succesvol aangemaakt",
+      "goalDeleted": "Doel verwijderd",
+      "goalDeletedDescription": "Gezinsbijdrage-doel is succesvol verwijderd",
+      "errorTitle": "Fout",
+      "errorSaveFailed": "Doel opslaan mislukt",
+      "errorDeleteFailed": "Doel verwijderen mislukt"
     }
   }
 }

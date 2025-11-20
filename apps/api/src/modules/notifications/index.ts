@@ -6,6 +6,8 @@ export {
 } from "./lib/notification-sender";
 export {
   createChatMessageNotification,
+  createContributionGoalAwardedNotification,
+  createContributionGoalZeroKarmaNotification,
   createFamilyMemberAddedNotification,
   createKarmaGrantNotification,
   createRewardClaimNotification,

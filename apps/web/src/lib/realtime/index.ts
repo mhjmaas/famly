@@ -4,6 +4,7 @@
  */
 
 export * from "./types";
+export * from "./use-contribution-goal-events";
 export * from "./use-karma-events";
 export * from "./use-realtime-connection";
 export * from "./use-reward-events";

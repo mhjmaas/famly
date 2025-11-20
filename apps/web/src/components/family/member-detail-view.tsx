@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { DictionarySection } from "@/i18n/types";
 import { calculateAge, getInitials } from "@/lib/utils/family-utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -35,66 +36,15 @@ import { selectKarmaBalance } from "@/store/slices/karma.slice";
 import { selectUser } from "@/store/slices/user.slice";
 import { ActivityTimeline } from "../profile/activity-timeline";
 import { EditRoleDialog } from "./edit-role-dialog";
+import { MemberContributionGoalView } from "./member-contribution-goal-view";
 import { MemberKarmaCard } from "./member-karma-card";
 import { RemoveMemberDialog } from "./remove-member-dialog";
 
 interface MemberDetailViewProps {
   memberId: string;
   dict: {
-    pages: {
-      memberDetail: {
-        backToFamily: string;
-        breadcrumbs: {
-          familyMembers: string;
-        };
-        tabs: {
-          giveKarma: string;
-        };
-        actions: {
-          editMember: string;
-          removeMember: string;
-        };
-        karmaCard: {
-          amountLabel: string;
-          amountPlaceholder: string;
-          amountHelper: string;
-          deductButton: string;
-          descriptionLabel: string;
-          descriptionPlaceholder: string;
-          giveButton: string;
-          success: string;
-          error: string;
-        };
-      };
-      family: {
-        editRoleDialog: {
-          title: string;
-          description: string;
-          currentRole: string;
-          newRole: string;
-          cancel: string;
-          save: string;
-          success: string;
-        };
-        memberCard: {
-          roleParent: string;
-          roleChild: string;
-        };
-        removeDialog: {
-          title: string;
-          description: string;
-          warning: string;
-          lastParentError: string;
-          cancel: string;
-          confirm: string;
-          success: string;
-        };
-        errors: {
-          updateRoleFailed: string;
-          removeFailed: string;
-        };
-      };
-    };
+    pages: DictionarySection<"dashboard">["pages"];
+    contributionGoals: DictionarySection<"contributionGoals">;
   };
   lang: string;
 }
@@ -140,6 +90,12 @@ export function MemberDetailView({
       : "Child";
 
   const isParent = currentUserRole === "Parent";
+
+  const contributionTabLabel =
+    dict.pages.memberDetail?.tabs?.contributionGoal ??
+    dict.contributionGoals.card.title;
+  const karmaTabLabel =
+    dict.pages.memberDetail?.tabs?.giveKarma ?? "Give Karma";
 
   if (!member) {
     return (
@@ -233,54 +189,65 @@ export function MemberDetailView({
 
       {/* Tabs with Actions Menu - Only show for parents */}
       {isParent && (
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex-1 flex justify-center">
-            <Tabs defaultValue="karma" className="w-full max-w-md">
-              <TabsList className="w-full">
+        <Tabs defaultValue="contribution-goal" className="w-full">
+          <div className="mb-6 flex w-full flex-col items-center gap-4 sm:flex-row sm:justify-between">
+            <div className="flex w-full justify-center sm:flex-1">
+              <TabsList className="inline-flex items-center rounded-full bg-muted/60 p-1 shadow-sm">
+                <TabsTrigger
+                  value="contribution-goal"
+                  className="rounded-full px-4 py-1.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
+                  data-testid="contribution-goal-tab"
+                >
+                  {contributionTabLabel}
+                </TabsTrigger>
                 <TabsTrigger
                   value="karma"
-                  className="flex-1"
+                  className="rounded-full px-4 py-1.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
                   data-testid="give-karma-tab"
                 >
-                  {dict.pages.memberDetail.tabs.giveKarma}
+                  {karmaTabLabel}
                 </TabsTrigger>
               </TabsList>
-            </Tabs>
+            </div>
+
+            <div className="flex w-full justify-end sm:w-auto">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    data-testid="member-actions-button"
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem
+                    onClick={() => setIsEditRoleDialogOpen(true)}
+                    data-testid="action-edit-member"
+                  >
+                    {dict.pages.memberDetail.actions.editMember}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setIsRemoveMemberDialogOpen(true)}
+                    className="text-destructive focus:text-destructive"
+                    data-testid="action-remove-member"
+                  >
+                    {dict.pages.memberDetail.actions.removeMember}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                data-testid="member-actions-button"
-              >
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => setIsEditRoleDialogOpen(true)}
-                data-testid="action-edit-member"
-              >
-                {dict.pages.memberDetail.actions.editMember}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setIsRemoveMemberDialogOpen(true)}
-                className="text-destructive focus:text-destructive"
-                data-testid="action-remove-member"
-              >
-                {dict.pages.memberDetail.actions.removeMember}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )}
-
-      {/* Tab Content - Only show for parents */}
-      {isParent && (
-        <Tabs defaultValue="karma" className="w-full">
+          <TabsContent value="contribution-goal" className="mt-0">
+            <MemberContributionGoalView
+              memberId={memberId}
+              memberName={member.name}
+              dict={dict.contributionGoals}
+            />
+          </TabsContent>
           <TabsContent value="karma" className="mt-0">
             <MemberKarmaCard
               member={member}

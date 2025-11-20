@@ -344,6 +344,7 @@ export async function createFamilyWithMembers(
 ): Promise<{
   parentUser: AuthenticatedUser;
   childUser: AuthenticatedUser;
+  childMemberId: string;
   familyId: string;
 }> {
   // Create parent with family
@@ -387,6 +388,13 @@ export async function createFamilyWithMembers(
     throw new Error(
       `Failed to add child to family: ${addMemberResponse.status} ${error}`
     );
+  }
+
+  const addMemberData = await addMemberResponse.json();
+  const childMemberId = addMemberData.memberId;
+
+  if (!childMemberId) {
+    throw new Error("No member ID returned from add member response");
   }
 
   // Login as child to get session token
@@ -437,6 +445,7 @@ export async function createFamilyWithMembers(
   return {
     parentUser,
     childUser,
+    childMemberId,
     familyId: parentUser.familyId,
   };
 }

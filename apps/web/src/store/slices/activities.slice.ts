@@ -110,6 +110,8 @@ export const { prependActivityEvent } = activitiesSlice.actions;
 export default activitiesSlice.reducer;
 
 // Selectors
+const EMPTY_ARRAY: readonly never[] = [];
+
 export const selectActivities = (state: RootState) => state.activities.events;
 export const selectActivitiesLoading = (state: RootState) =>
   state.activities.isLoading;
@@ -118,7 +120,7 @@ export const selectActivitiesError = (state: RootState) =>
 
 export const selectMemberActivities =
   (memberId: string) => (state: RootState) =>
-    state.activities.memberEvents[memberId] || [];
+    state.activities.memberEvents[memberId] ?? EMPTY_ARRAY;
 export const selectMemberActivitiesLoading =
   (memberId: string) => (state: RootState) =>
     state.activities.memberEventsLoading[memberId] || false;

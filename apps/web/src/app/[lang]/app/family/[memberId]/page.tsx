@@ -12,13 +12,22 @@ export default async function MemberDetailPage({ params }: PageProps) {
   const lang = (isLocale(rawLang) ? rawLang : i18n.defaultLocale) as Locale;
   const dict = await getDictionary(lang);
 
+  const memberDetailDict = {
+    pages: dict.dashboard.pages,
+    contributionGoals: dict.contributionGoals,
+  } as const;
+
   return (
     <DashboardLayout
       dict={dict}
       lang={lang}
       title={dict.dashboard.pages.memberDetail.title}
     >
-      <MemberDetailView memberId={memberId} dict={dict.dashboard} lang={lang} />
+      <MemberDetailView
+        memberId={memberId}
+        dict={memberDetailDict}
+        lang={lang}
+      />
     </DashboardLayout>
   );
 }

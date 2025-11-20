@@ -100,6 +100,49 @@ export function createRewardClaimNotification(
 }
 
 /**
+ * Create a notification for contribution goal karma awarded
+ */
+export function createContributionGoalAwardedNotification(
+  karmaAmount: number,
+  goalTitle: string,
+): NotificationPayload {
+  const baseUrl = getBaseUrl();
+  const iconUrl = `${baseUrl}/web-app-manifest-192x192.png`;
+
+  return {
+    title: "Weekly Goal Completed! 🎯",
+    body: `You earned ${karmaAmount} karma from "${goalTitle}"`,
+    icon: iconUrl,
+    badge: iconUrl,
+    data: {
+      type: "contribution_goal_awarded",
+      url: `${baseUrl}/app`,
+    },
+  };
+}
+
+/**
+ * Create a notification for contribution goal with zero karma
+ */
+export function createContributionGoalZeroKarmaNotification(
+  goalTitle: string,
+): NotificationPayload {
+  const baseUrl = getBaseUrl();
+  const iconUrl = `${baseUrl}/web-app-manifest-192x192.png`;
+
+  return {
+    title: "Weekly Goal Ended 📊",
+    body: `Your contribution goal "${goalTitle}" ended with no karma - all potential karma was deducted`,
+    icon: iconUrl,
+    badge: iconUrl,
+    data: {
+      type: "contribution_goal_zero_karma",
+      url: `${baseUrl}/app`,
+    },
+  };
+}
+
+/**
  * Create a notification for new chat message
  */
 export function createChatMessageNotification(

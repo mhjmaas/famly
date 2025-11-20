@@ -7,12 +7,14 @@ import type { ObjectId } from "mongodb";
  * - task_uncomplete: Karma deducted for uncompleting a task
  * - manual_grant: Karma manually granted by a parent
  * - reward_redemption: Karma deducted for redeeming a reward
+ * - contribution_goal_weekly: Karma awarded for weekly contribution goal
  */
 export type KarmaSource =
   | "task_completion"
   | "task_uncomplete"
   | "manual_grant"
-  | "reward_redemption";
+  | "reward_redemption"
+  | "contribution_goal_weekly";
 
 /**
  * Member karma aggregate

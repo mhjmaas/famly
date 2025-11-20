@@ -1,0 +1,31 @@
+meta {
+  name: Get Contribution Goal
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/contribution-goals/{{otherUserId}}
+  body: none
+  auth: inherit
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+docs {
+  # Get Contribution Goal
+
+  Fetches the current week's contribution goal for the specified family member.
+
+  ## Path Parameters
+  - `familyId`: Current family id
+  - `memberId`: Member whose goal is being fetched
+
+  ## Responses
+  - `200 OK`: Returns ContributionGoalDTO with deductions and currentKarma
+  - `401 Unauthorized`: Missing or invalid token
+  - `403 Forbidden`: Not in family or insufficient role
+  - `404 Not Found`: Goal not set for member this week
+}
