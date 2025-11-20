@@ -116,7 +116,9 @@ export class ClaimService {
       try {
         const db = getDb();
         const usersCollection = db.collection("user");
-        const user = await usersCollection.findOne({ _id: memberObjectId });
+        const user = await usersCollection.findOne({
+          _id: { $eq: memberObjectId },
+        });
         const memberName = user?.name || "Unknown member";
 
         const taskInput: CreateTaskInput = {

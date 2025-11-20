@@ -46,7 +46,7 @@ export class ClaimRepository {
    */
   async findById(claimId: ObjectId): Promise<RewardClaim | null> {
     const collection = this.getCollection();
-    const claim = await collection.findOne({ _id: claimId });
+    const claim = await collection.findOne({ _id: { $eq: claimId } });
     return claim || null;
   }
 
@@ -103,7 +103,7 @@ export class ClaimRepository {
     if (metadata?.cancelledAt) updateData.cancelledAt = metadata.cancelledAt;
 
     const result = await collection.findOneAndUpdate(
-      { _id: claimId },
+      { _id: { $eq: claimId } },
       { $set: updateData },
       { returnDocument: "after" },
     );
@@ -137,7 +137,7 @@ export class ClaimRepository {
     const collection = this.getCollection();
 
     const result = await collection.findOneAndUpdate(
-      { _id: claimId },
+      { _id: { $eq: claimId } },
       {
         $set: {
           autoTaskId,
@@ -164,7 +164,7 @@ export class ClaimRepository {
    */
   async delete(claimId: ObjectId): Promise<boolean> {
     const collection = this.getCollection();
-    const result = await collection.deleteOne({ _id: claimId });
+    const result = await collection.deleteOne({ _id: { $eq: claimId } });
     return result.deletedCount > 0;
   }
 }

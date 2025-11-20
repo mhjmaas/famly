@@ -78,7 +78,7 @@ export class MessageRepository {
    * Find a message by ID
    */
   async findById(messageId: ObjectId): Promise<Message | null> {
-    return this.collection.findOne({ _id: messageId });
+    return this.collection.findOne({ _id: { $eq: messageId } });
   }
 
   /**

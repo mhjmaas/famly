@@ -66,7 +66,7 @@ export class FamilyRepository {
    * @returns The family document or null if not found
    */
   async findById(familyId: string): Promise<Family | null> {
-    return this.collection.findOne({ _id: toObjectId(familyId) });
+    return this.collection.findOne({ _id: { $eq: toObjectId(familyId) } });
   }
 
   /**
@@ -107,7 +107,7 @@ export class FamilyRepository {
     name: string | null,
   ): Promise<Family | null> {
     const result = await this.collection.findOneAndUpdate(
-      { _id: toObjectId(familyId) },
+      { _id: { $eq: toObjectId(familyId) } },
       {
         $set: {
           name,
@@ -128,7 +128,7 @@ export class FamilyRepository {
    */
   async deleteFamily(familyId: string): Promise<boolean> {
     const result = await this.collection.deleteOne({
-      _id: toObjectId(familyId),
+      _id: { $eq: toObjectId(familyId) },
     });
     return result.deletedCount > 0;
   }

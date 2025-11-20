@@ -79,7 +79,7 @@ export class ShoppingListRepository {
    * Find a shopping list by ID
    */
   async findShoppingListById(listId: ObjectId): Promise<ShoppingList | null> {
-    return this.collection.findOne({ _id: listId });
+    return this.collection.findOne({ _id: { $eq: listId } });
   }
 
   /**
@@ -108,7 +108,7 @@ export class ShoppingListRepository {
     }
 
     const result = await this.collection.findOneAndUpdate(
-      { _id: listId },
+      { _id: { $eq: listId } },
       { $set: updateFields },
       { returnDocument: "after" },
     );
@@ -120,7 +120,7 @@ export class ShoppingListRepository {
    * Delete a shopping list
    */
   async deleteShoppingList(listId: ObjectId): Promise<boolean> {
-    const result = await this.collection.deleteOne({ _id: listId });
+    const result = await this.collection.deleteOne({ _id: { $eq: listId } });
     return result.deletedCount > 0;
   }
 
@@ -139,7 +139,7 @@ export class ShoppingListRepository {
     };
 
     const result = await this.collection.findOneAndUpdate(
-      { _id: listId },
+      { _id: { $eq: listId } },
       {
         $push: { items: newItem },
         $set: { updatedAt: new Date() },
@@ -171,7 +171,7 @@ export class ShoppingListRepository {
     }
 
     const result = await this.collection.findOneAndUpdate(
-      { _id: listId, "items._id": itemId },
+      { _id: { $eq: listId }, "items._id": itemId },
       { $set: updateFields },
       { returnDocument: "after" },
     );
@@ -187,7 +187,7 @@ export class ShoppingListRepository {
     itemId: ObjectId,
   ): Promise<ShoppingList | null> {
     const result = await this.collection.findOneAndUpdate(
-      { _id: listId },
+      { _id: { $eq: listId } },
       {
         $pull: { items: { _id: itemId } },
         $set: { updatedAt: new Date() },

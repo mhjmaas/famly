@@ -18,7 +18,9 @@ export async function getUserName(userId: string | ObjectId): Promise<string> {
     const db = getDb();
     const objectId = typeof userId === "string" ? new ObjectId(userId) : userId;
 
-    const user = await db.collection("user").findOne({ _id: objectId });
+    const user = await db
+      .collection("user")
+      .findOne({ _id: { $eq: objectId } });
 
     if (user) {
       return user.name || user.email || userId.toString();
@@ -95,7 +97,7 @@ export async function getUserLanguage(
 
     const user = await db
       .collection("user")
-      .findOne<{ language?: string }>({ _id: objectId });
+      .findOne<{ language?: string }>({ _id: { $eq: objectId } });
 
     if (user?.language && isSupportedLanguage(user.language)) {
       return user.language;
