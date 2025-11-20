@@ -1,5 +1,6 @@
 import { getDb } from "@infra/mongo/client";
 import { logger } from "@lib/logger";
+import { toObjectId } from "@lib/objectid-utils";
 import type { FamilyMembership } from "@modules/family/domain/family";
 import { emitToUserRooms } from "@modules/realtime";
 import type {
@@ -47,6 +48,7 @@ export interface ContributionGoalEventPayloads {
 
 /**
  * Helper to get all family member user IDs
+ * Converts familyId string to ObjectId for proper MongoDB query matching
  */
 async function getFamilyMemberIds(familyId: string): Promise<string[]> {
   const db = getDb();
@@ -54,7 +56,7 @@ async function getFamilyMemberIds(familyId: string): Promise<string[]> {
     db.collection<FamilyMembership>("family_memberships");
 
   const memberships = await membershipsCollection
-    .find({ familyId: { $eq: familyId } as any })
+    .find({ familyId: toObjectId(familyId, "familyId") })
     .toArray();
 
   return memberships.map((m) => m.userId.toString());
