@@ -46,7 +46,7 @@ export function SignInForm({ locale, dict, commonDict }: SignInFormProps) {
 
     try {
       // Login
-      await login({ email, password, rememberMe });
+      await login({ email, password, rememberMe, language: locale });
 
       // Fetch user data and populate Redux store
       const meResponse = await getMe();

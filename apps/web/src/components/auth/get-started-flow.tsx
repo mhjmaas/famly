@@ -198,6 +198,7 @@ export function GetStartedFlow({
 
       {step === "register" && (
         <RegistrationForm
+          locale={locale}
           dict={dict}
           commonDict={commonDict}
           error={error}

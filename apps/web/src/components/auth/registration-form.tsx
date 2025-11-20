@@ -13,10 +13,12 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { Locale } from "@/i18n/config";
 import type { DictionarySection } from "@/i18n/types";
 import { ApiError, register } from "@/lib/api-client";
 
 interface RegistrationFormProps {
+  locale: Locale;
   dict: DictionarySection<"auth">["getStarted"];
   commonDict: DictionarySection<"auth">["common"];
   error: string;
@@ -27,6 +29,7 @@ interface RegistrationFormProps {
 }
 
 export function RegistrationForm({
+  locale,
   dict,
   commonDict,
   error,
@@ -63,6 +66,7 @@ export function RegistrationForm({
         email,
         password,
         birthdate,
+        language: locale,
       });
 
       onSuccess();

@@ -109,4 +109,29 @@ test.describe("Authentication - Protected Routes", () => {
     await page.waitForURL("**/signin", { timeout: 5000 });
     expect(page.url()).toMatch(/\/(en-US|nl-NL)\/signin/);
   });
+
+  test("should prefer stored user language when locale is missing", async ({
+    page,
+  }) => {
+    // Authenticate with stored language Dutch
+    await authenticateUser(page, { language: "nl-NL" });
+
+    // Navigate without locale
+    await page.goto("/");
+
+    // Should redirect to stored language locale
+    await page.waitForURL(/\/nl-NL(\/|$)/, { timeout: 15000 });
+    expect(page.url()).toMatch(/\/nl-NL(\/|$)/);
+  });
+
+  test("should redirect protected route without locale using stored language", async ({
+    page,
+  }) => {
+    await authenticateUser(page, { language: "nl-NL" });
+
+    await page.goto("/app");
+
+    await page.waitForURL("**/nl-NL/app", { timeout: 15000 });
+    expect(page.url()).toContain("/nl-NL/app");
+  });
 });

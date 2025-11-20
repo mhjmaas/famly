@@ -21,8 +21,9 @@ import {
  * - Authorization: Bearer <token> (for mobile/API)
  *
  * Request body:
- * - name: string (required, 1-100 characters)
- * - birthdate: string (required, YYYY-MM-DD format)
+ * - name: string (optional, 1-100 characters)
+ * - birthdate: string (optional, YYYY-MM-DD format)
+ * - language: string (optional, en-US | nl-NL)
  *
  * Response (200):
  * - user: Updated user object
@@ -49,7 +50,8 @@ export function createUpdateProfileRoute(): Router {
           return;
         }
 
-        const { name, birthdate }: UpdateProfileRequest = validation.data;
+        const { name, birthdate, language }: UpdateProfileRequest =
+          validation.data;
 
         // User is guaranteed to exist due to authenticate middleware
         if (!req.user) {
@@ -63,15 +65,28 @@ export function createUpdateProfileRoute(): Router {
         const db = getDb();
         const usersCollection = db.collection("user");
 
+        // Build update document
+        const updates: Record<string, unknown> = {
+          updatedAt: new Date(),
+        };
+
+        if (name) {
+          updates.name = name;
+        }
+
+        if (birthdate) {
+          updates.birthdate = new Date(birthdate);
+        }
+
+        if (language) {
+          updates.language = language;
+        }
+
         // Update user in database
         const updateResult = await usersCollection.updateOne(
           { _id: userObjectId },
           {
-            $set: {
-              name,
-              birthdate: new Date(birthdate),
-              updatedAt: new Date(),
-            },
+            $set: updates,
           },
         );
 
@@ -99,6 +114,7 @@ export function createUpdateProfileRoute(): Router {
             emailVerified: updatedUser.emailVerified,
             createdAt: updatedUser.createdAt,
             updatedAt: updatedUser.updatedAt,
+            language: updatedUser.language,
             families: req.user.families || [],
           },
         });

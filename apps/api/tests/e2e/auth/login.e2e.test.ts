@@ -129,6 +129,44 @@ describe("E2E: POST /v1/auth/login", () => {
       expect(response.status).toBe(200);
       expect(response.body.user.email).toBe("caselogin@example.com");
     });
+
+    it("should persist language preference supplied on login", async () => {
+      // Register with default language
+      await request(baseUrl).post("/v1/auth/register").send({
+        email: "langlogin@example.com",
+        password: "SecurePassword123!",
+        name: "Lang Login",
+        birthdate: "1990-01-15",
+      });
+
+      // Login providing language override
+      const response = await request(baseUrl).post("/v1/auth/login").send({
+        email: "langlogin@example.com",
+        password: "SecurePassword123!",
+        language: "nl-NL",
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.body.user.language).toBe("nl-NL");
+
+      // Use session cookie to verify persisted language via /me
+      const cookies = response.headers["set-cookie"];
+      const cookieArray = Array.isArray(cookies)
+        ? cookies
+        : cookies
+          ? [cookies]
+          : [];
+      const sessionCookie = cookieArray.find((c: string) =>
+        c.includes(SESSION_COOKIE_PREFIX),
+      );
+
+      const meResponse = await request(baseUrl)
+        .get("/v1/auth/me")
+        .set("Cookie", sessionCookie ?? "");
+
+      expect(meResponse.status).toBe(200);
+      expect(meResponse.body.user.language).toBe("nl-NL");
+    });
   });
 
   describe("Mobile Flow (Bearer Token)", () => {

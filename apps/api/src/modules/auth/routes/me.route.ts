@@ -42,6 +42,7 @@ export function createMeRoute(): Router {
             emailVerified: req.user.emailVerified,
             createdAt: req.user.createdAt,
             updatedAt: req.user.updatedAt,
+            language: req.user.language,
             families: req.user.families || [],
           },
           authType: req.authType,

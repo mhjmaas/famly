@@ -10,6 +10,7 @@ import {
   Router,
 } from "express";
 import { getAuth } from "../better-auth";
+import { isSupportedLanguage, resolvePreferredLanguage } from "../language";
 import { registerValidator } from "../validators/register.validator";
 
 /**
@@ -59,8 +60,14 @@ export function createRegisterRoute(): Router {
           throw HttpError.badRequest(firstError.message);
         }
 
-        const { email, password, name, birthdate } = validationResult.data;
+        const { email, password, name, birthdate, language } =
+          validationResult.data;
         const auth = getAuth();
+
+        const preferredLanguage = resolvePreferredLanguage(
+          language,
+          req.headers["accept-language"],
+        );
 
         // Use better-auth's built-in signUp method with birthdate
         const result = await auth.api.signUpEmail({
@@ -70,6 +77,7 @@ export function createRegisterRoute(): Router {
             name,
             // @ts-expect-error - birthdate is a custom field added via additionalFields but not in signUpEmail types
             birthdate, // Better-auth will handle the date field automatically
+            language: preferredLanguage,
           },
           headers: fromNodeHeaders(req.headers),
           asResponse: true,
@@ -118,6 +126,7 @@ export function createRegisterRoute(): Router {
             emailVerified: boolean;
             createdAt: Date;
             updatedAt: Date;
+            language?: string;
           };
           token?: string;
           session?: {
@@ -180,6 +189,10 @@ export function createRegisterRoute(): Router {
           res.setHeader("set-auth-jwt", accessToken);
         }
 
+        const resolvedLanguage = isSupportedLanguage(fullUser.language)
+          ? fullUser.language
+          : preferredLanguage;
+
         // Return user data with dual-token strategy
         res.status(201).json({
           user: {
@@ -190,6 +203,7 @@ export function createRegisterRoute(): Router {
             emailVerified: fullUser.emailVerified,
             createdAt: fullUser.createdAt,
             updatedAt: fullUser.updatedAt,
+            language: resolvedLanguage,
             families: [], // New users have no families yet
           },
           session: {

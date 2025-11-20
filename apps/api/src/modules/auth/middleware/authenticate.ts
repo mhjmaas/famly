@@ -18,6 +18,7 @@ export interface AuthenticatedRequest extends Request {
     image?: string;
     createdAt: Date;
     updatedAt: Date;
+    language?: string;
     families?: FamilyMembershipView[];
   };
   session?: {
@@ -108,6 +109,7 @@ export async function authenticate(
           image: payload.image as string | undefined,
           createdAt: new Date(payload.createdAt as string),
           updatedAt: new Date(payload.updatedAt as string),
+          language: payload.language as string | undefined,
         };
 
         // JWT doesn't have session info (it's stateless)
@@ -161,6 +163,7 @@ export async function authenticate(
     // Note: sessionData.user includes custom fields from customSession plugin
     const userData = sessionData.user as typeof sessionData.user & {
       birthdate?: string | Date;
+      language?: string | undefined;
     };
     req.user = {
       id: userData.id,
@@ -171,6 +174,7 @@ export async function authenticate(
       image: userData.image ?? undefined,
       createdAt: new Date(userData.createdAt),
       updatedAt: new Date(userData.updatedAt),
+      language: userData.language,
       families: req.user?.families,
     };
 

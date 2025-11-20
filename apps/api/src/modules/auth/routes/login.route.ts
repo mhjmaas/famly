@@ -1,3 +1,4 @@
+import { getDb } from "@infra/mongo/client";
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import { validateObjectId } from "@lib/objectid-utils";
@@ -12,7 +13,9 @@ import {
   type Response,
   Router,
 } from "express";
+import { ObjectId } from "mongodb";
 import { getAuth } from "../better-auth";
+import { isSupportedLanguage, resolvePreferredLanguage } from "../language";
 
 /**
  * @swagger
@@ -80,6 +83,10 @@ export function createLoginRoute(): Router {
     "/login",
     async (req: Request, res: Response, next: NextFunction) => {
       try {
+        const preferredLanguage = resolvePreferredLanguage(
+          req.body?.language,
+          req.headers["accept-language"],
+        );
         const auth = getAuth();
 
         // Use better-auth's built-in signIn method
@@ -88,6 +95,8 @@ export function createLoginRoute(): Router {
             email: req.body.email,
             password: req.body.password,
             rememberMe: req.body.rememberMe || false,
+            // @ts-expect-error - language is an additional field
+            language: preferredLanguage,
           },
           headers: fromNodeHeaders(req.headers),
           asResponse: true,
@@ -110,6 +119,7 @@ export function createLoginRoute(): Router {
             emailVerified: boolean;
             createdAt: Date;
             updatedAt: Date;
+            language?: string;
           };
           token?: string;
           session?: {
@@ -141,6 +151,26 @@ export function createLoginRoute(): Router {
             error,
           );
           // Continue with basic user data from signInEmail response
+        }
+
+        // Persist preferred language when provided
+        try {
+          const db = getDb();
+          await db.collection("user").updateOne(
+            { _id: new ObjectId(fullUser.id) },
+            {
+              $set: {
+                language: preferredLanguage,
+                updatedAt: new Date(),
+              },
+            },
+          );
+          fullUser = {
+            ...fullUser,
+            language: preferredLanguage,
+          };
+        } catch (error) {
+          logger.warn("Failed to persist language on login:", error);
         }
 
         // Get JWT access token by calling the token endpoint with the session
@@ -185,6 +215,11 @@ export function createLoginRoute(): Router {
           // Continue with empty families array
         }
 
+        // Resolve language with fallback to preferredLanguage
+        const resolvedLanguage = isSupportedLanguage(fullUser.language)
+          ? fullUser.language
+          : preferredLanguage;
+
         // Return user data with dual-token strategy
         res.status(200).json({
           user: {
@@ -195,6 +230,7 @@ export function createLoginRoute(): Router {
             emailVerified: fullUser.emailVerified,
             createdAt: fullUser.createdAt,
             updatedAt: fullUser.updatedAt,
+            language: resolvedLanguage,
             families,
           },
           session: {
