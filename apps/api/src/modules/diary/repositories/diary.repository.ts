@@ -79,7 +79,7 @@ export class DiaryRepository {
    * Find a diary entry by ID
    */
   async findById(entryId: ObjectId): Promise<DiaryEntry | null> {
-    return this.collection.findOne({ _id: entryId });
+    return this.collection.findOne({ _id: { $eq: entryId } });
   }
 
   /**
@@ -135,7 +135,7 @@ export class DiaryRepository {
     }
 
     const result = await this.collection.findOneAndUpdate(
-      { _id: entryId },
+      { _id: { $eq: entryId } },
       { $set: updateFields },
       { returnDocument: "after" },
     );
@@ -147,7 +147,7 @@ export class DiaryRepository {
    * Delete a diary entry
    */
   async deleteEntry(entryId: ObjectId): Promise<boolean> {
-    const result = await this.collection.deleteOne({ _id: entryId });
+    const result = await this.collection.deleteOne({ _id: { $eq: entryId } });
     return result.deletedCount > 0;
   }
 

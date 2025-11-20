@@ -73,7 +73,7 @@ export class ScheduleRepository {
    * Find a schedule by ID
    */
   async findScheduleById(scheduleId: string): Promise<TaskSchedule | null> {
-    return this.collection.findOne({ _id: toObjectId(scheduleId) });
+    return this.collection.findOne({ _id: { $eq: toObjectId(scheduleId) } });
   }
 
   /**
@@ -147,7 +147,7 @@ export class ScheduleRepository {
     }
 
     const result = await this.collection.findOneAndUpdate(
-      { _id: toObjectId(scheduleId) },
+      { _id: { $eq: toObjectId(scheduleId) } },
       { $set: updateFields },
       { returnDocument: "after" },
     );
@@ -160,7 +160,7 @@ export class ScheduleRepository {
    */
   async updateLastGeneratedDate(scheduleId: string, date: Date): Promise<void> {
     await this.collection.updateOne(
-      { _id: toObjectId(scheduleId) },
+      { _id: { $eq: toObjectId(scheduleId) } },
       {
         $set: {
           lastGeneratedDate: date,
@@ -175,7 +175,7 @@ export class ScheduleRepository {
    */
   async deleteSchedule(scheduleId: string): Promise<boolean> {
     const result = await this.collection.deleteOne({
-      _id: toObjectId(scheduleId),
+      _id: { $eq: toObjectId(scheduleId) },
     });
     return result.deletedCount > 0;
   }

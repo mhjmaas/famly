@@ -19,6 +19,7 @@ module.exports = {
     "^@lib/(.*)$": "<rootDir>/src/lib/$1",
     "^@middleware/(.*)$": "<rootDir>/src/middleware/$1",
     "^@modules/(.*)$": "<rootDir>/src/modules/$1",
+    "^@locales/(.*)$": "<rootDir>/src/locales/$1",
     "^@routes/(.*)$": "<rootDir>/src/routes/$1",
     "^@tests/(.*)$": "<rootDir>/tests/$1",
     "^@famly/shared$": "<rootDir>/../../packages/shared/src/index.ts",

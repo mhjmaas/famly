@@ -116,7 +116,7 @@ export class MembershipRepository {
     messageId: ObjectId,
   ): Promise<Membership | null> {
     const result = await this.collection.findOneAndUpdate(
-      { _id: membershipId },
+      { _id: { $eq: membershipId } },
       {
         $set: {
           lastReadMessageId: messageId,
@@ -137,7 +137,7 @@ export class MembershipRepository {
     role: "admin" | "member",
   ): Promise<Membership | null> {
     const result = await this.collection.findOneAndUpdate(
-      { _id: membershipId },
+      { _id: { $eq: membershipId } },
       {
         $set: {
           role,
@@ -154,7 +154,9 @@ export class MembershipRepository {
    * Delete a membership
    */
   async delete(membershipId: ObjectId): Promise<boolean> {
-    const result = await this.collection.deleteOne({ _id: membershipId });
+    const result = await this.collection.deleteOne({
+      _id: { $eq: membershipId },
+    });
     return result.deletedCount > 0;
   }
 }

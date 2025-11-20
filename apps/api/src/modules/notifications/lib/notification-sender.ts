@@ -5,7 +5,9 @@
  */
 
 import { logger } from "@lib/logger";
+import { getUserLanguages } from "@lib/user-utils";
 import { NotificationService } from "../services/notification.service";
+import { resolveNotificationLocale } from "./notification-i18n";
 import type { NotificationPayload } from "./notification-templates";
 
 /**
@@ -47,7 +49,7 @@ export async function sendToUser(
  */
 export async function sendToMultipleUsers(
   userIds: string[],
-  notification: NotificationPayload,
+  buildNotification: (locale: string, userId: string) => NotificationPayload,
   options?: {
     excludeUser?: string;
     logContext?: Record<string, unknown>;
@@ -70,11 +72,15 @@ export async function sendToMultipleUsers(
     return { successful: 0, failed: 0 };
   }
 
+  const languageMap = await getUserLanguages(recipientIds);
+
   // Send notifications concurrently
   const results = await Promise.allSettled(
-    recipientIds.map((userId) =>
-      notificationService.sendNotification(userId, notification),
-    ),
+    recipientIds.map((userId) => {
+      const locale = resolveNotificationLocale(languageMap.get(userId));
+      const payload = buildNotification(locale, userId);
+      return notificationService.sendNotification(userId, payload);
+    }),
   );
 
   // Count results
@@ -86,7 +92,6 @@ export async function sendToMultipleUsers(
     successful,
     failed,
     total: recipientIds.length,
-    notificationType: notification.data?.type,
     ...options?.logContext,
   });
 
@@ -95,7 +100,6 @@ export async function sendToMultipleUsers(
     if (result.status === "rejected") {
       logger.debug("Failed to send notification", {
         userId: recipientIds[index],
-        notificationType: notification.data?.type,
         error: result.reason,
         ...options?.logContext,
       });
@@ -115,11 +119,14 @@ export async function sendToMultipleUsers(
 export async function sendChatNotifications(
   chatMembers: string[],
   senderId: string,
-  notification: NotificationPayload,
+  buildNotification: (
+    locale: string,
+    recipientId: string,
+  ) => NotificationPayload,
   logContext?: Record<string, unknown>,
 ): Promise<void> {
   try {
-    await sendToMultipleUsers(chatMembers, notification, {
+    await sendToMultipleUsers(chatMembers, buildNotification, {
       excludeUser: senderId,
       logContext: {
         context: "chat_notification",
@@ -147,11 +154,14 @@ export async function sendChatNotifications(
 export async function sendFamilyNotifications(
   familyMembers: string[],
   triggerId: string,
-  notification: NotificationPayload,
+  buildNotification: (
+    locale: string,
+    recipientId: string,
+  ) => NotificationPayload,
   logContext?: Record<string, unknown>,
 ): Promise<void> {
   try {
-    await sendToMultipleUsers(familyMembers, notification, {
+    await sendToMultipleUsers(familyMembers, buildNotification, {
       excludeUser: triggerId,
       logContext: {
         context: "family_notification",

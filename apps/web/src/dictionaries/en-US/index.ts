@@ -24,6 +24,7 @@ import hero from "./hero.json";
 import languageSelector from "./language-selector.json";
 import metadata from "./metadata.json";
 import navigation from "./navigation.json";
+import notifications from "./notifications.json";
 import pricing from "./pricing.json";
 import privacy from "./privacy.json";
 import profile from "./profile.json";
@@ -41,6 +42,7 @@ type DictionaryFragments = typeof app &
   typeof privacy &
   typeof languageSelector &
   typeof contributionGoals &
+  typeof notifications &
   typeof authCommon &
   typeof authSignIn &
   typeof authGetStarted &
@@ -72,6 +74,7 @@ const dictionary: DictionaryFragments = deepMerge<DictionaryFragments>(
   profile,
   pwa,
   contributionGoals,
+  notifications,
   authCommon,
   authSignIn,
   authGetStarted,

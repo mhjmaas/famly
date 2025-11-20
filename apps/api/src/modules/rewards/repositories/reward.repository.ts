@@ -52,7 +52,7 @@ export class RewardRepository {
    */
   async findById(rewardId: ObjectId): Promise<Reward | null> {
     const collection = this.getCollection();
-    const reward = await collection.findOne({ _id: rewardId });
+    const reward = await collection.findOne({ _id: { $eq: rewardId } });
     return reward || null;
   }
 
@@ -88,7 +88,7 @@ export class RewardRepository {
     if (input.imageUrl !== undefined) updateData.imageUrl = input.imageUrl;
 
     const result = await collection.findOneAndUpdate(
-      { _id: rewardId },
+      { _id: { $eq: rewardId } },
       { $set: updateData },
       { returnDocument: "after" },
     );
@@ -101,7 +101,7 @@ export class RewardRepository {
    */
   async delete(rewardId: ObjectId): Promise<boolean> {
     const collection = this.getCollection();
-    const result = await collection.deleteOne({ _id: rewardId });
+    const result = await collection.deleteOne({ _id: { $eq: rewardId } });
     return result.deletedCount > 0;
   }
 

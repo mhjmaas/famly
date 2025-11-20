@@ -91,7 +91,7 @@ export class ChatRepository {
    * Find a chat by ID
    */
   async findById(chatId: ObjectId): Promise<Chat | null> {
-    return this.collection.findOne({ _id: chatId });
+    return this.collection.findOne({ _id: { $eq: chatId } });
   }
 
   /**
@@ -114,7 +114,7 @@ export class ChatRepository {
     memberIds: ObjectId[],
   ): Promise<Chat | null> {
     const result = await this.collection.findOneAndUpdate(
-      { _id: chatId },
+      { _id: { $eq: chatId } },
       {
         $set: {
           memberIds,
@@ -132,7 +132,7 @@ export class ChatRepository {
    */
   async updateTimestamp(chatId: ObjectId): Promise<Chat | null> {
     const result = await this.collection.findOneAndUpdate(
-      { _id: chatId },
+      { _id: { $eq: chatId } },
       {
         $set: {
           updatedAt: new Date(),

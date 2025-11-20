@@ -97,7 +97,7 @@ function initAuth() {
           const db = getDb();
           const fullUser = await db
             .collection("user")
-            .findOne({ _id: new ObjectId(user.id) });
+            .findOne({ _id: { $eq: new ObjectId(user.id) } });
 
           return {
             user: {

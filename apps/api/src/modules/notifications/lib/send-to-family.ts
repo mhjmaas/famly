@@ -3,8 +3,10 @@
  * Helper utility to send notifications to all family members except the sender
  */
 
+import { getUserLanguages } from "@lib/user-utils";
 import { logger } from "../../../lib/logger";
 import { NotificationService } from "../services/notification.service";
+import { resolveNotificationLocale } from "./notification-i18n";
 import type { NotificationPayload } from "./notification-templates";
 
 /**
@@ -16,7 +18,10 @@ import type { NotificationPayload } from "./notification-templates";
 export async function sendToFamilyMembers(
   familyMemberIds: string[],
   excludeUserId: string,
-  notification: NotificationPayload,
+  buildNotification: (
+    locale: string,
+    recipientId: string,
+  ) => NotificationPayload,
 ): Promise<void> {
   const notificationService = new NotificationService();
 
@@ -34,11 +39,15 @@ export async function sendToFamilyMembers(
     return;
   }
 
+  const languageMap = await getUserLanguages(recipientIds);
+
   // Send notifications to each recipient
   const results = await Promise.allSettled(
-    recipientIds.map((userId) =>
-      notificationService.sendNotification(userId, notification),
-    ),
+    recipientIds.map((userId) => {
+      const locale = resolveNotificationLocale(languageMap.get(userId));
+      const payload = buildNotification(locale, userId);
+      return notificationService.sendNotification(userId, payload);
+    }),
   );
 
   // Log results
@@ -49,7 +58,6 @@ export async function sendToFamilyMembers(
     successful,
     failed,
     total: recipientIds.length,
-    notificationType: notification.data?.type,
   });
 
   // Log any failures

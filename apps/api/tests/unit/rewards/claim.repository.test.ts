@@ -77,7 +77,9 @@ describe("ClaimRepository", () => {
       const result = await repository.findById(claimId);
 
       expect(result).toEqual(mockClaim);
-      expect(mockCollection.findOne).toHaveBeenCalledWith({ _id: claimId });
+      expect(mockCollection.findOne).toHaveBeenCalledWith({
+        _id: { $eq: claimId },
+      });
     });
 
     it("should return null when claim not found", async () => {
@@ -259,7 +261,7 @@ describe("ClaimRepository", () => {
 
       expect(result?.autoTaskId).toBe(autoTaskId);
       expect(mockCollection.findOneAndUpdate).toHaveBeenCalledWith(
-        { _id: claimId },
+        { _id: { $eq: claimId } },
         expect.objectContaining({
           $set: expect.objectContaining({
             autoTaskId,
@@ -310,7 +312,9 @@ describe("ClaimRepository", () => {
       const result = await repository.delete(claimId);
 
       expect(result).toBe(true);
-      expect(mockCollection.deleteOne).toHaveBeenCalledWith({ _id: claimId });
+      expect(mockCollection.deleteOne).toHaveBeenCalledWith({
+        _id: { $eq: claimId },
+      });
     });
 
     it("should return false when claim not found", async () => {

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import type { Socket } from "socket.io-client";
 import { toast } from "sonner";
+import { useNotificationTranslations } from "@/hooks/use-notification-translations";
 import { useAppDispatch } from "@/store/hooks";
 import { fetchFamilies } from "@/store/slices/family.slice";
 import type { FamilyEventPayloads } from "./types";
@@ -23,6 +24,7 @@ export function useFamilyEvents(
   enabled = true,
 ): void {
   const dispatch = useAppDispatch();
+  const t = useNotificationTranslations();
 
   useEffect(() => {
     if (!socket || !familyId || !userId || !enabled) {
@@ -38,9 +40,12 @@ export function useFamilyEvents(
       // Refresh family members list
       dispatch(fetchFamilies());
 
-      // Show notification
-      toast.success("New Family Member", {
-        description: `${event.name} has joined the family`,
+      // Show notification with translations
+      toast.success(t.family.memberAdded, {
+        description: t.family.memberAddedDescription.replace(
+          "{memberName}",
+          event.name,
+        ),
       });
     };
 
@@ -53,9 +58,12 @@ export function useFamilyEvents(
       // Refresh family members list
       dispatch(fetchFamilies());
 
-      // Show notification
-      toast.info("Member Removed", {
-        description: `${event.name} has been removed from the family`,
+      // Show notification with translations
+      toast.info(t.family.memberRemoved, {
+        description: t.family.memberRemovedDescription.replace(
+          "{memberName}",
+          event.name,
+        ),
       });
     };
 
@@ -68,9 +76,11 @@ export function useFamilyEvents(
       // Refresh family members list
       dispatch(fetchFamilies());
 
-      // Show notification with role change
-      toast.info("Role Updated", {
-        description: `${event.name} is now a ${event.newRole}`,
+      // Show notification with translations
+      toast.info(t.family.roleUpdated, {
+        description: t.family.roleUpdatedDescription
+          .replace("{memberName}", event.name)
+          .replace("{newRole}", event.newRole),
       });
     };
 
@@ -85,5 +95,5 @@ export function useFamilyEvents(
       socket.off("family.member.removed", handleMemberRemoved);
       socket.off("family.member.role.updated", handleMemberRoleUpdated);
     };
-  }, [socket, familyId, userId, enabled, dispatch]);
+  }, [socket, familyId, userId, enabled, dispatch, t]);
 }

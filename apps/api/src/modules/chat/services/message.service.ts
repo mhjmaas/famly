@@ -369,17 +369,23 @@ export class MessageService {
       // Create notification with message preview (limit to 100 chars)
       const messagePreview =
         body.length > 100 ? `${body.substring(0, 100)}...` : body;
-      const notification = createChatMessageNotification(
-        senderName,
-        messagePreview,
-        normalizedChatId,
-      );
 
       // Send to all members except the sender
       const memberIds = memberships.map((m) => m.userId.toString());
-      await sendChatNotifications(memberIds, normalizedSenderId, notification, {
-        chatId: normalizedChatId,
-      });
+      await sendChatNotifications(
+        memberIds,
+        normalizedSenderId,
+        (locale) =>
+          createChatMessageNotification(
+            locale,
+            senderName,
+            messagePreview,
+            normalizedChatId,
+          ),
+        {
+          chatId: normalizedChatId,
+        },
+      );
     } catch (error) {
       logger.error("Failed to send chat message notifications", {
         chatId: normalizedChatId,

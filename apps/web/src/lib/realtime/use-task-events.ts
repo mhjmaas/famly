@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import type { Socket } from "socket.io-client";
 import { toast } from "sonner";
+import { useNotificationTranslations } from "@/hooks/use-notification-translations";
 import { useAppDispatch } from "@/store/hooks";
 import { fetchTasks } from "@/store/slices/tasks.slice";
 import type { TaskEventPayloads } from "./types";
@@ -23,6 +24,7 @@ export function useTaskEvents(
   enabled = true,
 ): void {
   const dispatch = useAppDispatch();
+  const t = useNotificationTranslations();
 
   useEffect(() => {
     if (!socket || !familyId || !userId || !enabled) {
@@ -41,8 +43,11 @@ export function useTaskEvents(
         event.task.assignment.type === "member" &&
         event.task.assignment.memberId === userId
       ) {
-        toast.success("New Task Assigned", {
-          description: `You've been assigned: ${event.task.name}`,
+        toast.success(t.task.created, {
+          description: t.task.createdDescription.replace(
+            "{name}",
+            event.task.name,
+          ),
         });
       }
     };
@@ -59,8 +64,11 @@ export function useTaskEvents(
         event.task.assignment.type === "member" &&
         event.task.assignment.memberId === userId
       ) {
-        toast.info("Task Assigned to You", {
-          description: `${event.task.name}`,
+        toast.info(t.task.assigned, {
+          description: t.task.assignedDescription.replace(
+            "{name}",
+            event.task.name,
+          ),
         });
       }
     };
@@ -86,8 +94,11 @@ export function useTaskEvents(
         event.task.assignment.memberId === userId &&
         wasCompletedByOther
       ) {
-        toast.success("Your Task Was Completed", {
-          description: `${event.task.name} was marked complete`,
+        toast.success(t.task.completed, {
+          description: t.task.completedDescription.replace(
+            "{name}",
+            event.task.name,
+          ),
         });
       }
     };
@@ -113,5 +124,5 @@ export function useTaskEvents(
       socket.off("task.completed", handleTaskCompleted);
       socket.off("task.deleted", handleTaskDeleted);
     };
-  }, [socket, familyId, userId, enabled, dispatch]);
+  }, [socket, familyId, userId, enabled, dispatch, t]);
 }
