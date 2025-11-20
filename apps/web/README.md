@@ -21,21 +21,21 @@ src/
       page.tsx       # landing page composed from localized components
     globals.css
   components/        # UI and landing components
-  dictionaries/      # locale dictionaries (JSON)
+  dictionaries/      # locale dictionaries (feature-scoped JSON + merge indexes)
   i18n/              # locale config and types
   proxy.ts      # locale detection + redirect proxy
 ```
 
 ## Dictionary Conventions
 
-- Source-of-truth dictionaries live in `src/dictionaries/<locale>.json`.
-- Each dictionary must share the same shape. Types are generated from `en-US.json` (`Dictionary` in `src/i18n/types.ts`).
-- Nested objects group copy by section (`navigation`, `hero`, `features`, etc.).
+- Source-of-truth dictionaries live in `src/dictionaries/<locale>/` as feature-scoped JSON fragments merged by `src/dictionaries/<locale>/index.ts`.
+- Each dictionary must share the same shape. Types are generated from the merged `en-US` dictionary (`Dictionary` in `src/i18n/types.ts`).
+- Nested objects group copy by section (`navigation`, `hero`, `features`, `dashboard.pages.tasks`, etc.).
 - HTML markup should be avoided—when needed (e.g. `<strong>` emphasis) keep it minimal and render with `dangerouslySetInnerHTML`.
 
 ### Adding Translation Keys
 
-1. Add the key and copy to `src/dictionaries/en-US.json`.
+1. Add the key to the appropriate fragment under `src/dictionaries/en-US/` (or create a new fragment if needed) and ensure it merges correctly.
 2. Mirror the key in every locale dictionary with translated text.
 3. Update component props and TypeScript types if you introduce a new dictionary section.
 4. Run `pnpm --filter web lint` to ensure formatting and type-safety hold.
@@ -43,7 +43,7 @@ src/
 ### Adding a New Locale
 
 1. Update `src/i18n/config.ts` to include the new locale in `i18n.locales` and `localeLabels`.
-2. Create `src/dictionaries/<locale>.json` by copying `en-US.json` and translating values.
+2. Create `src/dictionaries/<locale>/` by copying the `en-US/` fragments (and `index.ts`) and translating values.
 3. Ensure proxy redirects support the locale (no code changes if you use the same config).
 4. Revalidate static params if using ISR or regenerate the site.
 

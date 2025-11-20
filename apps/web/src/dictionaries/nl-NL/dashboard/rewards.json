@@ -1,0 +1,125 @@
+{
+  "dashboard": {
+    "pages": {
+      "rewards": {
+        "title": "Beloningen",
+        "description": "Wissel je karmapunten in voor beloningen",
+        "karmaBalance": {
+          "title": "Je Beschikbare Karma",
+          "amount": "{amount}"
+        },
+        "emptyState": {
+          "title": "Nog geen beloningen",
+          "parentDescription": "Maak je eerste beloning om je gezin te motiveren",
+          "childDescription": "Vraag een ouder om beloningen toe te voegen",
+          "createButton": "Beloning Maken"
+        },
+        "card": {
+          "claimCount": "{count}x geclaimd",
+          "claimButton": "Claimen",
+          "pendingButton": "In behandeling",
+          "insufficientKarma": "Niet genoeg karma",
+          "progress": {
+            "saving": "Spaarvoortgang",
+            "complete": "Je hebt genoeg karma!",
+            "needed": "Nog {amount} karma nodig"
+          },
+          "favourite": "Voeg toe aan favorieten",
+          "unfavourite": "Verwijder uit favorieten",
+          "edit": "Bewerken",
+          "delete": "Verwijderen",
+          "cancel": "Annuleren",
+          "cancelConfirm": {
+            "title": "Claim annuleren?",
+            "description": "Dit annuleert de claim zodat je iets anders kunt kiezen!",
+            "confirm": "Ja, claim annuleren",
+            "dismiss": "Laat staan"
+          }
+        },
+        "dialog": {
+          "create": {
+            "title": "Nieuwe Beloning Maken",
+            "description": "Voeg een nieuwe beloning toe voor gezinsleden om te claimen"
+          },
+          "edit": {
+            "title": "Beloning Bewerken",
+            "description": "Werk de beloningsdetails bij"
+          },
+          "fields": {
+            "name": {
+              "label": "Naam Beloning",
+              "placeholder": "bijv., Extra Schermtijd",
+              "required": "verplicht"
+            },
+            "karmaCost": {
+              "label": "Benodigde Karmapunten",
+              "placeholder": "bijv., 50",
+              "required": "verplicht"
+            },
+            "image": {
+              "label": "Afbeelding",
+              "uploadButton": "Afbeelding Uploaden",
+              "orLabel": "of geef URL op",
+              "urlPlaceholder": "https://voorbeeld.com/afbeelding.jpg (optioneel)",
+              "uploading": "Uploaden...",
+              "preview": "Afbeeldingsvoorbeeld",
+              "remove": "Afbeelding verwijderen",
+              "errors": {
+                "fileSize": "Bestandsgrootte moet kleiner zijn dan 5MB",
+                "fileType": "Alleen JPEG, PNG, GIF en WebP afbeeldingen zijn toegestaan",
+                "uploadFailed": "Afbeelding uploaden mislukt"
+              }
+            },
+            "description": {
+              "label": "Beschrijving",
+              "placeholder": "Beschrijf wat deze beloning inhoudt...",
+              "addButton": "Beschrijving"
+            }
+          },
+          "actions": {
+            "cancel": "Annuleren",
+            "create": "Beloning Maken",
+            "update": "Beloning Bijwerken"
+          }
+        },
+        "delete": {
+          "title": "Beloning verwijderen?",
+          "description": "Weet je zeker dat je \"{name}\" wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
+          "buttons": {
+            "cancel": "Annuleren",
+            "confirm": "Beloning Verwijderen"
+          }
+        },
+        "claimSheet": {
+          "title": "Beloning Claimen",
+          "description": "Weet je zeker dat je deze beloning wilt claimen? De karmapunten worden afgetrokken en een ouder wordt op de hoogte gesteld om je beloning te vervullen.",
+          "cost": "Kosten",
+          "karma": "{amount} Karma",
+          "whatHappensNext": {
+            "title": "Wat gebeurt er nu?",
+            "step1": "{amount} karmapunten worden van je saldo afgetrokken",
+            "step2": "Er wordt een taak aangemaakt voor ouders om je beloning te vervullen",
+            "step3": "Je beloningsstatus wordt weergegeven als \"In behandeling\" totdat een ouder de taak voltooit",
+            "step4": "Zodra vervuld, kun je weer beloningen claimen"
+          },
+          "actions": {
+            "cancel": "Annuleren",
+            "confirm": "Claim Bevestigen"
+          }
+        },
+        "toast": {
+          "success": "Beloning {name} succesvol geclaimd",
+          "cancelled": "Claim succesvol geannuleerd",
+          "cancelError": "Claim annuleren mislukt",
+          "deleteSuccess": "Beloning verwijderd",
+          "deleteError": "Beloning verwijderen mislukt"
+        },
+        "actions": {
+          "createButton": "Nieuwe Beloning"
+        },
+        "loading": "Beloningen laden...",
+        "error": "Kan beloningen niet laden"
+      }
+    }
+  }
+}

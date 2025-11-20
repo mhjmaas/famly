@@ -1,0 +1,32 @@
+{
+  "dashboard": {
+    "pages": {
+      "memberDetail": {
+        "title": "Member Details",
+        "backToFamily": "Back to Family",
+        "breadcrumbs": {
+          "familyMembers": "Family Members"
+        },
+        "tabs": {
+          "giveKarma": "Give Karma",
+          "contributionGoal": "Contribution Goal"
+        },
+        "actions": {
+          "editMember": "Edit Member",
+          "removeMember": "Remove Member"
+        },
+        "karmaCard": {
+          "amountLabel": "Karma Amount",
+          "amountPlaceholder": "e.g., 25 or -10",
+          "amountHelper": "Use positive or negative numbers",
+          "descriptionLabel": "Description *",
+          "descriptionPlaceholder": "Explain why you're giving or deducting karma...",
+          "giveButton": "Give Karma",
+          "deductButton": "Deduct Karma",
+          "success": "Karma updated successfully",
+          "error": "Failed to update karma"
+        }
+      }
+    }
+  }
+}

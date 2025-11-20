@@ -1,0 +1,75 @@
+{
+  "auth": {
+    "getStarted": {
+      "progress": {
+        "step": "Step {current} of {total}",
+        "labels": {
+          "register": "Create Account",
+          "family": "Create Family"
+        }
+      },
+      "deployment": {
+        "title": "Choose Your Deployment",
+        "description": "Select how you want to host Famly",
+        "selfHosted": {
+          "title": "Self-Hosted",
+          "description": "Deploy with Docker on your own infrastructure",
+          "highlight": "Free Forever"
+        },
+        "cloud": {
+          "title": "Cloud Hosted",
+          "description": "We manage everything for you",
+          "highlight": "€5 per member/month"
+        }
+      },
+      "register": {
+        "title": "Create Your Account",
+        "description": "Enter your details to get started with Famly",
+        "fields": {
+          "name": {
+            "label": "Name",
+            "placeholder": "John Doe"
+          },
+          "email": {
+            "label": "Email (used for login)",
+            "placeholder": "your@email.com"
+          },
+          "birthdate": {
+            "label": "Birthdate"
+          },
+          "password": {
+            "label": "Password",
+            "placeholder": "Create a strong password"
+          },
+          "confirmPassword": {
+            "label": "Confirm Password",
+            "placeholder": "Confirm your password"
+          }
+        },
+        "button": {
+          "idle": "Continue",
+          "loading": "Creating Account..."
+        }
+      },
+      "family": {
+        "title": "Create Your Family",
+        "description": "Give your family a name. You'll be the first member!",
+        "fields": {
+          "familyName": {
+            "label": "Family Name",
+            "placeholder": "e.g., The Smiths, Johnson Family",
+            "helper": "You can always change this later in settings"
+          }
+        },
+        "button": {
+          "idle": "Complete Setup",
+          "loading": "Creating Family..."
+        }
+      },
+      "errors": {
+        "passwordMismatch": "Passwords do not match",
+        "birthdateRequired": "Birthdate is required"
+      }
+    }
+  }
+}

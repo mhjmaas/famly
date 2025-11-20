@@ -1,0 +1,17 @@
+{
+  "hero": {
+    "badge": "Privacy-eerst gezinsbeheer",
+    "heading": {
+      "leading": "Het digitale thuis van uw",
+      "highlight": "gezin"
+    },
+    "subheading": "Houd uw gezin verbonden en veilig. Uw gegevens blijven voor altijd van u.",
+    "primaryCta": "Start met zelf hosten",
+    "secondaryCta": "Probeer de cloud-bèta",
+    "trustIndicators": {
+      "encrypted": "End-to-end versleuteld",
+      "selfHosted": "Optie voor zelf-hosting",
+      "familyFirst": "Gezinsgerichte ervaring"
+    }
+  }
+}

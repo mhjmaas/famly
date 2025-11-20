@@ -1,0 +1,32 @@
+{
+  "dashboard": {
+    "pages": {
+      "memberDetail": {
+        "title": "Liddetails",
+        "backToFamily": "Terug naar Gezin",
+        "breadcrumbs": {
+          "familyMembers": "Gezinsleden"
+        },
+        "tabs": {
+          "giveKarma": "Karma uitdelen",
+          "contributionGoal": "Gezinsbijdrage-doel"
+        },
+        "actions": {
+          "editMember": "Lid Bewerken",
+          "removeMember": "Lid Verwijderen"
+        },
+        "karmaCard": {
+          "amountLabel": "Karma Bedrag",
+          "amountPlaceholder": "bijv., 25 of -10",
+          "amountHelper": "Gebruik positieve of negatieve getallen",
+          "descriptionLabel": "Beschrijving *",
+          "descriptionPlaceholder": "Leg uit waarom je karma geeft of aftrekt...",
+          "giveButton": "Geef Karma",
+          "deductButton": "Trek Karma af",
+          "success": "Karma succesvol bijgewerkt",
+          "error": "Kan karma niet bijwerken"
+        }
+      }
+    }
+  }
+}

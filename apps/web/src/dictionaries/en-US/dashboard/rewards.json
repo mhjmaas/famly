@@ -1,0 +1,125 @@
+{
+  "dashboard": {
+    "pages": {
+      "rewards": {
+        "title": "Rewards",
+        "description": "Redeem your karma points for exciting rewards",
+        "karmaBalance": {
+          "title": "Your Available Karma",
+          "amount": "{amount}"
+        },
+        "emptyState": {
+          "title": "No rewards yet",
+          "parentDescription": "Create your first reward to motivate your family",
+          "childDescription": "Ask a parent to add rewards",
+          "createButton": "Create Reward"
+        },
+        "card": {
+          "claimCount": "Claimed {count}x",
+          "claimButton": "Claim",
+          "pendingButton": "Pending",
+          "insufficientKarma": "Not enough karma",
+          "progress": {
+            "saving": "Saving progress",
+            "complete": "You have enough karma!",
+            "needed": "{amount} more karma needed"
+          },
+          "favourite": "Favourite this reward",
+          "unfavourite": "Remove from favourites",
+          "edit": "Edit",
+          "delete": "Delete",
+          "cancel": "Cancel",
+          "cancelConfirm": {
+            "title": "Cancel this claim?",
+            "description": "This cancels the reward claim so you can choose something else instead!",
+            "confirm": "Yes, cancel claim",
+            "dismiss": "Keep pending"
+          }
+        },
+        "dialog": {
+          "create": {
+            "title": "Create New Reward",
+            "description": "Add a new reward for family members to claim"
+          },
+          "edit": {
+            "title": "Edit Reward",
+            "description": "Update the reward details"
+          },
+          "fields": {
+            "name": {
+              "label": "Reward Name",
+              "placeholder": "e.g., Extra Screen Time",
+              "required": "required"
+            },
+            "karmaCost": {
+              "label": "Karma Points Required",
+              "placeholder": "e.g., 50",
+              "required": "required"
+            },
+            "image": {
+              "label": "Image",
+              "uploadButton": "Upload Image",
+              "orLabel": "or provide URL",
+              "urlPlaceholder": "https://example.com/image.jpg (optional)",
+              "uploading": "Uploading...",
+              "preview": "Image preview",
+              "remove": "Remove image",
+              "errors": {
+                "fileSize": "File size must be less than 5MB",
+                "fileType": "Only JPEG, PNG, GIF, and WebP images are allowed",
+                "uploadFailed": "Failed to upload image"
+              }
+            },
+            "description": {
+              "label": "Description",
+              "placeholder": "Describe what this reward includes...",
+              "addButton": "Description"
+            }
+          },
+          "actions": {
+            "cancel": "Cancel",
+            "create": "Create Reward",
+            "update": "Update Reward"
+          }
+        },
+        "delete": {
+          "title": "Delete this reward?",
+          "description": "This will permanently remove \"{name}\". This action cannot be undone.",
+          "buttons": {
+            "cancel": "Cancel",
+            "confirm": "Delete Reward"
+          }
+        },
+        "claimSheet": {
+          "title": "Claim Reward",
+          "description": "Are you sure you want to claim this reward? The karma points will be deducted and a parent will be notified to fulfill your reward.",
+          "cost": "Cost",
+          "karma": "{amount} Karma",
+          "whatHappensNext": {
+            "title": "What happens next?",
+            "step1": "{amount} karma points will be deducted from your balance",
+            "step2": "A task will be created for parents to fulfill your reward",
+            "step3": "Your reward status will show as \"Pending\" until a parent completes the task",
+            "step4": "Once fulfilled, you'll be able to claim rewards again"
+          },
+          "actions": {
+            "cancel": "Cancel",
+            "confirm": "Confirm Claim"
+          }
+        },
+        "toast": {
+          "success": "Successfully claimed {name}",
+          "cancelled": "Claim cancelled successfully",
+          "cancelError": "Failed to cancel claim",
+          "deleteSuccess": "Reward deleted",
+          "deleteError": "Failed to delete reward"
+        },
+        "actions": {
+          "createButton": "New Reward"
+        },
+        "loading": "Loading rewards...",
+        "error": "Failed to load rewards"
+      }
+    }
+  }
+}

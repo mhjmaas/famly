@@ -1,0 +1,38 @@
+{
+  "privacy": {
+    "badge": "Privacy gegarandeerd",
+    "title": "Privacy is niet optioneel",
+    "description": "In een wereld waarin gegevens voortdurend worden verzameld, kiezen wij een andere weg. De privacy van uw gezin heeft voor ons topprioriteit—geen bijzaak.",
+    "cards": {
+      "yourDataYourControl": {
+        "title": "Uw data, uw controle",
+        "description": "Wij verkopen, delen of gebruiken uw data nooit voor advertenties. Uw gezinsinformatie is alleen van u."
+      },
+      "endToEndEncryption": {
+        "title": "End-to-end versleuteling",
+        "description": "Alle gevoelige data is versleuteld tijdens transport en opslag voor maximale veiligheid."
+      },
+      "selfHostingFreedom": {
+        "title": "Vrijheid om zelf te hosten",
+        "description": "Host Famly op uw eigen infrastructuur met onze eenvoudige Docker-setup. Volledige controle, geen compromissen."
+      },
+      "zeroTracking": {
+        "title": "Geen tracking",
+        "description": "Geen analytics, trackingpixels of scripts van derden. Wij respecteren uw privacy volledig."
+      },
+      "dataPortability": {
+        "title": "Dataportabiliteit",
+        "description": "Exporteer uw gegevens op elk moment in standaardformaten. Geen lock-in, geen barrières om te vertrekken."
+      },
+      "openSource": {
+        "title": "Open source",
+        "description": "Onze code is openbaar. Controleer onze beveiligingsclaims en draag bij aan het project."
+      }
+    },
+    "promise": {
+      "title": "Onze privacybelofte",
+      "description": "We zullen uw data <strong>nooit</strong> verkopen. We zullen die <strong>nooit</strong> gebruiken voor advertenties. We zullen die <strong>nooit</strong> delen met derden. De informatie van uw gezin is heilig en wij behandelen die ook zo. Dit is niet zomaar beleid—het is ons kernprincipe.",
+      "linkLabel": "Lees ons volledige privacybeleid →"
+    }
+  }
+}

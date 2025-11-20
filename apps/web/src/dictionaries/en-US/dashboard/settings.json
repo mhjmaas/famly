@@ -1,0 +1,121 @@
+{
+  "dashboard": {
+    "pages": {
+      "settings": {
+        "title": "Family Settings",
+        "description": "Configure features and AI for your family",
+        "tabs": {
+          "features": "Features",
+          "aiSettings": "AI Settings"
+        },
+        "featuresTab": {
+          "title": "Family Features",
+          "description": "Enable or disable features for your family to use",
+          "features": {
+            "tasks": {
+              "label": "Tasks",
+              "description": "Manage family tasks and chores"
+            },
+            "rewards": {
+              "label": "Rewards",
+              "description": "Track karma and redeem rewards"
+            },
+            "shoppingLists": {
+              "label": "Shopping Lists",
+              "description": "Collaborate on shopping lists"
+            },
+            "recipes": {
+              "label": "Recipes",
+              "description": "Share and discover family recipes"
+            },
+            "locations": {
+              "label": "Locations",
+              "description": "Track family member locations and trips"
+            },
+            "memories": {
+              "label": "Memories",
+              "description": "Create and share family memories"
+            },
+            "diary": {
+              "label": "Diary",
+              "description": "Personal diary entries for each member"
+            },
+            "chat": {
+              "label": "Chat",
+              "description": "Family chat and messaging"
+            },
+            "aiIntegration": {
+              "label": "AI Integration",
+              "description": "Enable AI assistant features"
+            }
+          },
+          "about": {
+            "title": "About Features",
+            "description1": "Control which features are available to your family members. Disabled features will be hidden from the navigation and cannot be accessed.",
+            "description2": "Parents can enable or disable features based on family needs and preferences."
+          }
+        },
+        "aiSettingsTab": {
+          "title": "AI Configuration",
+          "description": "Connect to an OpenAI-compatible API endpoint to enable AI chat features",
+          "fields": {
+            "aiName": {
+              "label": "AI Name",
+              "placeholder": "e.g., Jarvis, Alfred, Friday",
+              "helper": "Give your AI assistant a friendly name"
+            },
+            "apiEndpoint": {
+              "label": "API Endpoint",
+              "placeholder": "https://api.openai.com/v1",
+              "helper": "OpenAI-compatible API endpoint URL"
+            },
+            "apiSecret": {
+              "label": "API Secret",
+              "placeholder": "sk-...",
+              "helper": "Your API key or secret token (stored securely)"
+            },
+            "modelName": {
+              "label": "Model Name",
+              "placeholder": "gpt-4, gpt-3.5-turbo, etc.",
+              "helper": "The model identifier to use for chat completions"
+            }
+          },
+          "buttons": {
+            "save": "Save AI Settings",
+            "saving": "Saving...",
+            "reset": "Reset to Default"
+          },
+          "about": {
+            "title": "About AI Settings",
+            "description": "These settings allow you to connect Famly to any OpenAI-compatible API endpoint. This includes:",
+            "providers": {
+              "openai": "OpenAI API (GPT-4, GPT-3.5, etc.)",
+              "azure": "Azure OpenAI Service",
+              "local": "Local LLM servers (LM Studio, Ollama, etc.)",
+              "other": "Other compatible providers"
+            },
+            "securityNote": "Your API credentials are stored securely and encrypted. They are never exposed in responses."
+          }
+        },
+        "toast": {
+          "featureEnabled": "Feature Enabled",
+          "featureDisabled": "Feature Disabled",
+          "featureEnabledDescription": "{feature} has been enabled",
+          "featureDisabledDescription": "{feature} has been disabled",
+          "aiSettingsSaved": "AI Settings Saved",
+          "aiSettingsSavedDescription": "AI settings for {aiName} have been saved successfully",
+          "settingsUpdateError": "Failed to Update Settings",
+          "settingsUpdateErrorDescription": "There was an error updating your settings. Please try again.",
+          "validationError": "Validation Error",
+          "allFieldsRequired": "All fields are required",
+          "invalidUrl": "Invalid URL",
+          "invalidUrlDescription": "Please enter a valid API endpoint URL"
+        },
+        "errors": {
+          "unauthorized": "Only parents can access settings",
+          "loadFailed": "Failed to load settings"
+        }
+      }
+    }
+  }
+}

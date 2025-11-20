@@ -1,0 +1,50 @@
+{
+  "pricing": {
+    "title": "Kies uw pad",
+    "description": "Of u nu volledige controle of zorgeloze ontzorging wilt, wij hebben een optie die past.",
+    "selfHosted": {
+      "title": "Zelf gehost",
+      "price": {
+        "amount": "Gratis",
+        "note": "Voor altijd"
+      },
+      "cta": "Download Docker-setup",
+      "disclaimer": "Vereist een eigen server of NAS",
+      "features": {
+        "completeDataOwnership": "Volledige data-eigendom",
+        "hostOnYourHardware": "Host op uw eigen hardware",
+        "oneCommandDockerSetup": "Docker-setup met één opdracht",
+        "unlimitedFamilyMembers": "Onbeperkt aantal gezinsleden",
+        "allFeaturesIncluded": "Alle functies inbegrepen",
+        "freeForever": "Voor altijd gratis",
+        "communitySupport": "Communityondersteuning",
+        "regularUpdates": "Regelmatige updates"
+      }
+    },
+    "cloud": {
+      "badge": "BÈTA",
+      "title": "Cloud-hosting",
+      "price": {
+        "amount": "€5",
+        "interval": "per lid/maand",
+        "note": "Maandelijks gefactureerd"
+      },
+      "cta": "Start gratis proefperiode",
+      "disclaimer": "14 dagen gratis proef • Geen creditcard nodig",
+      "features": {
+        "managedHosting": "Beheerde hosting",
+        "automaticBackups": "Automatische back-ups",
+        "zeroMaintenance": "Geen onderhoud",
+        "uptimeSla": "99,9% uptime-SLA",
+        "allFeaturesIncluded": "Alle functies inbegrepen",
+        "prioritySupport": "Prioriteits-ondersteuning",
+        "earlyAccess": "Vroege toegang tot nieuwe functies",
+        "cancelAnytime": "Maandelijks opzegbaar"
+      }
+    },
+    "featureNote": {
+      "title": "Dezelfde functies, andere hosting",
+      "description": "Beide opties bevatten alle Famly-functies. Het enige verschil is wie de infrastructuur beheert. Zelf hosten geeft volledige controle; cloud-hosting biedt gemak. Begin gerust in de cloud en stap later over op zelf-hosting!"
+    }
+  }
+}

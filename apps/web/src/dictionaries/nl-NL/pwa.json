@@ -1,0 +1,22 @@
+{
+  "pwa": {
+    "notifications": {
+      "title": "Meldingen Inschakelen",
+      "description": "Blijf op de hoogte van belangrijke gezinsactiviteiten en mis nooit een moment",
+      "benefits": {
+        "updates": "Blijf op de hoogte van voltooide taken en gezinsactiviteiten",
+        "instant": "Ontvang directe meldingen voor belangrijke gebeurtenissen",
+        "events": "Mis geen berichten of gezinsupdates"
+      },
+      "allow": "Meldingen Inschakelen",
+      "notNow": "Niet Nu"
+    },
+    "install": {
+      "title": "Famly Installeren",
+      "description": "Voeg Famly toe aan je startscherm voor snelle toegang en een betere ervaring",
+      "iosInstructions": "Tik op de deel-knop en selecteer 'Zet op beginscherm' om Famly te installeren",
+      "install": "App Installeren",
+      "later": "Misschien Later"
+    }
+  }
+}

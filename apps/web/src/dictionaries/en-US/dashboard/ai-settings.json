@@ -1,0 +1,10 @@
+{
+  "dashboard": {
+    "pages": {
+      "aiSettings": {
+        "title": "AI Settings",
+        "placeholder": "AI Settings page coming soon"
+      }
+    }
+  }
+}

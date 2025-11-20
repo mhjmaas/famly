@@ -1,0 +1,10 @@
+{
+  "dashboard": {
+    "pages": {
+      "memories": {
+        "title": "Memories",
+        "placeholder": "Memories page coming soon"
+      }
+    }
+  }
+}
