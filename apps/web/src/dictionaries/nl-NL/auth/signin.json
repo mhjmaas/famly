@@ -1,0 +1,29 @@
+{
+  "auth": {
+    "signIn": {
+      "title": "Welkom terug",
+      "description": "Log in op uw Famly-account",
+      "fields": {
+        "email": {
+          "label": "E-mail",
+          "placeholder": "Vul uw e-mailadres in"
+        },
+        "password": {
+          "label": "Wachtwoord",
+          "placeholder": "Vul uw wachtwoord in"
+        },
+        "rememberMe": {
+          "label": "Ingelogd blijven"
+        }
+      },
+      "submit": {
+        "idle": "Inloggen",
+        "loading": "Bezig met inloggen..."
+      },
+      "cta": {
+        "prompt": "Nog geen account?",
+        "link": "Aan de slag"
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "auth": {
+    "common": {
+      "unexpectedError": "An unexpected error occurred. Please try again."
+    }
+  }
+}

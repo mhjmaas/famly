@@ -1,0 +1,29 @@
+{
+  "auth": {
+    "signIn": {
+      "title": "Welcome back",
+      "description": "Sign in to your Famly account",
+      "fields": {
+        "email": {
+          "label": "Email",
+          "placeholder": "Enter your email"
+        },
+        "password": {
+          "label": "Password",
+          "placeholder": "Enter your password"
+        },
+        "rememberMe": {
+          "label": "Keep me signed in"
+        }
+      },
+      "submit": {
+        "idle": "Sign In",
+        "loading": "Signing in..."
+      },
+      "cta": {
+        "prompt": "Don't have an account?",
+        "link": "Get started"
+      }
+    }
+  }
+}

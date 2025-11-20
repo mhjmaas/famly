@@ -1,0 +1,15 @@
+{
+  "navigation": {
+    "logo": "Famly",
+    "links": {
+      "features": "Functies",
+      "privacy": "Privacy",
+      "pricing": "Prijzen",
+      "docs": "Documentatie"
+    },
+    "buttons": {
+      "signIn": "Inloggen",
+      "getStarted": "Aan de slag"
+    }
+  }
+}

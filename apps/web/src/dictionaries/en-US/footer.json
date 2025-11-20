@@ -1,0 +1,39 @@
+{
+  "footer": {
+    "brandName": "Famly",
+    "tagline": "Privacy-first family management. Your data stays yours—forever.",
+    "sections": {
+      "product": {
+        "title": "Product",
+        "links": {
+          "features": "Features",
+          "pricing": "Pricing",
+          "roadmap": "Roadmap",
+          "changelog": "Changelog"
+        }
+      },
+      "resources": {
+        "title": "Resources",
+        "links": {
+          "documentation": "Documentation",
+          "selfHostingGuide": "Self-Hosting Guide",
+          "apiReference": "API Reference",
+          "community": "Community"
+        }
+      },
+      "company": {
+        "title": "Company",
+        "links": {
+          "about": "About",
+          "blog": "Blog",
+          "privacyPolicy": "Privacy Policy",
+          "termsOfService": "Terms of Service"
+        }
+      }
+    },
+    "bottom": {
+      "prefix": "© {year} Famly. Built with",
+      "suffix": "for families."
+    }
+  }
+}

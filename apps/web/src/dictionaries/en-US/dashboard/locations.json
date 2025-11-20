@@ -1,0 +1,10 @@
+{
+  "dashboard": {
+    "pages": {
+      "locations": {
+        "title": "Locations",
+        "placeholder": "Locations page coming soon"
+      }
+    }
+  }
+}

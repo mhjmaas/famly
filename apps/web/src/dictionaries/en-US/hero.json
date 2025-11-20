@@ -1,0 +1,17 @@
+{
+  "hero": {
+    "badge": "Privacy-First Family Management",
+    "heading": {
+      "leading": "Your Family's Digital",
+      "highlight": "Home"
+    },
+    "subheading": "Keep your family connected, organized, and secure. Your data stays yours—forever.",
+    "primaryCta": "Start Self-Hosting",
+    "secondaryCta": "Try Cloud Beta",
+    "trustIndicators": {
+      "encrypted": "End-to-End Encrypted",
+      "selfHosted": "Self-Hosted Option",
+      "familyFirst": "Family-First Design"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "dashboard": {
+    "pages": {
+      "locations": {
+        "title": "Locaties",
+        "placeholder": "Pagina Locaties verschijnt binnenkort"
+      }
+    }
+  }
+}

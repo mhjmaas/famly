@@ -1,0 +1,22 @@
+{
+  "pwa": {
+    "notifications": {
+      "title": "Enable Notifications",
+      "description": "Stay updated with important family activities and never miss a moment",
+      "benefits": {
+        "updates": "Stay updated on task completions and family activities",
+        "instant": "Get instant alerts for important events",
+        "events": "Never miss messages or family updates"
+      },
+      "allow": "Enable Notifications",
+      "notNow": "Not Now"
+    },
+    "install": {
+      "title": "Install Famly",
+      "description": "Add Famly to your home screen for quick access and a better experience",
+      "iosInstructions": "Tap the share button and select 'Add to Home Screen' to install Famly",
+      "install": "Install App",
+      "later": "Maybe Later"
+    }
+  }
+}

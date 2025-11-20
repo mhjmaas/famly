@@ -1,0 +1,10 @@
+{
+  "dashboard": {
+    "pages": {
+      "chat": {
+        "title": "Chat",
+        "placeholder": "Chat page coming soon"
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "dashboard": {
+    "pages": {
+      "memories": {
+        "title": "Herinneringen",
+        "placeholder": "Pagina Herinneringen verschijnt binnenkort"
+      }
+    }
+  }
+}

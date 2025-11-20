@@ -1,0 +1,10 @@
+{
+  "dashboard": {
+    "pages": {
+      "shoppingLists": {
+        "title": "Shopping Lists",
+        "placeholder": "Shopping lists page coming soon"
+      }
+    }
+  }
+}

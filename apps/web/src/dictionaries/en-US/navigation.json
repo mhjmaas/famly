@@ -1,0 +1,15 @@
+{
+  "navigation": {
+    "logo": "Famly",
+    "links": {
+      "features": "Features",
+      "privacy": "Privacy",
+      "pricing": "Pricing",
+      "docs": "Docs"
+    },
+    "buttons": {
+      "signIn": "Sign In",
+      "getStarted": "Get Started"
+    }
+  }
+}

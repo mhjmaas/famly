@@ -1,0 +1,10 @@
+{
+  "dashboard": {
+    "pages": {
+      "shoppingLists": {
+        "title": "Boodschappenlijsten",
+        "placeholder": "Pagina Boodschappenlijsten verschijnt binnenkort"
+      }
+    }
+  }
+}

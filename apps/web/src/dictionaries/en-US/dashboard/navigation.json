@@ -1,0 +1,22 @@
+{
+  "dashboard": {
+    "navigation": {
+      "dashboard": "Dashboard",
+      "family": "Family",
+      "members": "Members",
+      "tasks": "Tasks",
+      "shoppingLists": "Shopping Lists",
+      "rewards": "Rewards",
+      "calendar": "Calendar",
+      "locations": "Locations",
+      "memories": "Memories",
+      "aiSettings": "AI Settings",
+      "personal": "Personal",
+      "diary": "Diary",
+      "chat": "Chat",
+      "settings": "Settings",
+      "soon": "Soon",
+      "karma": "{count} Karma"
+    }
+  }
+}
