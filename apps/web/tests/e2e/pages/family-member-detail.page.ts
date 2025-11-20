@@ -19,6 +19,7 @@ export class FamilyMemberDetailPage {
 
     // Tabs
     readonly giveKarmaTab: Locator;
+    readonly contributionGoalTab: Locator;
 
     // Actions dropdown
     readonly actionsButton: Locator;
@@ -57,6 +58,7 @@ export class FamilyMemberDetailPage {
 
         // Tabs
         this.giveKarmaTab = page.getByTestId("give-karma-tab");
+        this.contributionGoalTab = page.getByTestId("contribution-goal-tab");
 
         // Actions dropdown
         this.actionsButton = page.getByTestId("member-actions-button");

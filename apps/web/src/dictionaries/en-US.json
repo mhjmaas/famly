@@ -459,7 +459,8 @@
           "familyMembers": "Family Members"
         },
         "tabs": {
-          "giveKarma": "Give Karma"
+          "giveKarma": "Give Karma",
+          "contributionGoal": "Contribution Goal"
         },
         "actions": {
           "editMember": "Edit Member",
@@ -933,6 +934,58 @@
       "iosInstructions": "Tap the share button and select 'Add to Home Screen' to install Famly",
       "install": "Install App",
       "later": "Maybe Later"
+    }
+  },
+  "contributionGoals": {
+    "emptyState": {
+      "title": "Set Contribution Goal",
+      "description": "Set a weekly goal for {memberName} to earn karma by helping around the house.",
+      "action": "Set Goal"
+    },
+    "card": {
+      "title": "Contribution Goal",
+      "weekOf": "Week of {date}",
+      "karma": "Karma",
+      "deductionsCount": "{count} karma deducted",
+      "noDeductions": "No deductions yet!",
+      "onTrack": "on track",
+      "latestReduction": "Latest reduction"
+    },
+    "deduction": {
+      "reasonPlaceholder": "Reason (e.g. Lights left on)",
+      "action": "Deduct",
+      "success": "Deduction added",
+      "successDescription": "Karma deduction has been recorded.",
+      "errorTitle": "Error",
+      "errorInvalidInput": "Please provide a reason and a valid amount.",
+      "errorFailed": "Failed to add deduction"
+    },
+    "dialog": {
+      "editTitle": "Edit Contribution Goal",
+      "createTitle": "Create Contribution Goal",
+      "description": "Set a weekly goal for {memberName} to earn karma by helping around the house.",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Weekly contribution goal",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Help around the house this week",
+      "maxKarmaLabel": "Maximum Karma",
+      "cancel": "Cancel",
+      "create": "Create Goal",
+      "update": "Update Goal",
+      "deleteTitle": "Delete Contribution Goal",
+      "deleteDescription": "Are you sure you want to delete this contribution goal? This action cannot be undone.",
+      "delete": "Delete",
+      "invalidKarma": "Invalid karma amount",
+      "invalidKarmaDescription": "Karma must be between 1 and 10,000",
+      "goalUpdated": "Goal updated",
+      "goalUpdatedDescription": "Contribution goal has been updated successfully",
+      "goalCreated": "Goal created",
+      "goalCreatedDescription": "Contribution goal has been created successfully",
+      "goalDeleted": "Goal deleted",
+      "goalDeletedDescription": "Contribution goal has been deleted successfully",
+      "errorTitle": "Error",
+      "errorSaveFailed": "Failed to save goal",
+      "errorDeleteFailed": "Failed to delete goal"
     }
   }
 }

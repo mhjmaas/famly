@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useActivityEvents } from "@/lib/realtime/use-activity-events";
+import { useContributionGoalEvents } from "@/lib/realtime/use-contribution-goal-events";
 import { useFamilyEvents } from "@/lib/realtime/use-family-events";
 import { useKarmaEvents } from "@/lib/realtime/use-karma-events";
 import { useRealtimeConnection } from "@/lib/realtime/use-realtime-connection";
@@ -58,6 +59,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   useRewardEvents(socket, familyId, user?.id ?? null, eventsEnabled);
   useFamilyEvents(socket, familyId, user?.id ?? null, eventsEnabled);
   useActivityEvents(socket, user?.id ?? null, activityEventsEnabled);
+  useContributionGoalEvents(socket, familyId, eventsEnabled);
 
   return <>{children}</>;
 }

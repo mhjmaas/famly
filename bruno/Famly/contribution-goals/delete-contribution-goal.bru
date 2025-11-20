@@ -1,0 +1,38 @@
+meta {
+  name: Delete Contribution Goal
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/contribution-goals/{{otherUserId}}
+  body: none
+  auth: inherit
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+script:post-response {
+  try {
+    if (res.status === 204) {
+      bru.setEnvVar('currentContributionGoalId', null);
+      bru.setEnvVar('currentContributionGoalMemberId', null);
+    }
+  } catch (error) {
+    console.log('Cleanup script failed: ' + error?.message);
+  }
+}
+
+docs {
+  # Delete Contribution Goal
+
+  Deletes the current week's contribution goal for the specified member. Parent role required.
+
+  ## Responses
+  - `204 No Content`: Goal deleted
+  - `401 Unauthorized`: Missing/invalid token
+  - `403 Forbidden`: Caller is not a parent
+  - `404 Not Found`: Goal not found for the member
+}

@@ -1,0 +1,49 @@
+meta {
+  name: Add Contribution Goal Deduction
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/contribution-goals/{{otherUserId}}/deductions
+  body: json
+  auth: inherit
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "amount": 15,
+    "reason": "Left dishes in the sink overnight"
+  }
+}
+
+script:post-response {
+  try {
+    if (res.status === 201) {
+      console.log('Deduction added and goal recalculated.');
+    }
+  } catch (error) {
+    console.log('Deduction creation script error: ' + error?.message);
+  }
+}
+
+docs {
+  # Add Contribution Goal Deduction
+
+  Adds a deduction to the member's weekly contribution goal. Only parents can deduct.
+
+  ## Request Body
+  - `amount` (positive integer): Amount of karma to deduct
+  - `reason` (string, 1-500 chars): Explanation shown in activity feed
+
+  ## Responses
+  - `201 Created`: Deduction appended and updated ContributionGoalDTO returned
+  - `400 Bad Request`: Validation errors
+  - `401 Unauthorized`: Missing/invalid token
+  - `403 Forbidden`: Caller is not a parent or member not in family
+  - `404 Not Found`: No contribution goal for the member
+}

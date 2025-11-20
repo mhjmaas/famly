@@ -369,3 +369,44 @@ export interface UpdateRewardRequest {
   description?: string | null;
   imageUrl?: string | null;
 }
+
+// Contribution Goal types
+export interface Deduction {
+  _id: string;
+  amount: number;
+  reason: string;
+  deductedBy: string;
+  createdAt: string;
+}
+
+export interface ContributionGoal {
+  _id: string;
+  familyId: string;
+  memberId: string;
+  weekStartDate: string;
+  title: string;
+  description: string;
+  maxKarma: number;
+  currentKarma: number;
+  deductions: Deduction[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateContributionGoalRequest {
+  memberId: string;
+  title: string;
+  description: string;
+  maxKarma: number;
+}
+
+export interface UpdateContributionGoalRequest {
+  title?: string;
+  description?: string;
+  maxKarma?: number;
+}
+
+export interface AddDeductionRequest {
+  amount: number;
+  reason: string;
+}

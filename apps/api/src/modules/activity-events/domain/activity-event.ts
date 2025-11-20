@@ -11,7 +11,8 @@ export type ActivityEventType =
   | "RECIPE"
   | "DIARY"
   | "FAMILY_DIARY"
-  | "REWARD";
+  | "REWARD"
+  | "CONTRIBUTION_GOAL";
 
 /**
  * Activity event entity - represents a user activity record

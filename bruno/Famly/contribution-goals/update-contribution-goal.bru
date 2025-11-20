@@ -1,0 +1,41 @@
+meta {
+  name: Update Contribution Goal
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/v1/families/{{currentFamilyId}}/contribution-goals/{{otherUserId}}
+  body: json
+  auth: inherit
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "title": "Keep room and desk organized",
+    "description": "Tidy room daily, dishes twice a week, no clutter on desk",
+    "maxKarma": 150
+  }
+}
+
+docs {
+  # Update Contribution Goal
+
+  Updates fields on the member's current week contribution goal. At least one field is required.
+
+  ## Request Body (any combination)
+  - `title` (string, 1-200 chars)
+  - `description` (string, up to 2000 chars)
+  - `maxKarma` (integer, 1-10000)
+
+  ## Responses
+  - `200 OK`: Returns updated ContributionGoalDTO
+  - `400 Bad Request`: No fields provided or validation errors
+  - `401 Unauthorized`: Missing/invalid token
+  - `403 Forbidden`: Caller is not a parent
+  - `404 Not Found`: Goal not found for member
+}

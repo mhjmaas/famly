@@ -9,6 +9,7 @@ import {
   selectPendingTasksForUser,
   selectPotentialKarma,
 } from "@/store/selectors/dashboard.selectors";
+import { fetchContributionGoal } from "@/store/slices/contribution-goals.slice";
 import { selectKarmaBalance } from "@/store/slices/karma.slice";
 import {
   fetchRewards,
@@ -21,6 +22,7 @@ import {
 } from "@/store/slices/tasks.slice";
 import { selectUser } from "@/store/slices/user.slice";
 import type { Task } from "@/types/api.types";
+import { ContributionGoalSection } from "./contribution-goal-section";
 import { DashboardHeader } from "./dashboard-header";
 import { DashboardSummaryCards } from "./dashboard-summary-cards";
 import { PendingTasksSection } from "./pending-tasks-section";
@@ -55,6 +57,35 @@ interface DashboardOverviewProps {
             remaining: string;
           };
         };
+      };
+    };
+    contributionGoals: {
+      emptyState: {
+        title: string;
+        description: string;
+        action: string;
+      };
+      card: {
+        title: string;
+        weekOf: string;
+        karma: string;
+        deductionsCount: string;
+        noDeductions: string;
+        onTrack: string;
+        latestReduction: string;
+      };
+      dialog: {
+        editTitle: string;
+        deleteTitle: string;
+      };
+      deduction: {
+        reasonPlaceholder: string;
+        action: string;
+        success: string;
+        successDescription: string;
+        errorTitle: string;
+        errorInvalidInput: string;
+        errorFailed: string;
       };
     };
   };
@@ -102,12 +133,17 @@ export function DashboardOverview({ lang, dict }: DashboardOverviewProps) {
   }, [dispatch, user, tasksLastFetch, rewardsLastFetch]);
 
   const handleRefresh = useCallback(async () => {
-    if (!user?.families?.[0]?.familyId) return;
+    if (!user?.families?.[0]?.familyId || !user?.id) return;
 
     const familyId = user.families[0].familyId;
     await Promise.all([
       dispatch(fetchTasks(familyId)),
       dispatch(fetchRewards(familyId)),
+      dispatch(fetchContributionGoal({ familyId, memberId: user.id }))
+        .unwrap()
+        .catch(() => {
+          // Goal doesn't exist yet, which is fine
+        }),
     ]);
   }, [dispatch, user]);
 
@@ -193,6 +229,8 @@ export function DashboardOverview({ lang, dict }: DashboardOverviewProps) {
             potentialKarma: dashboardDict.summary.potentialKarma,
           }}
         />
+
+        <ContributionGoalSection lang={lang} dict={dict} />
 
         <div className="grid gap-6 lg:grid-cols-2">
           <PendingTasksSection

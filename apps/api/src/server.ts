@@ -7,6 +7,11 @@ import { registerConnectionHandler } from "@modules/chat/realtime/register-handl
 import { ChatRepository } from "@modules/chat/repositories/chat.repository";
 import { MembershipRepository } from "@modules/chat/repositories/membership.repository";
 import { MessageRepository } from "@modules/chat/repositories/message.repository";
+import {
+  ContributionGoalRepository,
+  startContributionGoalScheduler,
+  stopContributionGoalScheduler,
+} from "@modules/contribution-goals";
 import { seedDeploymentConfig } from "@modules/deployment-config";
 import { DiaryRepository } from "@modules/diary";
 import { FamilyRepository } from "@modules/family/repositories/family.repository";
@@ -18,6 +23,7 @@ import { ShoppingListRepository } from "@modules/shopping-lists";
 import {
   ScheduleRepository,
   startTaskScheduler,
+  stopTaskScheduler,
   TaskRepository,
 } from "@modules/tasks";
 import { createApp } from "./app";
@@ -99,10 +105,21 @@ async function start() {
   await karmaRepo.ensureIndexes();
   logger.info("Karma module indexes initialized successfully");
 
+  // Initialize contribution goals module indexes
+  logger.info("Initializing contribution goals module indexes...");
+  const contributionGoalRepo = new ContributionGoalRepository();
+  await contributionGoalRepo.ensureIndexes();
+  logger.info("Contribution goals module indexes initialized successfully");
+
   // Start task scheduler cron job
   logger.info("Starting task scheduler...");
   startTaskScheduler();
   logger.info("Task scheduler started successfully");
+
+  // Start contribution goal scheduler cron job
+  logger.info("Starting contribution goal scheduler...");
+  startContributionGoalScheduler();
+  logger.info("Contribution goal scheduler started successfully");
 
   // Create and start the Express app
   logger.info("Creating Express app...");
@@ -128,6 +145,12 @@ async function start() {
   // Graceful shutdown handler
   const shutdown = async (signal: string) => {
     logger.info(`${signal} received, shutting down gracefully...`);
+
+    // Stop schedulers
+    logger.info("Stopping schedulers...");
+    stopTaskScheduler();
+    stopContributionGoalScheduler();
+    logger.info("Schedulers stopped");
 
     // Stop accepting new connections
     server.close(async () => {

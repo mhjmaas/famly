@@ -154,21 +154,36 @@ test.describe("Family Member Detail Page", () => {
     });
 
     test.describe("Tabs", () => {
-        test("should display Give Karma tab", async ({ page }) => {
+        test("should display both tabs", async ({ page }) => {
             if (!memberId) test.skip();
-
+    
             await memberDetailPage.goto(memberId);
             await waitForPageLoad(page);
-
+    
+            // Check that both tabs are visible
+            await expect(memberDetailPage.contributionGoalTab).toBeVisible();
             await expect(memberDetailPage.giveKarmaTab).toBeVisible();
+            
+            // Verify the contribution goal tab is selected by default
+            await expect(memberDetailPage.contributionGoalTab).toHaveAttribute('data-state', 'active');
+            await expect(memberDetailPage.giveKarmaTab).not.toHaveAttribute('data-state', 'active');
         });
-
-        test("should display karma card content", async ({ page }) => {
+    
+        test("should display karma card content when switching to karma tab", async ({ page }) => {
             if (!memberId) test.skip();
-
+    
             await memberDetailPage.goto(memberId);
             await waitForPageLoad(page);
-
+    
+            // First switch to the karma tab since it's no longer the default
+            await memberDetailPage.giveKarmaTab.click();
+            await waitForPageLoad(page);
+    
+            // Verify the karma tab is now active
+            await expect(memberDetailPage.giveKarmaTab).toHaveAttribute('data-state', 'active');
+            await expect(memberDetailPage.contributionGoalTab).not.toHaveAttribute('data-state', 'active');
+    
+            // Check that the karma card and its content are visible
             await expect(memberDetailPage.karmaCard).toBeVisible();
             await expect(memberDetailPage.karmaAmountInput).toBeVisible();
             await expect(memberDetailPage.karmaDescriptionInput).toBeVisible();
@@ -179,87 +194,107 @@ test.describe("Family Member Detail Page", () => {
     test.describe("Karma Grant", () => {
         test("should grant positive karma successfully", async ({ page }) => {
             if (!memberId) test.skip();
-
+    
             await memberDetailPage.goto(memberId);
             await waitForPageLoad(page);
-
+            
+            // First switch to the karma tab since it's no longer the default
+            await memberDetailPage.giveKarmaTab.click();
+            await waitForPageLoad(page);
+    
             const initialKarma = await memberDetailPage.getKarmaAmount();
-
+    
             await memberDetailPage.grantKarma(10, "Great job on homework!");
-
+    
             // Wait for success toast
             await expect(page.getByText(/karma.*awarded/i)).toBeVisible({
-                            timeout: 5000,
-                        });
-
+                                timeout: 5000,
+                            });
+    
             // Verify karma increased
             // Wait for karma amount to update instead of fixed timeout
             await memberDetailPage.memberKarma.waitFor({ state: 'visible' });
             const newKarma = await memberDetailPage.getKarmaAmount();
             expect(Number(newKarma)).toBe(Number(initialKarma) + 10);
         });
-
+    
         test("should deduct karma with negative amount", async ({ page }) => {
             if (!memberId) test.skip();
-
+    
             await memberDetailPage.goto(memberId);
             await waitForPageLoad(page);
-
+            
+            // First switch to the karma tab since it's no longer the default
+            await memberDetailPage.giveKarmaTab.click();
+            await waitForPageLoad(page);
+    
             const initialKarma = await memberDetailPage.getKarmaAmount();
-
+    
             await memberDetailPage.grantKarma(-5, "Broke house rule");
-
+    
             // Wait for success toast
             await expect(page.getByText(/karma.*awarded/i)).toBeVisible({
-                            timeout: 5000,
-                        });
-
+                                timeout: 5000,
+                            });
+    
             // Verify karma decreased
             // Wait for karma amount to update instead of fixed timeout
             await memberDetailPage.memberKarma.waitFor({ state: 'visible' });
             const newKarma = await memberDetailPage.getKarmaAmount();
             expect(Number(newKarma)).toBe(Number(initialKarma) - 5);
         });
-
+    
         test("should validate empty description", async ({ page }) => {
             if (!memberId) test.skip();
-
+    
             await memberDetailPage.goto(memberId);
             await waitForPageLoad(page);
-
+            
+            // First switch to the karma tab since it's no longer the default
+            await memberDetailPage.giveKarmaTab.click();
+            await waitForPageLoad(page);
+    
             await memberDetailPage.karmaAmountInput.fill("10");
             await memberDetailPage.giveKarmaButton.click();
-
+    
             // Should show error toast
             await expect(page.getByText(/description required/i)).toBeVisible({
                 timeout: 5000,
             });
         });
-
+    
         test("should validate zero amount", async ({ page }) => {
             if (!memberId) test.skip();
-
+    
             await memberDetailPage.goto(memberId);
             await waitForPageLoad(page);
-
+            
+            // First switch to the karma tab since it's no longer the default
+            await memberDetailPage.giveKarmaTab.click();
+            await waitForPageLoad(page);
+    
             await memberDetailPage.karmaAmountInput.fill("0");
             await memberDetailPage.karmaDescriptionInput.fill("Test description");
             await memberDetailPage.giveKarmaButton.click();
-
+    
             // Should show error toast
             await expect(page.getByText(/invalid amount/i)).toBeVisible({
                 timeout: 5000,
             });
         });
-
+    
         test("should refresh activity timeline after karma grant", async ({
             page,
         }) => {
             if (!memberId) test.skip();
-
+    
             await memberDetailPage.goto(memberId);
             await waitForPageLoad(page);
-
+            
+            // First switch to the karma tab since it's no longer the default
+            await memberDetailPage.giveKarmaTab.click();
+            await waitForPageLoad(page);
+    
             const initialEventCount = await memberDetailPage.getActivityEventCount();
 
             await memberDetailPage.grantKarma(5, "Good behavior");
@@ -326,13 +361,12 @@ test.describe("Family Member Detail Page", () => {
 
         test("should display member-specific events", async ({ page }) => {
             if (!memberId) test.skip();
-
+        
             await memberDetailPage.goto(memberId);
             await waitForPageLoad(page);
-            // Wait for karma card to be visible instead of fixed timeout
-            await memberDetailPage.karmaCard.waitFor({ state: 'visible' });
-
-            // Activity events should be visible (even if empty state)
+            
+            // Since the karma tab is no longer the default, we don't need to wait for the karma card
+            // Activity events should be visible regardless of the active tab
             const eventCount = await memberDetailPage.getActivityEventCount();
             expect(eventCount).toBeGreaterThanOrEqual(0);
         });
@@ -402,47 +436,59 @@ test.describe("Family Member Detail Page", () => {
     test.describe("Responsive Design", () => {
         test("should display correctly on mobile", async ({ page }) => {
             if (!memberId) test.skip();
-
+        
             await setViewport(page, "mobile");
             await memberDetailPage.goto(memberId);
             await waitForPageLoad(page);
-
+        
             // Back button should be visible on mobile
             await expect(memberDetailPage.backToFamilyButton).toBeVisible();
-
+        
             // Breadcrumbs should be hidden
             await expect(memberDetailPage.breadcrumbFamilyMembers).not.toBeVisible();
-
+        
             // Main content should still be visible
             await expect(memberDetailPage.memberName).toBeVisible();
+            
+            // Switch to karma tab to check karma card visibility
+            await memberDetailPage.giveKarmaTab.click();
+            await waitForPageLoad(page);
             await expect(memberDetailPage.karmaCard).toBeVisible();
         });
 
         test("should display correctly on tablet", async ({ page }) => {
             if (!memberId) test.skip();
-
+        
             await setViewport(page, "tablet");
             await memberDetailPage.goto(memberId);
             await waitForPageLoad(page);
-
+        
             await expect(memberDetailPage.memberName).toBeVisible();
+            
+            // Switch to karma tab to check karma card visibility
+            await memberDetailPage.giveKarmaTab.click();
+            await waitForPageLoad(page);
             await expect(memberDetailPage.karmaCard).toBeVisible();
         });
 
         test("should display correctly on desktop", async ({ page }) => {
             if (!memberId) test.skip();
-
+        
             await setViewport(page, "desktop");
             await memberDetailPage.goto(memberId);
             await waitForPageLoad(page);
-
+        
             // Breadcrumbs should be visible on desktop
             await expect(memberDetailPage.breadcrumbFamilyMembers).toBeVisible();
-
+        
             // Back button should be hidden
             await expect(memberDetailPage.backToFamilyButton).not.toBeVisible();
-
+        
             await expect(memberDetailPage.memberName).toBeVisible();
+            
+            // Switch to karma tab to check karma card visibility
+            await memberDetailPage.giveKarmaTab.click();
+            await waitForPageLoad(page);
             await expect(memberDetailPage.karmaCard).toBeVisible();
         });
     });
