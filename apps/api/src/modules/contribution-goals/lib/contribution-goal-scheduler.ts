@@ -51,10 +51,14 @@ export function startContributionGoalScheduler(): void {
         try {
           logger.info("Contribution goal weekly processing cron job triggered");
 
-          // Get the week that just ended
-          const weekStartDate = getCurrentWeekStart();
+          // Get the week that just ended (subtract 7 days from current week start)
+          // At Sunday 18:00 UTC, getCurrentWeekStart() returns THIS week's start,
+          // but we need to process LAST week's goals
+          const currentWeekStart = getCurrentWeekStart();
+          const lastWeekStart = new Date(currentWeekStart);
+          lastWeekStart.setUTCDate(currentWeekStart.getUTCDate() - 7);
 
-          await contributionGoalProcessor.processWeeklyGoals(weekStartDate);
+          await contributionGoalProcessor.processWeeklyGoals(lastWeekStart);
 
           logger.info(
             "Contribution goal weekly processing completed successfully",
