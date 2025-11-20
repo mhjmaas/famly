@@ -153,22 +153,29 @@ export function createLoginRoute(): Router {
           // Continue with basic user data from signInEmail response
         }
 
-        // Persist preferred language when provided
+        // Persist language only when explicitly provided or missing
         try {
-          const db = getDb();
-          await db.collection("user").updateOne(
-            { _id: new ObjectId(fullUser.id) },
-            {
-              $set: {
-                language: preferredLanguage,
-                updatedAt: new Date(),
+          const shouldPersistLanguage =
+            req.body?.language || // User explicitly provided language
+            !fullUser.language || // User has no stored language
+            !isSupportedLanguage(fullUser.language); // Stored language is invalid
+
+          if (shouldPersistLanguage) {
+            const db = getDb();
+            await db.collection("user").updateOne(
+              { _id: new ObjectId(fullUser.id) },
+              {
+                $set: {
+                  language: preferredLanguage,
+                  updatedAt: new Date(),
+                },
               },
-            },
-          );
-          fullUser = {
-            ...fullUser,
-            language: preferredLanguage,
-          };
+            );
+            fullUser = {
+              ...fullUser,
+              language: preferredLanguage,
+            };
+          }
         } catch (error) {
           logger.warn("Failed to persist language on login:", error);
         }
