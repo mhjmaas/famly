@@ -5,6 +5,7 @@ import {
   type ObjectIdString,
   validateObjectId,
 } from "@lib/objectid-utils";
+import { getUserLanguage } from "@lib/user-utils";
 import type { ActivityEventService } from "@modules/activity-events";
 import { requireFamilyRole } from "@modules/auth/lib/require-family-role";
 import { FamilyRole } from "@modules/family/domain/family";
@@ -557,7 +558,9 @@ export class TaskService {
     taskId: ObjectIdString,
   ): Promise<void> {
     try {
+      const locale = await getUserLanguage(userId);
       const notification = createTaskCompletionNotification(
+        locale,
         taskName,
         "You",
         karmaEarned,

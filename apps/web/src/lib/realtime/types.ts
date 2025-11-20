@@ -99,6 +99,8 @@ export interface RewardEventPayloads {
     rewardId: string;
     familyId: string;
     memberId: string;
+    rewardName?: string;
+    memberName?: string;
     autoTaskId?: string;
   };
   "claim.completed": {
@@ -107,6 +109,8 @@ export interface RewardEventPayloads {
     familyId: string;
     memberId: string;
     completedBy: string;
+    rewardName?: string;
+    memberName?: string;
   };
   "claim.cancelled": {
     claimId: string;
@@ -114,12 +118,16 @@ export interface RewardEventPayloads {
     familyId: string;
     memberId: string;
     cancelledBy: string;
+    rewardName?: string;
+    memberName?: string;
   };
   "approval_task.created": {
     taskId: string;
     claimId: string;
     rewardId: string;
     familyId: string;
+    rewardName?: string;
+    memberName?: string;
     assignedToParents: boolean;
   };
   "reward.created": {

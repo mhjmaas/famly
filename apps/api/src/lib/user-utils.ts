@@ -1,4 +1,8 @@
 import { getDb } from "@infra/mongo/client";
+import {
+  isSupportedLanguage,
+  type SupportedLanguage,
+} from "@modules/auth/language";
 import { ObjectId } from "mongodb";
 import { logger } from "./logger";
 
@@ -77,4 +81,71 @@ export async function getUserNames(
     });
     return fallbackMap;
   }
+}
+
+/**
+ * Get a user's preferred language with fallback to default (en-US)
+ */
+export async function getUserLanguage(
+  userId: string | ObjectId,
+): Promise<SupportedLanguage> {
+  try {
+    const db = getDb();
+    const objectId = typeof userId === "string" ? new ObjectId(userId) : userId;
+
+    const user = await db
+      .collection("user")
+      .findOne<{ language?: string }>({ _id: objectId });
+
+    if (user?.language && isSupportedLanguage(user.language)) {
+      return user.language;
+    }
+  } catch (error) {
+    logger.debug("Failed to fetch user language", { userId, error });
+  }
+
+  return "en-US";
+}
+
+/**
+ * Get languages for multiple users in one query
+ * Returns a map of userId -> locale (defaults to en-US when missing/invalid)
+ */
+export async function getUserLanguages(
+  userIds: (string | ObjectId)[],
+): Promise<Map<string, SupportedLanguage>> {
+  const languageMap = new Map<string, SupportedLanguage>();
+
+  if (userIds.length === 0) {
+    return languageMap;
+  }
+
+  // Seed with defaults for predictable results
+  userIds.forEach((id) => {
+    languageMap.set(id.toString(), "en-US");
+  });
+
+  try {
+    const db = getDb();
+    const objectIds = userIds.map((id) =>
+      typeof id === "string" ? new ObjectId(id) : id,
+    );
+
+    const users = await db
+      .collection("user")
+      .find<{ _id: ObjectId; language?: string }>({
+        _id: { $in: objectIds },
+      })
+      .toArray();
+
+    users.forEach((user) => {
+      if (user.language && isSupportedLanguage(user.language)) {
+        languageMap.set(user._id.toString(), user.language);
+      }
+    });
+  } catch (error) {
+    logger.debug("Failed to fetch user languages", { userIds, error });
+  }
+
+  return languageMap;
 }

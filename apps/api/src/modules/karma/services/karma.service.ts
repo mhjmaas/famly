@@ -5,7 +5,7 @@ import {
   toObjectId,
   validateObjectId,
 } from "@lib/objectid-utils";
-import { getUserName } from "@lib/user-utils";
+import { getUserLanguage, getUserName } from "@lib/user-utils";
 import type { ActivityEventService } from "@modules/activity-events";
 import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
@@ -502,6 +502,7 @@ export class KarmaService {
     eventId: string,
   ): Promise<void> {
     try {
+      const locale = await getUserLanguage(userId);
       // Get the granter's name for the notification
       let grantedByName = "A family member";
       if (grantedBy) {
@@ -509,6 +510,7 @@ export class KarmaService {
       }
 
       const notification = createKarmaGrantNotification(
+        locale,
         amount,
         grantedByName,
         description,

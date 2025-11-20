@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import type { Socket } from "socket.io-client";
 import { toast } from "sonner";
+import { useNotificationTranslations } from "@/hooks/use-notification-translations";
 import { useAppDispatch } from "@/store/hooks";
 import { fetchActivityEvents } from "@/store/slices/activities.slice";
 import type { ActivityEventPayloads } from "./types";
@@ -22,6 +23,7 @@ export function useActivityEvents(
   enabled = true,
 ): void {
   const dispatch = useAppDispatch();
+  const t = useNotificationTranslations();
 
   useEffect(() => {
     if (!socket || !userId || !enabled) {
@@ -39,17 +41,17 @@ export function useActivityEvents(
         // Show notification based on activity type
         switch (event.type) {
           case "TASK":
-            toast.success("Task Completed", {
+            toast.success(t.activity.taskCompleted, {
               description: event.title,
             });
             break;
           case "KARMA":
-            toast.success("Karma Awarded", {
+            toast.success(t.karma.awarded, {
               description: `${event.title}${event.metadata?.karma ? ` (+${event.metadata.karma})` : ""}`,
             });
             break;
           case "REWARD":
-            toast.success("Reward Claimed", {
+            toast.success(t.reward.claimed, {
               description: event.title,
             });
             break;
@@ -71,5 +73,5 @@ export function useActivityEvents(
     return () => {
       socket.off("activity.created", handleActivityCreated);
     };
-  }, [socket, userId, enabled, dispatch]);
+  }, [socket, userId, enabled, dispatch, t]);
 }

@@ -562,18 +562,19 @@ export class FamilyService {
 
       const adderName = await getUserName(addedBy);
 
-      const notification = createFamilyMemberAddedNotification(
-        newMemberName,
-        adderName,
-      );
-
       // Send to all members except the one who was just added
       const memberIds = familyMembers.map((m) => m.userId.toString());
-      await sendFamilyNotifications(memberIds, newMemberId, notification, {
-        familyId,
+      await sendFamilyNotifications(
+        memberIds,
         newMemberId,
-        addedBy,
-      });
+        (locale) =>
+          createFamilyMemberAddedNotification(locale, newMemberName, adderName),
+        {
+          familyId,
+          newMemberId,
+          addedBy,
+        },
+      );
     } catch (error) {
       logger.error("Failed to send family member added notifications", {
         familyId,

@@ -1,0 +1,54 @@
+{
+  "notifications": {
+    "karma": {
+      "awarded": "Karma Awarded!",
+      "awardedDescription": "You earned {amount} karma{description}",
+      "deducted": "Karma Used",
+      "deductedDescription": "{amount} karma spent{description}"
+    },
+    "task": {
+      "created": "New Task Assigned",
+      "createdDescription": "You've been assigned: {name}",
+      "assigned": "Task Assigned to You",
+      "assignedDescription": "{name}",
+      "completed": "Your Task Was Completed",
+      "completedDescription": "{name} was marked complete"
+    },
+    "reward": {
+      "created": "New Reward Claim",
+      "createdDescription": "{memberName} has submitted a reward claim for {rewardName}",
+      "claimed": "Reward Claimed!",
+      "claimedDescription": "You claimed {rewardName}",
+      "completed": "Reward Completed",
+      "completedDescription": "Your reward claim for {rewardName} has been fulfilled",
+      "cancelled": "Claim Cancelled",
+      "cancelledDescription": "The reward claim for {rewardName} has been cancelled",
+      "approvalTaskCreated": "Approval Needed",
+      "approvalTaskCreatedDescription": "{memberName} is awaiting approval for {rewardName}",
+      "updated": "Reward Updated",
+      "updatedDescription": "Reward {rewardName} has been updated",
+      "deleted": "Reward Deleted",
+      "deletedDescription": "Reward {rewardName} has been deleted"
+    },
+    "family": {
+      "memberAdded": "New Family Member",
+      "memberAddedDescription": "{memberName} has joined the family",
+      "memberRemoved": "Member Removed",
+      "memberRemovedDescription": "{memberName} has been removed from the family",
+      "roleUpdated": "Role Updated",
+      "roleUpdatedDescription": "{memberName}'s role has been updated to {newRole}"
+    },
+    "activity": {
+      "taskCompleted": "Task Completed",
+      "taskCompletedDescription": "Task completed by {memberName}"
+    },
+    "contributionGoal": {
+      "awarded": "Contribution Goal Progress",
+      "awardedDescription": "{memberName} earned {amount} karma toward their goal",
+      "deducted": "Deduction Applied",
+      "deductedDescription": "{memberName} had {amount} karma deducted from their goal",
+      "updated": "Goal Updated",
+      "updatedDescription": "Contribution goal has been updated"
+    }
+  }
+}

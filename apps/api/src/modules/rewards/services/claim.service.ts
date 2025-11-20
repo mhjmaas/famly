@@ -7,7 +7,7 @@ import {
   toObjectId,
   validateObjectId,
 } from "@lib/objectid-utils";
-import { getUserName } from "@lib/user-utils";
+import { getUserLanguage, getUserName } from "@lib/user-utils";
 import type { ActivityEventService } from "@modules/activity-events";
 import type { KarmaService } from "@modules/karma";
 import {
@@ -454,10 +454,12 @@ export class ClaimService {
     claimId: ObjectIdString,
   ): Promise<void> {
     try {
+      const locale = await getUserLanguage(memberId);
       // Get the member's name for the notification
       const memberName = await getUserName(memberId);
 
       const notification = createRewardClaimNotification(
+        locale,
         rewardName,
         memberName,
         karmaCost,
