@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import type { Socket } from "socket.io-client";
 import { toast } from "sonner";
+import { useNotificationTranslations } from "@/hooks/use-notification-translations";
 import { useAppDispatch } from "@/store/hooks";
 import {
   clearGoal,
@@ -17,6 +18,7 @@ export function useContributionGoalEvents(
   enabled = true,
 ): void {
   const dispatch = useAppDispatch();
+  const t = useNotificationTranslations();
 
   useEffect(() => {
     if (!socket || !familyId || !enabled) {
@@ -44,8 +46,11 @@ export function useContributionGoalEvents(
       event: ContributionGoalEventPayloads["contribution_goal.awarded"],
     ) => {
       if (event.familyId !== familyId) return;
-      toast.success("Contribution goal completed", {
-        description: `${event.goalTitle} awarded ${event.karmaAwarded} karma`,
+      const memberName = (event as { memberName?: string }).memberName ?? "";
+      toast.success(t.contributionGoal.awarded, {
+        description: t.contributionGoal.awardedDescription
+          .replace("{memberName}", memberName)
+          .replace("{amount}", event.karmaAwarded.toString()),
       });
       await refetchGoal(event.memberId);
       dispatch(fetchKarma({ familyId, userId: event.memberId }));
@@ -73,5 +78,5 @@ export function useContributionGoalEvents(
       socket.off("contribution_goal.awarded", handleAwarded);
       socket.off("contribution_goal.updated", handleUpdated);
     };
-  }, [socket, familyId, enabled, dispatch]);
+  }, [socket, familyId, enabled, dispatch, t]);
 }

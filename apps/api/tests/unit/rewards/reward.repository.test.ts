@@ -99,7 +99,9 @@ describe("RewardRepository", () => {
       const result = await repository.findById(rewardId);
 
       expect(result).toEqual(mockReward);
-      expect(mockCollection.findOne).toHaveBeenCalledWith({ _id: rewardId });
+      expect(mockCollection.findOne).toHaveBeenCalledWith({
+        _id: { $eq: rewardId },
+      });
     });
 
     it("should return null when reward not found", async () => {
@@ -210,7 +212,9 @@ describe("RewardRepository", () => {
       const result = await repository.delete(rewardId);
 
       expect(result).toBe(true);
-      expect(mockCollection.deleteOne).toHaveBeenCalledWith({ _id: rewardId });
+      expect(mockCollection.deleteOne).toHaveBeenCalledWith({
+        _id: { $eq: rewardId },
+      });
     });
 
     it("should return false when reward not found", async () => {

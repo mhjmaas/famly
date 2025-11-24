@@ -92,7 +92,9 @@ export class PushSubscriptionRepository {
 
   async deleteById(id: string): Promise<boolean> {
     const collection = await this.getCollection();
-    const result = await collection.deleteOne({ _id: new ObjectId(id) });
+    const result = await collection.deleteOne({
+      _id: { $eq: new ObjectId(id) },
+    });
 
     return result.deletedCount > 0;
   }

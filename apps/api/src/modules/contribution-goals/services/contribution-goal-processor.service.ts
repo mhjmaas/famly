@@ -1,5 +1,6 @@
 import { logger } from "@lib/logger";
 import { validateObjectId } from "@lib/objectid-utils";
+import { getUserLanguage } from "@lib/user-utils";
 import type { ActivityEventService } from "@modules/activity-events";
 import type { KarmaService } from "@modules/karma";
 import {
@@ -94,6 +95,14 @@ export class ContributionGoalProcessorService {
               metadata: {
                 karma: currentKarma,
               },
+              templateKey:
+                currentKarma > 0
+                  ? "activity.contributionGoal.awarded"
+                  : "activity.contributionGoal.deducted",
+              templateParams: {
+                amount: Math.abs(currentKarma),
+                goalTitle: goal.title,
+              },
             });
           }
 
@@ -102,13 +111,18 @@ export class ContributionGoalProcessorService {
 
           // Send push notification
           try {
+            const locale = await getUserLanguage(goal.memberId.toString());
             const notification =
               currentKarma > 0
                 ? createContributionGoalAwardedNotification(
+                    locale,
                     currentKarma,
                     goal.title,
                   )
-                : createContributionGoalZeroKarmaNotification(goal.title);
+                : createContributionGoalZeroKarmaNotification(
+                    locale,
+                    goal.title,
+                  );
 
             await sendToUser(goal.memberId.toString(), notification);
           } catch (notificationError) {

@@ -12,6 +12,8 @@
       "@lib/*": ["src/lib/*"],
       "@middleware/*": ["src/middleware/*"],
       "@modules/*": ["src/modules/*"],
+      "@locales/activity/*": ["src/locales/activity/*"],
+      "@locales/*": ["src/locales/*"],
       "@routes/*": ["src/routes/*"],
       "@tests/*": ["tests/*"],
       "@famly/shared": ["../../packages/shared/src/index.ts"]

@@ -87,7 +87,7 @@ export class TaskRepository {
    * Find a task by ID
    */
   async findTaskById(taskId: string): Promise<Task | null> {
-    return this.collection.findOne({ _id: toObjectId(taskId) });
+    return this.collection.findOne({ _id: { $eq: toObjectId(taskId) } });
   }
 
   /**
@@ -176,7 +176,7 @@ export class TaskRepository {
     }
 
     const result = await this.collection.findOneAndUpdate(
-      { _id: toObjectId(taskId) },
+      { _id: { $eq: toObjectId(taskId) } },
       updateDoc,
       { returnDocument: "after" },
     );
@@ -188,7 +188,9 @@ export class TaskRepository {
    * Delete a task
    */
   async deleteTask(taskId: string): Promise<boolean> {
-    const result = await this.collection.deleteOne({ _id: toObjectId(taskId) });
+    const result = await this.collection.deleteOne({
+      _id: { $eq: toObjectId(taskId) },
+    });
     return result.deletedCount > 0;
   }
 

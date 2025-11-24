@@ -5,12 +5,14 @@ import {
   toObjectId,
   validateObjectId,
 } from "@lib/objectid-utils";
+import { getUserLanguage } from "@lib/user-utils";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
 import type {
   ActivityEvent,
   ActivityEventType,
 } from "../domain/activity-event";
 import { emitActivityCreated } from "../events/activity-events";
+import { resolveActivityLocale } from "../lib/activity-i18n";
 import type { ActivityEventRepository } from "../repositories/activity-event.repository";
 
 export interface RecordEventInput {
@@ -23,6 +25,9 @@ export interface RecordEventInput {
     karma?: number;
     triggeredBy?: ObjectIdString;
   };
+  templateKey?: string;
+  templateParams?: Record<string, string | number>;
+  locale?: string;
 }
 
 export class ActivityEventService {
@@ -43,6 +48,9 @@ export class ActivityEventService {
     try {
       normalizedUserId = validateObjectId(input.userId, "userId");
       const userObjectId = toObjectId(normalizedUserId, "userId");
+      const locale =
+        input.locale ??
+        resolveActivityLocale(await getUserLanguage(normalizedUserId));
 
       logger.debug("Recording activity event", {
         userId: normalizedUserId,
@@ -78,6 +86,9 @@ export class ActivityEventService {
         title: input.title,
         description: input.description,
         metadata,
+        templateKey: input.templateKey,
+        templateParams: input.templateParams,
+        locale,
       });
 
       logger.info("Activity event recorded successfully", {

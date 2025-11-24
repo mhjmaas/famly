@@ -5,6 +5,7 @@ import {
   type ObjectIdString,
   validateObjectId,
 } from "@lib/objectid-utils";
+import { getUserLanguage } from "@lib/user-utils";
 import type { ActivityEventService } from "@modules/activity-events";
 import { requireFamilyRole } from "@modules/auth/lib/require-family-role";
 import { FamilyRole } from "@modules/family/domain/family";
@@ -108,6 +109,10 @@ export class TaskService {
             metadata: task.metadata?.karma
               ? { karma: task.metadata.karma }
               : undefined,
+            templateKey: "activity.task.created",
+            templateParams: {
+              taskName: task.name,
+            },
           });
         } catch (error) {
           // Log error but don't fail task creation
@@ -557,7 +562,9 @@ export class TaskService {
     taskId: ObjectIdString,
   ): Promise<void> {
     try {
+      const locale = await getUserLanguage(userId);
       const notification = createTaskCompletionNotification(
+        locale,
         taskName,
         "You",
         karmaEarned,

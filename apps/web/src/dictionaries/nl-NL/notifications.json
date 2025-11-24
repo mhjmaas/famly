@@ -1,0 +1,85 @@
+{
+  "notifications": {
+    "karma": {
+      "awarded": "Karma Beloond!",
+      "awardedDescription": "Je hebt {amount} karma verdiend{description}",
+      "deducted": "Karma Gebruikt",
+      "deductedDescription": "{amount} karma uitgegeven {description}"
+    },
+    "task": {
+      "created": "Nieuwe Taak Toegewezen",
+      "createdDescription": "Taak: {name}",
+      "assigned": "Taak aan je Toegewezen",
+      "assignedDescription": "{name}",
+      "completed": "Je Taak is Voltooid",
+      "completedDescription": "{name} is voltooid gemarkeerd"
+    },
+    "reward": {
+      "created": "Nieuwe Beloningsclaim",
+      "createdDescription": "{memberName} heeft een beloningsclaim ingediend voor {rewardName}",
+      "claimed": "Beloning Geclaimd!",
+      "claimedDescription": "Je hebt {rewardName} geclaimd",
+      "completed": "Beloning Voltooid",
+      "completedDescription": "Je beloningsclaim voor {rewardName} is ingewilligd",
+      "cancelled": "Claim Geannuleerd",
+      "cancelledDescription": "De beloningsclaim voor {rewardName} is geannuleerd",
+      "approvalTaskCreated": "Goedkeuring Nodig",
+      "approvalTaskCreatedDescription": "{memberName} wacht op goedkeuring voor {rewardName}",
+      "updated": "Beloning Bijgewerkt",
+      "updatedDescription": "Beloning {rewardName} is bijgewerkt",
+      "deleted": "Beloning Verwijderd",
+      "deletedDescription": "Beloning {rewardName} is verwijderd"
+    },
+    "family": {
+      "memberAdded": "Nieuw Gezinslid",
+      "memberAddedDescription": "{memberName} is lid van het gezin geworden",
+      "memberRemoved": "Lid Verwijderd",
+      "memberRemovedDescription": "{memberName} is uit het gezin verwijderd",
+      "roleUpdated": "Rol Bijgewerkt",
+      "roleUpdatedDescription": "De rol van {memberName} is bijgewerkt naar {newRole}"
+    },
+    "activity": {
+      "task": {
+        "created": "Taak gemaakt: {taskName}",
+        "createdTitle": "Taak Gemaakt",
+        "completed": "{taskName} is voltooid",
+        "completedTitle": "Taak Voltooid"
+      },
+      "contributionGoal": {
+        "awarded": "{amount} karma toegekend van \"{goalTitle}\"",
+        "awardedTitle": "Bijdrage Toegekend",
+        "deducted": "{amount} karma afgetrokken van \"{goalTitle}\"",
+        "deductedTitle": "Bijdrage Afgetrokken"
+      },
+      "karma": {
+        "awarded": "Karma toegekend: {amount} {description}",
+        "awardedTitle": "Karma Toegekend",
+        "deducted": "Karma afgetrokken: {amount} {description}",
+        "deductedTitle": "Karma Afgetrokken"
+      },
+      "reward": {
+        "claimed": "Beloning geclaimd: {rewardName}",
+        "claimedTitle": "Beloning Geclaimd"
+      },
+      "shoppingList": {
+        "updated": "Boodschappenlijst bijgewerkt: {listName}",
+        "updatedTitle": "Boodschappenlijst Bijgewerkt"
+      },
+      "diary": {
+        "entry": "Dagboekitem toegevoegd: {title}",
+        "entryTitle": "Dagboekitem",
+        "familyEntry": "Gezinsdagboekitem toegevoegd: {title}",
+        "familyEntryTitle": "Gezinsdagboekitem"
+      },
+      "default": "Activiteit vastgelegd"
+    },
+    "contributionGoal": {
+      "awarded": "Gezinsbijdrage-doelvoortgang",
+      "awardedDescription": "{memberName} heeft {amount} karma verdiend naar hun doel",
+      "deducted": "Minpunt Toegepast",
+      "deductedDescription": "{amount} karmpa punten in mindering voor deze week",
+      "updated": "Doel Bijgewerkt",
+      "updatedDescription": "Gezinsbijdrage-doel is bijgewerkt"
+    }
+  }
+}

@@ -377,6 +377,13 @@ export class DiaryService {
         title,
         description: entryText.substring(0, 100),
         detail,
+        templateKey:
+          type === "FAMILY_DIARY"
+            ? "activity.diary.familyEntry"
+            : "activity.diary.entry",
+        templateParams: {
+          title,
+        },
       });
     } catch (error) {
       logger.error("Failed to record diary activity event", {

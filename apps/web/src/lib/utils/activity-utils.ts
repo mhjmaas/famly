@@ -1,6 +1,9 @@
 import { format } from "date-fns";
 import { CheckCircle2, Gift, type LucideIcon } from "lucide-react";
-import type { ActivityEvent } from "../api-client";
+import type enUSDict from "@/dictionaries/en-US/notifications.json";
+import type { ActivityEvent } from "@/lib/api-client";
+
+type NotificationDictionary = typeof enUSDict;
 
 export interface EventGroup {
   date: string; // YYYY-MM-DD
@@ -8,9 +11,7 @@ export interface EventGroup {
   events: ActivityEvent[];
 }
 
-/**
- * Groups activity events by date
- */
+/** Groups activity events by date */
 export function groupEventsByDate(events: ActivityEvent[]): EventGroup[] {
   const groups = new Map<string, ActivityEvent[]>();
 
@@ -35,9 +36,7 @@ export function groupEventsByDate(events: ActivityEvent[]): EventGroup[] {
     .sort((a, b) => b.date.localeCompare(a.date)); // Most recent first
 }
 
-/**
- * Formats a date string for activity timeline display
- */
+/** Formats a date string for activity timeline display */
 export function formatActivityDate(dateString: string): string {
   try {
     const date = new Date(dateString);
@@ -47,9 +46,7 @@ export function formatActivityDate(dateString: string): string {
   }
 }
 
-/**
- * Formats a timestamp for activity timeline display (time only)
- */
+/** Formats a timestamp for activity timeline display (time only) */
 export function formatActivityTime(
   timestamp: string,
   options?: {
@@ -71,41 +68,23 @@ export function formatActivityTime(
   }
 }
 
-/**
- * Returns the appropriate icon for an activity event type
- */
+/** Returns the appropriate icon for an activity event type */
 export function getActivityEventIcon(type: ActivityEvent["type"]): LucideIcon {
   switch (type) {
-    case "TASK":
-      return CheckCircle2;
     case "REWARD":
       return Gift;
-    case "SHOPPING_LIST":
-      return CheckCircle2;
-    case "KARMA":
-      return CheckCircle2;
-    case "RECIPE":
-      return CheckCircle2;
-    case "DIARY":
-      return CheckCircle2;
-    case "FAMILY_DIARY":
-      return CheckCircle2;
     default:
       return CheckCircle2;
   }
 }
 
-/**
- * Returns the appropriate color class for karma change
- */
+/** Returns the appropriate color class for karma change */
 export function getActivityEventColor(karma?: number): string {
   if (!karma) return "text-muted-foreground";
   return karma > 0 ? "text-chart-2" : "text-destructive";
 }
 
-/**
- * Returns the appropriate background color class for event icon
- */
+/** Returns the appropriate background color class for event icon */
 export function getActivityEventBgColor(type: ActivityEvent["type"]): string {
   switch (type) {
     case "TASK":
@@ -129,46 +108,72 @@ export function getActivityEventBgColor(type: ActivityEvent["type"]): string {
 
 /**
  * Determines whether karma indicators should be displayed for an activity event
- * Based on the combination of event type and detail
- *
- * Shows karma for:
- * - TASK + COMPLETED (with positive karma)
- * - REWARD + CLAIMED (with negative karma deduction)
- * - KARMA + AWARDED (with positive karma)
- *
- * Hides karma for:
- * - All CREATED events (task, shopping list, recipe, diary)
- * - TASK + GENERATED (auto-generated tasks)
- * - REWARD + COMPLETED (completion doesn't show karma)
- * - Events without detail field (legacy events - graceful fallback shows karma)
- *
- * @param event - The activity event to check
- * @returns true if karma indicators should be shown, false otherwise
  */
 export function shouldShowKarma(event: ActivityEvent): boolean {
-  // If no detail field, default to showing karma (backward compatibility with legacy events)
-  if (!event.detail) {
-    return true;
-  }
+  if (!event.detail) return true;
 
-  // Show karma only for specific type + detail combinations
   switch (event.type) {
     case "TASK":
-      // Only show karma for completed tasks
       return event.detail === "COMPLETED";
     case "REWARD":
-      // Only show karma for claimed rewards (deduction)
       return event.detail === "CLAIMED";
     case "KARMA":
-      // Only show karma for awarded karma events
       return event.detail === "AWARDED";
     case "SHOPPING_LIST":
     case "RECIPE":
     case "DIARY":
     case "FAMILY_DIARY":
-      // Never show karma for creation events
       return false;
     default:
       return true;
   }
+}
+
+// --- Template-based formatting ---
+export function formatActivityFromTemplate(
+  event: {
+    templateKey?: string;
+    templateParams?: Record<string, string | number>;
+  },
+  t: NotificationDictionary["notifications"],
+) {
+  if (!event.templateKey || !event.templateParams) return null;
+
+  const template = resolveTemplate(event.templateKey, t);
+  if (!template) return null;
+
+  const description = interpolate(template, event.templateParams);
+
+  // Try to get a localized title by appending "Title" to the template key
+  // e.g., "activity.karma.awarded" -> "activity.karma.awardedTitle"
+  const titleKey = event.templateKey.replace(/\.(\w+)$/, ".$1Title");
+  const titleTemplate = resolveTemplate(titleKey, t);
+  const title = titleTemplate ? titleTemplate : undefined;
+
+  return { description, title };
+}
+
+function resolveTemplate(
+  key: string,
+  t: NotificationDictionary["notifications"],
+): string | null {
+  const parts = key.split(".");
+  let current: unknown = t;
+  for (const part of parts) {
+    if (current && typeof current === "object" && part in current) {
+      current = (current as Record<string, unknown>)[part];
+    } else {
+      return null;
+    }
+  }
+  return typeof current === "string" ? current : null;
+}
+
+function interpolate(
+  template: string,
+  params: Record<string, string | number>,
+): string {
+  return template.replace(/\{(\w+)\}/g, (_, k) =>
+    params[k] === undefined || params[k] === null ? "" : String(params[k]),
+  );
 }

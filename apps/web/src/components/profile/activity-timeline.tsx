@@ -1,6 +1,10 @@
+"use client";
+
 import { Sparkles, TrendingDown, TrendingUp } from "lucide-react";
+import { useNotificationTranslations } from "@/hooks/use-notification-translations";
 import type { ActivityEvent } from "@/lib/api-client";
 import {
+  formatActivityFromTemplate,
   formatActivityTime,
   getActivityEventBgColor,
   getActivityEventColor,
@@ -26,6 +30,7 @@ export function ActivityTimeline({
   locale,
   timeZone = "UTC",
 }: ActivityTimelineProps) {
+  const t = useNotificationTranslations();
   const eventGroups = groupEventsByDate(events);
 
   if (events.length === 0) {
@@ -86,6 +91,11 @@ export function ActivityTimeline({
                 const colorClass = getActivityEventColor(karma);
                 const bgColorClass = getActivityEventBgColor(event.type);
 
+                const formatted = formatActivityFromTemplate(event, t);
+
+                const title = formatted?.title ?? event.title;
+                const description = formatted?.description ?? event.description;
+
                 return (
                   <div
                     key={event.id}
@@ -104,12 +114,10 @@ export function ActivityTimeline({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold mb-1">
-                              {event.title}
-                            </h3>
-                            {event.description && (
+                            <h3 className="font-semibold mb-1">{title}</h3>
+                            {description && (
                               <p className="text-sm text-muted-foreground">
-                                {event.description}
+                                {description}
                               </p>
                             )}
                             <p className="text-xs text-muted-foreground mt-1">

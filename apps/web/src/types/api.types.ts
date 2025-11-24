@@ -192,7 +192,8 @@ export type ActivityEventType =
   | "RECIPE"
   | "DIARY"
   | "FAMILY_DIARY"
-  | "REWARD";
+  | "REWARD"
+  | "CONTRIBUTION_GOAL";
 
 export interface ActivityEvent {
   id: string;
@@ -201,6 +202,9 @@ export interface ActivityEvent {
   detail?: string; // Granular action type (e.g., "CREATED", "COMPLETED")
   title: string;
   description: string | null;
+  templateKey?: string;
+  templateParams?: Record<string, string | number>;
+  locale?: string;
   metadata: {
     karma?: number;
     triggeredBy?: string; // User who triggered the action if different from credited user

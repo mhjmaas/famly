@@ -20,6 +20,9 @@ export function toActivityEventDTO(event: ActivityEvent): ActivityEventDTO {
           }),
         }
       : null,
+    ...(event.templateKey && { templateKey: event.templateKey }),
+    ...(event.templateParams && { templateParams: event.templateParams }),
+    ...(event.locale && { locale: event.locale }),
     createdAt: event.createdAt.toISOString(),
   };
 }

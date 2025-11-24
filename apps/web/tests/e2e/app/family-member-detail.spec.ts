@@ -194,23 +194,23 @@ test.describe("Family Member Detail Page", () => {
     test.describe("Karma Grant", () => {
         test("should grant positive karma successfully", async ({ page }) => {
             if (!memberId) test.skip();
-    
+
             await memberDetailPage.goto(memberId);
             await waitForPageLoad(page);
-            
+
             // First switch to the karma tab since it's no longer the default
             await memberDetailPage.giveKarmaTab.click();
             await waitForPageLoad(page);
-    
+
             const initialKarma = await memberDetailPage.getKarmaAmount();
-    
+
             await memberDetailPage.grantKarma(10, "Great job on homework!");
-    
-            // Wait for success toast
-            await expect(page.getByText(/karma.*awarded/i)).toBeVisible({
+
+            // Wait for success toast - check for the translated title "Karma Awarded"
+            await expect(page.getByText("Karma Awarded")).toBeVisible({
                                 timeout: 5000,
                             });
-    
+
             // Verify karma increased
             // Wait for karma amount to update instead of fixed timeout
             await memberDetailPage.memberKarma.waitFor({ state: 'visible' });
@@ -220,23 +220,23 @@ test.describe("Family Member Detail Page", () => {
     
         test("should deduct karma with negative amount", async ({ page }) => {
             if (!memberId) test.skip();
-    
+
             await memberDetailPage.goto(memberId);
             await waitForPageLoad(page);
-            
+
             // First switch to the karma tab since it's no longer the default
             await memberDetailPage.giveKarmaTab.click();
             await waitForPageLoad(page);
-    
+
             const initialKarma = await memberDetailPage.getKarmaAmount();
-    
+
             await memberDetailPage.grantKarma(-5, "Broke house rule");
-    
-            // Wait for success toast
-            await expect(page.getByText(/karma.*awarded/i)).toBeVisible({
+
+            // Wait for success toast - check for the translated title "Karma Awarded"
+            await expect(page.getByText("Karma Awarded")).toBeVisible({
                                 timeout: 5000,
                             });
-    
+
             // Verify karma decreased
             // Wait for karma amount to update instead of fixed timeout
             await memberDetailPage.memberKarma.waitFor({ state: 'visible' });
@@ -287,20 +287,20 @@ test.describe("Family Member Detail Page", () => {
             page,
         }) => {
             if (!memberId) test.skip();
-    
+
             await memberDetailPage.goto(memberId);
             await waitForPageLoad(page);
-            
+
             // First switch to the karma tab since it's no longer the default
             await memberDetailPage.giveKarmaTab.click();
             await waitForPageLoad(page);
-    
+
             const initialEventCount = await memberDetailPage.getActivityEventCount();
 
             await memberDetailPage.grantKarma(5, "Good behavior");
 
-            // Wait for success toast
-            await expect(page.getByText(/karma.*awarded/i)).toBeVisible({
+            // Wait for success toast - check for the translated title "Karma Awarded"
+            await expect(page.getByText("Karma Awarded")).toBeVisible({
                             timeout: 5000,
                         });
 

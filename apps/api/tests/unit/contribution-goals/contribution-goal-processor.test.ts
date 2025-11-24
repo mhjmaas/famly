@@ -1,4 +1,22 @@
 // Mock dependencies first (before imports)
+jest.mock("@config/env", () => ({
+  getEnv: () => ({
+    NODE_ENV: "test",
+    PORT: "3001",
+    CLIENT_URL: "http://localhost:3000",
+    MONGODB_URI: "mongodb://localhost:27017/test",
+    BETTER_AUTH_SECRET: "12345678901234567890123456789012",
+    BETTER_AUTH_URL: "http://localhost:3001",
+    VAPID_PRIVATE_KEY: "test",
+    NEXT_PUBLIC_VAPID_PUBLIC_KEY: "test",
+    VAPID_EMAIL: "test@example.com",
+    MINIO_ENDPOINT: "localhost",
+    MINIO_ROOT_USER: "minio",
+    MINIO_ROOT_PASSWORD: "miniopass",
+    MINIO_BUCKET: "test",
+  }),
+}));
+
 jest.mock("@lib/logger", () => ({
   logger: {
     info: jest.fn(),
@@ -144,6 +162,8 @@ describe("ContributionGoalProcessorService", () => {
         metadata: {
           karma: 80,
         },
+        templateKey: "activity.contributionGoal.awarded",
+        templateParams: { amount: 80, goalTitle: mockGoal.title },
       });
 
       // Verify notification was sent
@@ -224,6 +244,8 @@ describe("ContributionGoalProcessorService", () => {
         metadata: {
           karma: 0,
         },
+        templateKey: "activity.contributionGoal.deducted",
+        templateParams: { amount: 0, goalTitle: mockGoal.title },
       });
 
       // Verify zero karma notification was sent

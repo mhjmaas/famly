@@ -7,7 +7,7 @@ import {
   toObjectId,
   validateObjectId,
 } from "@lib/objectid-utils";
-import { getUserName } from "@lib/user-utils";
+import { getUserLanguage, getUserName } from "@lib/user-utils";
 import type { ActivityEventService } from "@modules/activity-events";
 import type { KarmaService } from "@modules/karma";
 import {
@@ -116,7 +116,9 @@ export class ClaimService {
       try {
         const db = getDb();
         const usersCollection = db.collection("user");
-        const user = await usersCollection.findOne({ _id: memberObjectId });
+        const user = await usersCollection.findOne({
+          _id: { $eq: memberObjectId },
+        });
         const memberName = user?.name || "Unknown member";
 
         const taskInput: CreateTaskInput = {
@@ -164,6 +166,11 @@ export class ClaimService {
               description: `Claimed reward for ${reward.karmaCost} karma`,
               detail: "CLAIMED",
               metadata: { karma: -reward.karmaCost },
+              templateKey: "activity.reward.claimed",
+              templateParams: {
+                rewardName: reward.name,
+                karmaCost: reward.karmaCost,
+              },
             });
           } catch (error) {
             logger.error("Failed to record activity event for reward claim", {
@@ -454,10 +461,12 @@ export class ClaimService {
     claimId: ObjectIdString,
   ): Promise<void> {
     try {
+      const locale = await getUserLanguage(memberId);
       // Get the member's name for the notification
       const memberName = await getUserName(memberId);
 
       const notification = createRewardClaimNotification(
+        locale,
         rewardName,
         memberName,
         karmaCost,

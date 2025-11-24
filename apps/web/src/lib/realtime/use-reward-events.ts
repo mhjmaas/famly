@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import type { Socket } from "socket.io-client";
 import { toast } from "sonner";
+import { useNotificationTranslations } from "@/hooks/use-notification-translations";
 import { useAppDispatch } from "@/store/hooks";
 import { fetchClaims } from "@/store/slices/claims.slice";
 import { fetchKarma } from "@/store/slices/karma.slice";
@@ -28,6 +29,7 @@ export function useRewardEvents(
   enabled = true,
 ): void {
   const dispatch = useAppDispatch();
+  const t = useNotificationTranslations();
 
   useEffect(() => {
     if (!socket || !familyId || !userId || !enabled) {
@@ -46,8 +48,12 @@ export function useRewardEvents(
 
       // Show notification if it's the current user's claim
       if (event.memberId === userId) {
-        toast.success("Reward Claimed!", {
-          description: "Your reward claim has been submitted",
+        const rewardName = event.rewardName ?? "";
+        toast.success(t.reward.claimed, {
+          description: t.reward.claimedDescription.replace(
+            "{rewardName}",
+            rewardName,
+          ),
         });
       }
     };
@@ -63,8 +69,12 @@ export function useRewardEvents(
 
       // Parents receive notification about pending approval
       if (event.assignedToParents) {
-        toast.info("Approval Needed", {
-          description: "A reward claim is waiting for your approval",
+        const rewardName = (event as { rewardName?: string }).rewardName ?? "";
+        const memberName = (event as { memberName?: string }).memberName ?? "";
+        toast.info(t.reward.approvalTaskCreated, {
+          description: t.reward.approvalTaskCreatedDescription
+            .replace("{memberName}", memberName)
+            .replace("{rewardName}", rewardName),
         });
       }
     };
@@ -83,8 +93,12 @@ export function useRewardEvents(
       if (event.memberId === userId) {
         dispatch(fetchKarma({ familyId, userId }));
 
-        toast.success("Reward Approved!", {
-          description: "Your reward claim has been approved",
+        const rewardName = event.rewardName ?? "";
+        toast.success(t.reward.completed, {
+          description: t.reward.completedDescription.replace(
+            "{rewardName}",
+            rewardName,
+          ),
         });
       }
     };
@@ -103,8 +117,12 @@ export function useRewardEvents(
       if (event.memberId === userId) {
         dispatch(fetchKarma({ familyId, userId }));
 
-        toast.info("Claim Cancelled", {
-          description: "Your reward claim was cancelled and karma refunded",
+        const rewardName = event.rewardName ?? "";
+        toast.info(t.reward.cancelled, {
+          description: t.reward.cancelledDescription.replace(
+            "{rewardName}",
+            rewardName,
+          ),
         });
       }
     };
@@ -119,8 +137,11 @@ export function useRewardEvents(
       dispatch(fetchRewards(familyId));
 
       // Show notification
-      toast.success("New Reward", {
-        description: `${event.name} has been added`,
+      toast.success(t.reward.created, {
+        description: t.reward.createdDescription.replace(
+          "{rewardName}",
+          event.name,
+        ),
       });
     };
 
@@ -133,9 +154,12 @@ export function useRewardEvents(
       // Refresh rewards list
       dispatch(fetchRewards(familyId));
 
-      // Show notification
-      toast.info("Reward Updated", {
-        description: `${event.name} has been updated`,
+      // Show notification (using generic updated message)
+      toast.info(t.reward.updated, {
+        description: t.reward.updatedDescription.replace(
+          "{rewardName}",
+          event.name,
+        ),
       });
     };
 
@@ -148,9 +172,12 @@ export function useRewardEvents(
       // Refresh rewards list
       dispatch(fetchRewards(familyId));
 
-      // Show notification
-      toast.info("Reward Removed", {
-        description: `${event.name} has been removed`,
+      // Show notification (using generic deleted message)
+      toast.info(t.reward.deleted, {
+        description: t.reward.deletedDescription.replace(
+          "{rewardName}",
+          event.name,
+        ),
       });
     };
 
@@ -173,5 +200,5 @@ export function useRewardEvents(
       socket.off("reward.updated", handleRewardUpdated);
       socket.off("reward.deleted", handleRewardDeleted);
     };
-  }, [socket, familyId, userId, enabled, dispatch]);
+  }, [socket, familyId, userId, enabled, dispatch, t]);
 }

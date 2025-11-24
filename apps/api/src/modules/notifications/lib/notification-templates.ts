@@ -1,9 +1,10 @@
-/**
- * Notification Templates
- * Provides standardized notification content for different event types
- */
-
+import type { SupportedLanguage } from "@modules/auth/language";
 import { getEnv } from "../../../config/env";
+import {
+  type NotificationStringKey,
+  resolveNotificationLocale,
+  translateNotification,
+} from "./notification-i18n";
 
 export interface NotificationPayload {
   title: string;
@@ -22,23 +23,36 @@ function getBaseUrl(): string {
   return env.CLIENT_URL;
 }
 
+function translate(
+  locale: SupportedLanguage,
+  key: NotificationStringKey,
+  params: Record<string, string | number | undefined> = {},
+): string {
+  return translateNotification(locale, key, params);
+}
+
 /**
  * Create a notification for task completion
  */
 export function createTaskCompletionNotification(
+  localeInput: string | undefined,
   taskName: string,
-  completedBy: string,
+  _completedBy: string,
   karmaEarned?: number,
 ): NotificationPayload {
+  const locale = resolveNotificationLocale(localeInput);
   const body = karmaEarned
-    ? `${completedBy} completed "${taskName}" and earned ${karmaEarned} karma!`
-    : `${completedBy} completed "${taskName}"`;
+    ? translate(locale, "task.completedWithKarmaDescription", {
+        name: taskName,
+        karma: karmaEarned,
+      })
+    : translate(locale, "task.completedDescription", { name: taskName });
 
   const baseUrl = getBaseUrl();
   const iconUrl = `${baseUrl}/web-app-manifest-192x192.png`;
 
   return {
-    title: "Task Completed! 🎉",
+    title: translate(locale, "task.completed"),
     body,
     icon: iconUrl,
     badge: iconUrl,
@@ -53,19 +67,27 @@ export function createTaskCompletionNotification(
  * Create a notification for karma grant
  */
 export function createKarmaGrantNotification(
+  localeInput: string | undefined,
   amount: number,
-  grantedBy: string,
+  _grantedBy: string,
   reason?: string,
 ): NotificationPayload {
+  const locale = resolveNotificationLocale(localeInput);
   const body = reason
-    ? `${grantedBy} granted you ${amount} karma for: ${reason}`
-    : `${grantedBy} granted you ${amount} karma`;
+    ? translate(locale, "karma.awardedDescriptionWithReason", {
+        amount,
+        reason,
+      })
+    : translate(locale, "karma.awardedDescription", {
+        amount,
+        description: "",
+      });
 
   const baseUrl = getBaseUrl();
   const iconUrl = `${baseUrl}/web-app-manifest-192x192.png`;
 
   return {
-    title: "Karma Received! ⭐",
+    title: translate(locale, "karma.awarded"),
     body,
     icon: iconUrl,
     badge: iconUrl,
@@ -80,16 +102,22 @@ export function createKarmaGrantNotification(
  * Create a notification for reward claim
  */
 export function createRewardClaimNotification(
+  localeInput: string | undefined,
   rewardName: string,
   claimedBy: string,
   karmaCost: number,
 ): NotificationPayload {
+  const locale = resolveNotificationLocale(localeInput);
   const baseUrl = getBaseUrl();
   const iconUrl = `${baseUrl}/web-app-manifest-192x192.png`;
 
   return {
-    title: "Reward Claimed! 🎁",
-    body: `${claimedBy} claimed "${rewardName}" for ${karmaCost} karma`,
+    title: translate(locale, "reward.claimed"),
+    body: translate(locale, "reward.claimedDescription", {
+      rewardName,
+      memberName: claimedBy,
+      karmaCost,
+    }),
     icon: iconUrl,
     badge: iconUrl,
     data: {
@@ -103,15 +131,21 @@ export function createRewardClaimNotification(
  * Create a notification for contribution goal karma awarded
  */
 export function createContributionGoalAwardedNotification(
+  localeInput: string | undefined,
   karmaAmount: number,
   goalTitle: string,
 ): NotificationPayload {
+  const locale = resolveNotificationLocale(localeInput);
   const baseUrl = getBaseUrl();
   const iconUrl = `${baseUrl}/web-app-manifest-192x192.png`;
 
   return {
-    title: "Weekly Goal Completed! 🎯",
-    body: `You earned ${karmaAmount} karma from "${goalTitle}"`,
+    title: translate(locale, "contributionGoal.awarded"),
+    body: translate(locale, "contributionGoal.awardedDescription", {
+      memberName: "",
+      amount: karmaAmount,
+      goalTitle,
+    }),
     icon: iconUrl,
     badge: iconUrl,
     data: {
@@ -125,14 +159,18 @@ export function createContributionGoalAwardedNotification(
  * Create a notification for contribution goal with zero karma
  */
 export function createContributionGoalZeroKarmaNotification(
+  localeInput: string | undefined,
   goalTitle: string,
 ): NotificationPayload {
+  const locale = resolveNotificationLocale(localeInput);
   const baseUrl = getBaseUrl();
   const iconUrl = `${baseUrl}/web-app-manifest-192x192.png`;
 
   return {
-    title: "Weekly Goal Ended 📊",
-    body: `Your contribution goal "${goalTitle}" ended with no karma - all potential karma was deducted`,
+    title: translate(locale, "contributionGoal.zeroKarma"),
+    body: translate(locale, "contributionGoal.zeroKarmaDescription", {
+      goalTitle,
+    }),
     icon: iconUrl,
     badge: iconUrl,
     data: {
@@ -146,16 +184,18 @@ export function createContributionGoalZeroKarmaNotification(
  * Create a notification for new chat message
  */
 export function createChatMessageNotification(
+  localeInput: string | undefined,
   senderName: string,
   messagePreview: string,
   chatId: string,
 ): NotificationPayload {
+  const locale = resolveNotificationLocale(localeInput);
   const baseUrl = getBaseUrl();
   const iconUrl = `${baseUrl}/web-app-manifest-192x192.png`;
 
   return {
-    title: `New message from ${senderName}`,
-    body: messagePreview,
+    title: translate(locale, "chat.message", { senderName }),
+    body: translate(locale, "chat.messageDescription", { messagePreview }),
     icon: iconUrl,
     badge: iconUrl,
     data: {
@@ -170,15 +210,20 @@ export function createChatMessageNotification(
  * Create a notification for family member added
  */
 export function createFamilyMemberAddedNotification(
+  localeInput: string | undefined,
   memberName: string,
   addedBy: string,
 ): NotificationPayload {
+  const locale = resolveNotificationLocale(localeInput);
   const baseUrl = getBaseUrl();
   const iconUrl = `${baseUrl}/web-app-manifest-192x192.png`;
 
   return {
-    title: "New Family Member! 👨‍👩‍👧‍👦",
-    body: `${addedBy} added ${memberName} to the family`,
+    title: translate(locale, "family.memberAdded"),
+    body: translate(locale, "family.memberAddedDescription", {
+      memberName,
+      addedBy,
+    }),
     icon: iconUrl,
     badge: iconUrl,
     data: {

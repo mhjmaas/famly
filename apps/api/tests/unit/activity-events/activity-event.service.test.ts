@@ -23,6 +23,28 @@ jest.mock("@modules/activity-events/events/activity-events", () => ({
   emitActivityCreated: jest.fn(),
 }));
 
+jest.mock("@config/env", () => ({
+  getEnv: () => ({
+    NODE_ENV: "test",
+    PORT: "3001",
+    CLIENT_URL: "http://localhost:3000",
+    MONGODB_URI: "mongodb://localhost:27017/test",
+    BETTER_AUTH_SECRET: "12345678901234567890123456789012",
+    BETTER_AUTH_URL: "http://localhost:3001",
+    VAPID_PRIVATE_KEY: "test",
+    NEXT_PUBLIC_VAPID_PUBLIC_KEY: "test",
+    VAPID_EMAIL: "test@example.com",
+    MINIO_ENDPOINT: "localhost",
+    MINIO_ROOT_USER: "minio",
+    MINIO_ROOT_PASSWORD: "miniopass",
+    MINIO_BUCKET: "test",
+  }),
+}));
+
+jest.mock("@modules/activity-events/lib/activity-i18n", () => ({
+  resolveActivityLocale: () => "en-US",
+}));
+
 // Must be imported after mocking dependencies
 import { ActivityEventService } from "@/modules/activity-events/services/activity-event.service";
 
@@ -69,15 +91,34 @@ describe("ActivityEventService", () => {
         title: "Complete homework",
         description: "Completed Complete homework",
         metadata: { karma: 10 },
+        templateKey: "activity.task.completed",
+        templateParams: { taskName: "Complete homework" },
+        locale: "en-US",
         createdAt: new Date("2025-01-15T10:00:00Z"),
       },
       {
         _id: new ObjectId("507f1f77bcf86cd799439011"),
         userId: new ObjectId(memberId),
-        type: "TASK",
-        title: "Do chores",
-        description: "Created Do chores",
+        type: "REWARD",
+        title: "Movie Night",
+        description: "Reward claimed",
+        metadata: { karma: -50 },
+        templateKey: "activity.reward.claimed",
+        templateParams: { rewardName: "Movie Night" },
+        locale: "en-US",
         createdAt: new Date("2025-01-10T14:00:00Z"),
+      },
+      {
+        _id: new ObjectId("507f1f77bcf86cd799439012"),
+        userId: new ObjectId(memberId),
+        type: "CONTRIBUTION_GOAL",
+        title: "Weekly goal completed",
+        description: "Earned 75 karma from contribution goal",
+        metadata: { karma: 75 },
+        templateKey: "activity.contributionGoal.awarded",
+        templateParams: { amount: 75, goalTitle: "Weekly Chores" },
+        locale: "nl-NL",
+        createdAt: new Date("2025-01-08T10:00:00Z"),
       },
     ];
 
@@ -310,6 +351,65 @@ describe("ActivityEventService", () => {
       );
 
       expect(result).toEqual(mockActivityEvents);
+    });
+
+    it("should include template data in activity events for localization", async () => {
+      mockMembershipRepository.findByFamilyAndUser
+        .mockResolvedValueOnce({
+          _id: new ObjectId(),
+          familyId: new ObjectId(familyId),
+          userId: new ObjectId(requestingUserId),
+          role: FamilyRole.Parent,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .mockResolvedValueOnce({
+          _id: new ObjectId(),
+          familyId: new ObjectId(familyId),
+          userId: new ObjectId(memberId),
+          role: FamilyRole.Child,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+
+      mockActivityRepository.findByUserInDateRange.mockResolvedValue(
+        mockActivityEvents,
+      );
+
+      const result = await service.getEventsForFamilyMember(
+        requestingUserId,
+        familyId,
+        memberId,
+        startDate,
+        endDate,
+      );
+
+      // Verify all events have template data for frontend localization
+      expect(result).toHaveLength(3);
+
+      // Verify task completion event has template
+      expect(result[0]).toMatchObject({
+        type: "TASK",
+        templateKey: "activity.task.completed",
+        templateParams: { taskName: "Complete homework" },
+        locale: "en-US",
+      });
+
+      // Verify reward event has template
+      expect(result[1]).toMatchObject({
+        type: "REWARD",
+        templateKey: "activity.reward.claimed",
+        templateParams: { rewardName: "Movie Night" },
+        locale: "en-US",
+      });
+
+      // Verify contribution goal event has template with different locale
+      expect(result[2]).toMatchObject({
+        type: "CONTRIBUTION_GOAL",
+        templateKey: "activity.contributionGoal.awarded",
+        templateParams: { amount: 75, goalTitle: "Weekly Chores" },
+        locale: "nl-NL",
+      });
     });
   });
 });
