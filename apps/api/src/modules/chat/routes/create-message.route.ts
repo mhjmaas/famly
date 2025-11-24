@@ -2,8 +2,10 @@ import { HttpError } from "@lib/http-error";
 import { toObjectId, validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
+import { getSocketIOServer } from "@modules/realtime";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
+import { emitNewMessageNotification } from "../realtime/events/chat-events";
 import { ChatRepository } from "../repositories/chat.repository";
 import { MembershipRepository } from "../repositories/membership.repository";
 import { MessageRepository } from "../repositories/message.repository";
@@ -73,6 +75,24 @@ export function createMessageRoute(): Router {
           input.body,
           input.clientId,
         );
+
+        // Broadcast message:new event to chat room if this is a new message
+        if (isNew) {
+          const io = getSocketIOServer();
+          if (io) {
+            io.to(`chat:${chatId}`).emit("message:new", {
+              message,
+            });
+          }
+
+          // Also send notification to all chat members via their user rooms
+          // This ensures members not viewing the chat still get notified for unread badges
+          const chat = await chatRepository.findById(chatObjectId);
+          if (chat) {
+            const memberIds = chat.memberIds.map((id) => id.toString());
+            emitNewMessageNotification(chatId, message, memberIds, true);
+          }
+        }
 
         // Return 201 for new messages, 200 for existing (idempotent)
         const statusCode = isNew ? 201 : 200;

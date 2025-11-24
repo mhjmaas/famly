@@ -6,6 +6,10 @@ import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import { toChatDTO } from "../lib/chat.mapper";
 import { verifyMembership } from "../middleware";
+import {
+  emitChatUpdate,
+  emitMemberAdded,
+} from "../realtime/events/chat-events";
 import { ChatRepository } from "../repositories/chat.repository";
 import { MembershipRepository } from "../repositories/membership.repository";
 import { MembershipService } from "../services/membership.service";
@@ -81,7 +85,26 @@ export function addMembersRoute(): Router {
           normalizedAddedBy,
         );
 
-        res.status(200).json(toChatDTO(updatedChat));
+        const chatDTO = toChatDTO(updatedChat);
+
+        // Broadcast chat:update to all members (including newly added ones)
+        emitChatUpdate(chatDTO);
+
+        // Broadcast member-added event for each new member to existing members
+        const existingMemberIds = (chat.memberIds || []).map((id) =>
+          id.toString(),
+        );
+        for (const newUserId of input.userIds) {
+          emitMemberAdded(
+            chatObjectId,
+            chat.title || "Group Chat",
+            newUserId,
+            "member", // New members are added with 'member' role by default
+            existingMemberIds,
+          );
+        }
+
+        res.status(200).json(chatDTO);
       } catch (error) {
         next(error);
       }

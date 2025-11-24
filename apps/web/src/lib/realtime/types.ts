@@ -181,14 +181,14 @@ export interface ActivityEventPayloads {
     eventId: string;
     userId: string;
     type:
-      | "TASK"
-      | "SHOPPING_LIST"
-      | "KARMA"
-      | "RECIPE"
-      | "DIARY"
-      | "FAMILY_DIARY"
-      | "REWARD"
-      | "CONTRIBUTION_GOAL";
+    | "TASK"
+    | "SHOPPING_LIST"
+    | "KARMA"
+    | "RECIPE"
+    | "DIARY"
+    | "FAMILY_DIARY"
+    | "REWARD"
+    | "CONTRIBUTION_GOAL";
     detail?: string;
     title: string;
     description?: string;
@@ -250,12 +250,60 @@ export interface ContributionGoalEventPayloads {
   };
 }
 
+// Chat Events
+export interface ChatEventPayloads {
+  "message:new": {
+    chatId: string;
+    message: {
+      _id: string;
+      chatId: string;
+      senderId: string;
+      body: string;
+      clientId?: string;
+      createdAt: string;
+      editedAt?: string;
+      deleted: boolean;
+    };
+  };
+  "message:notification": {
+    chatId: string;
+    message: {
+      _id: string;
+      chatId: string;
+      senderId: string;
+      body: string;
+      clientId?: string;
+      createdAt: string;
+      editedAt?: string;
+      deleted: boolean;
+    };
+  };
+  "chat:update": {
+    chat: {
+      _id: string;
+      type: "dm" | "group";
+      title: string | null;
+      createdBy: string;
+      memberIds: string[];
+      createdAt: string;
+      updatedAt: string;
+    };
+  };
+  "receipt:update": {
+    chatId: string;
+    messageId: string;
+    userId: string;
+    readAt: string;
+  };
+}
+
 export type RealtimeEventPayloads = TaskEventPayloads &
   KarmaEventPayloads &
   RewardEventPayloads &
   FamilyEventPayloads &
   ActivityEventPayloads &
-  ContributionGoalEventPayloads;
+  ContributionGoalEventPayloads &
+  ChatEventPayloads;
 
 // Connection states
 export enum ConnectionState {

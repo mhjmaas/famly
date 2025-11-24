@@ -3,7 +3,75 @@
     "pages": {
       "chat": {
         "title": "Chat",
-        "placeholder": "Chatpagina verschijnt binnenkort"
+        "chatList": {
+          "title": "Chats",
+          "newChat": "Nieuwe Chat",
+          "emptyState": {
+            "title": "Nog geen gesprekken",
+            "description": "Start een gesprek met je familieleden",
+            "action": "Start een gesprek"
+          },
+          "loading": "Chats laden...",
+          "unreadCount": "{{count}} ongelezen"
+        },
+        "conversation": {
+          "emptyState": {
+            "title": "Selecteer een chat",
+            "description": "Kies een gesprek uit de lijst om te beginnen met chatten"
+          },
+          "noMessages": {
+            "title": "Nog geen berichten",
+            "description": "Start het gesprek!"
+          },
+          "loading": "Berichten laden...",
+          "you": "Jij",
+          "today": "Vandaag",
+          "yesterday": "Gisteren"
+        },
+        "messageInput": {
+          "placeholder": "Typ een bericht...",
+          "send": "Verzenden",
+          "sending": "Verzenden...",
+          "characterCount": "{{count}}/8000",
+          "tooLong": "Bericht is te lang",
+          "shiftEnterHint": "Shift+Enter voor nieuwe regel"
+        },
+        "newChatDialog": {
+          "title": "Nieuwe Chat",
+          "dm": {
+            "title": "Direct Bericht",
+            "selectMember": "Selecteer een familielid",
+            "existingChat": "Chat bestaat al",
+            "noMembers": "Geen familieleden beschikbaar"
+          },
+          "group": {
+            "title": "Groepschat",
+            "titleLabel": "Groepsnaam",
+            "titlePlaceholder": "Voer groepsnaam in",
+            "selectMembers": "Selecteer leden",
+            "selectMembersPlaceholder": "Kies minimaal 2 leden",
+            "minMembers": "Selecteer minimaal 2 leden",
+            "create": "Groep Aanmaken"
+          },
+          "cancel": "Annuleren",
+          "creating": "Aanmaken..."
+        },
+        "errors": {
+          "fetchChats": "Kon chats niet laden",
+          "fetchMessages": "Kon berichten niet laden",
+          "sendMessage": "Kon bericht niet verzenden",
+          "createChat": "Kon chat niet aanmaken",
+          "chatNotFound": "Chat niet gevonden",
+          "accessDenied": "Je hebt geen toegang tot deze chat",
+          "retry": "Opnieuw proberen",
+          "backToList": "Terug naar chatlijst"
+        },
+        "connection": {
+          "connecting": "Verbinden...",
+          "connected": "Verbonden",
+          "disconnected": "Verbinding verbroken. Opnieuw verbinden...",
+          "reconnected": "Opnieuw verbonden"
+        }
       }
     }
   }

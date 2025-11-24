@@ -2,6 +2,7 @@ import { HttpError } from "@lib/http-error";
 import { validateObjectId } from "@lib/objectid-utils";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import { authenticate } from "@modules/auth/middleware/authenticate";
+import { getSocketIOServer } from "@modules/realtime";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import { verifyMembership } from "../middleware/verify-membership";
@@ -58,6 +59,18 @@ export function updateReadCursorRoute(): Router {
           userId,
           messageId,
         );
+
+        // Broadcast receipt:update event to other members in the chat room
+        const io = getSocketIOServer();
+        if (io) {
+          const readAt = membership.updatedAt || new Date().toISOString();
+          io.to(`chat:${chatId}`).emit("receipt:update", {
+            chatId,
+            messageId,
+            userId,
+            readAt,
+          });
+        }
 
         res.status(200).json(membership);
       } catch (error) {

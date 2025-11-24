@@ -1,6 +1,5 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -11,6 +10,8 @@ import type {
   Dictionary,
   NavigationSection,
 } from "@/types/dashboard-layout.types";
+import { ChevronDown } from "lucide-react";
+import { useId } from "react";
 import { NavigationItem } from "./NavigationItem";
 
 interface SectionNavigationProps {
@@ -31,6 +32,7 @@ export function SectionNavigation({
   onNavigate,
 }: SectionNavigationProps) {
   const testId = `nav-section-${section.name.replace(/([A-Z])/g, "-$1").toLowerCase()}`;
+  const collapsibleId = useId();
 
   return (
     <Collapsible

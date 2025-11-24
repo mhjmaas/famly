@@ -15,11 +15,14 @@ import type {
   ApiClientOptions,
   AuthResponse,
   ChangePasswordRequest,
+  ChatDTO,
   Claim,
   ContributionGoal,
+  CreateChatRequest,
   CreateContributionGoalRequest,
   CreateFamilyRequest,
   CreateFamilyResponse,
+  CreateMessageRequest,
   CreateRewardRequest,
   CreateScheduleRequest,
   CreateTaskRequest,
@@ -28,8 +31,11 @@ import type {
   GrantKarmaRequest,
   GrantKarmaResponse,
   KarmaBalance,
+  ListChatsResponse,
+  ListMessagesResponse,
   LoginRequest,
   MeResponse,
+  MessageDTO,
   RegisterRequest,
   Reward,
   Task,
@@ -52,8 +58,8 @@ import type {
 const API_BASE_URL =
   typeof window === "undefined"
     ? process.env.API_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      "http://localhost:3001"
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:3001"
     : process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export class ApiError extends Error {
@@ -113,8 +119,8 @@ async function apiClient<T>(
       const errorMessage =
         typeof errorData === "object" && errorData !== null
           ? (errorData as { message?: string }).message ||
-            (errorData as { error?: string }).error ||
-            "An error occurred"
+          (errorData as { error?: string }).error ||
+          "An error occurred"
           : String(errorData) || "An error occurred";
 
       throw new ApiError(errorMessage, response.status, errorData);
@@ -140,7 +146,7 @@ export type {
   AuthResponse,
   ChangePasswordRequest,
   LoginRequest,
-  RegisterRequest,
+  RegisterRequest
 } from "@/types/api.types";
 
 export async function login(data: LoginRequest): Promise<AuthResponse> {
@@ -184,7 +190,7 @@ export type {
   GrantKarmaRequest,
   GrantKarmaResponse,
   UpdateMemberRoleRequest,
-  UpdateMemberRoleResponse,
+  UpdateMemberRoleResponse
 } from "@/types/api.types";
 
 export async function createFamily(
@@ -252,7 +258,7 @@ export async function addFamilyMember(
 
 export type {
   FamilySettings,
-  UpdateFamilySettingsRequest,
+  UpdateFamilySettingsRequest
 } from "@/types/api.types";
 
 export async function getFamilySettings(
@@ -280,7 +286,7 @@ export type {
   MeResponse,
   UpdateProfileRequest,
   UpdateProfileResponse,
-  UserProfile,
+  UserProfile
 } from "@/types/api.types";
 
 export async function getMe(cookie?: string): Promise<MeResponse> {
@@ -315,7 +321,7 @@ export async function getKarmaBalance(
 
 export type {
   ActivityEvent,
-  ActivityEventType,
+  ActivityEventType
 } from "@/types/api.types";
 
 export async function getActivityEvents(
@@ -360,7 +366,7 @@ export type {
   TaskQueryParams,
   TaskSchedule,
   UpdateScheduleRequest,
-  UpdateTaskRequest,
+  UpdateTaskRequest
 } from "@/types/api.types";
 
 export async function getTasks(
@@ -480,7 +486,7 @@ export type {
   Claim,
   CreateRewardRequest,
   Reward,
-  UpdateRewardRequest,
+  UpdateRewardRequest
 } from "@/types/api.types";
 
 export async function getRewards(
@@ -621,7 +627,7 @@ export async function cancelClaim(
 
 export type {
   DeploymentMode,
-  DeploymentStatus,
+  DeploymentStatus
 } from "@/lib/utils/status-utils";
 
 /**
@@ -667,8 +673,8 @@ export async function fetchDeploymentStatus(options?: {
     const errorMessage =
       typeof errorData === "object" && errorData !== null
         ? (errorData as { message?: string }).message ||
-          (errorData as { error?: string }).error ||
-          "Failed to fetch deployment status"
+        (errorData as { error?: string }).error ||
+        "Failed to fetch deployment status"
         : String(errorData) || "Failed to fetch deployment status";
 
     throw new ApiError(errorMessage, response.status, errorData);
@@ -769,4 +775,101 @@ export async function addDeduction(
       ...options,
     },
   );
+}
+
+// ===== Chat API =====
+
+/**
+ * Get all chats for the current user
+ */
+export async function getChats(
+  cursor?: string,
+  limit?: number,
+  options?: ApiClientOptions,
+): Promise<ListChatsResponse> {
+  const params = new URLSearchParams();
+  if (cursor) params.append("cursor", cursor);
+  if (limit) params.append("limit", limit.toString());
+
+  const query = params.toString();
+  return apiClient<ListChatsResponse>(
+    `/v1/chats${query ? `?${query}` : ""}`,
+    options,
+  );
+}
+
+/**
+ * Get a specific chat by ID
+ */
+export async function getChat(
+  chatId: string,
+  options?: ApiClientOptions,
+): Promise<ChatDTO> {
+  return apiClient<ChatDTO>(`/v1/chats/${chatId}`, options);
+}
+
+/**
+ * Create a new chat (DM or group)
+ */
+export async function createChat(
+  data: CreateChatRequest,
+  options?: ApiClientOptions,
+): Promise<ChatDTO> {
+  return apiClient<ChatDTO>("/v1/chats", {
+    method: "POST",
+    body: data,
+    ...options,
+  });
+}
+
+/**
+ * Get messages in a chat
+ */
+export async function getMessages(
+  chatId: string,
+  before?: string,
+  limit?: number,
+  options?: ApiClientOptions,
+): Promise<ListMessagesResponse> {
+  const params = new URLSearchParams();
+  if (before) params.append("before", before);
+  if (limit) params.append("limit", limit.toString());
+
+  const query = params.toString();
+  return apiClient<ListMessagesResponse>(
+    `/v1/chats/${chatId}/messages${query ? `?${query}` : ""}`,
+    options,
+  );
+}
+
+/**
+ * Send a message in a chat
+ */
+export async function sendMessage(
+  chatId: string,
+  data: CreateMessageRequest,
+  options?: ApiClientOptions,
+): Promise<MessageDTO> {
+  return apiClient<MessageDTO>(`/v1/chats/${chatId}/messages`, {
+    method: "POST",
+    body: data,
+    ...options,
+  });
+}
+
+/**
+ * Update the read cursor for a chat (mark messages as read)
+ * @param chatId - The chat ID
+ * @param messageId - The ID of the last read message
+ */
+export async function updateReadCursor(
+  chatId: string,
+  messageId: string,
+  options?: ApiClientOptions,
+): Promise<void> {
+  return apiClient<void>(`/v1/chats/${chatId}/read-cursor`, {
+    method: "PUT",
+    body: { messageId },
+    ...options,
+  });
 }

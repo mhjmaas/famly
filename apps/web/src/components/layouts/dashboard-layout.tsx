@@ -1,8 +1,5 @@
 "use client";
 
-import { Menu } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
 import { LogoComponent } from "@/components/navigation/LogoComponent";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +17,9 @@ import { fetchFamilies } from "@/store/slices/family.slice";
 import { fetchFamilySettings } from "@/store/slices/settings.slice";
 import { selectUser } from "@/store/slices/user.slice";
 import type { DashboardLayoutProps } from "@/types/dashboard-layout.types";
+import { Menu } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { InstallPromptDrawer } from "../pwa/install-prompt-drawer";
 import { NotificationPermissionDrawer } from "../pwa/notification-permission-drawer";
 import { PWAProvider } from "../pwa/pwa-provider";
