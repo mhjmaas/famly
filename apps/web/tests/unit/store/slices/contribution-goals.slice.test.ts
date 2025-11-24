@@ -83,6 +83,7 @@ describe("contribution-goals.slice", () => {
     title: "Complete 5 chores",
     description: "Help around the house this week",
     maxKarma: 100,
+    recurring: false,
     currentKarma: 80,
     deductions: [
       {

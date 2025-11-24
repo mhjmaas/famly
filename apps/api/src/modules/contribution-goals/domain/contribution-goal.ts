@@ -22,6 +22,7 @@ export interface ContributionGoal {
   title: string; // Max 200 chars
   description: string; // Max 2000 chars
   maxKarma: number; // 1-10000
+  recurring: boolean;
   deductions: Deduction[];
   createdAt: Date;
   updatedAt: Date;
@@ -49,6 +50,7 @@ export interface ContributionGoalDTO {
   title: string;
   description: string;
   maxKarma: number;
+  recurring: boolean;
   currentKarma: number; // Calculated: maxKarma - sum of deduction amounts
   deductions: DeductionDTO[];
   createdAt: string;
@@ -63,6 +65,7 @@ export interface CreateContributionGoalInput {
   title: string;
   description: string;
   maxKarma: number;
+  recurring?: boolean;
 }
 
 /**
@@ -72,6 +75,7 @@ export interface UpdateContributionGoalInput {
   title?: string;
   description?: string;
   maxKarma?: number;
+  recurring?: boolean;
 }
 
 /**

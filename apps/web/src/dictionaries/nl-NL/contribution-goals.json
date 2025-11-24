@@ -32,6 +32,8 @@
       "descriptionLabel": "Beschrijving",
       "descriptionPlaceholder": "Help deze week in huis",
       "maxKarmaLabel": "Maximum Karma",
+      "recurringLabel": "Elke week herhalen",
+      "recurringDescription": "Maak dit doel automatisch opnieuw aan voor volgende week met dezelfde details",
       "cancel": "Annuleren",
       "create": "Doel Aanmaken",
       "update": "Doel Bijwerken",

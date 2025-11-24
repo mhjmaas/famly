@@ -156,6 +156,36 @@ test.describe("Contribution Goals", () => {
             expect(currentKarma).toBe(10000);
         });
 
+        test("should create a recurring contribution goal", async ({ page }) => {
+            // Navigate to child's member detail page
+            await contributionGoalPage.gotoMemberDetail(childUserId);
+            await waitForPageLoad(page);
+
+            await page.getByTestId("contribution-goal-tab").waitFor({ state: "visible", timeout: 10000 });
+            await page.getByTestId("contribution-goal-tab").click();
+            await waitForPageLoad(page);
+
+            // Create goal with recurring enabled
+            await contributionGoalPage.createGoal(
+                "Recurring Goal",
+                "Auto repeat weekly",
+                120,
+                true
+            );
+            await contributionGoalPage.waitForGoalToLoad();
+
+            // Open edit dialog to verify recurring toggle is on
+            await contributionGoalPage.goalCardActionsButton.click();
+            await contributionGoalPage.editGoalButton.click();
+            await contributionGoalPage.editGoalDialog.waitFor({ state: "visible" });
+
+            await expect(contributionGoalPage.goalRecurringToggle).toBeChecked();
+
+            // Close dialog
+            await contributionGoalPage.cancelButton.click();
+            await contributionGoalPage.editGoalDialog.waitFor({ state: "hidden" });
+        });
+
         test("should prevent creating duplicate goal for same member", async ({ page }) => {
             // Navigate to child's member detail page
             await contributionGoalPage.gotoMemberDetail(childUserId);

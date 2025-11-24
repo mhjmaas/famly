@@ -23,6 +23,7 @@ export const createContributionGoalSchema = z.object({
     .int("Max karma must be an integer")
     .min(1, "Max karma must be at least 1")
     .max(10000, "Max karma cannot exceed 10000"),
+  recurring: z.boolean().optional().default(false),
 });
 
 export type CreateContributionGoalInput = z.infer<

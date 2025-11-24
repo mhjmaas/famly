@@ -104,6 +104,7 @@ describe("ContributionGoalProcessorService", () => {
         title: "Complete 5 chores",
         description: "Help around the house",
         maxKarma: 100,
+        recurring: false,
         deductions: [
           {
             _id: new ObjectId(),
@@ -197,6 +198,7 @@ describe("ContributionGoalProcessorService", () => {
         title: "Complete 5 chores",
         description: "Help around the house",
         maxKarma: 100,
+        recurring: false,
         deductions: [
           {
             _id: new ObjectId(),
@@ -269,6 +271,7 @@ describe("ContributionGoalProcessorService", () => {
         title: "Goal 1",
         description: "Description 1",
         maxKarma: 100,
+        recurring: false,
         deductions: [],
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -282,6 +285,7 @@ describe("ContributionGoalProcessorService", () => {
         title: "Goal 2",
         description: "Description 2",
         maxKarma: 200,
+        recurring: false,
         deductions: [
           {
             _id: new ObjectId(),
@@ -345,6 +349,7 @@ describe("ContributionGoalProcessorService", () => {
         title: "Goal 1",
         description: "Description 1",
         maxKarma: 100,
+        recurring: false,
         deductions: [],
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -358,6 +363,7 @@ describe("ContributionGoalProcessorService", () => {
         title: "Goal 2",
         description: "Description 2",
         maxKarma: 200,
+        recurring: false,
         deductions: [],
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -424,6 +430,7 @@ describe("ContributionGoalProcessorService", () => {
         title: "Complete 5 chores",
         description: "Help around the house",
         maxKarma: 100,
+        recurring: false,
         deductions: [],
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -522,6 +529,7 @@ describe("ContributionGoalProcessorService", () => {
         title: "Complete 5 chores",
         description: "Help around the house",
         maxKarma: 100,
+        recurring: false,
         deductions: [],
         createdAt: new Date(),
         updatedAt: new Date(),

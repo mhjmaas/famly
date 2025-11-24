@@ -20,6 +20,7 @@ export const updateContributionGoalSchema = z
       .min(1, "Max karma must be at least 1")
       .max(10000, "Max karma cannot exceed 10000")
       .optional(),
+    recurring: z.boolean().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided for update",

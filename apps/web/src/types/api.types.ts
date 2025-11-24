@@ -397,6 +397,7 @@ export interface ContributionGoal {
   description: string;
   maxKarma: number;
   currentKarma: number;
+  recurring: boolean;
   deductions: Deduction[];
   createdAt: string;
   updatedAt: string;
@@ -407,12 +408,14 @@ export interface CreateContributionGoalRequest {
   title: string;
   description: string;
   maxKarma: number;
+  recurring?: boolean;
 }
 
 export interface UpdateContributionGoalRequest {
   title?: string;
   description?: string;
   maxKarma?: number;
+  recurring?: boolean;
 }
 
 export interface AddDeductionRequest {
