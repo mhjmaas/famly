@@ -1,7 +1,7 @@
 export const activityEnUS = {
   activity: {
     task: {
-      created: "Task created: {taskName}",
+      created: "Task: {taskName}",
       createdTitle: "Task Created",
       completed: "{taskName} was completed",
       completedTitle: "Task Completed",
