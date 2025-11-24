@@ -1,16 +1,16 @@
 export const activityNlNL = {
   activity: {
     task: {
-      created: "Taak gemaakt: {taskName}",
+      created: "Taak: {taskName}",
       createdTitle: "Taak Gemaakt",
       completed: "{taskName} is voltooid",
       completedTitle: "Taak Voltooid",
     },
     contributionGoal: {
-      deducted: '{amount} karma afgetrokken van "{goalTitle}"',
-      deductedTitle: "Bijdrage Afgetrokken",
-      awarded: '{amount} karma toegekend van "{goalTitle}"',
-      awardedTitle: "Bijdrage Toegekend",
+      deducted: '{amount} minpunten van "{goalTitle}"',
+      deductedTitle: "Minpunten",
+      awarded: '{amount} pluspunten toegekend van "{goalTitle}"',
+      awardedTitle: "Pluspunten",
     },
     karma: {
       awarded: "Karma toegekend: {amount} {description}",
