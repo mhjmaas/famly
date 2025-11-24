@@ -13,7 +13,7 @@ export const activityEnUS = {
       awardedTitle: "Contribution Awarded",
     },
     karma: {
-      awarded: "Karma awarded: {amount} {description}",
+      awarded: "{amount} Karma points: {description}",
       awardedTitle: "Karma Awarded",
       deducted: "Karma deducted: {amount} {description}",
       deductedTitle: "Karma Deducted",

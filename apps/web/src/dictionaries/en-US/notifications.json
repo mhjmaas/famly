@@ -52,7 +52,7 @@
         "deductedTitle": "Contribution Deducted"
       },
       "karma": {
-        "awarded": "Karma awarded: {amount} {description}",
+        "awarded": "{amount} karma points: {description}",
         "awardedTitle": "Karma Awarded",
         "deducted": "Karma deducted: {amount} {description}",
         "deductedTitle": "Karma Deducted"
