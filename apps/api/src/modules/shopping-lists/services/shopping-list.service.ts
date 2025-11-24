@@ -570,6 +570,11 @@ export class ShoppingListService {
         title,
         description,
         detail,
+        templateKey: "activity.shoppingList.updated",
+        templateParams: {
+          listName: title,
+          itemCount: 0, // Will be populated by caller if needed
+        },
       });
     } catch (error) {
       logger.error("Failed to record shopping list activity event", {

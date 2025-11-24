@@ -3,6 +3,7 @@ export const notificationsEnUS = {
     karma: {
       awarded: "Karma Awarded!",
       awardedDescription: "You earned {amount} karma{description}",
+      awardedDescriptionWithReason: "You earned {amount} karma for {reason}",
       deducted: "Karma Used",
       deductedDescription: "{amount} karma spent{description}",
     },

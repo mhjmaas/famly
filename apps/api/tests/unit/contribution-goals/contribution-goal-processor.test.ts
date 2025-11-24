@@ -162,6 +162,8 @@ describe("ContributionGoalProcessorService", () => {
         metadata: {
           karma: 80,
         },
+        templateKey: "activity.contributionGoal.awarded",
+        templateParams: { amount: 80, goalTitle: mockGoal.title },
       });
 
       // Verify notification was sent
@@ -242,6 +244,8 @@ describe("ContributionGoalProcessorService", () => {
         metadata: {
           karma: 0,
         },
+        templateKey: "activity.contributionGoal.deducted",
+        templateParams: { amount: 0, goalTitle: mockGoal.title },
       });
 
       // Verify zero karma notification was sent

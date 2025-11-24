@@ -28,6 +28,9 @@ export interface ActivityEvent {
     karma?: number; // Optional karma value
     triggeredBy?: ObjectId; // Optional: user who triggered the action
   };
+  templateKey?: string;
+  templateParams?: Record<string, string | number>;
+  locale?: string;
   createdAt: Date;
 }
 
@@ -44,6 +47,9 @@ export interface RecordActivityEventInput {
     karma?: number;
     triggeredBy?: ObjectId;
   };
+  templateKey?: string;
+  templateParams?: Record<string, string | number>;
+  locale?: string;
 }
 
 /**
@@ -60,5 +66,8 @@ export interface ActivityEventDTO {
     karma?: number;
     triggeredBy?: string;
   } | null;
+  templateKey?: string;
+  templateParams?: Record<string, string | number>;
+  locale?: string;
   createdAt: string; // ISO 8601 timestamp
 }

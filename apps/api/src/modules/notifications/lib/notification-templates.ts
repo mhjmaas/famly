@@ -74,9 +74,9 @@ export function createKarmaGrantNotification(
 ): NotificationPayload {
   const locale = resolveNotificationLocale(localeInput);
   const body = reason
-    ? translate(locale, "karma.awardedDescription", {
+    ? translate(locale, "karma.awardedDescriptionWithReason", {
         amount,
-        description: ` for ${reason}`,
+        reason,
       })
     : translate(locale, "karma.awardedDescription", {
         amount,

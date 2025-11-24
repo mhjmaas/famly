@@ -95,6 +95,14 @@ export class ContributionGoalProcessorService {
               metadata: {
                 karma: currentKarma,
               },
+              templateKey:
+                currentKarma > 0
+                  ? "activity.contributionGoal.awarded"
+                  : "activity.contributionGoal.deducted",
+              templateParams: {
+                amount: Math.abs(currentKarma),
+                goalTitle: goal.title,
+              },
             });
           }
 

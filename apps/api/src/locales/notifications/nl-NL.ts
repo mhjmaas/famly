@@ -3,12 +3,14 @@ export const notificationsNlNL = {
     karma: {
       awarded: "Karma Beloond!",
       awardedDescription: "Je hebt {amount} karma verdiend{description}",
+      awardedDescriptionWithReason:
+        "Je hebt {amount} karma verdiend voor {reason}",
       deducted: "Karma Gebruikt",
       deductedDescription: "{amount} karma uitgegeven{description}",
     },
     task: {
       created: "Nieuwe Taak Toegewezen",
-      createdDescription: "Je bent toegewezen aan: {name}",
+      createdDescription: "Taak:{name}",
       assigned: "Taak aan je Toegewezen",
       assignedDescription: "{name}",
       completed: "Je Taak is Voltooid",

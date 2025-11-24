@@ -105,6 +105,11 @@ export class KarmaService {
             description: input.description || `Received ${input.amount} karma`,
             detail: "AWARDED",
             metadata: { karma: input.amount },
+            templateKey: "activity.karma.awarded",
+            templateParams: {
+              amount: input.amount,
+              description: input.description ?? "",
+            },
           });
         } catch (error) {
           logger.error("Failed to record activity event for karma grant", {

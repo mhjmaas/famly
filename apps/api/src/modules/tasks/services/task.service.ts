@@ -109,6 +109,10 @@ export class TaskService {
             metadata: task.metadata?.karma
               ? { karma: task.metadata.karma }
               : undefined,
+            templateKey: "activity.task.created",
+            templateParams: {
+              taskName: task.name,
+            },
           });
         } catch (error) {
           // Log error but don't fail task creation

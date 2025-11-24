@@ -325,6 +325,11 @@ export class ContributionGoalService {
             karma: -input.amount,
             triggeredBy: normalizedUserId,
           },
+          templateKey: "activity.contributionGoal.deducted",
+          templateParams: {
+            amount: input.amount,
+            goalTitle: goal.title,
+          },
         });
       }
 

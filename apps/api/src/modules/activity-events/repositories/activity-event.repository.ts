@@ -44,6 +44,9 @@ export class ActivityEventRepository {
       title: input.title,
       description: input.description,
       metadata: input.metadata,
+      templateKey: input.templateKey,
+      templateParams: input.templateParams,
+      locale: input.locale,
       createdAt: new Date(),
     };
 

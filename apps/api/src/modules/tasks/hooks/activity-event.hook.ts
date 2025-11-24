@@ -45,6 +45,10 @@ export class ActivityEventHook implements TaskCompletionHook {
         title: task.name,
         description: `Completed ${task.name}`,
         metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+        templateKey: "activity.task.completed",
+        templateParams: {
+          taskName: task.name,
+        },
       });
 
       logger.debug("Activity event recorded for task completion", {

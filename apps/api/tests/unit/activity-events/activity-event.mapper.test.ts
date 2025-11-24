@@ -217,5 +217,71 @@ describe("ActivityEvent Mapper", () => {
       expect(dto).toHaveProperty("detail");
       expect(dto.detail).toBe("CLAIMED");
     });
+
+    it("should map template fields for localization support", () => {
+      const eventId = new ObjectId();
+      const userId = new ObjectId();
+      const createdAt = new Date("2024-01-15T10:30:00.000Z");
+
+      const event: ActivityEvent = {
+        _id: eventId,
+        userId,
+        type: "TASK",
+        title: "Complete homework",
+        description: "Task completed",
+        metadata: { karma: 10 },
+        templateKey: "activity.task.completed",
+        templateParams: { taskName: "Complete homework" },
+        locale: "en-US",
+        createdAt,
+      };
+
+      const dto = toActivityEventDTO(event);
+
+      expect(dto.templateKey).toBe("activity.task.completed");
+      expect(dto.templateParams).toEqual({ taskName: "Complete homework" });
+      expect(dto.locale).toBe("en-US");
+    });
+
+    it("should handle activity events with different locales", () => {
+      const eventId = new ObjectId();
+      const userId = new ObjectId();
+      const createdAt = new Date("2024-01-15T10:30:00.000Z");
+
+      const event: ActivityEvent = {
+        _id: eventId,
+        userId,
+        type: "REWARD",
+        title: "Movie Night",
+        description: "Reward claimed",
+        metadata: { karma: -50 },
+        templateKey: "activity.reward.claimed",
+        templateParams: { rewardName: "Movie Night" },
+        locale: "nl-NL",
+        createdAt,
+      };
+
+      const dto = toActivityEventDTO(event);
+
+      expect(dto.templateKey).toBe("activity.reward.claimed");
+      expect(dto.templateParams).toEqual({ rewardName: "Movie Night" });
+      expect(dto.locale).toBe("nl-NL");
+    });
+
+    it("should omit templateKey when not present for backward compatibility", () => {
+      const event: ActivityEvent = {
+        _id: new ObjectId(),
+        userId: new ObjectId(),
+        type: "TASK",
+        title: "Task without template",
+        createdAt: new Date(),
+      };
+
+      const dto = toActivityEventDTO(event);
+
+      expect(dto.templateKey).toBeUndefined();
+      expect(dto.templateParams).toBeUndefined();
+      expect(dto.locale).toBeUndefined();
+    });
   });
 });

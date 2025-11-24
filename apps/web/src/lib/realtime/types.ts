@@ -187,11 +187,17 @@ export interface ActivityEventPayloads {
       | "RECIPE"
       | "DIARY"
       | "FAMILY_DIARY"
-      | "REWARD";
+      | "REWARD"
+      | "CONTRIBUTION_GOAL";
+    detail?: string;
     title: string;
     description?: string;
+    templateKey?: string;
+    templateParams?: Record<string, string | number>;
+    locale?: string;
     metadata?: {
       karma?: number;
+      [key: string]: unknown;
     };
     createdAt: string;
   };

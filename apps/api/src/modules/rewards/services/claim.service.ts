@@ -166,6 +166,11 @@ export class ClaimService {
               description: `Claimed reward for ${reward.karmaCost} karma`,
               detail: "CLAIMED",
               metadata: { karma: -reward.karmaCost },
+              templateKey: "activity.reward.claimed",
+              templateParams: {
+                rewardName: reward.name,
+                karmaCost: reward.karmaCost,
+              },
             });
           } catch (error) {
             logger.error("Failed to record activity event for reward claim", {
