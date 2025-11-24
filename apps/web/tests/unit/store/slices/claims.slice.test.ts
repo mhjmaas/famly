@@ -20,11 +20,17 @@ jest.mock("@/lib/api-client", () => ({
   cancelClaim: jest.fn(),
 }));
 
+// Mock the rewards slice
+jest.mock("@/store/slices/rewards.slice", () => ({
+  fetchRewards: jest.fn(() => ({ type: "rewards/fetchRewards" })),
+}));
+
 import {
   cancelClaim as apiCancelClaim,
   claimReward as apiClaimReward,
   getClaims,
 } from "@/lib/api-client";
+import { fetchRewards } from "@/store/slices/rewards.slice";
 
 const mockedGetClaims = getClaims as jest.MockedFunction<typeof getClaims>;
 const mockedClaimReward = apiClaimReward as jest.MockedFunction<
@@ -32,6 +38,9 @@ const mockedClaimReward = apiClaimReward as jest.MockedFunction<
 >;
 const mockedCancelClaim = apiCancelClaim as jest.MockedFunction<
   typeof apiCancelClaim
+>;
+const mockedFetchRewards = fetchRewards as jest.MockedFunction<
+  typeof fetchRewards
 >;
 
 interface TestRootState {
@@ -131,21 +140,24 @@ describe("claims.slice", () => {
   });
 
   describe("claimReward async thunk", () => {
-    it("should add claim when fulfilled", async () => {
+    it("should refetch both claims and rewards after claiming reward", async () => {
       const newClaim: Claim = {
         ...mockClaim,
         _id: "claim-new",
       };
       mockedClaimReward.mockResolvedValueOnce(newClaim);
+      mockedGetClaims.mockResolvedValueOnce([newClaim]);
 
       await store.dispatch(claimReward({ familyId, rewardId }));
       const state = store.getState().claims;
 
+      expect(mockedGetClaims).toHaveBeenCalledWith(familyId);
+      expect(mockedFetchRewards).toHaveBeenCalledWith(familyId);
       expect(state.claims).toHaveLength(1);
       expect(state.claims[0]).toEqual(newClaim);
     });
 
-    it("should set error when rejected", async () => {
+    it("should set error when rejected without refetching", async () => {
       const errorMessage = "Insufficient karma";
       mockedClaimReward.mockRejectedValueOnce(new Error(errorMessage));
 
@@ -153,6 +165,8 @@ describe("claims.slice", () => {
       const state = store.getState().claims;
 
       expect(state.error).toBe(errorMessage);
+      expect(mockedGetClaims).not.toHaveBeenCalled();
+      expect(mockedFetchRewards).not.toHaveBeenCalled();
     });
   });
 
@@ -162,7 +176,7 @@ describe("claims.slice", () => {
       await store.dispatch(fetchClaims(familyId));
     });
 
-    it("should update claim status to cancelled when fulfilled", async () => {
+    it("should refetch both claims and rewards after cancelling", async () => {
       const cancelledClaim: Claim = {
         ...mockClaim,
         status: "cancelled",
@@ -170,22 +184,33 @@ describe("claims.slice", () => {
         cancelledBy: userId,
       };
       mockedCancelClaim.mockResolvedValueOnce(cancelledClaim);
+      mockedGetClaims.mockResolvedValueOnce([cancelledClaim]);
 
       await store.dispatch(cancelClaim({ familyId, claimId: mockClaim._id }));
       const state = store.getState().claims;
 
+      expect(mockedGetClaims).toHaveBeenCalledWith(familyId);
+      expect(mockedFetchRewards).toHaveBeenCalledWith(familyId);
       expect(state.claims[0].status).toBe("cancelled");
       expect(state.claims[0].cancelledAt).toBeTruthy();
     });
 
-    it("should set error when rejected", async () => {
+    it("should set error when rejected without refetching", async () => {
       const errorMessage = "Cannot cancel completed claim";
       mockedCancelClaim.mockRejectedValueOnce(new Error(errorMessage));
+
+      // Clear previous mock calls
+      mockedGetClaims.mockClear();
+      mockedFetchRewards.mockClear();
 
       await store.dispatch(cancelClaim({ familyId, claimId: mockClaim._id }));
       const state = store.getState().claims;
 
       expect(state.error).toBe(errorMessage);
+      expect(mockedGetClaims).not.toHaveBeenCalled();
+      expect(mockedFetchRewards).not.toHaveBeenCalled();
+      // State should remain unchanged
+      expect(state.claims[0].status).toBe("pending");
     });
   });
 

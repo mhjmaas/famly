@@ -157,38 +157,25 @@ describe("rewards.slice", () => {
       description: "A new reward",
     };
 
-    it("should add reward optimistically", () => {
-      mockedCreateReward.mockImplementation(
-        () => new Promise(() => {}), // Never resolves
-      );
-
-      store.dispatch(createReward({ familyId, data: newRewardData }));
-      const state = store.getState().rewards;
-
-      // Should have optimistic reward
-      expect(state.rewards).toHaveLength(1);
-      expect(state.rewards[0].name).toBe(newRewardData.name);
-      expect(state.rewards[0]._id).toContain("temp-");
-    });
-
-    it("should replace optimistic reward with API response", async () => {
+    it("should add reward from API and trigger fetch", async () => {
       const createdReward: Reward = {
         ...mockReward,
+        _id: "reward-created",
         name: newRewardData.name,
         karmaCost: newRewardData.karmaCost,
         description: newRewardData.description,
       };
       mockedCreateReward.mockResolvedValueOnce(createdReward);
+      mockedGetRewards.mockResolvedValueOnce([createdReward]);
 
       await store.dispatch(createReward({ familyId, data: newRewardData }));
-      const state = store.getState().rewards;
 
-      expect(state.rewards).toHaveLength(1);
-      expect(state.rewards[0]._id).toBe(createdReward._id);
-      expect(state.rewards[0].name).toBe(newRewardData.name);
+      const state = store.getState().rewards;
+      expect(state.rewards).toEqual([createdReward]);
+      expect(mockedGetRewards).toHaveBeenCalledWith(familyId);
     });
 
-    it("should remove optimistic reward on error", async () => {
+    it("should surface error when creation fails", async () => {
       mockedCreateReward.mockRejectedValueOnce(new Error("Failed to create"));
 
       await store.dispatch(createReward({ familyId, data: newRewardData }));
@@ -217,6 +204,7 @@ describe("rewards.slice", () => {
         updatedAt: "2024-01-03T00:00:00Z",
       };
       mockedUpdateReward.mockResolvedValueOnce(updatedReward);
+      mockedGetRewards.mockResolvedValueOnce([updatedReward]);
 
       await store.dispatch(
         updateReward({ familyId, rewardId: mockReward._id, data: updateData }),
@@ -225,6 +213,7 @@ describe("rewards.slice", () => {
 
       expect(state.rewards[0].name).toBe(updateData.name);
       expect(state.rewards[0].karmaCost).toBe(updateData.karmaCost);
+      expect(mockedGetRewards).toHaveBeenCalledWith(familyId);
     });
 
     it("should set error when rejected", async () => {
@@ -245,31 +234,20 @@ describe("rewards.slice", () => {
       await store.dispatch(fetchRewards(familyId));
     });
 
-    it("should remove reward optimistically", () => {
-      mockedDeleteReward.mockImplementation(
-        () => new Promise(() => {}), // Never resolves
-      );
-
-      store.dispatch(deleteReward({ familyId, rewardId: mockReward._id }));
-      const state = store.getState().rewards;
-
-      expect(state.rewards).toHaveLength(1);
-      expect(state.rewards[0]._id).toBe(mockReward2._id);
-    });
-
-    it("should keep reward removed when fulfilled", async () => {
+    it("should refetch and remove reward on success", async () => {
       mockedDeleteReward.mockResolvedValueOnce();
+      mockedGetRewards.mockResolvedValueOnce([mockReward2]);
 
       await store.dispatch(
         deleteReward({ familyId, rewardId: mockReward._id }),
       );
       const state = store.getState().rewards;
 
-      expect(state.rewards).toHaveLength(1);
-      expect(state.rewards[0]._id).toBe(mockReward2._id);
+      expect(state.rewards).toEqual([mockReward2]);
+      expect(mockedGetRewards).toHaveBeenCalledWith(familyId);
     });
 
-    it("should restore reward on error", async () => {
+    it("should set error on failure without local removal", async () => {
       mockedDeleteReward.mockRejectedValueOnce(new Error("Failed to delete"));
 
       await store.dispatch(
@@ -288,25 +266,10 @@ describe("rewards.slice", () => {
       await store.dispatch(fetchRewards(familyId));
     });
 
-    it("should toggle favourite optimistically", () => {
-      mockedToggleFavourite.mockImplementation(
-        () => new Promise(() => {}), // Never resolves
-      );
-
-      store.dispatch(
-        toggleFavourite({
-          familyId,
-          rewardId: mockReward._id,
-          isFavourite: true,
-        }),
-      );
-      const state = store.getState().rewards;
-
-      expect(state.rewards[0].isFavourite).toBe(true);
-    });
-
-    it("should keep toggle when fulfilled", async () => {
+    it("should refetch and update favourite on success", async () => {
+      const updated = { ...mockReward, isFavourite: true };
       mockedToggleFavourite.mockResolvedValueOnce();
+      mockedGetRewards.mockResolvedValueOnce([updated]);
 
       await store.dispatch(
         toggleFavourite({
@@ -318,9 +281,10 @@ describe("rewards.slice", () => {
       const state = store.getState().rewards;
 
       expect(state.rewards[0].isFavourite).toBe(true);
+      expect(mockedGetRewards).toHaveBeenCalledWith(familyId);
     });
 
-    it("should revert toggle on error", async () => {
+    it("should set error on failure without toggling locally", async () => {
       mockedToggleFavourite.mockRejectedValueOnce(
         new Error("Failed to toggle"),
       );

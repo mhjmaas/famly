@@ -18,7 +18,7 @@ import type {
 } from "@/types/api.types";
 import type { RootState } from "../store";
 import { fetchClaims } from "./claims.slice";
-import { decrementKarma, fetchKarma, incrementKarma } from "./karma.slice";
+import { fetchKarma } from "./karma.slice";
 import { fetchRewards } from "./rewards.slice";
 
 interface TasksState {
@@ -111,8 +111,8 @@ export const completeTask = createAsyncThunk(
       dispatch(fetchRewards(familyId));
       dispatch(fetchClaims(familyId));
     } else if (karma && karma > 0) {
-      // Regular task with karma reward - increment for credited user
-      dispatch(incrementKarma({ userId: creditedUserId, amount: karma }));
+      // Regular task with karma reward - refetch authoritative balance
+      dispatch(fetchKarma({ familyId, userId: creditedUserId }));
     }
 
     return task;
@@ -151,8 +151,8 @@ export const reopenTask = createAsyncThunk(
       dispatch(fetchRewards(familyId));
       dispatch(fetchClaims(familyId));
     } else if (karma && karma > 0) {
-      // Regular task - deduct karma from the user who was credited
-      dispatch(decrementKarma({ userId: creditedUserId, amount: karma }));
+      // Regular task - refetch authoritative balance for the credited user
+      dispatch(fetchKarma({ familyId, userId: creditedUserId }));
     }
 
     return task;

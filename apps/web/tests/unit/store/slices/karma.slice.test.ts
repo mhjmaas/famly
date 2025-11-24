@@ -1,8 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import karmaReducer, {
-  decrementKarma,
   fetchKarma,
-  incrementKarma,
   selectKarmaBalance,
   selectKarmaError,
   selectKarmaLoading,
@@ -78,63 +76,6 @@ describe("karma.slice", () => {
       const state = store.getState().karma;
       expect(state.balances[user1]).toBe(100);
       expect(state.balances[user2]).toBe(200);
-    });
-  });
-
-  describe("incrementKarma action", () => {
-    it("should increment karma balance", () => {
-      // Set initial balance
-      store.dispatch(setKarma({ userId, balance: 100 }));
-
-      // Increment
-      store.dispatch(incrementKarma({ userId, amount: 50 }));
-
-      expect(store.getState().karma.balances[userId]).toBe(150);
-    });
-
-    it("should handle incrementing from zero", () => {
-      store.dispatch(incrementKarma({ userId, amount: 50 }));
-      expect(store.getState().karma.balances[userId]).toBe(50);
-    });
-
-    it("should handle multiple increments", () => {
-      store.dispatch(incrementKarma({ userId, amount: 25 }));
-      store.dispatch(incrementKarma({ userId, amount: 25 }));
-      store.dispatch(incrementKarma({ userId, amount: 50 }));
-
-      expect(store.getState().karma.balances[userId]).toBe(100);
-    });
-  });
-
-  describe("decrementKarma action", () => {
-    it("should decrement karma balance", () => {
-      // Set initial balance
-      store.dispatch(setKarma({ userId, balance: 100 }));
-
-      // Decrement
-      store.dispatch(decrementKarma({ userId, amount: 30 }));
-
-      expect(store.getState().karma.balances[userId]).toBe(70);
-    });
-
-    it("should not go below zero", () => {
-      store.dispatch(setKarma({ userId, balance: 50 }));
-      store.dispatch(decrementKarma({ userId, amount: 100 }));
-
-      expect(store.getState().karma.balances[userId]).toBe(0);
-    });
-
-    it("should handle decrementing from zero", () => {
-      store.dispatch(decrementKarma({ userId, amount: 50 }));
-      expect(store.getState().karma.balances[userId]).toBe(0);
-    });
-
-    it("should handle multiple decrements", () => {
-      store.dispatch(setKarma({ userId, balance: 100 }));
-      store.dispatch(decrementKarma({ userId, amount: 20 }));
-      store.dispatch(decrementKarma({ userId, amount: 30 }));
-
-      expect(store.getState().karma.balances[userId]).toBe(50);
     });
   });
 
@@ -244,20 +185,12 @@ describe("karma.slice", () => {
   });
 
   describe("state transitions", () => {
-    it("should handle complex karma operations", async () => {
+    it("should handle setting and fetching karma", async () => {
       // Set initial balance
       store.dispatch(setKarma({ userId, balance: 100 }));
       expect(store.getState().karma.balances[userId]).toBe(100);
 
-      // Increment
-      store.dispatch(incrementKarma({ userId, amount: 50 }));
-      expect(store.getState().karma.balances[userId]).toBe(150);
-
-      // Decrement
-      store.dispatch(decrementKarma({ userId, amount: 30 }));
-      expect(store.getState().karma.balances[userId]).toBe(120);
-
-      // Fetch from API
+      // Fetch from API - this is the source of truth
       mockedGetKarmaBalance.mockResolvedValueOnce({
         userId,
         familyId,
@@ -276,11 +209,8 @@ describe("karma.slice", () => {
       store.dispatch(setKarma({ userId: user1, balance: 100 }));
       store.dispatch(setKarma({ userId: user2, balance: 50 }));
 
-      store.dispatch(incrementKarma({ userId: user1, amount: 25 }));
-      store.dispatch(decrementKarma({ userId: user2, amount: 10 }));
-
-      expect(store.getState().karma.balances[user1]).toBe(125);
-      expect(store.getState().karma.balances[user2]).toBe(40);
+      expect(store.getState().karma.balances[user1]).toBe(100);
+      expect(store.getState().karma.balances[user2]).toBe(50);
     });
   });
 });

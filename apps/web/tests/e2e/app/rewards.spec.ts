@@ -204,8 +204,17 @@ test.describe("Rewards Page", () => {
                     response.request().method() === "DELETE",
             );
 
+            // Wait for the refetch that happens after delete
+            const refetchResponse = page.waitForResponse(
+                (response) =>
+                    response.url().includes(`/v1/families/${parentUser.familyId}/rewards`) &&
+                    response.request().method() === "GET" &&
+                    !response.url().includes("/rewards/"),
+            );
+
             await rewardsPage.deleteReward(0);
             await deleteResponse;
+            await refetchResponse;
 
             // Verify reward is removed
             const newCount = await rewardsPage.getRewardCount();
@@ -232,8 +241,17 @@ test.describe("Rewards Page", () => {
                     response.request().method() === "POST",
             );
 
+            // Wait for the refetch that happens after toggle
+            const refetchResponse = page.waitForResponse(
+                (response) =>
+                    response.url().includes(`/v1/families/${parentUser.familyId}/rewards`) &&
+                    response.request().method() === "GET" &&
+                    !response.url().includes("/rewards/"),
+            );
+
             await rewardsPage.toggleFavourite(0);
             await toggleResponse;
+            await refetchResponse;
 
             const isFavouritedAfter = await rewardsPage.isRewardFavourited(0);
             expect(isFavouritedAfter).toBe(!isFavouritedBefore);
@@ -258,8 +276,17 @@ test.describe("Rewards Page", () => {
                         response.request().method() === "POST",
                 );
 
+                // Wait for the refetch that happens after toggle
+                const refetchResponse = page.waitForResponse(
+                    (response) =>
+                        response.url().includes(`/v1/families/${parentUser.familyId}/rewards`) &&
+                        response.request().method() === "GET" &&
+                        !response.url().includes("/rewards/"),
+                );
+
                 await rewardsPage.toggleFavourite(0);
                 await toggleResponse;
+                await refetchResponse;
             }
 
             // Check if progress bar is visible
@@ -342,11 +369,36 @@ test.describe("Rewards Page", () => {
             await claimButton.click();
             await expect(rewardsPage.claimSheet).toBeVisible();
 
+            // Wait for claim POST request (POST to /rewards/{rewardId}/claim)
+            const claimResponse = page.waitForResponse(
+                (response) =>
+                    response.url().includes(`/v1/families/${parentUser.familyId}/rewards/`) &&
+                    response.url().includes("/claim") &&
+                    response.request().method() === "POST",
+            );
+
+            // Wait for refetches that happen after claiming (claims and rewards)
+            const claimsRefetch = page.waitForResponse(
+                (response) =>
+                    response.url().includes(`/v1/families/${parentUser.familyId}/claims`) &&
+                    response.request().method() === "GET",
+            );
+
+            const rewardsRefetch = page.waitForResponse(
+                (response) =>
+                    response.url().includes(`/v1/families/${parentUser.familyId}/rewards`) &&
+                    response.request().method() === "GET" &&
+                    !response.url().includes("/rewards/"),
+            );
+
             await rewardsPage.claimConfirmButton.click();
+            await claimResponse;
+            await claimsRefetch;
+            await rewardsRefetch;
 
             await expect(rewardsPage.claimSheet).not.toBeVisible();
 
-            // Verify pending status
+            // Verify pending status (now that refetches are complete)
             const isPending = await rewardsPage.isRewardPending(0);
             expect(isPending).toBe(true);
 
@@ -502,8 +554,17 @@ test.describe("Rewards Page - Child User", () => {
                 response.request().method() === "POST",
         );
 
+        // Wait for the refetch that happens after toggle
+        const refetchResponse = page.waitForResponse(
+            (response) =>
+                response.url().includes(`/v1/families/${childUser.familyId}/rewards`) &&
+                response.request().method() === "GET" &&
+                !response.url().includes("/rewards/"),
+        );
+
         await rewardsPage.toggleFavourite(0);
         await toggleResponse;
+        await refetchResponse;
 
         const isFavouritedAfter = await rewardsPage.isRewardFavourited(0);
         expect(isFavouritedAfter).toBe(!isFavouritedBefore);
@@ -537,13 +598,38 @@ test.describe("Rewards Page - Child User", () => {
         await claimButton.click();
         await expect(rewardsPage.claimSheet).toBeVisible();
 
+        // Wait for claim POST request (POST to /rewards/{rewardId}/claim)
+        const claimResponse = page.waitForResponse(
+            (response) =>
+                response.url().includes(`/v1/families/${childUser.familyId}/rewards/`) &&
+                response.url().includes("/claim") &&
+                response.request().method() === "POST",
+        );
+
+        // Wait for refetches that happen after claiming (claims and rewards)
+        const claimsRefetch = page.waitForResponse(
+            (response) =>
+                response.url().includes(`/v1/families/${childUser.familyId}/claims`) &&
+                response.request().method() === "GET",
+        );
+
+        const rewardsRefetch = page.waitForResponse(
+            (response) =>
+                response.url().includes(`/v1/families/${childUser.familyId}/rewards`) &&
+                response.request().method() === "GET" &&
+                !response.url().includes("/rewards/"),
+        );
+
         // Confirm the claim
         await rewardsPage.claimConfirmButton.click();
+        await claimResponse;
+        await claimsRefetch;
+        await rewardsRefetch;
 
         // Verify the claim sheet is invisible (closed)
         await expect(rewardsPage.claimSheet).not.toBeVisible();
 
-        // Verify the reward shows as pending
+        // Verify the reward shows as pending (now that refetches are complete)
         const isPending = await rewardsPage.isRewardPending(0);
         expect(isPending).toBe(true);
 
