@@ -54,6 +54,18 @@ export class ContributionGoalRepository {
     const now = new Date();
     const weekStartDate = getCurrentWeekStart();
 
+    return this.createForWeek(familyId, input, weekStartDate, now);
+  }
+
+  /**
+   * Create a new contribution goal for a specific week start date
+   */
+  async createForWeek(
+    familyId: string,
+    input: CreateContributionGoalInput,
+    weekStartDate: Date,
+    now = new Date(),
+  ): Promise<ContributionGoal> {
     const goal: ContributionGoal = {
       _id: new ObjectId(),
       familyId: toObjectId(familyId),
@@ -62,6 +74,7 @@ export class ContributionGoalRepository {
       title: input.title,
       description: input.description,
       maxKarma: input.maxKarma,
+      recurring: input.recurring ?? false,
       deductions: [],
       createdAt: now,
       updatedAt: now,
@@ -119,6 +132,9 @@ export class ContributionGoalRepository {
     }
     if (input.maxKarma !== undefined) {
       setFields.maxKarma = input.maxKarma;
+    }
+    if (input.recurring !== undefined) {
+      setFields.recurring = input.recurring;
     }
 
     const updateDoc: UpdateFilter<ContributionGoal> = {

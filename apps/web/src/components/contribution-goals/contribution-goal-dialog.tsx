@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import type { DictionarySection } from "@/i18n/types";
@@ -29,6 +30,7 @@ export interface ContributionGoalFormState {
   title: string;
   description: string;
   maxKarma: string;
+  recurring: boolean;
 }
 
 interface ContributionGoalDialogProps {
@@ -103,6 +105,24 @@ export function ContributionGoalDialog({
           min={1}
           max={10000}
           data-testid="goal-max-karma-input"
+        />
+      </div>
+      <div className="flex items-center justify-between rounded-md border px-3 py-2">
+        <div className="space-y-0.5">
+          <Label htmlFor="goal-recurring-toggle">
+            {dialogCopy.recurringLabel}
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            {dialogCopy.recurringDescription}
+          </p>
+        </div>
+        <Switch
+          id="goal-recurring-toggle"
+          checked={formState.recurring}
+          onCheckedChange={(checked) =>
+            onFormChange({ ...formState, recurring: checked })
+          }
+          data-testid="goal-recurring-toggle"
         />
       </div>
     </div>

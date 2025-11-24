@@ -32,6 +32,8 @@
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "Help around the house this week",
       "maxKarmaLabel": "Maximum Karma",
+      "recurringLabel": "Repeat every week",
+      "recurringDescription": "Automatically recreate this goal next week with the same details",
       "cancel": "Cancel",
       "create": "Create Goal",
       "update": "Update Goal",

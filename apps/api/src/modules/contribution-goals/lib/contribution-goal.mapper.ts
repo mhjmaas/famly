@@ -44,6 +44,7 @@ export function toContributionGoalDTO(
     title: goal.title,
     description: goal.description,
     maxKarma: goal.maxKarma,
+    recurring: goal.recurring,
     currentKarma: calculateCurrentKarma(goal),
     deductions: goal.deductions.map(toDeductionDTO),
     createdAt: goal.createdAt.toISOString(),

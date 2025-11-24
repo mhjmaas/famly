@@ -37,6 +37,7 @@ export class ContributionGoalPage {
     readonly goalTitleInput: Locator;
     readonly goalDescriptionInput: Locator;
     readonly goalMaxKarmaInput: Locator;
+    readonly goalRecurringToggle: Locator;
     readonly saveGoalButton: Locator;
     readonly cancelButton: Locator;
 
@@ -83,6 +84,7 @@ export class ContributionGoalPage {
         this.goalTitleInput = page.getByTestId("goal-title-input");
         this.goalDescriptionInput = page.getByTestId("goal-description-input");
         this.goalMaxKarmaInput = page.getByTestId("goal-max-karma-input");
+        this.goalRecurringToggle = page.getByTestId("goal-recurring-toggle");
         this.saveGoalButton = page.getByTestId("save-goal-button");
         this.cancelButton = this.editGoalDialog.getByRole("button", { name: /cancel/i });
 
@@ -118,11 +120,15 @@ export class ContributionGoalPage {
     /**
      * Create a new contribution goal
      */
-    async createGoal(title: string, description: string, maxKarma: number) {
+    async createGoal(title: string, description: string, maxKarma: number, recurring = false) {
         await this.setGoalButton.click();
         await this.goalTitleInput.fill(title);
         await this.goalDescriptionInput.fill(description);
         await this.goalMaxKarmaInput.fill(maxKarma.toString());
+        const isChecked = await this.goalRecurringToggle.isChecked();
+        if (recurring !== isChecked) {
+            await this.goalRecurringToggle.click();
+        }
         await this.saveGoalButton.click();
         // Wait for dialog to close
         await this.editGoalDialog.waitFor({ state: "hidden" });
@@ -131,7 +137,7 @@ export class ContributionGoalPage {
     /**
      * Edit an existing contribution goal
      */
-    async editGoal(title?: string, description?: string, maxKarma?: number) {
+    async editGoal(title?: string, description?: string, maxKarma?: number, recurring?: boolean) {
         // Open the actions menu and click edit
         await this.goalCardActionsButton.click();
         await this.editGoalButton.click();
@@ -145,6 +151,12 @@ export class ContributionGoalPage {
         }
         if (maxKarma !== undefined) {
             await this.goalMaxKarmaInput.fill(maxKarma.toString());
+        }
+        if (recurring !== undefined) {
+            const isChecked = await this.goalRecurringToggle.isChecked();
+            if (recurring !== isChecked) {
+                await this.goalRecurringToggle.click();
+            }
         }
 
         await this.saveGoalButton.click();

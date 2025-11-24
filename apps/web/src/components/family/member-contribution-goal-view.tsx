@@ -40,6 +40,7 @@ export function MemberContributionGoalView({
     title: dict.dialog.titlePlaceholder,
     description: "",
     maxKarma: "100",
+    recurring: false,
   });
 
   const goal = useAppSelector((state) =>
@@ -85,12 +86,14 @@ export function MemberContributionGoalView({
         title: goal.title,
         description: goal.description,
         maxKarma: goal.maxKarma.toString(),
+        recurring: goal.recurring,
       });
     } else {
       setFormData({
         title: dict.dialog.titlePlaceholder,
         description: "",
         maxKarma: "100",
+        recurring: false,
       });
     }
     setIsEditDialogOpen(true);
@@ -120,6 +123,7 @@ export function MemberContributionGoalView({
               title: formData.title,
               description: formData.description,
               maxKarma,
+              recurring: formData.recurring,
             },
           }),
         ).unwrap();
@@ -133,6 +137,7 @@ export function MemberContributionGoalView({
               title: formData.title,
               description: formData.description,
               maxKarma,
+              recurring: formData.recurring,
             },
           }),
         ).unwrap();

@@ -61,6 +61,7 @@ describe("E2E: Contribution Goals Weekly Processing (Bug Fix: Correct Week Proce
       expect(response.body).toHaveProperty("_id");
       expect(response.body.weekStartDate).toBe(weekStart.toISOString());
       expect(response.body.maxKarma).toBe(100);
+      expect(response.body.recurring).toBe(false);
       expect(response.body.deductions).toEqual([]);
     });
 
@@ -84,6 +85,7 @@ describe("E2E: Contribution Goals Weekly Processing (Bug Fix: Correct Week Proce
       expect(response.status).toBe(200);
       expect(response.body.title).toBe("Keep Room Clean");
       expect(response.body.currentKarma).toBe(100);
+      expect(response.body.recurring).toBe(false);
     });
 
     it("should process the correct week when calling processWeeklyGoals with last week's start date", async () => {

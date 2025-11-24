@@ -135,7 +135,36 @@ export class ContributionGoalProcessorService {
           }
 
           // Delete the goal after processing (per design decision - no history)
+          // Delete the goal for the processed week before optionally creating next week's goal
           await this.contributionGoalRepository.deleteById(goal._id.toString());
+
+          // If recurring, recreate the goal for the next week (no notifications on auto-create)
+          if (goal.recurring) {
+            const nextWeekStart = new Date(goal.weekStartDate);
+            nextWeekStart.setUTCDate(goal.weekStartDate.getUTCDate() + 7);
+
+            try {
+              await this.contributionGoalRepository.createForWeek(
+                goal.familyId.toString(),
+                {
+                  memberId: goal.memberId.toString(),
+                  title: goal.title,
+                  description: goal.description,
+                  maxKarma: goal.maxKarma,
+                  recurring: true,
+                },
+                nextWeekStart,
+                new Date(),
+              );
+            } catch (createError) {
+              logger.error("Failed to recreate recurring contribution goal", {
+                goalId: goal._id.toString(),
+                memberId: goal.memberId.toString(),
+                familyId: goal.familyId.toString(),
+                error: createError,
+              });
+            }
+          }
 
           logger.info("Contribution goal processed and deleted successfully", {
             goalId: goal._id.toString(),
