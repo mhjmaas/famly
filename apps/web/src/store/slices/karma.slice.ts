@@ -38,23 +38,6 @@ const karmaSlice = createSlice({
     ) => {
       state.balances[action.payload.userId] = action.payload.balance;
     },
-    incrementKarma: (
-      state,
-      action: PayloadAction<{ userId: string; amount: number }>,
-    ) => {
-      const current = state.balances[action.payload.userId] || 0;
-      state.balances[action.payload.userId] = current + action.payload.amount;
-    },
-    decrementKarma: (
-      state,
-      action: PayloadAction<{ userId: string; amount: number }>,
-    ) => {
-      const current = state.balances[action.payload.userId] || 0;
-      state.balances[action.payload.userId] = Math.max(
-        0,
-        current - action.payload.amount,
-      );
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -73,7 +56,7 @@ const karmaSlice = createSlice({
   },
 });
 
-export const { setKarma, incrementKarma, decrementKarma } = karmaSlice.actions;
+export const { setKarma } = karmaSlice.actions;
 export default karmaSlice.reducer;
 
 // Selectors

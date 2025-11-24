@@ -6,6 +6,7 @@ import {
 } from "@/lib/api-client";
 import type { Claim } from "@/types/api.types";
 import type { RootState } from "../store";
+import { fetchRewards } from "./rewards.slice";
 
 interface ClaimsState {
   claims: Claim[];
@@ -32,16 +33,28 @@ export const fetchClaims = createAsyncThunk(
 
 export const claimReward = createAsyncThunk(
   "claims/claimReward",
-  async ({ familyId, rewardId }: { familyId: string; rewardId: string }) => {
+  async (
+    { familyId, rewardId }: { familyId: string; rewardId: string },
+    { dispatch },
+  ) => {
     const claim = await apiClaimReward(familyId, rewardId);
+    // Refetch both claims and rewards (claim count changes)
+    dispatch(fetchClaims(familyId));
+    dispatch(fetchRewards(familyId));
     return claim;
   },
 );
 
 export const cancelClaim = createAsyncThunk(
   "claims/cancelClaim",
-  async ({ familyId, claimId }: { familyId: string; claimId: string }) => {
+  async (
+    { familyId, claimId }: { familyId: string; claimId: string },
+    { dispatch },
+  ) => {
     const claim = await apiCancelClaim(familyId, claimId);
+    // Refetch both claims and rewards (claim count changes)
+    dispatch(fetchClaims(familyId));
+    dispatch(fetchRewards(familyId));
     return claim;
   },
 );
@@ -68,22 +81,11 @@ const claimsSlice = createSlice({
       })
 
       // claimReward
-      .addCase(claimReward.fulfilled, (state, action) => {
-        state.claims.push(action.payload);
-      })
       .addCase(claimReward.rejected, (state, action) => {
         state.error = action.error.message || "Failed to claim reward";
       })
 
       // cancelClaim
-      .addCase(cancelClaim.fulfilled, (state, action) => {
-        const index = state.claims.findIndex(
-          (c) => c._id === action.payload._id,
-        );
-        if (index !== -1) {
-          state.claims[index] = action.payload;
-        }
-      })
       .addCase(cancelClaim.rejected, (state, action) => {
         state.error = action.error.message || "Failed to cancel claim";
       });
