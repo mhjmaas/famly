@@ -1,18 +1,18 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils/style-utils";
 import { ArrowDownIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 import { useCallback } from "react";
 import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils/style-utils";
 
 export type ConversationProps = ComponentProps<typeof StickToBottom>;
 
 export const Conversation = ({ className, ...props }: ConversationProps) => (
   <StickToBottom
     className={cn("relative flex-1 overflow-y-hidden", className)}
-    initial="smooth"
+    initial="instant"
     resize="smooth"
     role="log"
     {...props}
@@ -98,3 +98,9 @@ export const ConversationScrollButton = ({
     )
   );
 };
+
+/**
+ * Hook to access the scroll element from StickToBottom context
+ * Useful for implementing infinite scroll or other scroll-based features
+ */
+export { useStickToBottomContext };

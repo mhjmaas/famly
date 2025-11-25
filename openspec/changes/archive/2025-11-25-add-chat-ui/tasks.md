@@ -49,7 +49,7 @@
 
 ## 7. Desktop Layout
 - [x] 7.1 Create two-column layout with chat list (30%) and conversation (70%)
-- [ ] 7.2 Make chat list resizable with drag handle
+- [x] 7.2 Make chat list resizable with drag handle
 - [x] 7.3 Ensure responsive behavior for different desktop screen sizes
 - [x] 7.4 Add proper overflow handling for both columns
 
@@ -57,7 +57,7 @@
 - [x] 8.1 Add en-US translations for all chat UI text
 - [x] 8.2 Add nl-NL translations for all chat UI text
 - [x] 8.3 Use translation keys in all components
-- [ ] 8.4 Test language switching
+- [x] 8.4 Test language switching
 
 ## 9. Styling and Polish
 - [x] 9.1 Apply Tailwind CSS styling consistent with existing pages
@@ -68,15 +68,15 @@
 - [x] 9.6 Style DM vs group chat differently in list
 
 ## 10. Testing
-- [ ] 10.1 Write unit tests for Redux slice and thunks
-- [ ] 10.2 Write unit tests for custom hooks
-- [ ] 10.3 Write component tests for ChatList and ChatListItem
-- [ ] 10.4 Write component tests for ConversationView and MessageItem
-- [ ] 10.5 Write component tests for NewChatDialog
-- [ ] 10.6 Write integration tests for real-time message flow
-- [ ] 10.7 Write e2e tests for complete chat workflow
+- [x] 10.1 Write unit tests for Redux slice and thunks
+- [x] 10.2 Write unit tests for custom hooks
+- [x] 10.3 Write component tests for ChatList and ChatListItem
+- [x] 10.4 Write component tests for ConversationView and MessageItem
+- [x] 10.5 Write component tests for NewChatDialog
+- [x] 10.6 Write integration tests for real-time message flow
+- [x] 10.7 Write e2e tests for complete chat workflow
 
 ## 11. Documentation
-- [ ] 11.1 Add inline code comments for complex logic
-- [ ] 11.2 Document WebSocket event handling patterns
-- [ ] 11.3 Document Redux state structure
+- [x] 11.1 Add inline code comments for complex logic
+- [x] 11.2 Document WebSocket event handling patterns
+- [x] 11.3 Document Redux state structure

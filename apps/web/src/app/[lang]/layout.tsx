@@ -163,6 +163,7 @@ export default async function LocaleLayout({
             chats: false,
             messages: false,
             sending: false,
+            loadingMore: false,
           },
           error: {
             chats: null,
@@ -170,6 +171,7 @@ export default async function LocaleLayout({
             sending: null,
           },
           lastFetch: Date.now(),
+          messageCursors: {},
         },
         family: {
           families,

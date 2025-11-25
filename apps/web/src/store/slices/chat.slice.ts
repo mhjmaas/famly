@@ -26,6 +26,7 @@ import type { RootState } from "../store";
  * - activeChatId: Currently selected chat ID
  * - loading: Loading states for different operations
  * - error: Error states for different operations
+ * - messageCursors: Map of chatId to nextCursor for pagination
  */
 interface ChatState {
   chats: ChatWithPreviewDTO[];
@@ -35,6 +36,7 @@ interface ChatState {
     chats: boolean;
     messages: boolean;
     sending: boolean;
+    loadingMore: boolean;
   };
   error: {
     chats: string | null;
@@ -42,6 +44,7 @@ interface ChatState {
     sending: string | null;
   };
   lastFetch: number | null;
+  messageCursors: Record<string, string | null>;
 }
 
 const initialState: ChatState = {
@@ -52,6 +55,7 @@ const initialState: ChatState = {
     chats: false,
     messages: false,
     sending: false,
+    loadingMore: false,
   },
   error: {
     chats: null,
@@ -59,6 +63,32 @@ const initialState: ChatState = {
     sending: null,
   },
   lastFetch: null,
+  messageCursors: {},
+};
+
+const EMPTY_MESSAGES: MessageDTO[] = [];
+
+const upsertChat = (
+  state: ChatState,
+  chat: ChatWithPreviewDTO,
+  { preserve }: { preserve?: Partial<ChatWithPreviewDTO> } = {},
+) => {
+  const existingIndex = state.chats.findIndex((c) => c._id === chat._id);
+  const mergedChat: ChatWithPreviewDTO = {
+    ...chat,
+    ...preserve,
+  };
+
+  if (existingIndex !== -1) {
+    state.chats[existingIndex] = {
+      ...mergedChat,
+      // keep unread count if provided via preserve
+      unreadCount:
+        preserve?.unreadCount ?? state.chats[existingIndex].unreadCount ?? 0,
+    };
+  } else {
+    state.chats.unshift({ ...mergedChat });
+  }
 };
 
 // ===== Async Thunks =====
@@ -75,21 +105,57 @@ export const fetchChats = createAsyncThunk(
 );
 
 /**
- * Fetch messages for a specific chat
+ * Fetch messages for a specific chat (initial load)
  */
 export const fetchMessages = createAsyncThunk(
   "chat/fetchMessages",
   async ({
     chatId,
     before,
-    limit = 50,
+    limit = 20,
   }: {
     chatId: string;
     before?: string;
     limit?: number;
   }) => {
     const response = await getMessages(chatId, before, limit);
-    return { chatId, messages: response.messages };
+    return {
+      chatId,
+      messages: response.messages,
+      nextCursor: response.nextCursor,
+    };
+  },
+);
+
+/**
+ * Fetch more (older) messages for a specific chat (pagination)
+ */
+export const fetchMoreMessages = createAsyncThunk(
+  "chat/fetchMoreMessages",
+  async (
+    {
+      chatId,
+      limit = 10,
+    }: {
+      chatId: string;
+      limit?: number;
+    },
+    { getState },
+  ) => {
+    const state = getState() as RootState;
+    const cursor = state.chat.messageCursors[chatId];
+
+    // If no cursor, there are no more messages
+    if (cursor === null) {
+      return { chatId, messages: [], nextCursor: null };
+    }
+
+    const response = await getMessages(chatId, cursor, limit);
+    return {
+      chatId,
+      messages: response.messages,
+      nextCursor: response.nextCursor,
+    };
   },
 );
 
@@ -249,23 +315,12 @@ const chatSlice = createSlice({
      */
     updateChatFromEvent: (state, action: PayloadAction<ChatDTO>) => {
       const updatedChat = action.payload;
-      const chatIndex = state.chats.findIndex((c) => c._id === updatedChat._id);
-
-      if (chatIndex !== -1) {
-        // Preserve unreadCount and lastMessage
-        const existingChat = state.chats[chatIndex];
-        state.chats[chatIndex] = {
-          ...updatedChat,
-          unreadCount: existingChat.unreadCount,
-          lastMessage: existingChat.lastMessage,
-        };
-      } else {
-        // New chat, add it to the list
-        state.chats.unshift({
-          ...updatedChat,
-          unreadCount: 0,
-        });
-      }
+      const existingChat = state.chats.find((c) => c._id === updatedChat._id);
+      upsertChat(state, {
+        ...updatedChat,
+        unreadCount: existingChat?.unreadCount ?? 0,
+        lastMessage: existingChat?.lastMessage,
+      });
     },
 
     /**
@@ -313,7 +368,7 @@ const chatSlice = createSlice({
         state.error.chats = action.error.message || "Failed to fetch chats";
       });
 
-    // Fetch messages
+    // Fetch messages (initial load)
     builder
       .addCase(fetchMessages.pending, (state) => {
         state.loading.messages = true;
@@ -321,15 +376,41 @@ const chatSlice = createSlice({
       })
       .addCase(fetchMessages.fulfilled, (state, action) => {
         state.loading.messages = false;
-        const { chatId, messages } = action.payload;
+        const { chatId, messages, nextCursor } = action.payload;
 
         // Reverse messages so newest is at the bottom (API returns newest first)
         state.messages[chatId] = [...messages].reverse();
+        // Store cursor for pagination (null means no more messages)
+        state.messageCursors[chatId] = nextCursor ?? null;
       })
       .addCase(fetchMessages.rejected, (state, action) => {
         state.loading.messages = false;
         state.error.messages =
           action.error.message || "Failed to fetch messages";
+      });
+
+    // Fetch more messages (pagination)
+    builder
+      .addCase(fetchMoreMessages.pending, (state) => {
+        state.loading.loadingMore = true;
+      })
+      .addCase(fetchMoreMessages.fulfilled, (state, action) => {
+        state.loading.loadingMore = false;
+        const { chatId, messages, nextCursor } = action.payload;
+
+        if (messages.length > 0) {
+          // Prepend older messages (reversed since API returns newest first)
+          const olderMessages = [...messages].reverse();
+          state.messages[chatId] = [
+            ...olderMessages,
+            ...(state.messages[chatId] || []),
+          ];
+        }
+        // Update cursor (null means no more messages)
+        state.messageCursors[chatId] = nextCursor ?? null;
+      })
+      .addCase(fetchMoreMessages.rejected, (state) => {
+        state.loading.loadingMore = false;
       });
 
     // Send message
@@ -377,11 +458,10 @@ const chatSlice = createSlice({
     // Create chat
     builder
       .addCase(createChat.fulfilled, (state, action) => {
-        const newChat: ChatWithPreviewDTO = {
+        upsertChat(state, {
           ...action.payload,
           unreadCount: 0,
-        };
-        state.chats.unshift(newChat);
+        });
       })
       .addCase(createChat.rejected, (state, action) => {
         state.error.chats = action.error.message || "Failed to create chat";
@@ -426,8 +506,16 @@ export const selectChatError = (state: RootState) => state.chat.error;
 // Memoized selector to get messages for a specific chat
 // This returns the actual array from state, not a function
 export const selectMessagesForChat = (state: RootState, chatId: string) =>
-  state.chat.messages[chatId] || [];
+  state.chat.messages[chatId] || EMPTY_MESSAGES;
 
 // Memoized selector to get a specific chat by ID
 export const selectChatById = (state: RootState, chatId: string) =>
   state.chat.chats.find((c) => c._id === chatId);
+
+// Selector to check if there are more messages to load for a chat
+export const selectHasMoreMessages = (state: RootState, chatId: string) =>
+  state.chat.messageCursors[chatId] !== null;
+
+// Selector to get loading more state
+export const selectLoadingMore = (state: RootState) =>
+  state.chat.loading.loadingMore;

@@ -8,10 +8,12 @@ export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ lang: string }>;
+  searchParams?: Promise<{ chatId?: string }>;
 }
 
-export default async function ChatPage({ params }: PageProps) {
+export default async function ChatPage({ params, searchParams }: PageProps) {
   const { lang: rawLang } = await params;
+  const { chatId } = (await searchParams) ?? {};
   const lang = (isLocale(rawLang) ? rawLang : i18n.defaultLocale) as Locale;
   const dict = await getDictionary(lang);
 
@@ -21,7 +23,7 @@ export default async function ChatPage({ params }: PageProps) {
       lang={lang}
       title={dict.dashboard.pages.chat.title}
     >
-      <ChatInterface dict={dict.dashboard.pages.chat} />
+      <ChatInterface dict={dict.dashboard.pages.chat} initialChatId={chatId} />
     </DashboardLayout>
   );
 }

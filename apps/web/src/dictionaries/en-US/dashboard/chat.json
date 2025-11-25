@@ -36,6 +36,10 @@
           "tooLong": "Message is too long",
           "shiftEnterHint": "Shift+Enter for new line"
         },
+        "tabs": {
+          "chats": "Chats",
+          "messages": "Messages"
+        },
         "newChatDialog": {
           "title": "New Chat",
           "dm": {

@@ -9,15 +9,23 @@ import type { ChatWithPreviewDTO } from "@/types/api.types";
 
 interface ChatListItemProps {
   chat: ChatWithPreviewDTO;
+  displayTitle?: string;
   isActive: boolean;
   onClick: () => void;
 }
 
-export function ChatListItem({ chat, isActive, onClick }: ChatListItemProps) {
+export function ChatListItem({
+  chat,
+  displayTitle,
+  isActive,
+  onClick,
+}: ChatListItemProps) {
   // Get chat title with fallback
   const getChatTitle = () => {
     return (
-      chat.title || (chat.type === "group" ? "Group Chat" : "Direct Message")
+      displayTitle ||
+      chat.title ||
+      (chat.type === "group" ? "Group Chat" : "Direct Message")
     );
   };
 
@@ -25,11 +33,12 @@ export function ChatListItem({ chat, isActive, onClick }: ChatListItemProps) {
     <button
       type="button"
       onClick={onClick}
-      className={`w-full rounded-lg p-3 text-left transition-colors hover:bg-accent ${
+      data-testid="chat-list-item"
+      className={`w-full overflow-hidden rounded-lg p-3 text-left transition-colors hover:bg-accent ${
         isActive ? "bg-accent" : ""
       }`}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-center gap-3">
         {/* Avatar */}
         <Avatar className="h-10 w-10">
           <AvatarFallback>
@@ -42,25 +51,39 @@ export function ChatListItem({ chat, isActive, onClick }: ChatListItemProps) {
         </Avatar>
 
         {/* Content */}
-        <div className="flex-1 overflow-hidden">
+        <div className="min-w-0 flex-1 overflow-hidden">
           <div className="flex items-center justify-between gap-2">
-            <span className="truncate font-medium">{getChatTitle()}</span>
+            <span className="truncate font-medium" data-testid="chat-item-name">
+              {getChatTitle()}
+            </span>
             {chat.lastMessage && (
-              <span className="text-xs text-muted-foreground">
+              <span
+                className="shrink-0 text-xs text-muted-foreground"
+                data-testid="chat-item-time"
+              >
                 {formatRelativeTime(chat.lastMessage.createdAt)}
               </span>
             )}
           </div>
           {chat.lastMessage && (
-            <p className="truncate text-sm text-muted-foreground">
-              {chat.lastMessage.body}
-            </p>
+            <div className="flex min-w-0">
+              <p
+                className="truncate text-sm text-muted-foreground"
+                data-testid="chat-item-preview"
+              >
+                {chat.lastMessage.body}
+              </p>
+            </div>
           )}
         </div>
 
         {/* Unread Badge */}
         {chat.unreadCount > 0 && (
-          <Badge variant="default" className="ml-auto">
+          <Badge
+            variant="default"
+            className="shrink-0"
+            data-testid="chat-item-unread"
+          >
             {chat.unreadCount}
           </Badge>
         )}

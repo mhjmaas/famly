@@ -1,12 +1,13 @@
 "use client";
 
-import { MessageCircle } from "lucide-react";
-import { useEffect } from "react";
+import { Loader2, MessageCircle } from "lucide-react";
+import { useEffect, useRef } from "react";
 import {
   Conversation,
   ConversationContent,
   ConversationEmptyState,
   ConversationScrollButton,
+  useStickToBottomContext,
 } from "@/components/ai-elements/conversation";
 import { Message, MessageContent } from "@/components/ai-elements/message";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -16,6 +17,9 @@ import { cn } from "@/lib/utils/style-utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchMessages,
+  fetchMoreMessages,
+  selectHasMoreMessages,
+  selectLoadingMore,
   selectMessagesForChat,
 } from "@/store/slices/chat.slice";
 import { selectFamilyMembers } from "@/store/slices/family.slice";
@@ -36,9 +40,89 @@ interface ConversationViewProps {
       };
       loading: string;
     };
+    messageInput: {
+      placeholder: string;
+      shiftEnterHint: string;
+      characterCount: string;
+    };
+    errors: {
+      messageTooLong?: string;
+      sendMessage: string;
+    };
   };
   chat: ChatWithPreviewDTO | null;
   loading: boolean;
+}
+
+/**
+ * Inner component that handles infinite scroll detection
+ * Must be rendered inside a Conversation (StickToBottom) component
+ */
+function InfiniteScrollHandler({
+  chatId,
+  hasMoreMessages,
+  loadingMore,
+}: {
+  chatId: string;
+  hasMoreMessages: boolean;
+  loadingMore: boolean;
+}) {
+  const dispatch = useAppDispatch();
+  const { scrollRef, stopScroll } = useStickToBottomContext();
+  const previousScrollHeightRef = useRef<number>(0);
+  const previousScrollTopRef = useRef<number>(0);
+
+  // Set up scroll event listener for infinite scroll
+  useEffect(() => {
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) return;
+
+    const handleScroll = () => {
+      if (loadingMore || !hasMoreMessages) return;
+
+      // Trigger load when within 100px of the top
+      if (scrollElement.scrollTop < 100) {
+        // Store current scroll state before loading
+        previousScrollHeightRef.current = scrollElement.scrollHeight;
+        previousScrollTopRef.current = scrollElement.scrollTop;
+        // Stop the auto-scroll behavior so it doesn't jump to bottom
+        stopScroll();
+        dispatch(fetchMoreMessages({ chatId }));
+      }
+    };
+
+    scrollElement.addEventListener("scroll", handleScroll);
+    return () => scrollElement.removeEventListener("scroll", handleScroll);
+  }, [scrollRef, chatId, hasMoreMessages, loadingMore, dispatch, stopScroll]);
+
+  // Restore scroll position after loading more messages
+  useEffect(() => {
+    const scrollElement = scrollRef.current;
+    if (
+      !scrollElement ||
+      loadingMore ||
+      previousScrollHeightRef.current === 0
+    ) {
+      return;
+    }
+
+    // Calculate how much content was added and adjust scroll position
+    // Use requestAnimationFrame to ensure DOM has updated
+    requestAnimationFrame(() => {
+      const newScrollHeight = scrollElement.scrollHeight;
+      const heightDiff = newScrollHeight - previousScrollHeightRef.current;
+
+      if (heightDiff > 0) {
+        // Restore scroll position: add the height difference to maintain visual position
+        scrollElement.scrollTop = previousScrollTopRef.current + heightDiff;
+      }
+
+      previousScrollHeightRef.current = 0;
+      previousScrollTopRef.current = 0;
+    });
+  }, [scrollRef, loadingMore]);
+
+  return null;
 }
 
 export function ConversationView({
@@ -52,6 +136,10 @@ export function ConversationView({
   const messages = useAppSelector((state) =>
     chat ? selectMessagesForChat(state, chat._id) : [],
   );
+  const hasMoreMessages = useAppSelector((state) =>
+    chat ? selectHasMoreMessages(state, chat._id) : false,
+  );
+  const loadingMore = useAppSelector(selectLoadingMore);
 
   // Fetch messages when chat changes
   useEffect(() => {
@@ -94,7 +182,10 @@ export function ConversationView({
 
   if (!chat) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
+      <div
+        className="flex h-full flex-col items-center justify-center gap-4 text-center"
+        data-testid="conversation-empty"
+      >
         <MessageCircle className="h-16 w-16 text-muted-foreground" />
         <div>
           <h3 className="text-lg font-medium">
@@ -109,17 +200,40 @@ export function ConversationView({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div
+      className="flex h-full min-h-0 flex-col"
+      data-testid="conversation-view"
+    >
       {/* Chat Header */}
-      <div className="border-b border-border p-4">
-        <h2 className="text-lg font-semibold">
+      <div
+        className="border-b border-border p-4"
+        data-testid="conversation-header"
+      >
+        <h2 className="text-lg font-semibold" data-testid="conversation-title">
           {chat.title || "Direct Message"}
         </h2>
       </div>
 
       {/* Messages using AI Elements Conversation */}
-      <Conversation className="min-h-0 flex-1">
+      <Conversation className="min-h-0 flex-1" data-testid="message-list">
+        {/* Infinite scroll handler - must be inside Conversation for context */}
+        <InfiniteScrollHandler
+          chatId={chat._id}
+          hasMoreMessages={hasMoreMessages}
+          loadingMore={loadingMore}
+        />
+
         <ConversationContent>
+          {/* Loading more indicator at top */}
+          {loadingMore && (
+            <div
+              className="flex items-center justify-center py-2"
+              data-testid="loading-more"
+            >
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          )}
+
           {messages.length === 0 && !loading ? (
             <ConversationEmptyState
               description={dict.conversation.noMessages.description}
@@ -127,7 +241,10 @@ export function ConversationView({
               title={dict.conversation.noMessages.title}
             />
           ) : loading && messages.length === 0 ? (
-            <div className="flex items-center justify-center py-8">
+            <div
+              className="flex items-center justify-center py-8"
+              data-testid="messages-loading"
+            >
               <p className="text-sm text-muted-foreground">
                 {dict.conversation.loading}
               </p>
@@ -140,6 +257,7 @@ export function ConversationView({
               return (
                 <div
                   key={message._id}
+                  data-testid="message-item"
                   className={cn(
                     "flex gap-2",
                     isOwnMessage ? "flex-row-reverse" : "flex-row",
@@ -158,7 +276,9 @@ export function ConversationView({
 
                   {/* Message using AI Elements */}
                   <Message from={isOwnMessage ? "user" : "assistant"}>
-                    <MessageContent>{message.body}</MessageContent>
+                    <MessageContent data-testid="message-body">
+                      {message.body}
+                    </MessageContent>
                     <span
                       className={cn(
                         "text-xs text-muted-foreground",

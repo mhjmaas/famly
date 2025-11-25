@@ -11,11 +11,11 @@ import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { i18n, type Locale } from "@/i18n/config";
+import type { ChatWithPreviewDTO } from "@/types/api.types";
 import "server-only";
 import {
   type ActivityEvent,
   ApiError,
-  type ChatWithPreviewDTO,
   type FamilySettings,
   type FamilyWithMembers,
   getActivityEvents,

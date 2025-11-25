@@ -36,6 +36,10 @@
           "tooLong": "Bericht is te lang",
           "shiftEnterHint": "Shift+Enter voor nieuwe regel"
         },
+        "tabs": {
+          "chats": "Chats",
+          "messages": "Berichten"
+        },
         "newChatDialog": {
           "title": "Nieuwe Chat",
           "dm": {

@@ -199,7 +199,7 @@ export function MessageInput({
     enableModelSelector;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="message-input">
       <PromptInput
         globalDrop={enableAttachments}
         multiple={enableAttachments}
@@ -217,6 +217,7 @@ export function MessageInput({
             onChange={(event) => setText(event.target.value)}
             placeholder={dict.messageInput.placeholder}
             value={text}
+            data-testid="message-input-textarea"
           />
         </PromptInputBody>
         <PromptInputFooter>
@@ -310,6 +311,7 @@ export function MessageInput({
           <PromptInputSubmit
             disabled={isDisabled}
             status={loading.sending ? "submitted" : status}
+            data-testid="message-input-submit"
           />
         </PromptInputFooter>
       </PromptInput>
