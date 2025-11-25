@@ -1,5 +1,7 @@
 "use client";
 
+import { MessageCircle } from "lucide-react";
+import { useEffect } from "react";
 import {
   Conversation,
   ConversationContent,
@@ -8,6 +10,8 @@ import {
 } from "@/components/ai-elements/conversation";
 import { Message, MessageContent } from "@/components/ai-elements/message";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { formatExactTime } from "@/lib/utils/chat-utils";
+import { getInitials } from "@/lib/utils/family-utils";
 import { cn } from "@/lib/utils/style-utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -17,12 +21,22 @@ import {
 import { selectFamilyMembers } from "@/store/slices/family.slice";
 import { selectUser } from "@/store/slices/user.slice";
 import type { ChatWithPreviewDTO, MessageDTO } from "@/types/api.types";
-import { MessageCircle } from "lucide-react";
-import { useEffect } from "react";
 import { MessageInput } from "./message-input";
 
 interface ConversationViewProps {
-  dict: any;
+  dict: {
+    conversation: {
+      emptyState: {
+        title: string;
+        description: string;
+      };
+      noMessages: {
+        title: string;
+        description: string;
+      };
+      loading: string;
+    };
+  };
   chat: ChatWithPreviewDTO | null;
   loading: boolean;
 }
@@ -46,33 +60,21 @@ export function ConversationView({
     }
   }, [chat, dispatch]);
 
-  // Helper to generate initials from a name
-  const getInitialsFromName = (name: string): string => {
-    return name
-      .split(" ")
-      .map((n: string) => n[0])
-      .join("")
-      .toUpperCase()
-      .substring(0, 2);
-  };
-
   // Helper to get sender initials
   const getSenderInitials = (message: MessageDTO): string => {
     // Check if this is the current user's message
     if (message.senderId === currentUser?.id) {
       // Use current user's name for their own messages
       if (currentUser?.name) {
-        return getInitialsFromName(currentUser.name);
+        return getInitials(currentUser.name);
       }
       return "ME";
     }
 
     // For other users, look up in family members
-    const member = familyMembers.find(
-      (m) => m.memberId === message.senderId,
-    );
+    const member = familyMembers.find((m) => m.memberId === message.senderId);
     if (member?.name) {
-      return getInitialsFromName(member.name);
+      return getInitials(member.name);
     }
 
     // Fallback: unknown user
@@ -88,12 +90,6 @@ export function ConversationView({
       new Date(message.createdAt).getTime() -
       new Date(prevMessage.createdAt).getTime();
     return timeDiff > 300000; // 5 minutes
-  };
-
-  // Helper to format time
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   if (!chat) {
@@ -117,7 +113,7 @@ export function ConversationView({
       {/* Chat Header */}
       <div className="border-b border-border p-4">
         <h2 className="text-lg font-semibold">
-          {chat.type === "group" ? chat.title : "Direct Message"}
+          {chat.title || "Direct Message"}
         </h2>
       </div>
 
@@ -169,7 +165,7 @@ export function ConversationView({
                         isOwnMessage ? "ml-auto" : "",
                       )}
                     >
-                      {formatTime(message.createdAt)}
+                      {formatExactTime(message.createdAt)}
                     </span>
                   </Message>
                 </div>

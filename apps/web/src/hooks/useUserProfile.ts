@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { formatTemplate } from "@/lib/format-template";
+import { getInitials } from "@/lib/utils/family-utils";
 import { useAppSelector } from "@/store/hooks";
 import { selectKarmaBalance } from "@/store/slices/karma.slice";
 import { selectUser } from "@/store/slices/user.slice";
@@ -9,15 +10,6 @@ import type {
   Dictionary,
   UserProfileData,
 } from "@/types/dashboard-layout.types";
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
 
 export function useUserProfile(dict: Dictionary): UserProfileData {
   const user = useAppSelector(selectUser);

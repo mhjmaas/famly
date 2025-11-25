@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -9,12 +10,16 @@ import {
   selectChatLoading,
   selectChats,
 } from "@/store/slices/chat.slice";
-import { useEffect, useState } from "react";
 import { ChatList } from "./chat-list";
 import { ConversationView } from "./conversation-view";
 
 interface ChatInterfaceProps {
-  dict: any;
+  dict: {
+    errors: {
+      fetchChats: string;
+      retry: string;
+    };
+  };
 }
 
 /**
@@ -31,12 +36,14 @@ export function ChatInterface({ dict }: ChatInterfaceProps) {
 
   // Fetch chats on mount
   useEffect(() => {
-    dispatch(fetchChats({}))
-      .unwrap()
-      .catch((err) => {
-        setError(err.message || dict.errors.fetchChats);
-      });
-  }, [dispatch, dict.errors.fetchChats]);
+    if (!chats.length && !loading.chats) {
+      dispatch(fetchChats({}))
+        .unwrap()
+        .catch((err) => {
+          setError(err.message || dict.errors.fetchChats);
+        });
+    }
+  }, [chats.length, dispatch, loading.chats, dict.errors.fetchChats]);
 
   if (error) {
     return (

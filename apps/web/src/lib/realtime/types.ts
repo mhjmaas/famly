@@ -181,14 +181,14 @@ export interface ActivityEventPayloads {
     eventId: string;
     userId: string;
     type:
-    | "TASK"
-    | "SHOPPING_LIST"
-    | "KARMA"
-    | "RECIPE"
-    | "DIARY"
-    | "FAMILY_DIARY"
-    | "REWARD"
-    | "CONTRIBUTION_GOAL";
+      | "TASK"
+      | "SHOPPING_LIST"
+      | "KARMA"
+      | "RECIPE"
+      | "DIARY"
+      | "FAMILY_DIARY"
+      | "REWARD"
+      | "CONTRIBUTION_GOAL";
     detail?: string;
     title: string;
     description?: string;

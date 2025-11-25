@@ -58,8 +58,8 @@ import type {
 const API_BASE_URL =
   typeof window === "undefined"
     ? process.env.API_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:3001"
+      process.env.NEXT_PUBLIC_API_URL ||
+      "http://localhost:3001"
     : process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export class ApiError extends Error {
@@ -119,8 +119,8 @@ async function apiClient<T>(
       const errorMessage =
         typeof errorData === "object" && errorData !== null
           ? (errorData as { message?: string }).message ||
-          (errorData as { error?: string }).error ||
-          "An error occurred"
+            (errorData as { error?: string }).error ||
+            "An error occurred"
           : String(errorData) || "An error occurred";
 
       throw new ApiError(errorMessage, response.status, errorData);
@@ -146,7 +146,7 @@ export type {
   AuthResponse,
   ChangePasswordRequest,
   LoginRequest,
-  RegisterRequest
+  RegisterRequest,
 } from "@/types/api.types";
 
 export async function login(data: LoginRequest): Promise<AuthResponse> {
@@ -190,7 +190,7 @@ export type {
   GrantKarmaRequest,
   GrantKarmaResponse,
   UpdateMemberRoleRequest,
-  UpdateMemberRoleResponse
+  UpdateMemberRoleResponse,
 } from "@/types/api.types";
 
 export async function createFamily(
@@ -258,7 +258,7 @@ export async function addFamilyMember(
 
 export type {
   FamilySettings,
-  UpdateFamilySettingsRequest
+  UpdateFamilySettingsRequest,
 } from "@/types/api.types";
 
 export async function getFamilySettings(
@@ -286,7 +286,7 @@ export type {
   MeResponse,
   UpdateProfileRequest,
   UpdateProfileResponse,
-  UserProfile
+  UserProfile,
 } from "@/types/api.types";
 
 export async function getMe(cookie?: string): Promise<MeResponse> {
@@ -321,7 +321,7 @@ export async function getKarmaBalance(
 
 export type {
   ActivityEvent,
-  ActivityEventType
+  ActivityEventType,
 } from "@/types/api.types";
 
 export async function getActivityEvents(
@@ -366,7 +366,7 @@ export type {
   TaskQueryParams,
   TaskSchedule,
   UpdateScheduleRequest,
-  UpdateTaskRequest
+  UpdateTaskRequest,
 } from "@/types/api.types";
 
 export async function getTasks(
@@ -486,7 +486,7 @@ export type {
   Claim,
   CreateRewardRequest,
   Reward,
-  UpdateRewardRequest
+  UpdateRewardRequest,
 } from "@/types/api.types";
 
 export async function getRewards(
@@ -627,7 +627,7 @@ export async function cancelClaim(
 
 export type {
   DeploymentMode,
-  DeploymentStatus
+  DeploymentStatus,
 } from "@/lib/utils/status-utils";
 
 /**
@@ -673,8 +673,8 @@ export async function fetchDeploymentStatus(options?: {
     const errorMessage =
       typeof errorData === "object" && errorData !== null
         ? (errorData as { message?: string }).message ||
-        (errorData as { error?: string }).error ||
-        "Failed to fetch deployment status"
+          (errorData as { error?: string }).error ||
+          "Failed to fetch deployment status"
         : String(errorData) || "Failed to fetch deployment status";
 
     throw new ApiError(errorMessage, response.status, errorData);

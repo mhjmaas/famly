@@ -16,12 +16,35 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppDispatch } from "@/store/hooks";
 import { createChat, selectChat } from "@/store/slices/chat.slice";
+import type { FamilyMember } from "@/types/api.types";
 
 interface NewChatDialogProps {
-  dict: any;
+  dict: {
+    newChatDialog: {
+      title: string;
+      dm: {
+        title: string;
+        selectMember: string;
+        noMembers: string;
+      };
+      group: {
+        title: string;
+        titleLabel: string;
+        titlePlaceholder: string;
+        selectMembers: string;
+        minMembers: string;
+        create: string;
+      };
+      cancel: string;
+      creating: string;
+    };
+    errors: {
+      createChat: string;
+    };
+  };
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  familyMembers: any[];
+  familyMembers: readonly FamilyMember[];
 }
 
 export function NewChatDialog({
@@ -50,6 +73,7 @@ export function NewChatDialog({
       onOpenChange(false);
       toast.success("Chat created");
     } catch (error) {
+      console.error(error);
       toast.error(dict.errors.createChat);
     } finally {
       setLoading(false);
@@ -76,6 +100,7 @@ export function NewChatDialog({
       setSelectedMembers([]);
       toast.success("Group chat created");
     } catch (error) {
+      console.error(error);
       toast.error(dict.errors.createChat);
     } finally {
       setLoading(false);
@@ -108,28 +133,26 @@ export function NewChatDialog({
                   {dict.newChatDialog.dm.noMembers}
                 </p>
               ) : (
-                <>
-                  {familyMembers.map((member) => (
-                    <button
-                      key={member.memberId}
-                      type="button"
-                      onClick={() => handleCreateDM(member.memberId)}
-                      disabled={loading}
-                      className="flex w-full items-center gap-3 rounded-lg p-3 hover:bg-accent disabled:opacity-50"
-                    >
-                      <Avatar>
-                        <AvatarFallback>
-                          {member.name
-                            .split(" ")
-                            .map((n: string) => n[0])
-                            .join("")
-                            .toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium">{member.name}</span>
-                    </button>
-                  ))}
-                </>
+                familyMembers.map((member) => (
+                  <button
+                    key={member.memberId}
+                    type="button"
+                    onClick={() => handleCreateDM(member.memberId)}
+                    disabled={loading}
+                    className="flex w-full items-center gap-3 rounded-lg p-3 hover:bg-accent disabled:opacity-50"
+                  >
+                    <Avatar>
+                      <AvatarFallback>
+                        {member.name
+                          .split(" ")
+                          .map((n: string) => n[0])
+                          .join("")
+                          .toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">{member.name}</span>
+                  </button>
+                ))
               )}
             </div>
           </TabsContent>

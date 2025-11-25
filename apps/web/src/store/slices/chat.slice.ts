@@ -1,4 +1,9 @@
 import {
+  createAsyncThunk,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
+import {
   createChat as apiCreateChat,
   sendMessage as apiSendMessage,
   updateReadCursor as apiUpdateReadCursor,
@@ -12,11 +17,6 @@ import type {
   CreateMessageRequest,
   MessageDTO,
 } from "@/types/api.types";
-import {
-  createAsyncThunk,
-  createSlice,
-  type PayloadAction,
-} from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 
 /**
@@ -173,7 +173,7 @@ export const markMessagesAsRead = createAsyncThunk(
  */
 export const selectChat = createAsyncThunk(
   "chat/selectChat",
-  async (chatId: string, { dispatch, getState }) => {
+  async (chatId: string, { dispatch }) => {
     // Fetch messages for the selected chat
     const result = await dispatch(fetchMessages({ chatId }));
 

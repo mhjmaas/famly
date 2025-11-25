@@ -15,8 +15,12 @@ import "server-only";
 import {
   type ActivityEvent,
   ApiError,
+  type ChatWithPreviewDTO,
   type FamilySettings,
+  type FamilyWithMembers,
   getActivityEvents,
+  getChats,
+  getFamilies,
   getFamilySettings,
   getKarmaBalance,
   getMe,
@@ -251,5 +255,32 @@ export const getUserWithKarmaAndSettings = cache(
     ]);
 
     return { user, karma, settings };
+  },
+);
+
+/**
+ * Get chats for the current user (server-side, uses session cookie)
+ *
+ * This mirrors the SSR preload pattern used for features/navigation to
+ * avoid client-side loading flicker on the chat list.
+ */
+export const getChatsForCurrentUser = cache(
+  async (locale?: Locale): Promise<ChatWithPreviewDTO[]> => {
+    const { cookieHeader } = await getAuthenticatedUserContext(locale);
+    const response = await getChats(undefined, undefined, {
+      cookie: cookieHeader,
+    });
+    return response.chats;
+  },
+);
+
+/**
+ * Get families (with members) for the current user (server-side)
+ * Hydrates family state so DM chat titles have member names immediately.
+ */
+export const getFamiliesForCurrentUser = cache(
+  async (locale?: Locale): Promise<FamilyWithMembers[]> => {
+    const { cookieHeader } = await getAuthenticatedUserContext(locale);
+    return getFamilies(cookieHeader);
   },
 );

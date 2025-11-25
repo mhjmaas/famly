@@ -1,25 +1,26 @@
 "use client";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { formatExactTime } from "@/lib/utils/chat-utils";
+import { getInitials } from "@/lib/utils/family-utils";
 import { cn } from "@/lib/utils/style-utils";
 import { useAppSelector } from "@/store/hooks";
 import { selectFamilyMembers } from "@/store/slices/family.slice";
 import { selectUser } from "@/store/slices/user.slice";
-import type { ChatWithPreviewDTO, MessageDTO } from "@/types/api.types";
+import type { FamilyMember, MessageDTO } from "@/types/api.types";
 
 interface MessageListProps {
   messages: MessageDTO[];
-  dict: any;
+  dict: {
+    conversation: {
+      loading: string;
+      you: string;
+    };
+  };
   loading: boolean;
-  chat: ChatWithPreviewDTO;
 }
 
-export function MessageList({
-  messages,
-  dict,
-  loading,
-  chat,
-}: MessageListProps) {
+export function MessageList({ messages, dict, loading }: MessageListProps) {
   const currentUser = useAppSelector(selectUser);
   const familyMembers = useAppSelector(selectFamilyMembers);
 
@@ -51,7 +52,6 @@ export function MessageList({
             isOwnMessage={isOwnMessage}
             showAvatar={showAvatar}
             dict={dict}
-            chat={chat}
             familyMembers={familyMembers}
           />
         );
@@ -64,9 +64,12 @@ interface MessageItemProps {
   message: MessageDTO;
   isOwnMessage: boolean;
   showAvatar: boolean;
-  dict: any;
-  chat: ChatWithPreviewDTO;
-  familyMembers: any[];
+  dict: {
+    conversation: {
+      you: string;
+    };
+  };
+  familyMembers: readonly FamilyMember[];
 }
 
 function MessageItem({
@@ -74,14 +77,8 @@ function MessageItem({
   isOwnMessage,
   showAvatar,
   dict,
-  chat,
   familyMembers,
 }: MessageItemProps) {
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
-
   // Get sender's initials
   const getSenderInitials = () => {
     if (isOwnMessage) {
@@ -93,12 +90,7 @@ function MessageItem({
       (m) => m.memberId === message.senderId,
     );
     if (otherMember) {
-      return otherMember.name
-        .split(" ")
-        .map((n: string) => n[0])
-        .join("")
-        .toUpperCase()
-        .substring(0, 2);
+      return getInitials(otherMember.name);
     }
 
     return "U";
@@ -140,7 +132,7 @@ function MessageItem({
           </p>
         </div>
         <span className="text-xs text-muted-foreground">
-          {formatTime(message.createdAt)}
+          {formatExactTime(message.createdAt)}
         </span>
       </div>
     </div>

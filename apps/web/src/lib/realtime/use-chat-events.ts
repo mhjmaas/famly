@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import type { Socket } from "socket.io-client";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   addMessageFromEvent,
@@ -8,8 +10,6 @@ import {
   selectActiveChatId,
   updateChatFromEvent,
 } from "@/store/slices/chat.slice";
-import { useEffect } from "react";
-import type { Socket } from "socket.io-client";
 import type { ChatEventPayloads } from "./types";
 
 /**
@@ -37,17 +37,21 @@ export function useChatEvents(
     console.log(`[Realtime] Joining chat room: ${activeChatId}`);
 
     // Join the chat room
-    socket.emit("room:join", { chatId: activeChatId }, (response: any) => {
-      if (response.ok) {
-        console.log(
-          `[Realtime] Successfully joined chat room: ${activeChatId}`,
-        );
-      } else {
-        console.error(
-          `[Realtime] Failed to join chat room: ${response.message}`,
-        );
-      }
-    });
+    socket.emit(
+      "room:join",
+      { chatId: activeChatId },
+      (response: { ok: boolean; message?: string }) => {
+        if (response.ok) {
+          console.log(
+            `[Realtime] Successfully joined chat room: ${activeChatId}`,
+          );
+        } else {
+          console.error(
+            `[Realtime] Failed to join chat room: ${response.message}`,
+          );
+        }
+      },
+    );
 
     // Leave room on cleanup or when chat changes
     return () => {

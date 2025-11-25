@@ -16,7 +16,7 @@ import {
 import type { Locale } from "@/i18n/config";
 import type { UserProfile } from "@/lib/api-client";
 import { logout } from "@/lib/api-client";
-import { calculateAge } from "@/lib/utils/family-utils";
+import { calculateAge, getInitials } from "@/lib/utils/family-utils";
 import { useAppDispatch } from "@/store/hooks";
 import { clearUser } from "@/store/slices/user.slice";
 import { ChangePasswordDialog } from "./change-password-dialog";
@@ -56,15 +56,6 @@ interface UserProfileCardProps {
     };
   };
   lang: Locale;
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 }
 
 export function UserProfileCard({

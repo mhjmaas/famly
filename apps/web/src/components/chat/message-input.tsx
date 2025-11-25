@@ -1,5 +1,8 @@
 "use client";
 
+import { CheckIcon, GlobeIcon, MicIcon } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import {
   ModelSelector,
   ModelSelectorContent,
@@ -32,9 +35,6 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectChatLoading, sendMessage } from "@/store/slices/chat.slice";
-import { CheckIcon, GlobeIcon, MicIcon } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
 
 // Model configuration - can be extended or fetched from API
 const models = [
@@ -77,7 +77,17 @@ const models = [
 
 interface MessageInputProps {
   chatId: string;
-  dict: any;
+  dict: {
+    messageInput: {
+      placeholder: string;
+      shiftEnterHint: string;
+      characterCount: string;
+    };
+    errors: {
+      messageTooLong?: string;
+      sendMessage: string;
+    };
+  };
   /** Enable file attachments feature */
   enableAttachments?: boolean;
   /** Enable web search toggle */
@@ -170,6 +180,7 @@ export function MessageInput({
       setText("");
       setStatus("ready");
     } catch (error) {
+      console.error("Error sending message:", error);
       toast.error(dict.errors.sendMessage);
       setStatus("error");
       // Don't clear text on error so user can retry
@@ -182,7 +193,10 @@ export function MessageInput({
 
   // Check if any tools are enabled
   const hasTools =
-    enableAttachments || enableWebSearch || enableMicrophone || enableModelSelector;
+    enableAttachments ||
+    enableWebSearch ||
+    enableMicrophone ||
+    enableModelSelector;
 
   return (
     <div className="space-y-2">
@@ -242,7 +256,9 @@ export function MessageInput({
                   <ModelSelectorTrigger asChild>
                     <PromptInputButton>
                       {selectedModelData?.chefSlug && (
-                        <ModelSelectorLogo provider={selectedModelData.chefSlug} />
+                        <ModelSelectorLogo
+                          provider={selectedModelData.chefSlug}
+                        />
                       )}
                       {selectedModelData?.name && (
                         <ModelSelectorName>
