@@ -87,13 +87,13 @@ export function addMembersRoute(): Router {
 
         const chatDTO = toChatDTO(updatedChat);
 
-        // Broadcast chat:update to all members (including newly added ones)
-        emitChatUpdate(chatDTO);
-
-        // Broadcast member-added event for each new member to existing members
+        // Capture existing member IDs before broadcasting
         const existingMemberIds = (chat.memberIds || []).map((id) =>
           id.toString(),
         );
+
+        // Broadcast chat:update only to existing members (not newly added ones)
+        emitChatUpdate(chatDTO, existingMemberIds);
         for (const newUserId of input.userIds) {
           emitMemberAdded(
             chatObjectId,

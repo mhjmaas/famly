@@ -119,6 +119,7 @@ export async function handleMessageSend(
 
       // Broadcast message:new to all room members (those currently viewing the chat)
       socket.to(`chat:${chatId}`).emit("message:new", {
+        chatId,
         message: result.message,
       });
 

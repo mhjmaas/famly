@@ -81,6 +81,7 @@ export function createMessageRoute(): Router {
           const io = getSocketIOServer();
           if (io) {
             io.to(`chat:${chatId}`).emit("message:new", {
+              chatId,
               message,
             });
           }
