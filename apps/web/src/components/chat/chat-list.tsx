@@ -73,6 +73,11 @@ export function ChatList({
   }
 
   const getDisplayTitle = (chat: ChatWithPreviewDTO) => {
+    // AI chats use their title (AI name from settings)
+    if (chat.type === "ai") {
+      return chat.title || "AI Assistant";
+    }
+
     if (chat.type === "dm" && (!chat.title || !chat.title.trim())) {
       const otherMemberId = chat.memberIds.find((id) => id !== currentUser?.id);
       const member = familyMembers.find((m) => m.memberId === otherMemberId);

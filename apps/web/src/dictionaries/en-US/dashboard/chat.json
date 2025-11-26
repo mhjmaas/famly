@@ -14,6 +14,14 @@
           "loading": "Loading chats...",
           "unreadCount": "{{count}} unread"
         },
+        "aiChat": {
+          "defaultName": "AI Assistant",
+          "emptyState": {
+            "title": "Start a conversation",
+            "description": "Ask me anything! I'm here to help your family."
+          },
+          "placeholder": "Ask the AI assistant..."
+        },
         "conversation": {
           "emptyState": {
             "title": "Select a chat",

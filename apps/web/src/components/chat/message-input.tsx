@@ -88,6 +88,8 @@ interface MessageInputProps {
       sendMessage: string;
     };
   };
+  /** Override placeholder text (e.g., for AI chat) */
+  placeholderOverride?: string;
   /** Enable file attachments feature */
   enableAttachments?: boolean;
   /** Enable web search toggle */
@@ -109,6 +111,7 @@ interface MessageInputProps {
 export function MessageInput({
   chatId,
   dict,
+  placeholderOverride,
   enableAttachments = false,
   enableWebSearch = false,
   enableMicrophone = false,
@@ -215,7 +218,7 @@ export function MessageInput({
         <PromptInputBody>
           <PromptInputTextarea
             onChange={(event) => setText(event.target.value)}
-            placeholder={dict.messageInput.placeholder}
+            placeholder={placeholderOverride || dict.messageInput.placeholder}
             value={text}
             data-testid="message-input-textarea"
           />

@@ -3,8 +3,11 @@ import type { ObjectId } from "mongodb";
 /**
  * Chat type enum
  * Defines the type of chat
+ * - dm: Direct message between two users
+ * - group: Group chat with multiple members
+ * - ai: AI assistant chat (single user, auto-created when aiIntegration is enabled)
  */
-export type ChatType = "dm" | "group";
+export type ChatType = "dm" | "group" | "ai";
 
 /**
  * Chat entity - represents a chat container

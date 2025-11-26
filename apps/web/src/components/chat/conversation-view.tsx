@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, MessageCircle } from "lucide-react";
+import { Bot, Loader2, MessageCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
 import {
   Conversation,
@@ -39,6 +39,14 @@ interface ConversationViewProps {
         description: string;
       };
       loading: string;
+    };
+    aiChat?: {
+      defaultName: string;
+      emptyState: {
+        title: string;
+        description: string;
+      };
+      placeholder: string;
     };
     messageInput: {
       placeholder: string;
@@ -141,6 +149,8 @@ export function ConversationView({
   );
   const loadingMore = useAppSelector(selectLoadingMore);
 
+  const isAIChat = chat?.type === "ai";
+
   // Fetch messages when chat changes
   useEffect(() => {
     if (chat) {
@@ -202,16 +212,25 @@ export function ConversationView({
   return (
     <div
       className="flex h-full min-h-0 flex-col"
-      data-testid="conversation-view"
+      data-testid={isAIChat ? "ai-chat-conversation" : "conversation-view"}
     >
       {/* Chat Header */}
       <div
         className="border-b border-border p-4"
         data-testid="conversation-header"
       >
-        <h2 className="text-lg font-semibold" data-testid="conversation-title">
-          {chat.title || "Direct Message"}
-        </h2>
+        <div className="flex items-center gap-2">
+          {isAIChat && <Bot className="h-5 w-5 text-primary" />}
+          <h2
+            className="text-lg font-semibold"
+            data-testid="conversation-title"
+          >
+            {chat.title ||
+              (isAIChat
+                ? dict.aiChat?.defaultName || "AI Assistant"
+                : "Direct Message")}
+          </h2>
+        </div>
       </div>
 
       {/* Messages using AI Elements Conversation */}
@@ -236,9 +255,23 @@ export function ConversationView({
 
           {messages.length === 0 && !loading ? (
             <ConversationEmptyState
-              description={dict.conversation.noMessages.description}
-              icon={<MessageCircle className="size-6" />}
-              title={dict.conversation.noMessages.title}
+              description={
+                isAIChat && dict.aiChat
+                  ? dict.aiChat.emptyState.description
+                  : dict.conversation.noMessages.description
+              }
+              icon={
+                isAIChat ? (
+                  <Bot className="size-6" />
+                ) : (
+                  <MessageCircle className="size-6" />
+                )
+              }
+              title={
+                isAIChat && dict.aiChat
+                  ? dict.aiChat.emptyState.title
+                  : dict.conversation.noMessages.title
+              }
             />
           ) : loading && messages.length === 0 ? (
             <div
@@ -298,7 +331,12 @@ export function ConversationView({
 
       {/* Message Input */}
       <div className="border-t border-border p-4">
-        <MessageInput chatId={chat._id} dict={dict} />
+        <MessageInput
+          chatId={chat._id}
+          dict={dict}
+          placeholderOverride={isAIChat ? dict.aiChat?.placeholder : undefined}
+          data-testid={isAIChat ? "ai-chat-input" : undefined}
+        />
       </div>
     </div>
   );

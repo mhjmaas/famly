@@ -20,6 +20,7 @@ const mockChatRepository = {
   create: jest.fn(),
   findById: jest.fn(),
   findByMemberIds: jest.fn(),
+  findAIChatByUser: jest.fn(),
   updateMembers: jest.fn(),
   updateTimestamp: jest.fn(),
 };
@@ -309,6 +310,93 @@ describe("Unit: ChatService", () => {
       expect((callArgs[2] as ObjectId[]).map((id) => id.toHexString())).toEqual(
         [creatorId, otherUserId, userId3],
       );
+    });
+  });
+
+  describe("createAIChat", () => {
+    it("should create an AI chat for a user", async () => {
+      const mockChat: Chat = {
+        _id: chatId,
+        type: "ai",
+        title: "Jarvis",
+        createdBy: creatorObjectId,
+        memberIds: [creatorObjectId],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockChatRepository.create.mockResolvedValue(mockChat);
+      mockMembershipRepository.createBulk.mockResolvedValue([
+        {
+          _id: new ObjectId(),
+          chatId,
+          userId: creatorObjectId,
+          role: "member",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]);
+
+      const result = await service.createAIChat(creatorId, "Jarvis");
+
+      expect(result).toEqual(mockChat);
+      expect(mockChatRepository.create).toHaveBeenCalledWith(
+        "ai",
+        expect.any(ObjectId),
+        expect.arrayContaining([expect.any(ObjectId)]),
+        "Jarvis",
+      );
+      expect(mockMembershipRepository.createBulk).toHaveBeenCalled();
+    });
+
+    it("should throw error for invalid user ID", async () => {
+      await expect(
+        service.createAIChat("invalid-id", "Jarvis"),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe("getOrCreateAIChat", () => {
+    it("should return existing AI chat if one exists", async () => {
+      const mockChat: Chat = {
+        _id: chatId,
+        type: "ai",
+        title: "Jarvis",
+        createdBy: creatorObjectId,
+        memberIds: [creatorObjectId],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockChatRepository.findAIChatByUser.mockResolvedValue(mockChat);
+
+      const result = await service.getOrCreateAIChat(creatorId, "Jarvis");
+
+      expect(result.chat).toEqual(mockChat);
+      expect(result.isNew).toBe(false);
+      expect(mockChatRepository.create).not.toHaveBeenCalled();
+    });
+
+    it("should create new AI chat if none exists", async () => {
+      const mockChat: Chat = {
+        _id: chatId,
+        type: "ai",
+        title: "Jarvis",
+        createdBy: creatorObjectId,
+        memberIds: [creatorObjectId],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockChatRepository.findAIChatByUser.mockResolvedValue(null);
+      mockChatRepository.create.mockResolvedValue(mockChat);
+      mockMembershipRepository.createBulk.mockResolvedValue([]);
+
+      const result = await service.getOrCreateAIChat(creatorId, "Jarvis");
+
+      expect(result.chat).toEqual(mockChat);
+      expect(result.isNew).toBe(true);
+      expect(mockChatRepository.create).toHaveBeenCalled();
     });
   });
 });

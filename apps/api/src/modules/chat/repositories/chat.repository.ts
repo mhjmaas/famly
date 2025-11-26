@@ -60,7 +60,7 @@ export class ChatRepository {
    * Create a new chat
    */
   async create(
-    type: "dm" | "group",
+    type: "dm" | "group" | "ai",
     creatorId: ObjectId,
     memberIds: ObjectId[],
     title?: string | null,
@@ -74,7 +74,7 @@ export class ChatRepository {
       createdBy: creatorId,
       memberIds,
       // For DMs, generate a hash for deduplication
-      // For groups, memberIdsHash is not set (sparse index handles this)
+      // For groups and AI chats, memberIdsHash is not set (sparse index handles this)
       ...(type === "dm" && {
         memberIdsHash: this.generateMemberIdsHash(memberIds),
       }),
@@ -111,6 +111,17 @@ export class ChatRepository {
     return this.collection.findOne({
       type: "dm",
       memberIdsHash,
+    });
+  }
+
+  /**
+   * Find an AI chat for a specific user
+   * Each user has at most one AI chat
+   */
+  async findAIChatByUser(userId: ObjectId): Promise<Chat | null> {
+    return this.collection.findOne({
+      type: "ai",
+      createdBy: userId,
     });
   }
 

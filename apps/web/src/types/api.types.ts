@@ -424,7 +424,7 @@ export interface AddDeductionRequest {
 }
 
 // Chat types
-export type ChatType = "dm" | "group";
+export type ChatType = "dm" | "group" | "ai";
 
 export interface ChatDTO {
   _id: string;
