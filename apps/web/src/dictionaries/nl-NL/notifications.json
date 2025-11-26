@@ -80,6 +80,11 @@
       "deductedDescription": "{amount} karmpa punten in mindering voor deze week",
       "updated": "Doel Bijgewerkt",
       "updatedDescription": "Gezinsbijdrage-doel is bijgewerkt"
+    },
+    "chat": {
+      "message": "Bericht van: {senderName}",
+      "messageDescription": "{messagePreview}",
+      "unknownSender": "Iemand"
     }
   }
 }

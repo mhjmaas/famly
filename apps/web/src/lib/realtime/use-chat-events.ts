@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import type { Socket } from "socket.io-client";
+import { toast } from "sonner";
+import { useNotificationTranslations } from "@/hooks/use-notification-translations";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   addMessageFromEvent,
@@ -10,6 +12,7 @@ import {
   selectActiveChatId,
   updateChatFromEvent,
 } from "@/store/slices/chat.slice";
+import { selectFamilyMembers } from "@/store/slices/family.slice";
 import type { ChatEventPayloads } from "./types";
 
 /**
@@ -27,6 +30,15 @@ export function useChatEvents(
 ): void {
   const dispatch = useAppDispatch();
   const activeChatId = useAppSelector(selectActiveChatId);
+  const familyMembers = useAppSelector(selectFamilyMembers);
+  const t = useNotificationTranslations();
+
+  const getSenderName = useMemo(() => {
+    return (senderId: string) =>
+      familyMembers.find((member) => member.memberId === senderId)?.name ||
+      t.chat?.unknownSender ||
+      "Someone";
+  }, [familyMembers, t.chat]);
 
   // Join/leave chat rooms when active chat changes
   useEffect(() => {
@@ -98,6 +110,23 @@ export function useChatEvents(
 
         // Add message to Redux store (this will increment unread count)
         dispatch(addMessageFromEvent(event.message));
+
+        if (event.message.senderId === userId || event.message.deleted) {
+          return;
+        }
+
+        const senderName = getSenderName(event.message.senderId);
+        const messagePreview =
+          event.message.body.length > 100
+            ? `${event.message.body.substring(0, 100)}...`
+            : event.message.body;
+
+        const titleTemplate = t.chat?.message ?? "Message from: {senderName}";
+        const bodyTemplate = t.chat?.messageDescription ?? "{messagePreview}";
+
+        toast.info(titleTemplate.replace("{senderName}", senderName), {
+          description: bodyTemplate.replace("{messagePreview}", messagePreview),
+        });
       }
     };
 
@@ -148,5 +177,5 @@ export function useChatEvents(
       socket.off("receipt:update", handleReceiptUpdate);
       socket.off("reconnect", handleReconnect);
     };
-  }, [socket, userId, enabled, dispatch, activeChatId]);
+  }, [socket, userId, enabled, dispatch, activeChatId, getSenderName, t.chat]);
 }
