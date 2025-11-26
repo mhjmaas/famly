@@ -64,7 +64,7 @@ export const notificationsEnUS = {
         'Your contribution goal "{goalTitle}" ended with no karma - all potential karma was deducted',
     },
     chat: {
-      message: "New Message from {senderName}",
+      message: "Message from: {senderName}",
       messageDescription: "{messagePreview}",
     },
   },
