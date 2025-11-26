@@ -1,9 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import type { Socket } from "socket.io-client";
 import { toast } from "sonner";
 import { useNotificationTranslations } from "@/hooks/use-notification-translations";
+import { i18n } from "@/i18n/config";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   addMessageFromEvent,
@@ -29,9 +31,18 @@ export function useChatEvents(
   enabled = true,
 ): void {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const activeChatId = useAppSelector(selectActiveChatId);
   const familyMembers = useAppSelector(selectFamilyMembers);
   const t = useNotificationTranslations();
+
+  const locale = useMemo(() => {
+    if (typeof window === "undefined") {
+      return i18n.defaultLocale;
+    }
+    const match = window.location.pathname.match(/^\/([a-z]{2}-[A-Z]{2})/);
+    return (match?.[1] as (typeof i18n.locales)[number]) || i18n.defaultLocale;
+  }, []);
 
   const getSenderName = useMemo(() => {
     return (senderId: string) =>
@@ -126,6 +137,13 @@ export function useChatEvents(
 
         toast.info(titleTemplate.replace("{senderName}", senderName), {
           description: bodyTemplate.replace("{messagePreview}", messagePreview),
+          action: {
+            label: "Open chat",
+            onClick: () => {
+              const chatUrl = `/${locale}/app/chat?chatId=${event.chatId}`;
+              router.push(chatUrl);
+            },
+          },
         });
       }
     };
@@ -177,5 +195,15 @@ export function useChatEvents(
       socket.off("receipt:update", handleReceiptUpdate);
       socket.off("reconnect", handleReconnect);
     };
-  }, [socket, userId, enabled, dispatch, activeChatId, getSenderName, t.chat]);
+  }, [
+    socket,
+    userId,
+    enabled,
+    dispatch,
+    activeChatId,
+    getSenderName,
+    t.chat,
+    router,
+    locale,
+  ]);
 }
