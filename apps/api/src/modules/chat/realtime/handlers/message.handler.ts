@@ -128,12 +128,7 @@ export async function handleMessageSend(
       const chat = await chatRepo.findById(chatObjectId);
       if (chat) {
         const memberIds = chat.memberIds.map((id) => id.toString());
-        await emitNewMessageNotification(
-          chatId,
-          result.message,
-          memberIds,
-          true,
-        );
+        emitNewMessageNotification(chatId, result.message, memberIds, true);
       }
     } else {
       logger.debug(

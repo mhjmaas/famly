@@ -1,8 +1,4 @@
-import { getEnv } from "@config/env";
 import { logger } from "@lib/logger";
-import { truncateWithEllipsis } from "@lib/string-utils";
-import { getUserName } from "@lib/user-utils";
-import { NotificationService } from "@modules/notifications/services/notification.service";
 import {
   getSocketIOServer as getSharedSocketIOServer,
   setSocketIOServer as setSharedSocketIOServer,
@@ -182,15 +178,13 @@ export function emitMemberRemoved(
  * @param memberIds Array of member IDs to notify
  * @param excludeSenderId Optional - exclude the sender from notifications (they already see their own message)
  */
-export async function emitNewMessageNotification(
+export function emitNewMessageNotification(
   chatId: string,
   message: MessageDTO,
   memberIds: string[],
   excludeSenderId = true,
-): Promise<void> {
+): void {
   const io = getSocketIOServer();
-  const notificationService = new NotificationService();
-  const { CLIENT_URL } = getEnv();
 
   if (!io) {
     logger.warn(
@@ -212,43 +206,6 @@ export async function emitNewMessageNotification(
         message,
       });
     }
-
-    // Push notifications (best-effort) to members not the sender
-    if (!notificationService.isVapidConfigured()) {
-      logger.debug(
-        "Push notifications not configured; skipping push for message",
-        {
-          chatId,
-        },
-      );
-      return;
-    }
-
-    const senderName = await getUserName(message.senderId);
-    const deepLink = `${CLIENT_URL}/app/chat?chatId=${chatId}`;
-    const body = `${senderName}: ${truncateWithEllipsis(message.body, 140)}`;
-
-    await Promise.all(
-      membersToNotify.map((memberId) =>
-        notificationService
-          .sendNotification(memberId, {
-            title: senderName,
-            body,
-            data: {
-              chatId,
-              url: deepLink,
-              senderId: message.senderId,
-            },
-          })
-          .catch((error) => {
-            logger.error("Failed to send push notification", {
-              memberId,
-              chatId,
-              error,
-            });
-          }),
-      ),
-    );
 
     logger.debug(
       `Message notification broadcast to ${membersToNotify.length} members of chat ${chatId}`,

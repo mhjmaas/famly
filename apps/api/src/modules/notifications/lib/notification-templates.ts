@@ -200,7 +200,7 @@ export function createChatMessageNotification(
     badge: iconUrl,
     data: {
       type: "chat_message",
-      url: `${baseUrl}/app/chat?id=${chatId}`,
+      url: `${baseUrl}/app/chat?chatId=${chatId}`,
       chatId,
     },
   };

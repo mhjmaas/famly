@@ -91,7 +91,7 @@ export function createMessageRoute(): Router {
           const chat = await chatRepository.findById(chatObjectId);
           if (chat) {
             const memberIds = chat.memberIds.map((id) => id.toString());
-            await emitNewMessageNotification(chatId, message, memberIds, true);
+            emitNewMessageNotification(chatId, message, memberIds, true);
           }
         }
 
