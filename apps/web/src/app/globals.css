@@ -193,6 +193,18 @@
   }
 }
 
+@layer components {
+  /* Opt-in fix for Radix ScrollArea inline display:table wrapper */
+  .scroll-area-block [data-slot="scroll-area-viewport"] > div {
+    /* biome-ignore  lint/complexity/noImportantStyles: Needs to be important to override inline style */
+    display: block !important;
+    /* biome-ignore  lint/complexity/noImportantStyles: Needs to be important to override inline style */
+    width: 100% !important;
+    /* biome-ignore  lint/complexity/noImportantStyles: Needs to be important to override inline style */
+    min-width: 100% !important;
+  }
+}
+
 /* Custom animations for landing page */
 @keyframes float {
   0%,

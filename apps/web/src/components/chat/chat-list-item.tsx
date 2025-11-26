@@ -34,7 +34,7 @@ export function ChatListItem({
       type="button"
       onClick={onClick}
       data-testid="chat-list-item"
-      className={`w-full overflow-hidden rounded-lg p-3 text-left transition-colors hover:bg-accent ${
+      className={`w-full cursor-pointer overflow-hidden rounded-lg p-3 text-left transition-colors hover:bg-accent ${
         isActive ? "bg-accent" : ""
       }`}
     >

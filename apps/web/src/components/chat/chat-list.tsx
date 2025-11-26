@@ -106,11 +106,8 @@ export function ChatList({
       </div>
 
       {/* Chat List */}
-      <ScrollArea className="flex-1">
-        <div
-          className="w-full md:w-70 space-y-1 p-2"
-          data-testid="chat-list-items"
-        >
+      <ScrollArea className="flex-1 scroll-area-block">
+        <div className="w-full space-y-1 p-2" data-testid="chat-list-items">
           {chats.map((chat) => (
             <ChatListItem
               key={chat._id}
