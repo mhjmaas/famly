@@ -63,6 +63,16 @@ localhost {
 		}
 	}
 
+	# Next.js API route for chat - proxy to web service (Next.js)
+	# Preserves cookies for authentication
+	handle /api/chat {
+		reverse_proxy web:3000 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
+			header_up Cookie {http.request.header.Cookie}
+		}
+	}
+
 	# API routes - strip /api prefix and proxy to Express API service
 	# CORS headers from Express API are automatically preserved and passed through
 	handle_path /api/* {

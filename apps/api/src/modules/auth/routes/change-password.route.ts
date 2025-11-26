@@ -1,3 +1,4 @@
+import { authLimiter } from "@middleware/rate-limiter";
 import { HttpError } from "@lib/http-error";
 import { fromNodeHeaders } from "better-auth/node";
 import { type NextFunction, type Response, Router } from "express";
@@ -32,6 +33,7 @@ export function createChangePasswordRoute(): Router {
 
   router.post(
     "/change-password",
+    authLimiter,
     authenticate,
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
       try {

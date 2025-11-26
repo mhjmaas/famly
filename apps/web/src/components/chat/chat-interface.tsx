@@ -187,12 +187,26 @@ export function ChatInterface({ dict, initialChatId }: ChatInterfaceProps) {
     );
   }
 
+  // Show loading skeleton while determining layout to prevent hydration mismatch
+  if (isDesktop === undefined) {
+    return (
+      <div
+        className="flex h-[calc(100dvh-6.5rem)] min-h-0 flex-col gap-2 md:h-[calc(100vh-4rem)]"
+        data-testid="chat-interface"
+      >
+        <div className="flex flex-1 items-center justify-center">
+          <div className="animate-pulse text-muted-foreground">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="flex h-[calc(100dvh-6.5rem)] min-h-0 flex-col gap-2 md:h-[calc(100vh-4rem)]"
       data-testid="chat-interface"
     >
-      {/* Desktop & Tablet: unchanged two-column layout */}
+      {/* Desktop & Tablet: two-column layout */}
       {isDesktop ? (
         <div className="flex flex-1 gap-4 overflow-hidden min-h-0">
           <div className="w-[30%] min-w-[280px] max-w-[400px] border-r border-border">

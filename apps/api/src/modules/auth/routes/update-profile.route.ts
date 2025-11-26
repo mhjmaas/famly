@@ -1,4 +1,5 @@
 import { getDb } from "@infra/mongo/client";
+import { authLimiter } from "@middleware/rate-limiter";
 import { toObjectId, validateObjectId } from "@lib/objectid-utils";
 import { type NextFunction, type Response, Router } from "express";
 import {
@@ -37,6 +38,7 @@ export function createUpdateProfileRoute(): Router {
 
   router.patch(
     "/me",
+    authLimiter,
     authenticate,
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
       try {

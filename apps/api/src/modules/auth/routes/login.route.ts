@@ -1,4 +1,5 @@
 import { getDb } from "@infra/mongo/client";
+import { authLimiter } from "@middleware/rate-limiter";
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import { validateObjectId } from "@lib/objectid-utils";
@@ -81,6 +82,7 @@ export function createLoginRoute(): Router {
 
   router.post(
     "/login",
+    authLimiter,
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         const preferredLanguage = resolvePreferredLanguage(

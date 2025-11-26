@@ -1,5 +1,6 @@
 "use client";
 
+import type { FileUIPart } from "ai";
 import { CheckIcon, GlobeIcon, MicIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -75,8 +76,16 @@ const models = [
   },
 ];
 
+export interface MessageSubmitData {
+  text: string;
+  model?: string;
+  webSearch?: boolean;
+  files?: FileUIPart[];
+}
+
 interface MessageInputProps {
-  chatId: string;
+  /** Chat ID for Redux-based message sending (optional if using onSendMessage) */
+  chatId?: string;
   dict: {
     messageInput: {
       placeholder: string;
@@ -106,6 +115,14 @@ interface MessageInputProps {
   onModelChange?: (modelId: string) => void;
   /** Default model ID */
   defaultModel?: string;
+  /** Custom submit handler - bypasses Redux dispatch when provided */
+  onSendMessage?: (data: MessageSubmitData) => void | Promise<void>;
+  /** External loading state (for AI streaming) */
+  isLoading?: boolean;
+  /** Controlled input value */
+  value?: string;
+  /** Callback when input value changes */
+  onValueChange?: (value: string) => void;
 }
 
 export function MessageInput({
@@ -120,10 +137,24 @@ export function MessageInput({
   onMicrophoneToggle,
   onModelChange,
   defaultModel = models[0].id,
+  onSendMessage,
+  isLoading: externalLoading,
+  value: controlledValue,
+  onValueChange,
 }: MessageInputProps) {
   const dispatch = useAppDispatch();
-  const loading = useAppSelector(selectChatLoading);
-  const [text, setText] = useState("");
+  const reduxLoading = useAppSelector(selectChatLoading);
+  const [internalText, setInternalText] = useState("");
+
+  // Support both controlled and uncontrolled modes
+  const text = controlledValue ?? internalText;
+  const setText = (value: string) => {
+    if (onValueChange) {
+      onValueChange(value);
+    } else {
+      setInternalText(value);
+    }
+  };
   const [useWebSearch, setUseWebSearch] = useState(false);
   const [useMicrophone, setUseMicrophone] = useState(false);
   const [model, setModel] = useState(defaultModel);
@@ -168,20 +199,27 @@ export function MessageInput({
     setStatus("submitted");
 
     try {
-      await dispatch(
-        sendMessage({
-          chatId,
-          body: message.text || "",
-          clientId: `${Date.now()}-${Math.random()}`,
-          // Future: pass attachments, model, webSearch settings
-          // attachments: message.files,
-          // model: model,
-          // webSearch: useWebSearch,
-        }),
-      ).unwrap();
-
-      setText("");
-      setStatus("ready");
+      // Use custom handler if provided (AI mode), otherwise use Redux
+      if (onSendMessage) {
+        await onSendMessage({
+          text: message.text || "",
+          model,
+          webSearch: useWebSearch,
+          files: message.files,
+        });
+        setText("");
+        setStatus("ready");
+      } else if (chatId) {
+        await dispatch(
+          sendMessage({
+            chatId,
+            body: message.text || "",
+            clientId: `${Date.now()}-${Math.random()}`,
+          }),
+        ).unwrap();
+        setText("");
+        setStatus("ready");
+      }
     } catch (error) {
       console.error("Error sending message:", error);
       toast.error(dict.errors.sendMessage);
@@ -192,7 +230,8 @@ export function MessageInput({
 
   const charCount = text.length;
   const showCharCount = charCount > 7000;
-  const isDisabled = !text.trim() || charCount > 8000 || loading.sending;
+  const loading = externalLoading ?? reduxLoading.sending;
+  const isDisabled = !text.trim() || charCount > 8000 || loading;
 
   // Check if any tools are enabled
   const hasTools =
@@ -313,7 +352,7 @@ export function MessageInput({
           {!hasTools && <div />}
           <PromptInputSubmit
             disabled={isDisabled}
-            status={loading.sending ? "submitted" : status}
+            status={loading ? "submitted" : status}
             data-testid="message-input-submit"
           />
         </PromptInputFooter>

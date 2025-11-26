@@ -234,10 +234,12 @@ export async function removeMember(
 export async function grantKarma(
   familyId: string,
   data: GrantKarmaRequest,
+  cookie?: string,
 ): Promise<GrantKarmaResponse> {
   return apiClient<GrantKarmaResponse>(`/v1/families/${familyId}/karma/grant`, {
     method: "POST",
     body: data,
+    cookie,
   });
 }
 
@@ -397,10 +399,12 @@ export async function getTask(
 export async function createTask(
   familyId: string,
   data: CreateTaskRequest,
+  cookie?: string,
 ): Promise<Task> {
   return apiClient<Task>(`/v1/families/${familyId}/tasks`, {
     method: "POST",
     body: data,
+    cookie,
   });
 }
 
@@ -408,10 +412,12 @@ export async function updateTask(
   familyId: string,
   taskId: string,
   data: UpdateTaskRequest,
+  cookie?: string,
 ): Promise<Task> {
   return apiClient<Task>(`/v1/families/${familyId}/tasks/${taskId}`, {
     method: "PATCH",
     body: data,
+    cookie,
   });
 }
 
@@ -711,7 +717,7 @@ export async function createContributionGoal(
 export async function getContributionGoal(
   familyId: string,
   memberId: string,
-  options?: ApiClientOptions,
+  options?: ApiClientOptions & { cookie?: string },
 ): Promise<ContributionGoal> {
   return apiClient<ContributionGoal>(
     `/v1/families/${familyId}/contribution-goals/${memberId}`,

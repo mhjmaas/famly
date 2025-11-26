@@ -1,3 +1,4 @@
+import { authLimiter } from "@middleware/rate-limiter";
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import { DeploymentConfigRepository } from "@modules/deployment-config/repositories/deployment-config.repository";
@@ -37,6 +38,7 @@ export function createRegisterRoute(): Router {
 
   router.post(
     "/register",
+    authLimiter,
     async (req: Request, res: Response, next: NextFunction) => {
       try {
         // Check if registration is blocked (standalone mode after onboarding)
