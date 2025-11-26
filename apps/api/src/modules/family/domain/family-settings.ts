@@ -12,6 +12,7 @@ export interface AISettings {
   apiSecret: string; // Encrypted at rest
   modelName: string;
   aiName: string;
+  provider: "LM Studio" | "Ollama" | "OpenAI";
 }
 
 /**
@@ -37,6 +38,7 @@ export interface FamilySettingsView {
     apiEndpoint: string;
     modelName: string;
     aiName: string;
+    provider: "LM Studio" | "Ollama" | "OpenAI";
   };
 }
 
@@ -50,15 +52,17 @@ export interface UpdateFamilySettingsRequest {
     apiSecret: string;
     modelName: string;
     aiName: string;
+    provider: "LM Studio" | "Ollama" | "OpenAI";
   };
 }
 
 /**
- * Default AI settings (empty configuration)
+ * Default AI settings (LM Studio for privacy-first, local-first configuration)
  */
 export const DEFAULT_AI_SETTINGS: AISettings = {
   apiEndpoint: "",
   apiSecret: "",
   modelName: "",
   aiName: "Jarvis",
+  provider: "LM Studio",
 };

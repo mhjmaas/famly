@@ -41,6 +41,7 @@ export class SettingsPage {
     readonly apiEndpointInput: Locator;
     readonly apiSecretInput: Locator;
     readonly modelNameInput: Locator;
+    readonly providerSelect: Locator;
     readonly saveAiSettingsButton: Locator;
     readonly resetAiSettingsButton: Locator;
 
@@ -82,6 +83,7 @@ export class SettingsPage {
         this.apiEndpointInput = page.getByTestId("api-endpoint-input");
         this.apiSecretInput = page.getByTestId("api-secret-input");
         this.modelNameInput = page.getByTestId("model-name-input");
+        this.providerSelect = page.getByTestId("provider-select");
         this.saveAiSettingsButton = page.getByTestId("save-ai-settings-button");
         this.resetAiSettingsButton = page.getByTestId("reset-ai-settings-button");
     }
@@ -135,6 +137,7 @@ export class SettingsPage {
         apiEndpoint?: string;
         apiSecret?: string;
         modelName?: string;
+        provider?: string;
     }) {
         if (data.aiName !== undefined) {
             await this.aiNameInput.clear();
@@ -152,6 +155,19 @@ export class SettingsPage {
             await this.modelNameInput.clear();
             await this.modelNameInput.fill(data.modelName);
         }
+        if (data.provider !== undefined) {
+            await this.selectProvider(data.provider);
+        }
+    }
+
+    /**
+     * Select AI provider from dropdown
+     */
+    async selectProvider(provider: string) {
+        await this.providerSelect.click();
+        // Wait for dropdown menu to appear
+        const option = this.page.getByRole("option", { name: provider });
+        await option.click();
     }
 
     /**
@@ -183,5 +199,15 @@ export class SettingsPage {
     async getToastText(): Promise<string | null> {
         const toast = await this.waitForToast();
         return await toast.textContent();
+    }
+
+    /**
+     * Get selected provider value
+     */
+    async getSelectedProvider(): Promise<string | null> {
+        // Get the text content directly from the SelectTrigger
+        const text = await this.providerSelect.textContent();
+        // Return the trimmed text, or null if empty/placeholder
+        return text?.trim() || null;
     }
 }

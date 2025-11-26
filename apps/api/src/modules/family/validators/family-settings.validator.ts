@@ -12,6 +12,9 @@ const aiSettingsSchema = z
     apiSecret: z.string().min(1, "API secret is required"),
     modelName: z.string().min(1, "Model name is required"),
     aiName: z.string().min(1, "AI name is required"),
+    provider: z.enum(["LM Studio", "Ollama", "OpenAI"] as const, {
+      message: 'Provider must be one of: "LM Studio", "Ollama", or "OpenAI"',
+    }),
   })
   .optional();
 

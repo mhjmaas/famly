@@ -48,6 +48,7 @@ describe("FamilySettingsService", () => {
           apiSecret: "sk-secret",
           modelName: "gpt-4",
           aiName: "Jarvis",
+          provider: "OpenAI",
         },
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -122,6 +123,7 @@ describe("FamilySettingsService", () => {
           apiSecret: "sk-new-secret",
           modelName: "gpt-4",
           aiName: "Jarvis",
+          provider: "OpenAI" as const,
         },
       };
 
@@ -324,6 +326,7 @@ describe("FamilySettingsService", () => {
           apiSecret: "should-not-appear",
           modelName: "",
           aiName: "Jarvis",
+          provider: "LM Studio",
         },
         createdAt: new Date(),
         updatedAt: new Date(),
