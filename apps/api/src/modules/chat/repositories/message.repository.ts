@@ -163,6 +163,14 @@ export class MessageRepository {
   }
 
   /**
+   * Delete all messages for a chat
+   */
+  async deleteByChatId(chatId: ObjectId): Promise<number> {
+    const result = await this.collection.deleteMany({ chatId });
+    return result.deletedCount ?? 0;
+  }
+
+  /**
    * Search messages across multiple chats
    * Uses MongoDB text search on message body
    * Results sorted by createdAt descending (newest first), with _id as tie-breaker
