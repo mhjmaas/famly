@@ -168,6 +168,7 @@ export async function proxy(request: NextRequest) {
       pathname === "/" ? `/${locale}` : `/${locale}${pathname}`,
       request.url,
     );
+    redirectURL.search = request.nextUrl.search;
     return NextResponse.redirect(redirectURL);
   }
 

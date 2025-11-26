@@ -7,6 +7,7 @@ import { MessageRepository } from "@modules/chat/repositories/message.repository
 import { MessageService } from "@modules/chat/services/message.service";
 import type { Socket } from "socket.io";
 import { z } from "zod";
+import { emitNewMessageNotification } from "../events/chat-events";
 import type { Ack, MessageSendPayload } from "../types";
 import { ErrorCode } from "../types";
 import { getRateLimiter } from "../utils/rate-limiter";
@@ -116,10 +117,19 @@ export async function handleMessageSend(
         `Socket ${socket.id}: Message created ${result.message._id} (clientId: ${clientId})`,
       );
 
-      // Broadcast message:new to all room members
+      // Broadcast message:new to all room members (those currently viewing the chat)
       socket.to(`chat:${chatId}`).emit("message:new", {
+        chatId,
         message: result.message,
       });
+
+      // Also send notification to all chat members via their user rooms
+      // This ensures members not viewing the chat still get notified for unread badges
+      const chat = await chatRepo.findById(chatObjectId);
+      if (chat) {
+        const memberIds = chat.memberIds.map((id) => id.toString());
+        emitNewMessageNotification(chatId, result.message, memberIds, true);
+      }
     } else {
       logger.debug(
         `Socket ${socket.id}: Idempotent message send - existing message ${result.message._id} (clientId: ${clientId})`,

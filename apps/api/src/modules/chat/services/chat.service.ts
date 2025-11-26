@@ -1,3 +1,4 @@
+import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import {
   type ObjectIdString,
@@ -45,6 +46,10 @@ export class ChatService {
     try {
       normalizedCreatorId = validateObjectId(creatorId, "creatorId");
       normalizedOtherUserId = validateObjectId(otherUserId, "otherUserId");
+
+      if (normalizedCreatorId === normalizedOtherUserId) {
+        throw HttpError.badRequest("Cannot create a DM with yourself");
+      }
 
       logger.info("Creating DM", {
         creatorId: normalizedCreatorId,
@@ -158,12 +163,18 @@ export class ChatService {
     try {
       normalizedCreatorId = validateObjectId(creatorId, "creatorId");
       normalizedMemberIds = validateObjectIdArray(memberIds, "memberIds");
+
+      // Deduplicate members and ensure creator is not duplicated
+      const uniqueMemberIds = Array.from(
+        new Set(normalizedMemberIds.filter((id) => id !== normalizedCreatorId)),
+      );
+
       const creatorObjectId = toObjectId(normalizedCreatorId, "creatorId");
-      const memberObjectIds = toObjectIdArray(normalizedMemberIds, "memberIds");
+      const memberObjectIds = toObjectIdArray(uniqueMemberIds, "memberIds");
 
       logger.info("Creating group chat", {
         creatorId: normalizedCreatorId,
-        memberCount: normalizedMemberIds.length + 1,
+        memberCount: memberObjectIds.length + 1,
         title,
       });
 

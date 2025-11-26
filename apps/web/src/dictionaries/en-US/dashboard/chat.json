@@ -3,7 +3,79 @@
     "pages": {
       "chat": {
         "title": "Chat",
-        "placeholder": "Chat page coming soon"
+        "chatList": {
+          "title": "Chats",
+          "newChat": "New Chat",
+          "emptyState": {
+            "title": "No conversations yet",
+            "description": "Start a conversation with your family members",
+            "action": "Start a conversation"
+          },
+          "loading": "Loading chats...",
+          "unreadCount": "{{count}} unread"
+        },
+        "conversation": {
+          "emptyState": {
+            "title": "Select a chat",
+            "description": "Choose a conversation from the list to start chatting"
+          },
+          "noMessages": {
+            "title": "No messages yet",
+            "description": "Start the conversation!"
+          },
+          "loading": "Loading messages...",
+          "you": "You",
+          "today": "Today",
+          "yesterday": "Yesterday"
+        },
+        "messageInput": {
+          "placeholder": "Type a message...",
+          "send": "Send",
+          "sending": "Sending...",
+          "characterCount": "{{count}}/8000",
+          "tooLong": "Message is too long",
+          "shiftEnterHint": "Shift+Enter for new line"
+        },
+        "tabs": {
+          "chats": "Chats",
+          "messages": "Messages"
+        },
+        "newChatDialog": {
+          "title": "New Chat",
+          "dm": {
+            "title": "Direct Message",
+            "selectMember": "Select a family member",
+            "existingChat": "Chat already exists",
+            "noMembers": "No family members available"
+          },
+          "group": {
+            "title": "Group Chat",
+            "titleLabel": "Group name",
+            "titlePlaceholder": "Enter group name",
+            "selectMembers": "Select members",
+            "selectMembersPlaceholder": "Choose at least 2 members",
+            "minMembers": "Select at least 2 members",
+            "create": "Create Group"
+          },
+          "cancel": "Cancel",
+          "creating": "Creating..."
+        },
+        "errors": {
+          "fetchChats": "Failed to load chats",
+          "fetchMessages": "Failed to load messages",
+          "sendMessage": "Failed to send message",
+          "createChat": "Failed to create chat",
+          "chatNotFound": "Chat not found",
+          "accessDenied": "You don't have access to this chat",
+          "retry": "Retry",
+          "backToList": "Back to chat list"
+        },
+        "connection": {
+          "connecting": "Connecting...",
+          "connected": "Connected",
+          "disconnected": "Connection lost. Reconnecting...",
+          "reconnected": "Reconnected"
+        }
       }
     }
   }

@@ -1,5 +1,6 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import activitiesReducer from "./slices/activities.slice";
+import chatReducer from "./slices/chat.slice";
 import claimsReducer from "./slices/claims.slice";
 import contributionGoalsReducer from "./slices/contribution-goals.slice";
 import familyReducer from "./slices/family.slice";
@@ -22,6 +23,7 @@ const rootReducer = combineReducers({
   settings: settingsReducer,
   notifications: notificationsReducer,
   contributionGoals: contributionGoalsReducer,
+  chat: chatReducer,
 });
 
 // Infer RootState from the rootReducer

@@ -5,6 +5,7 @@ import { authenticate } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import { verifyMembership } from "../middleware";
+import { emitMemberRemoved } from "../realtime/events/chat-events";
 import { ChatRepository } from "../repositories/chat.repository";
 import { MembershipRepository } from "../repositories/membership.repository";
 import { MembershipService } from "../services/membership.service";
@@ -79,6 +80,18 @@ export function removeMemberRoute(): Router {
           normalizedChatId,
           normalizedUserToRemove,
           normalizedRemovedBy,
+        );
+
+        // Broadcast member-removed event to remaining members
+        const remainingMemberIds = (chat.memberIds || [])
+          .filter((id) => id.toString() !== normalizedUserToRemove)
+          .map((id) => id.toString());
+
+        emitMemberRemoved(
+          chatObjectId,
+          chat.title || "Group Chat",
+          normalizedUserToRemove,
+          remainingMemberIds,
         );
 
         res.status(204).send();

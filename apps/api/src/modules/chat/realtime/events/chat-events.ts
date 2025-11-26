@@ -6,6 +6,7 @@ import {
 import type { ObjectId } from "mongodb";
 import type { Server } from "socket.io";
 import type { ChatDTO } from "../../domain/chat";
+import type { MessageDTO } from "../../domain/message";
 
 /**
  * Set the global Socket.IO server instance
@@ -162,6 +163,56 @@ export function emitMemberRemoved(
   } catch (error) {
     logger.error(
       `Failed to emit member removed event for ${chatId}:`,
+      error instanceof Error ? error.message : String(error),
+    );
+  }
+}
+
+/**
+ * Emit a new message notification to all members of a chat
+ * This is sent to user rooms so members receive it even if they're not viewing the chat
+ * Used to update unread badges and chat list previews
+ *
+ * @param chatId The chat ID
+ * @param message The message DTO
+ * @param memberIds Array of member IDs to notify
+ * @param excludeSenderId Optional - exclude the sender from notifications (they already see their own message)
+ */
+export function emitNewMessageNotification(
+  chatId: string,
+  message: MessageDTO,
+  memberIds: string[],
+  excludeSenderId = true,
+): void {
+  const io = getSocketIOServer();
+
+  if (!io) {
+    logger.warn(
+      `Socket.IO server not initialized. Message notification for chat ${chatId} will not be broadcast.`,
+    );
+    return;
+  }
+
+  try {
+    // Filter out the sender if requested
+    const membersToNotify = excludeSenderId
+      ? memberIds.filter((id) => id !== message.senderId)
+      : memberIds;
+
+    for (const memberId of membersToNotify) {
+      const userRoomName = `user:${memberId}`;
+      io.to(userRoomName).emit("message:notification", {
+        chatId,
+        message,
+      });
+    }
+
+    logger.debug(
+      `Message notification broadcast to ${membersToNotify.length} members of chat ${chatId}`,
+    );
+  } catch (error) {
+    logger.error(
+      `Failed to emit message notification for chat ${chatId}:`,
       error instanceof Error ? error.message : String(error),
     );
   }

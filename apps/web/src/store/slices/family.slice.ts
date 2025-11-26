@@ -15,6 +15,7 @@ import {
   type UpdateMemberRoleRequest,
   updateMemberRole as updateMemberRoleApi,
 } from "@/lib/api-client";
+import type { FamilyMember } from "@/types/api.types";
 import type { RootState } from "../store";
 import { setKarma } from "./karma.slice";
 
@@ -281,12 +282,14 @@ export const { clearFamily, setOperationError, clearOperationError } =
 export default familySlice.reducer;
 
 // Selectors
-const EMPTY_ARRAY: readonly never[] = [];
+const EMPTY_ARRAY: readonly FamilyMember[] = [];
 
 export const selectFamilies = (state: RootState) => state.family.families;
 export const selectCurrentFamily = (state: RootState) =>
   state.family.currentFamily;
-export const selectFamilyMembers = (state: RootState) =>
+export const selectFamilyMembers = (
+  state: RootState,
+): readonly FamilyMember[] =>
   state.family.currentFamily?.members ?? EMPTY_ARRAY;
 export const selectFamilyLoading = (state: RootState) => state.family.isLoading;
 export const selectFamilyError = (state: RootState) => state.family.error;

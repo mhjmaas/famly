@@ -450,7 +450,7 @@ print_success "Docker daemon is running"
 
 # Step 3.5: Check for port conflicts (only Caddy ports in production mode)
 print_info "Checking for port conflicts..."
-PORTS_TO_CHECK=(80 443)
+PORTS_TO_CHECK=()
 CONFLICTS=()
 
 for PORT in "${PORTS_TO_CHECK[@]}"; do

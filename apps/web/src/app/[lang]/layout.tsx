@@ -8,7 +8,11 @@ import { Toaster } from "@/components/ui/sonner";
 import { DeploymentProvider } from "@/contexts/deployment-context";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
-import { getUserWithKarmaAndSettings } from "@/lib/dal";
+import {
+  getChatsForCurrentUser,
+  getFamiliesForCurrentUser,
+  getUserWithKarmaAndSettings,
+} from "@/lib/dal";
 import { getSessionCookie } from "@/lib/server-cookies";
 import { getDeploymentStatus } from "@/lib/utils/status-utils";
 import { StoreProvider } from "@/store/provider";
@@ -78,12 +82,56 @@ export default async function LocaleLayout({
     try {
       // Use DAL to fetch user, karma, and settings data
       // The DAL handles caching, cookie forwarding, and error handling
-      const { user, karma, settings } = await getUserWithKarmaAndSettings(lang);
+      const [{ user, karma, settings }, chats, families] = await Promise.all([
+        getUserWithKarmaAndSettings(lang),
+        getChatsForCurrentUser(lang).catch((error) => {
+          console.warn("Failed to preload chats:", error);
+          return [];
+        }),
+        getFamiliesForCurrentUser(lang).catch((error) => {
+          console.warn("Failed to preload families:", error);
+          return [];
+        }),
+      ]);
 
       // Get the first family ID for settings
       const familyId = user.families?.[0]?.familyId;
 
-      // Preload Redux state with user, karma, and settings
+      // Enrich DM chat titles with the other member's name (viewer-dependent)
+      // This must be done server-side because the title changes based on who's viewing
+      const enrichedChats = chats.map((chat) => {
+        // Only enrich DM chats that don't have an explicit title
+        if (
+          chat.type !== "dm" ||
+          (chat.title && chat.title.trim().length > 0)
+        ) {
+          return chat;
+        }
+
+        // Find the other member in the DM (not the current user)
+        const otherMemberId = chat.memberIds.find(
+          (id: string) => id !== user.id,
+        );
+        if (!otherMemberId) {
+          return chat;
+        }
+
+        // Look up the member's name from families
+        const member = families
+          .flatMap((f) => f.members)
+          .find((m) => m.memberId === otherMemberId);
+
+        // Enrich the chat with the member's name
+        if (member?.name) {
+          return {
+            ...chat,
+            title: member.name,
+          };
+        }
+
+        return chat;
+      });
+
       preloadedState = {
         user: {
           profile: user,
@@ -106,6 +154,36 @@ export default async function LocaleLayout({
               : {},
           isLoading: false,
           error: null,
+        },
+        chat: {
+          chats: enrichedChats,
+          messages: {},
+          activeChatId: null,
+          loading: {
+            chats: false,
+            messages: false,
+            sending: false,
+            loadingMore: false,
+          },
+          error: {
+            chats: null,
+            messages: null,
+            sending: null,
+          },
+          lastFetch: Date.now(),
+          messageCursors: {},
+        },
+        family: {
+          families,
+          currentFamily: families[0] || null,
+          isLoading: false,
+          error: null,
+          operations: {
+            updateRole: { isLoading: false, error: null },
+            removeMember: { isLoading: false, error: null },
+            grantKarma: { isLoading: false, error: null },
+            addMember: { isLoading: false, error: null },
+          },
         },
       };
     } catch (error) {

@@ -422,3 +422,60 @@ export interface AddDeductionRequest {
   amount: number;
   reason: string;
 }
+
+// Chat types
+export type ChatType = "dm" | "group";
+
+export interface ChatDTO {
+  _id: string;
+  type: ChatType;
+  title: string | null;
+  createdBy: string;
+  memberIds: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LastMessagePreview {
+  _id: string;
+  senderId: string;
+  body: string;
+  createdAt: string;
+}
+
+export interface ChatWithPreviewDTO extends ChatDTO {
+  lastMessage?: LastMessagePreview;
+  unreadCount: number;
+}
+
+export interface ListChatsResponse {
+  chats: ChatWithPreviewDTO[];
+  nextCursor?: string;
+}
+
+export interface MessageDTO {
+  _id: string;
+  chatId: string;
+  senderId: string;
+  body: string;
+  clientId?: string;
+  createdAt: string;
+  editedAt?: string;
+  deleted: boolean;
+}
+
+export interface ListMessagesResponse {
+  messages: MessageDTO[];
+  nextCursor?: string;
+}
+
+export interface CreateChatRequest {
+  type: ChatType;
+  memberIds: string[];
+  title?: string | null;
+}
+
+export interface CreateMessageRequest {
+  body: string;
+  clientId?: string;
+}

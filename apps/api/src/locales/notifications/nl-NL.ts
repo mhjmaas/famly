@@ -65,7 +65,7 @@ export const notificationsNlNL = {
         'Je bijdrage-doel "{goalTitle}" eindigde zonder karma - alle potentieel is afgetrokken',
     },
     chat: {
-      message: "Nieuw Bericht van {senderName}",
+      message: "Bericht van: {senderName}",
       messageDescription: "{messagePreview}",
     },
   },

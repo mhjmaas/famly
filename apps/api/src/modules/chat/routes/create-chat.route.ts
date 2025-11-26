@@ -5,6 +5,7 @@ import type { NextFunction, Response } from "express";
 import { Router } from "express";
 import type { Chat } from "../domain/chat";
 import { toChatDTO } from "../lib/chat.mapper";
+import { emitChatUpdate } from "../realtime/events/chat-events";
 import { ChatRepository } from "../repositories/chat.repository";
 import { MembershipRepository } from "../repositories/membership.repository";
 import { ChatService } from "../services/chat.service";
@@ -72,8 +73,15 @@ export function createChatRoute(): Router {
           isNew = true;
         }
 
+        const chatDTO = toChatDTO(chat);
+
+        // Broadcast chat:update to all members if this is a new chat
+        if (isNew) {
+          emitChatUpdate(chatDTO);
+        }
+
         const statusCode = isNew ? 201 : 200;
-        res.status(statusCode).json(toChatDTO(chat));
+        res.status(statusCode).json(chatDTO);
       } catch (error) {
         next(error);
       }

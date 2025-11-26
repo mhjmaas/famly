@@ -80,6 +80,11 @@
       "deductedDescription": "{memberName} had {amount} karma deducted from their goal",
       "updated": "Goal Updated",
       "updatedDescription": "Contribution goal has been updated"
+    },
+    "chat": {
+      "message": "Message from: {senderName}",
+      "messageDescription": "{messagePreview}",
+      "unknownSender": "Someone"
     }
   }
 }
