@@ -9,6 +9,10 @@ import {
 } from "@lib/objectid-utils";
 import { getUserName } from "@lib/user-utils";
 import { getAuth } from "@modules/auth/better-auth";
+import { ChatRepository } from "@modules/chat/repositories/chat.repository";
+import { MembershipRepository as ChatMembershipRepository } from "@modules/chat/repositories/membership.repository";
+import { MessageRepository } from "@modules/chat/repositories/message.repository";
+import { ChatCascadeService } from "@modules/chat/services/chat-cascade.service";
 import { DeploymentConfigRepository } from "@modules/deployment-config/repositories/deployment-config.repository";
 import { DeploymentConfigService } from "@modules/deployment-config/services/deployment-config.service";
 import {
@@ -41,7 +45,15 @@ export class FamilyService {
   constructor(
     private familyRepository: FamilyRepository,
     private membershipRepository: FamilyMembershipRepository,
-  ) {}
+  ) {
+    this.chatCascadeService = new ChatCascadeService(
+      new ChatRepository(),
+      new ChatMembershipRepository(),
+      new MessageRepository(),
+    );
+  }
+
+  private chatCascadeService: ChatCascadeService;
 
   /**
    * Create a new family and link the creator as a Parent
@@ -408,6 +420,9 @@ export class FamilyService {
         removedBy: normalizedRemovedBy,
         memberId: normalizedMemberId,
       });
+
+      // Cascade removal across chat system
+      await this.chatCascadeService.removeUserFromAllChats(normalizedMemberId);
 
       // Emit event to notify remaining family members
       await emitFamilyMemberRemoved(

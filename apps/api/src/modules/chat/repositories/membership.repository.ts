@@ -109,6 +109,22 @@ export class MembershipRepository {
   }
 
   /**
+   * Delete all memberships for a given chat
+   */
+  async deleteManyByChat(chatId: ObjectId): Promise<number> {
+    const result = await this.collection.deleteMany({ chatId });
+    return result.deletedCount ?? 0;
+  }
+
+  /**
+   * Delete all memberships for a given user
+   */
+  async deleteManyByUser(userId: ObjectId): Promise<number> {
+    const result = await this.collection.deleteMany({ userId });
+    return result.deletedCount ?? 0;
+  }
+
+  /**
    * Update the read cursor (lastReadMessageId) for a membership
    */
   async updateReadCursor(

@@ -95,6 +95,14 @@ export class ChatRepository {
   }
 
   /**
+   * Delete a chat by ID
+   */
+  async deleteById(chatId: ObjectId): Promise<boolean> {
+    const result = await this.collection.deleteOne({ _id: { $eq: chatId } });
+    return result.deletedCount > 0;
+  }
+
+  /**
    * Find a DM chat by member IDs (for deduplication)
    * Returns the first (and should be only) DM between these two users
    */
