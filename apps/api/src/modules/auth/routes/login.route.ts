@@ -1,8 +1,8 @@
 import { getDb } from "@infra/mongo/client";
-import { authLimiter } from "@middleware/rate-limiter";
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import { validateObjectId } from "@lib/objectid-utils";
+import { authLimiter } from "@middleware/rate-limiter";
 import type { ListFamiliesResponse } from "@modules/family/domain/family";
 import { FamilyRepository } from "@modules/family/repositories/family.repository";
 import { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";

@@ -42,6 +42,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@radix-ui/react-use-controllable-state": "^1.2.2",
     "@reduxjs/toolkit": "^2.10.0",
+    "@tavily/core": "^0.5.13",
     "@xyflow/react": "^12.9.3",
     "ai": "6.0.0-beta.120",
     "class-variance-authority": "^0.7.1",

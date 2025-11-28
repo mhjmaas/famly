@@ -53,15 +53,22 @@ export function createMessageRoute(): Router {
         const { chatId: chatIdParam } = req.params;
 
         const chatId = validateObjectId(chatIdParam, "chatId");
-        const senderId = validateObjectId(req.user.id, "userId");
-
         const input: CreateMessageInput = (req as any).validatedBody;
+
+        // Use AI sender ID if provided, otherwise use authenticated user
+        const senderId =
+          input.senderId ?? validateObjectId(req.user.id, "userId");
+
         const chatObjectId = toObjectId(chatId, "chatId");
-        const senderObjectId = toObjectId(senderId, "userId");
 
         // Verify user is a member of the chat
+        // For AI messages, we verify the authenticated user (not the AI sender)
+        const userObjectId = toObjectId(
+          validateObjectId(req.user.id, "userId"),
+          "userId",
+        );
         const membership = await membershipRepository.findByUserAndChat(
-          senderObjectId,
+          userObjectId,
           chatObjectId,
         );
         if (!membership) {

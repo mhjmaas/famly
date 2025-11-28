@@ -185,9 +185,10 @@ describe("ai-message-utils", () => {
         role: "assistant",
         parts: [
           { type: "text", text: "Hello" },
-          { type: "step-start" } as any,
+          { type: "step-start" },
           { type: "text", text: " World" },
-        ],
+          // biome-ignore lint: testing non-text parts
+        ] as any,
         metadata: { createdAt: "2024-01-01T10:00:00Z" },
       };
 

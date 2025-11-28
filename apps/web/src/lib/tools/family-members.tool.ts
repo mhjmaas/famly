@@ -11,29 +11,36 @@ export const familyMembersTool = {
     // Get cookie header for authentication
     const cookieHeader = await getCookieHeader();
 
-    // Fetch all families with their members
-    const families = await getFamilies(cookieHeader);
+    try {
+      // Fetch all families with their members
+      const families = await getFamilies(cookieHeader);
 
-    // Find the specific family
-    const family = families.find((f) => f.familyId === familyId);
+      // Find the specific family
+      const family = families.find((f) => f.familyId === familyId);
 
-    if (!family) {
-      throw new Error(`Family with ID ${familyId} not found`);
+      if (!family) {
+        throw new Error(`Family with ID ${familyId} not found`);
+      }
+
+      const result = {
+        familyId: family.familyId,
+        familyName: family.name,
+        members: family.members.map((member) => ({
+          memberId: member.memberId,
+          name: member.name,
+          role: member.role,
+          birthdate: member.birthdate,
+        })),
+      };
+
+      console.log("Family Members Tool with result", result);
+      // Format the response with family name and members
+      return result;
+    } catch (error) {
+      console.error("Error fetching family members:", error);
+      throw new Error(
+        `Failed to fetch family members: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
-
-    const result = {
-      familyId: family.familyId,
-      familyName: family.name,
-      members: family.members.map((member) => ({
-        memberId: member.memberId,
-        name: member.name,
-        role: member.role,
-        birthdate: member.birthdate,
-      })),
-    };
-
-    console.log("Family Members Tool with result", result);
-    // Format the response with family name and members
-    return result;
   },
 };

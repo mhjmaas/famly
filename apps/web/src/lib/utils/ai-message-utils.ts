@@ -1,5 +1,6 @@
 import type { UIMessage } from "ai";
-import type { MessageDTO } from "@/types/api.types";
+import { sendMessage } from "@/lib/api-client";
+import type { CreateMessageRequest, MessageDTO } from "@/types/api.types";
 
 /**
  * Special sender ID used for AI-generated messages.
@@ -86,4 +87,60 @@ export function toMessageDTOs(
  */
 export function isAIMessage(message: MessageDTO): boolean {
   return message.senderId === AI_SENDER_ID;
+}
+
+/**
+ * Persist AI chat messages to the API.
+ * This should be called after AI streaming completes.
+ *
+ * @param chatId - The chat ID
+ * @param messages - Array of UIMessages from the AI SDK
+ * @param currentUserId - The current user's ID
+ * @param persistedMessageIds - Set of message IDs that have already been persisted
+ * @returns Set of newly persisted message IDs
+ */
+export async function persistAIMessages(
+  chatId: string,
+  messages: UIMessage<{ createdAt?: string }>[],
+  _currentUserId: string,
+  persistedMessageIds: Set<string>,
+): Promise<Set<string>> {
+  const newlyPersisted = new Set<string>();
+
+  for (const message of messages) {
+    // Skip if already persisted
+    if (persistedMessageIds.has(message.id)) {
+      continue;
+    }
+
+    // Extract text from message parts
+    const body = message.parts
+      .filter(
+        (part): part is { type: "text"; text: string } => part.type === "text",
+      )
+      .map((part) => part.text)
+      .join("");
+
+    // Skip empty messages
+    if (!body.trim()) {
+      continue;
+    }
+
+    const isAI = message.role === "assistant";
+    const request: CreateMessageRequest = {
+      body,
+      clientId: message.id, // Use message ID as clientId for idempotency
+      ...(isAI && { senderId: AI_SENDER_ID }),
+    };
+
+    try {
+      await sendMessage(chatId, request);
+      newlyPersisted.add(message.id);
+    } catch (error) {
+      console.error("Failed to persist AI message:", error);
+      // Continue with other messages even if one fails
+    }
+  }
+
+  return newlyPersisted;
 }

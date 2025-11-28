@@ -1,6 +1,6 @@
 import { getDb } from "@infra/mongo/client";
-import { authLimiter } from "@middleware/rate-limiter";
 import { toObjectId, validateObjectId } from "@lib/objectid-utils";
+import { authLimiter } from "@middleware/rate-limiter";
 import { type NextFunction, type Response, Router } from "express";
 import {
   type AuthenticatedRequest,

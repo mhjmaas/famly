@@ -163,18 +163,21 @@ export async function register(data: RegisterRequest): Promise<AuthResponse> {
   });
 }
 
-export async function logout(): Promise<void> {
+export async function logout(cookie?: string): Promise<void> {
   return apiClient<void>("/v1/auth/sign-out", {
     method: "POST",
+    cookie,
   });
 }
 
 export async function changePassword(
   data: ChangePasswordRequest,
+  cookie?: string,
 ): Promise<void> {
   return apiClient<void>("/v1/auth/change-password", {
     method: "POST",
     body: data,
+    cookie,
   });
 }
 
@@ -195,10 +198,12 @@ export type {
 
 export async function createFamily(
   data: CreateFamilyRequest,
+  cookie?: string,
 ): Promise<CreateFamilyResponse> {
   return apiClient<CreateFamilyResponse>("/v1/families", {
     method: "POST",
     body: data,
+    cookie,
   });
 }
 
@@ -212,12 +217,14 @@ export async function updateMemberRole(
   familyId: string,
   memberId: string,
   data: UpdateMemberRoleRequest,
+  cookie?: string,
 ): Promise<UpdateMemberRoleResponse> {
   return apiClient<UpdateMemberRoleResponse>(
     `/v1/families/${familyId}/members/${memberId}`,
     {
       method: "PATCH",
       body: data,
+      cookie,
     },
   );
 }
@@ -225,9 +232,11 @@ export async function updateMemberRole(
 export async function removeMember(
   familyId: string,
   memberId: string,
+  cookie?: string,
 ): Promise<void> {
   return apiClient<void>(`/v1/families/${familyId}/members/${memberId}`, {
     method: "DELETE",
+    cookie,
   });
 }
 
@@ -246,12 +255,14 @@ export async function grantKarma(
 export async function addFamilyMember(
   familyId: string,
   data: AddFamilyMemberRequest,
+  cookie?: string,
 ): Promise<AddFamilyMemberResponse> {
   return apiClient<AddFamilyMemberResponse>(
     `/v1/families/${familyId}/members`,
     {
       method: "POST",
       body: data,
+      cookie,
     },
   );
 }
@@ -275,10 +286,12 @@ export async function getFamilySettings(
 export async function updateFamilySettings(
   familyId: string,
   data: UpdateFamilySettingsRequest,
+  cookie?: string,
 ): Promise<FamilySettings> {
   return apiClient<FamilySettings>(`/v1/families/${familyId}/settings`, {
     method: "PUT",
     body: data,
+    cookie,
   });
 }
 
@@ -297,10 +310,12 @@ export async function getMe(cookie?: string): Promise<MeResponse> {
 
 export async function updateProfile(
   data: UpdateProfileRequest,
+  cookie?: string,
 ): Promise<UpdateProfileResponse> {
   return apiClient<UpdateProfileResponse>("/v1/auth/me", {
     method: "PATCH",
     body: data,
+    cookie,
   });
 }
 
@@ -424,9 +439,11 @@ export async function updateTask(
 export async function deleteTask(
   familyId: string,
   taskId: string,
+  cookie?: string,
 ): Promise<void> {
   return apiClient<void>(`/v1/families/${familyId}/tasks/${taskId}`, {
     method: "DELETE",
+    cookie,
   });
 }
 
@@ -453,10 +470,12 @@ export async function getSchedule(
 export async function createSchedule(
   familyId: string,
   data: CreateScheduleRequest,
+  cookie?: string,
 ): Promise<TaskSchedule> {
   return apiClient<TaskSchedule>(`/v1/families/${familyId}/tasks/schedules`, {
     method: "POST",
     body: data,
+    cookie,
   });
 }
 
@@ -464,12 +483,14 @@ export async function updateSchedule(
   familyId: string,
   scheduleId: string,
   data: UpdateScheduleRequest,
+  cookie?: string,
 ): Promise<TaskSchedule> {
   return apiClient<TaskSchedule>(
     `/v1/families/${familyId}/tasks/schedules/${scheduleId}`,
     {
       method: "PATCH",
       body: data,
+      cookie,
     },
   );
 }
@@ -477,11 +498,13 @@ export async function updateSchedule(
 export async function deleteSchedule(
   familyId: string,
   scheduleId: string,
+  cookie?: string,
 ): Promise<void> {
   return apiClient<void>(
     `/v1/families/${familyId}/tasks/schedules/${scheduleId}`,
     {
       method: "DELETE",
+      cookie,
     },
   );
 }
@@ -558,14 +581,21 @@ export async function toggleRewardFavourite(
  * Upload an image file for a reward
  * @param familyId - The family ID
  * @param file - The image file to upload
+ * @param cookie - Optional cookie string for server-side requests
  * @returns The relative URL to access the uploaded image
  */
 export async function uploadRewardImage(
   familyId: string,
   file: File,
+  cookie?: string,
 ): Promise<{ imageUrl: string }> {
   const formData = new FormData();
   formData.append("file", file);
+
+  const headers: Record<string, string> = {};
+  if (cookie) {
+    headers.Cookie = cookie;
+  }
 
   const response = await fetch(
     `${API_BASE_URL}/v1/families/${familyId}/rewards/upload-image`,
@@ -573,6 +603,7 @@ export async function uploadRewardImage(
       method: "POST",
       body: formData,
       credentials: "include",
+      headers,
     },
   );
 
@@ -699,7 +730,7 @@ export async function fetchDeploymentStatus(options?: {
 export async function createContributionGoal(
   familyId: string,
   data: CreateContributionGoalRequest,
-  options?: ApiClientOptions,
+  options?: ApiClientOptions & { cookie?: string },
 ): Promise<ContributionGoal> {
   return apiClient<ContributionGoal>(
     `/v1/families/${familyId}/contribution-goals`,
@@ -735,7 +766,7 @@ export async function updateContributionGoal(
   familyId: string,
   memberId: string,
   data: UpdateContributionGoalRequest,
-  options?: ApiClientOptions,
+  options?: ApiClientOptions & { cookie?: string },
 ): Promise<ContributionGoal> {
   return apiClient<ContributionGoal>(
     `/v1/families/${familyId}/contribution-goals/${memberId}`,
@@ -753,7 +784,7 @@ export async function updateContributionGoal(
 export async function deleteContributionGoal(
   familyId: string,
   memberId: string,
-  options?: ApiClientOptions,
+  options?: ApiClientOptions & { cookie?: string },
 ): Promise<void> {
   return apiClient<void>(
     `/v1/families/${familyId}/contribution-goals/${memberId}`,
@@ -771,7 +802,7 @@ export async function addDeduction(
   familyId: string,
   memberId: string,
   data: AddDeductionRequest,
-  options?: ApiClientOptions,
+  options?: ApiClientOptions & { cookie?: string },
 ): Promise<ContributionGoal> {
   return apiClient<ContributionGoal>(
     `/v1/families/${familyId}/contribution-goals/${memberId}/deductions`,
@@ -876,6 +907,21 @@ export async function updateReadCursor(
   return apiClient<void>(`/v1/chats/${chatId}/read-cursor`, {
     method: "PUT",
     body: { messageId },
+    ...options,
+  });
+}
+
+/**
+ * Clear all messages in an AI chat
+ * @param chatId - The chat ID (must be an AI chat)
+ * @returns { deletedCount: number }
+ */
+export async function clearChatMessages(
+  chatId: string,
+  options?: ApiClientOptions,
+): Promise<{ deletedCount: number }> {
+  return apiClient<{ deletedCount: number }>(`/v1/chats/${chatId}/messages`, {
+    method: "DELETE",
     ...options,
   });
 }

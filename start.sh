@@ -550,6 +550,108 @@ fi
 ensure_secret_value "BETTER_AUTH_SECRET" "change-this-to-a-secure-random-string-min-32-chars-required"
 ensure_secret_value "MINIO_ROOT_PASSWORD" "change-this-to-a-secure-password-min-32-chars"
 
+# Step 4.5: Configure timezone if not already set
+source "$ENV_FILE" 2>/dev/null || true
+
+if [ -z "$TIMEZONE" ] || [ "$TIMEZONE" == "change-this-timezone" ]; then
+    echo ""
+    print_info "Timezone Configuration"
+    echo "Enter a TZ identifier from the IANA time zone database:"
+    echo "See: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
+    echo ""
+
+    # Get the default timezone from .env.example
+    DEFAULT_TZ="Europe/Amsterdam"
+    if [ -f "$ENV_EXAMPLE" ]; then
+        DEFAULT_TZ=$(grep -E "^TIMEZONE=" "$ENV_EXAMPLE" | cut -d'=' -f2 | tr -d '"')
+        DEFAULT_TZ=${DEFAULT_TZ:-Europe/Amsterdam}
+    fi
+
+    read -p "Timezone [${DEFAULT_TZ}]: " USER_TZ
+    echo ""
+
+    TIMEZONE=${USER_TZ:-$DEFAULT_TZ}
+
+    # Update timezone in .env
+    if grep -q "^TIMEZONE=" "$ENV_FILE"; then
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' "s|^TIMEZONE=.*|TIMEZONE=\"${TIMEZONE}\"|g" "$ENV_FILE"
+        else
+            sed -i "s|^TIMEZONE=.*|TIMEZONE=\"${TIMEZONE}\"|g" "$ENV_FILE"
+        fi
+    else
+        echo "TIMEZONE=\"${TIMEZONE}\"" >> "$ENV_FILE"
+    fi
+
+    print_success "Timezone set to: $TIMEZONE"
+    echo ""
+fi
+
+# Step 4.75: Check and configure Tavily API key for web search
+print_info "Checking web search configuration..."
+
+# Source .env to get current Tavily key
+if [ -f "$ENV_FILE" ]; then
+    set -a
+    source "$ENV_FILE"
+    set +a
+fi
+
+# Check if Tavily key is set and valid (not placeholder value)
+TAVILY_KEY_VALID=false
+
+if [ ! -z "$TAVILY_KEY" ] && [ "$TAVILY_KEY" != "your_tavily_key_here" ]; then
+    TAVILY_KEY_VALID=true
+fi
+
+if [ "$TAVILY_KEY_VALID" = false ]; then
+    print_warning "Tavily API key is not configured"
+    echo ""
+    echo -e "${BLUE}What is Tavily used for?${NC}"
+    echo "  Tavily enables AI-powered web search functionality in the application."
+    echo "  This allows the AI assistant to search the web for real-time information."
+    echo ""
+    echo "Without a Tavily API key:"
+    echo "  • The AI assistant will work normally for other features"
+    echo -e "  • ${YELLOW}Web search capabilities will be disabled${NC}"
+    echo "  • No cost or account required if you don't need web search"
+    echo ""
+    echo "To get a Tavily API key:"
+    echo -e "  • Sign up at ${GREEN}https://tavily.com${NC}"
+    echo "  • Free tier available for testing"
+    echo ""
+    read -p "Enter Tavily API key (or press Enter to skip): " TAVILY_REPLY
+    echo ""
+
+    if [ ! -z "$TAVILY_REPLY" ]; then
+        # Trim whitespace
+        TAVILY_REPLY=$(echo "$TAVILY_REPLY" | xargs)
+
+        # Update .env with the provided key
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            # macOS (BSD sed)
+            sed -i '' "s|TAVILY_KEY=.*|TAVILY_KEY=$TAVILY_REPLY|g" "$ENV_FILE"
+        else
+            # Linux (GNU sed)
+            sed -i "s|TAVILY_KEY=.*|TAVILY_KEY=$TAVILY_REPLY|g" "$ENV_FILE"
+        fi
+
+        print_success "Tavily API key configured"
+        print_info "Web search is now enabled"
+    else
+        print_warning "Skipping Tavily API key configuration"
+        echo ""
+        echo -e "${YELLOW}ℹ  Web search will not be available${NC}"
+        echo "  You can add your Tavily API key later by:"
+        echo -e "  1. Getting a key from ${GREEN}https://tavily.com${NC}"
+        echo "  2. Adding it to .env: TAVILY_KEY=your_key_here"
+        echo ""
+    fi
+    echo ""
+else
+    print_success "Tavily API key is configured"
+fi
+
 # Step 5: Check PROTOCOL setting
 source "$ENV_FILE" 2>/dev/null || true
 PROTOCOL=${PROTOCOL:-https}

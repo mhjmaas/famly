@@ -317,7 +317,56 @@ else
     fi
 fi
 
-# Step 10: Check and generate VAPID keys for push notifications
+# Step 10: Check and configure timezone
+# Source .env.dev to get current timezone
+source ".env.dev" 2>/dev/null || true
+
+# Only configure timezone if not already set
+if [ -z "$TIMEZONE" ] || [ "$TIMEZONE" == "change-this-timezone" ]; then
+    print_info "Configuring timezone..."
+
+    # Get the default timezone from .env.example
+    DEFAULT_TZ="Europe/Amsterdam"
+    if [ -f "$ENV_EXAMPLE" ]; then
+        DEFAULT_TZ=$(grep -E "^TIMEZONE=" "$ENV_EXAMPLE" | cut -d'=' -f2 | tr -d '"')
+        DEFAULT_TZ=${DEFAULT_TZ:-Europe/Amsterdam}
+    fi
+
+    echo ""
+    echo -e "${BLUE}Timezone Configuration${NC}"
+    echo "Enter a TZ identifier from the IANA time zone database:"
+    echo "See: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
+    echo ""
+
+    read -p "Timezone [${DEFAULT_TZ}]: " USER_TZ
+    echo ""
+
+    # Use user input or default
+    TIMEZONE=${USER_TZ:-$DEFAULT_TZ}
+
+    # Update timezone in .env.dev
+    if [ -f ".env.dev" ]; then
+        if grep -q "^TIMEZONE=" ".env.dev"; then
+            # Update existing timezone line
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i '' "s|^TIMEZONE=.*|TIMEZONE=\"${TIMEZONE}\"|g" ".env.dev"
+            else
+                sed -i "s|^TIMEZONE=.*|TIMEZONE=\"${TIMEZONE}\"|g" ".env.dev"
+            fi
+        else
+            # Add timezone if it doesn't exist
+            echo "TIMEZONE=\"${TIMEZONE}\"" >> ".env.dev"
+        fi
+        print_success "Timezone set to: $TIMEZONE"
+    else
+        print_info "Timezone will be set to: $TIMEZONE"
+    fi
+    echo ""
+else
+    print_success "Timezone already configured: $TIMEZONE"
+fi
+
+# Step 11: Check and generate VAPID keys for push notifications
 print_info "Checking push notification configuration..."
 
 # Source .env.dev to get current VAPID keys
@@ -400,7 +449,72 @@ else
     print_success "VAPID keys are configured"
 fi
 
-# Step 11: Show service info before starting
+# Step 11.5: Check and configure Tavily API key for web search
+print_info "Checking web search configuration..."
+
+# Source .env.dev to get current Tavily key
+if [ -f ".env.dev" ]; then
+    set -a
+    source .env.dev
+    set +a
+fi
+
+# Check if Tavily key is set and valid (not placeholder value)
+TAVILY_KEY_VALID=false
+
+if [ ! -z "$TAVILY_KEY" ] && [ "$TAVILY_KEY" != "your_tavily_key_here" ]; then
+    TAVILY_KEY_VALID=true
+fi
+
+if [ "$TAVILY_KEY_VALID" = false ]; then
+    print_warning "Tavily API key is not configured"
+    echo ""
+    echo -e "${BLUE}What is Tavily used for?${NC}"
+    echo "  Tavily enables AI-powered web search functionality in the application."
+    echo "  This allows the AI assistant to search the web for real-time information."
+    echo ""
+    echo "Without a Tavily API key:"
+    echo "  • The AI assistant will work normally for other features"
+    echo -e "  • ${YELLOW}Web search capabilities will be disabled${NC}"
+    echo "  • No cost or account required if you don't need web search"
+    echo ""
+    echo "To get a Tavily API key:"
+    echo -e "  • Sign up at ${GREEN}https://tavily.com${NC}"
+    echo "  • Free tier available for testing"
+    echo ""
+    read -p "Enter Tavily API key (or press Enter to skip): " TAVILY_REPLY
+    echo ""
+
+    if [ ! -z "$TAVILY_REPLY" ]; then
+        # Trim whitespace
+        TAVILY_REPLY=$(echo "$TAVILY_REPLY" | xargs)
+
+        # Update .env.dev with the provided key
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            # macOS (BSD sed)
+            sed -i '' "s|TAVILY_KEY=.*|TAVILY_KEY=$TAVILY_REPLY|g" ".env.dev"
+        else
+            # Linux (GNU sed)
+            sed -i "s|TAVILY_KEY=.*|TAVILY_KEY=$TAVILY_REPLY|g" ".env.dev"
+        fi
+
+        print_success "Tavily API key configured"
+        print_info "Web search is now enabled"
+    else
+        print_warning "Skipping Tavily API key configuration"
+        echo ""
+        echo -e "${YELLOW}ℹ  Web search will not be available${NC}"
+        echo "  You can add your Tavily API key later by:"
+        echo -e "  1. Getting a key from ${GREEN}https://tavily.com${NC}"
+        echo "  2. Adding it to .env.dev: TAVILY_KEY=your_key_here"
+        echo ""
+    fi
+    echo ""
+else
+    print_success "Tavily API key is configured"
+fi
+
+# Step 12: Show service info before starting
 echo ""
 if [ "$PROTOCOL" == "https" ]; then
     echo -e "${GREEN}🚀 Starting development services with HTTPS (via Caddy):${NC}"

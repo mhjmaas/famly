@@ -34,6 +34,11 @@ import {
   PromptInputTextarea,
   PromptInputTools,
 } from "@/components/ai-elements/prompt-input";
+import { detectAIMention } from "@/hooks/use-mention-detection";
+import {
+  loadMessageInputPreferences,
+  updateMessageInputPreference,
+} from "@/lib/utils/message-input-preferences";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectChatLoading, sendMessage } from "@/store/slices/chat.slice";
 
@@ -83,6 +88,15 @@ export interface MessageSubmitData {
   files?: FileUIPart[];
 }
 
+export interface AIMentionData {
+  /** The original message with the mention */
+  originalMessage: string;
+  /** The question extracted from the message */
+  question: string;
+  /** The message to persist (without the mention) */
+  messageWithoutMention: string;
+}
+
 interface MessageInputProps {
   /** Chat ID for Redux-based message sending (optional if using onSendMessage) */
   chatId?: string;
@@ -123,6 +137,12 @@ interface MessageInputProps {
   value?: string;
   /** Callback when input value changes */
   onValueChange?: (value: string) => void;
+  /** AI name for @mention detection (e.g., "Jarvis") */
+  aiName?: string;
+  /** Callback when AI is mentioned in a DM/Group chat */
+  onAIMention?: (data: AIMentionData) => void | Promise<void>;
+  /** Whether AI mention detection is enabled */
+  enableAIMention?: boolean;
 }
 
 export function MessageInput({
@@ -141,6 +161,9 @@ export function MessageInput({
   isLoading: externalLoading,
   value: controlledValue,
   onValueChange,
+  aiName,
+  onAIMention,
+  enableAIMention = false,
 }: MessageInputProps) {
   const dispatch = useAppDispatch();
   const reduxLoading = useAppSelector(selectChatLoading);
@@ -155,7 +178,15 @@ export function MessageInput({
       setInternalText(value);
     }
   };
-  const [useWebSearch, setUseWebSearch] = useState(false);
+
+  // Load preferences from localStorage on mount
+  const [useWebSearch, setUseWebSearch] = useState(() => {
+    if (enableWebSearch) {
+      const preferences = loadMessageInputPreferences();
+      return preferences.webSearch ?? false;
+    }
+    return false;
+  });
   const [useMicrophone, setUseMicrophone] = useState(false);
   const [model, setModel] = useState(defaultModel);
   const [modelSelectorOpen, setModelSelectorOpen] = useState(false);
@@ -168,6 +199,8 @@ export function MessageInput({
   const handleWebSearchToggle = () => {
     const newValue = !useWebSearch;
     setUseWebSearch(newValue);
+    // Save to localStorage
+    updateMessageInputPreference("webSearch", newValue);
     onWebSearchToggle?.(newValue);
   };
 
@@ -210,6 +243,21 @@ export function MessageInput({
         setText("");
         setStatus("ready");
       } else if (chatId) {
+        // Check for AI mention in DM/Group chats
+        console.log("[Message Input] Checking for AI mention", {
+          enableAIMention,
+          aiName,
+          messageText: message.text,
+        });
+
+        const mentionResult =
+          enableAIMention && aiName
+            ? detectAIMention(message.text || "", aiName)
+            : null;
+
+        console.log("[Message Input] Mention detection result:", mentionResult);
+
+        // Send the user's message first
         await dispatch(
           sendMessage({
             chatId,
@@ -217,8 +265,19 @@ export function MessageInput({
             clientId: `${Date.now()}-${Math.random()}`,
           }),
         ).unwrap();
+
         setText("");
         setStatus("ready");
+
+        // If AI was mentioned, trigger the AI invocation callback
+        if (mentionResult?.hasAIMention && onAIMention) {
+          console.log("[Message Input] AI mentioned, invoking callback");
+          await onAIMention({
+            originalMessage: message.text || "",
+            question: mentionResult.question,
+            messageWithoutMention: mentionResult.messageWithoutMention,
+          });
+        }
       }
     } catch (error) {
       console.error("Error sending message:", error);

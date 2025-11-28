@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { addMembersRoute } from "./add-members.route";
+import { clearMessagesRoute } from "./clear-messages.route";
 import { createChatRoute } from "./create-chat.route";
 import { createMessageRoute } from "./create-message.route";
 import { getChatRoute } from "./get-chat.route";
@@ -45,6 +46,9 @@ export function createChatRouter(): Router {
 
   // POST /v1/chats/:chatId/messages - Send a message to a chat
   router.use(createMessageRoute());
+
+  // DELETE /v1/chats/:chatId/messages - Clear all messages in an AI chat
+  router.use(clearMessagesRoute());
 
   // GET /v1/chats/search/messages - Search messages across all user's chats
   router.use(searchMessagesRoute());

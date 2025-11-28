@@ -50,10 +50,11 @@ export class MessageRepository {
 
   /**
    * Create a new message
+   * @param senderId - ObjectId for user messages, or string (AI_SENDER_ID) for AI messages
    */
   async create(
     chatId: ObjectId,
-    senderId: ObjectId,
+    senderId: ObjectId | string,
     body: string,
     clientId?: string,
   ): Promise<Message> {

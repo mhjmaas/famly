@@ -14,6 +14,11 @@ import {
   selectChatLoading,
   selectChats,
 } from "@/store/slices/chat.slice";
+import { selectCurrentFamily } from "@/store/slices/family.slice";
+import {
+  selectAISettings,
+  selectIsFeatureEnabled,
+} from "@/store/slices/settings.slice";
 import { ChatList } from "./chat-list";
 import { ConversationView } from "./conversation-view";
 
@@ -89,6 +94,12 @@ export function ChatInterface({ dict, initialChatId }: ChatInterfaceProps) {
   const chats = useAppSelector(selectChats);
   const activeChat = useAppSelector(selectActiveChat);
   const loading = useAppSelector(selectChatLoading);
+  const currentFamily = useAppSelector(selectCurrentFamily);
+  const familyId = currentFamily?.familyId;
+  const aiSettings = useAppSelector(selectAISettings(familyId));
+  const aiIntegrationEnabled = useAppSelector(
+    selectIsFeatureEnabled(familyId, "aiIntegration"),
+  );
   const lastFetch = useAppSelector((state) => state.chat.lastFetch);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [error, setError] = useState<string | null>(null);
@@ -222,6 +233,8 @@ export function ChatInterface({ dict, initialChatId }: ChatInterfaceProps) {
               dict={dict}
               chat={activeChat}
               loading={loading.messages}
+              aiName={aiSettings?.aiName}
+              aiIntegrationEnabled={aiIntegrationEnabled}
             />
           </div>
         </div>
@@ -254,6 +267,8 @@ export function ChatInterface({ dict, initialChatId }: ChatInterfaceProps) {
               dict={dict}
               chat={activeChat}
               loading={loading.messages}
+              aiName={aiSettings?.aiName}
+              aiIntegrationEnabled={aiIntegrationEnabled}
             />
           </TabsContent>
         </Tabs>

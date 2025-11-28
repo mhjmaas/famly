@@ -69,7 +69,7 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-famly-dev-secret-min-32-chars}
       MINIO_BUCKET: ${MINIO_BUCKET:-famly-rewards}
       NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-your_public_key_here}
-      TZ: ${TZ:-Europe/Amsterdam}
+      TIMEZONE: ${TIMEZONE:-Europe/Amsterdam}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-your_private_key_here}
       VAPID_EMAIL: ${VAPID_EMAIL:-support@famly.app}
     volumes:
@@ -120,6 +120,8 @@ services:
       NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-your_public_key_here}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-your_private_key_here}
       VAPID_EMAIL: ${VAPID_EMAIL:-support@famly.app}
+      TAVILY_KEY: ${TAVILY_KEY:-your_tavily_api_key_here}
+      TIMEZONE: ${TIMEZONE:-Europe/Amsterdam}
     volumes:
       # Mount source code for live reload
       - ../apps/web/src:/app/apps/web/src:delegated

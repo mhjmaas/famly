@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { type UpdateTaskRequest, updateTask } from "@/lib/api-client";
 import { getCookieHeader } from "@/lib/server-cookies";
-import type { TaskAssignment } from "@/types/api.types";
 
 export const updateTaskTool = {
   description:

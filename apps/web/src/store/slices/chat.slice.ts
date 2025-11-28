@@ -236,20 +236,11 @@ export const markMessagesAsRead = createAsyncThunk(
 /**
  * Select a chat and fetch its messages
  * Also marks messages as read on the backend
- * Note: AI chats skip message fetching since their messages are managed client-side
  */
 export const selectChat = createAsyncThunk(
   "chat/selectChat",
-  async (chatId: string, { dispatch, getState }) => {
-    const state = getState() as RootState;
-    const chat = state.chat.chats.find((c) => c._id === chatId);
-
-    // Skip fetching messages for AI chats - they're managed client-side via useChat
-    if (chat?.type === "ai") {
-      return chatId;
-    }
-
-    // Fetch messages for the selected chat
+  async (chatId: string, { dispatch }) => {
+    // Fetch messages for the selected chat (including AI chats - they're now persisted)
     const result = await dispatch(fetchMessages({ chatId }));
 
     // If messages were fetched successfully, mark the last one as read
@@ -361,15 +352,19 @@ const chatSlice = createSlice({
     },
 
     /**
-     * Sync AI messages from useChat hook to Redux store.
-     * This allows AI messages to persist when navigating away and back.
+     * Clear all messages for a chat (used for AI chat clear history)
      */
-    syncAIMessages: (
-      state,
-      action: PayloadAction<{ chatId: string; messages: MessageDTO[] }>,
-    ) => {
-      const { chatId, messages } = action.payload;
-      state.messages[chatId] = messages;
+    clearChatMessages: (state, action: PayloadAction<string>) => {
+      const chatId = action.payload;
+      // Clear messages for this chat
+      state.messages[chatId] = [];
+      // Reset cursor so next fetch starts fresh
+      state.messageCursors[chatId] = undefined as unknown as null;
+      // Clear last message preview on the chat
+      const chatIndex = state.chats.findIndex((c) => c._id === chatId);
+      if (chatIndex !== -1) {
+        state.chats[chatIndex].lastMessage = undefined;
+      }
     },
   },
   extraReducers: (builder) => {
@@ -507,7 +502,7 @@ export const {
   updateChatFromEvent,
   resetUnreadCount,
   setActiveChat,
-  syncAIMessages,
+  clearChatMessages,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

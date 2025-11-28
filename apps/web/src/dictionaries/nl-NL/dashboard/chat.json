@@ -22,6 +22,18 @@
           },
           "placeholder": "Vraag de AI assistent..."
         },
+        "aiMention": {
+          "hint": "Typ @{{aiName}} om de AI te vragen",
+          "processing": "AI is aan het denken...",
+          "error": "Kon geen AI-antwoord krijgen"
+        },
+        "clearChat": {
+          "button": "Chatgeschiedenis wissen",
+          "title": "Chatgeschiedenis wissen?",
+          "description": "Dit verwijdert permanent alle berichten in dit gesprek. Deze actie kan niet ongedaan worden gemaakt.",
+          "cancel": "Annuleren",
+          "confirm": "Geschiedenis wissen"
+        },
         "conversation": {
           "emptyState": {
             "title": "Selecteer een chat",

@@ -1,5 +1,5 @@
-import { type NextFunction, type Response, Router } from "express";
 import { standardLimiter } from "@middleware/rate-limiter";
+import { type NextFunction, type Response, Router } from "express";
 import {
   type AuthenticatedRequest,
   authenticate,

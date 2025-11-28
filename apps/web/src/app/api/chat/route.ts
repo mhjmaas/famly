@@ -1,9 +1,7 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import {
-  convertToModelMessages,
   createAgentUIStreamResponse,
   stepCountIs,
-  streamText,
   ToolLoopAgent,
   type UIMessage,
 } from "ai";
@@ -12,14 +10,19 @@ import { getAiInstructions } from "@/lib/ai-instructions";
 import { ApiError, getFamilySettings, getMe } from "@/lib/api-client";
 import { getCookieHeader } from "@/lib/server-cookies";
 import {
+  cancelClaimTool,
   checkContributionGoalTool,
+  claimRewardTool,
   completeTaskTool,
   createContributionGoalTool,
   createMultipleTasksTool,
   createTaskTool,
   currentDateTimeTool,
   deductContributionGoalTool,
+  deleteMultipleTasksTool,
+  deleteTaskTool,
   familyMembersTool,
+  getClaimsTool,
   karmaBalanceTool,
   listFavouriteRewardsTool,
   listRewardsTool,
@@ -27,6 +30,7 @@ import {
   modifyKarmaTool,
   updateTaskTool,
 } from "@/lib/tools";
+import { webSearchTool } from "@/lib/tools/web-search.tool";
 
 // Language mapping enum
 const LANGUAGE_MAP: Record<string, string> = {
@@ -35,7 +39,12 @@ const LANGUAGE_MAP: Record<string, string> = {
 };
 
 export async function POST(req: Request) {
-  const { messages }: { messages: UIMessage[] } = await req.json();
+  const {
+    messages,
+    data,
+  }: { messages: UIMessage[]; data?: { webSearch?: boolean } } =
+    await req.json();
+  const webSearchEnabled = data?.webSearch ?? false;
   try {
     // Get cookie header for authentication (same method DAL uses)
     const cookieHeader = await getCookieHeader();
@@ -70,7 +79,8 @@ export async function POST(req: Request) {
       familyId,
     });
 
-    const tools = {
+    // Base tools always available
+    const tools: Record<string, any> = {
       familyMembersTool: familyMembersTool,
       currentDateTimeTool: currentDateTimeTool,
       karmaBalanceTool: karmaBalanceTool,
@@ -80,23 +90,40 @@ export async function POST(req: Request) {
       createContributionGoalTool: createContributionGoalTool,
       listRewardsTool: listRewardsTool,
       listFavouriteRewardsTool: listFavouriteRewardsTool,
+      claimRewardTool: claimRewardTool,
+      getClaimsTool: getClaimsTool,
+      cancelClaimTool: cancelClaimTool,
       listTasksTool: listTasksTool,
       createTaskTool: createTaskTool,
       createMultipleTasksTool: createMultipleTasksTool,
       updateTaskTool: updateTaskTool,
       completeTaskTool: completeTaskTool,
+      deleteTaskTool: deleteTaskTool,
+      deleteMultipleTasksTool: deleteMultipleTasksTool,
     };
+
+    // Conditionally add web search tool if enabled
+    if (webSearchEnabled) {
+      tools.webSearchTool = webSearchTool;
+      console.log("Web search tool enabled for this request");
+    }
 
     const myAgent = new ToolLoopAgent({
       model: lmstudio(settings.aiSettings.modelName),
       instructions,
       tools,
-      stopWhen: stepCountIs(20), // Allow up to 20 steps
+      stopWhen: stepCountIs(40), // Allow up to 40 steps
+      providerOptions: {
+        openai: {
+          reasoningEffort: "high",
+        },
+      },
     });
 
     return createAgentUIStreamResponse({
       agent: myAgent,
       messages,
+      sendReasoning: false,
     });
   } catch (error) {
     // Handle authentication errors with proper HTTP response (not redirect)

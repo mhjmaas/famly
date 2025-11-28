@@ -2,51 +2,35 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import {
-  Bot,
-  CopyIcon,
-  Loader2,
-  MessageCircle,
-  RefreshCcwIcon,
-} from "lucide-react";
-import { Fragment, useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Conversation,
   ConversationContent,
-  ConversationEmptyState,
   ConversationScrollButton,
-  useStickToBottomContext,
 } from "@/components/ai-elements/conversation";
-import {
-  Message,
-  MessageAction,
-  MessageActions,
-  MessageContent,
-  MessageResponse,
-} from "@/components/ai-elements/message";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import type { UserProfile } from "@/lib/api-client";
-import { toMessageDTOs, toUIMessages } from "@/lib/utils/ai-message-utils";
-import { formatExactTime } from "@/lib/utils/chat-utils";
-import { getInitials } from "@/lib/utils/family-utils";
-import { cn } from "@/lib/utils/style-utils";
+import { useAIMentionInvocation } from "@/hooks/use-ai-mention-invocation";
+import { clearChatMessages } from "@/lib/api-client";
+import { persistAIMessages, toUIMessages } from "@/lib/utils/ai-message-utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
+  clearChatMessages as clearChatMessagesAction,
   fetchMessages,
-  fetchMoreMessages,
   selectHasMoreMessages,
   selectLoadingMore,
   selectMessagesForChat,
-  syncAIMessages,
 } from "@/store/slices/chat.slice";
 import { selectFamilyMembers } from "@/store/slices/family.slice";
 import { selectUser } from "@/store/slices/user.slice";
-import type {
-  ChatWithPreviewDTO,
-  FamilyMember,
-  MessageDTO,
-} from "@/types/api.types";
-import { MessageInput, type MessageSubmitData } from "./message-input";
+import type { ChatWithPreviewDTO } from "@/types/api.types";
+import { ConversationEmpty } from "./conversation-empty";
+import { ConversationHeader } from "./conversation-header";
+import { InfiniteScrollHandler } from "./infinite-scroll-handler";
+import {
+  type AIMentionData,
+  MessageInput,
+  type MessageSubmitData,
+} from "./message-input";
+import { MessageList } from "./message-list-wrapper";
 
 interface ConversationViewProps {
   dict: {
@@ -69,6 +53,16 @@ interface ConversationViewProps {
       };
       placeholder: string;
     };
+    aiMention?: {
+      processing: string;
+    };
+    clearChat?: {
+      button: string;
+      title: string;
+      description: string;
+      cancel: string;
+      confirm: string;
+    };
     messageInput: {
       placeholder: string;
       shiftEnterHint: string;
@@ -81,94 +75,36 @@ interface ConversationViewProps {
   };
   chat: ChatWithPreviewDTO | null;
   loading: boolean;
-}
-
-/**
- * Inner component that handles infinite scroll detection
- * Must be rendered inside a Conversation (StickToBottom) component
- */
-function InfiniteScrollHandler({
-  chatId,
-  hasMoreMessages,
-  loadingMore,
-}: {
-  chatId: string;
-  hasMoreMessages: boolean;
-  loadingMore: boolean;
-}) {
-  const dispatch = useAppDispatch();
-  const { scrollRef, stopScroll } = useStickToBottomContext();
-  const previousScrollHeightRef = useRef<number>(0);
-  const previousScrollTopRef = useRef<number>(0);
-
-  // Set up scroll event listener for infinite scroll
-  useEffect(() => {
-    const scrollElement = scrollRef.current;
-    if (!scrollElement) return;
-
-    const handleScroll = () => {
-      if (loadingMore || !hasMoreMessages) return;
-
-      // Trigger load when within 100px of the top
-      if (scrollElement.scrollTop < 100) {
-        // Store current scroll state before loading
-        previousScrollHeightRef.current = scrollElement.scrollHeight;
-        previousScrollTopRef.current = scrollElement.scrollTop;
-        // Stop the auto-scroll behavior so it doesn't jump to bottom
-        stopScroll();
-        dispatch(fetchMoreMessages({ chatId }));
-      }
-    };
-
-    scrollElement.addEventListener("scroll", handleScroll);
-    return () => scrollElement.removeEventListener("scroll", handleScroll);
-  }, [scrollRef, chatId, hasMoreMessages, loadingMore, dispatch, stopScroll]);
-
-  // Restore scroll position after loading more messages
-  useEffect(() => {
-    const scrollElement = scrollRef.current;
-    if (
-      !scrollElement ||
-      loadingMore ||
-      previousScrollHeightRef.current === 0
-    ) {
-      return;
-    }
-
-    // Calculate how much content was added and adjust scroll position
-    // Use requestAnimationFrame to ensure DOM has updated
-    requestAnimationFrame(() => {
-      const newScrollHeight = scrollElement.scrollHeight;
-      const heightDiff = newScrollHeight - previousScrollHeightRef.current;
-
-      if (heightDiff > 0) {
-        // Restore scroll position: add the height difference to maintain visual position
-        scrollElement.scrollTop = previousScrollTopRef.current + heightDiff;
-      }
-
-      previousScrollHeightRef.current = 0;
-      previousScrollTopRef.current = 0;
-    });
-  }, [scrollRef, loadingMore]);
-
-  return null;
+  /** Whether to show AI reasoning in the conversation. Defaults to false. */
+  showReasoning?: boolean;
+  /** AI assistant name for @mention detection (e.g., "Jarvis") */
+  aiName?: string;
+  /** Whether AI integration is enabled for this family */
+  aiIntegrationEnabled?: boolean;
 }
 
 export function ConversationView({
   dict,
   chat,
   loading,
+  showReasoning = false,
+  aiName,
+  aiIntegrationEnabled = false,
 }: ConversationViewProps) {
   const dispatch = useAppDispatch();
   const currentUser = useAppSelector(selectUser);
   const familyMembers = useAppSelector(selectFamilyMembers);
 
   // Memoize selectors that depend on chat._id to avoid unnecessary rerenders
+  // biome-ignore lint/correctness/useExhaustiveDependencies(chat?._id): suppress dependency chat
+  // biome-ignore lint/correctness/useExhaustiveDependencies(chat): suppress dependency chat
   const messagesSelector = useMemo(
     () => (state: Parameters<typeof selectMessagesForChat>[0]) =>
       chat ? selectMessagesForChat(state, chat._id) : [],
     [chat?._id],
   );
+  // biome-ignore lint/correctness/useExhaustiveDependencies(chat?._id): suppress dependency chat
+  // biome-ignore lint/correctness/useExhaustiveDependencies(chat): suppress dependency chat
   const hasMoreSelector = useMemo(
     () => (state: Parameters<typeof selectHasMoreMessages>[0]) =>
       chat ? selectHasMoreMessages(state, chat._id) : false,
@@ -181,9 +117,29 @@ export function ConversationView({
 
   const isAIChat = chat?.type === "ai";
 
+  // Clear chat state
+  const [isClearingChat, setIsClearingChat] = useState(false);
+
+  // Track current webSearch state for transport
+  const webSearchRef = useRef(false);
+
   // AI Chat hook - only active for AI chats
+  // Custom transport that includes webSearch in request body
   const aiTransport = useMemo(
-    () => new DefaultChatTransport({ api: "/api/chat" }),
+    () =>
+      new DefaultChatTransport({
+        api: "/api/chat",
+        fetch: async (url, options) => {
+          // Add webSearch to request body
+          const body = options?.body ? JSON.parse(options.body as string) : {};
+          body.data = { webSearch: webSearchRef.current };
+
+          return fetch(url, {
+            ...options,
+            body: JSON.stringify(body),
+          });
+        },
+      }),
     [],
   );
   const {
@@ -223,32 +179,62 @@ export function ConversationView({
     }
   }, [chat?._id]);
 
-  // Sync AI messages back to Redux when they change or streaming completes
-  const prevAIMessagesLengthRef = useRef(0);
+  // Initialize persisted message IDs from Redux messages
+  const [persistedMessageIds, setPersistedMessageIds] = useState<Set<string>>(
+    () => {
+      // On initial load, all messages in Redux were already persisted to the API
+      return new Set(messages.map((m) => m._id));
+    },
+  );
+
+  // Update persisted message IDs when Redux messages change
+  useEffect(() => {
+    setPersistedMessageIds((prev) => {
+      const updated = new Set(prev);
+      messages.forEach((m) => {
+        updated.add(m._id);
+      });
+      return updated;
+    });
+  }, [messages]);
+
+  // Persist AI messages to API when streaming completes
   const prevStatusRef = useRef(aiStatus);
   useEffect(() => {
     if (!isAIChat || !chat || !currentUser?.id) return;
     if (aiMessages.length === 0) return;
 
-    const countChanged = aiMessages.length !== prevAIMessagesLengthRef.current;
     const streamingJustCompleted =
       prevStatusRef.current === "streaming" && aiStatus === "ready";
+    prevStatusRef.current = aiStatus;
 
-    // Sync when: message count changes OR streaming just completed (to capture final content)
-    if (countChanged || streamingJustCompleted) {
-      prevAIMessagesLengthRef.current = aiMessages.length;
-      prevStatusRef.current = aiStatus;
-
-      const reduxMessages = toMessageDTOs(
-        aiMessages as Parameters<typeof toMessageDTOs>[0],
+    // Only persist when streaming completes (not during streaming)
+    if (streamingJustCompleted) {
+      persistAIMessages(
         chat._id,
+        aiMessages as Parameters<typeof persistAIMessages>[1],
         currentUser.id,
-      );
-      dispatch(syncAIMessages({ chatId: chat._id, messages: reduxMessages }));
-    } else {
-      prevStatusRef.current = aiStatus;
+        persistedMessageIds,
+      ).then((newlyPersisted) => {
+        if (newlyPersisted.size > 0) {
+          setPersistedMessageIds((prev) => {
+            const updated = new Set(prev);
+            newlyPersisted.forEach((id) => {
+              updated.add(id);
+            });
+            return updated;
+          });
+        }
+      });
     }
-  }, [aiMessages, aiStatus, isAIChat, chat, currentUser?.id, dispatch]);
+  }, [
+    aiMessages,
+    aiStatus,
+    isAIChat,
+    chat,
+    currentUser?.id,
+    persistedMessageIds,
+  ]);
 
   const aiChat = useMemo(
     () => ({
@@ -265,35 +251,76 @@ export function ConversationView({
   const handleAISendMessage = useCallback(
     (data: MessageSubmitData) => {
       if (data.text.trim()) {
-        aiSendMessage({ text: data.text });
+        // Update webSearch ref so transport can read it
+        webSearchRef.current = data.webSearch ?? false;
+
+        aiSendMessage({
+          text: data.text,
+          files: data.files,
+        });
       }
     },
     [aiSendMessage],
   );
 
-  // Fetch messages when chat changes (only for non-AI chats)
+  // Handler for clearing AI chat history
+  const handleClearChat = useCallback(async () => {
+    if (!chat || !isAIChat) return;
+
+    setIsClearingChat(true);
+    try {
+      // Call API to delete messages from database
+      await clearChatMessages(chat._id);
+      // Clear messages from Redux store
+      dispatch(clearChatMessagesAction(chat._id));
+      // Clear local AI messages (useChat hook state)
+      setAIMessages([]);
+    } catch (error) {
+      console.error("Failed to clear chat:", error);
+    } finally {
+      setIsClearingChat(false);
+    }
+  }, [chat, isAIChat, setAIMessages, dispatch]);
+
+  // AI mention invocation for DM/Group chats
+  const {
+    isProcessing: isAIMentionProcessing,
+    streamingText: aiMentionStreamingText,
+    invokeAI,
+  } = useAIMentionInvocation({
+    chatId: chat?._id || "",
+    onResponse: () => {
+      // Refresh messages to show the AI response
+      if (chat) {
+        dispatch(fetchMessages({ chatId: chat._id }));
+      }
+    },
+  });
+
+  // Handler for AI @mention in DM/Group chats
+  const handleAIMention = useCallback(
+    async (data: AIMentionData) => {
+      if (!aiIntegrationEnabled || !aiName) return;
+
+      // Invoke AI with the question and recent context
+      await invokeAI(data.question, messages);
+    },
+    [aiIntegrationEnabled, aiName, invokeAI, messages],
+  );
+
+  // Fetch messages when chat changes (for all chat types - AI chats are now persisted)
   useEffect(() => {
-    if (chat && !isAIChat) {
+    if (chat) {
       dispatch(fetchMessages({ chatId: chat._id }));
     }
-  }, [chat, isAIChat, dispatch]);
+  }, [chat, dispatch]);
 
   if (!chat) {
     return (
-      <div
-        className="flex h-full flex-col items-center justify-center gap-4 text-center"
-        data-testid="conversation-empty"
-      >
-        <MessageCircle className="h-16 w-16 text-muted-foreground" />
-        <div>
-          <h3 className="text-lg font-medium">
-            {dict.conversation.emptyState.title}
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {dict.conversation.emptyState.description}
-          </p>
-        </div>
-      </div>
+      <ConversationEmpty
+        title={dict.conversation.emptyState.title}
+        description={dict.conversation.emptyState.description}
+      />
     );
   }
 
@@ -324,6 +351,9 @@ export function ConversationView({
         title={chatTitle}
         isAIChat={isAIChat}
         isStreaming={aiChat.isStreaming || aiChat.isSubmitting}
+        onClearChat={isAIChat ? handleClearChat : undefined}
+        isClearingChat={isClearingChat}
+        dict={dict.clearChat ? { clearChat: dict.clearChat } : undefined}
       />
 
       {/* Messages */}
@@ -344,7 +374,7 @@ export function ConversationView({
               className="flex items-center justify-center py-2"
               data-testid="loading-more"
             >
-              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
             </div>
           )}
 
@@ -357,15 +387,13 @@ export function ConversationView({
             currentUser={currentUser}
             familyMembers={familyMembers}
             onRegenerate={isAIChat ? aiChat.regenerate : undefined}
+            showReasoning={showReasoning}
+            aiName={chat?.title || "AI Assistant"}
+            chatId={chat._id}
+            isStreaming={isAIChat ? aiChat.isStreaming : isAIMentionProcessing}
+            streamingText={dict.aiMention?.processing || "AI is thinking..."}
+            streamingAIMessage={!isAIChat ? aiMentionStreamingText : undefined}
           />
-
-          {/* AI streaming indicator */}
-          {isAIChat && aiChat.isStreaming && aiChat.messages.length > 0 && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>AI is thinking...</span>
-            </div>
-          )}
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
@@ -377,274 +405,17 @@ export function ConversationView({
           dict={dict}
           placeholderOverride={isAIChat ? dict.aiChat?.placeholder : undefined}
           enableModelSelector={false}
-          enableWebSearch={false}
+          enableWebSearch={isAIChat}
           onSendMessage={isAIChat ? handleAISendMessage : undefined}
-          isLoading={aiChat.isStreaming || aiChat.isSubmitting}
+          isLoading={
+            aiChat.isStreaming || aiChat.isSubmitting || isAIMentionProcessing
+          }
+          // AI @mention support for DM/Group chats
+          aiName={aiName}
+          enableAIMention={aiIntegrationEnabled && !isAIChat}
+          onAIMention={handleAIMention}
         />
       </div>
     </div>
-  );
-}
-
-// ============================================================================
-// Sub-components for better organization
-// ============================================================================
-
-interface ConversationHeaderProps {
-  title: string;
-  isAIChat: boolean;
-  isStreaming: boolean;
-}
-
-function ConversationHeader({
-  title,
-  isAIChat,
-  isStreaming,
-}: ConversationHeaderProps) {
-  return (
-    <div
-      className="border-b border-border p-4"
-      data-testid="conversation-header"
-    >
-      <div className="flex items-center gap-2">
-        {isAIChat && <Bot className="h-5 w-5 text-primary" />}
-        <h2 className="text-lg font-semibold" data-testid="conversation-title">
-          {title}
-        </h2>
-        {isStreaming && (
-          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-        )}
-      </div>
-    </div>
-  );
-}
-
-interface MessageListProps {
-  messages: MessageDTO[] | ReturnType<typeof useChat>["messages"];
-  isAIChat: boolean;
-  loading: boolean;
-  emptyState: { title: string; description: string };
-  currentUser: UserProfile | null;
-  familyMembers: readonly FamilyMember[];
-  onRegenerate?: () => void;
-}
-
-function MessageList({
-  messages,
-  isAIChat,
-  loading,
-  emptyState,
-  currentUser,
-  familyMembers,
-  onRegenerate,
-}: MessageListProps) {
-  // Empty state
-  if (messages.length === 0 && !loading) {
-    return (
-      <ConversationEmptyState
-        description={emptyState.description}
-        icon={
-          isAIChat ? (
-            <Bot className="size-6" />
-          ) : (
-            <MessageCircle className="size-6" />
-          )
-        }
-        title={emptyState.title}
-      />
-    );
-  }
-
-  // Loading state
-  if (loading && messages.length === 0) {
-    return (
-      <div
-        className="flex items-center justify-center py-8"
-        data-testid="messages-loading"
-      >
-        <p className="text-sm text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
-
-  // Render messages based on chat type
-  if (isAIChat) {
-    return (
-      <AIMessageList
-        messages={messages as ReturnType<typeof useChat>["messages"]}
-        currentUser={currentUser}
-        onRegenerate={onRegenerate}
-      />
-    );
-  }
-
-  return (
-    <RegularMessageList
-      messages={messages as MessageDTO[]}
-      currentUser={currentUser}
-      familyMembers={familyMembers}
-    />
-  );
-}
-
-interface AIMessageListProps {
-  messages: ReturnType<typeof useChat>["messages"];
-  currentUser: UserProfile | null;
-  onRegenerate?: () => void;
-}
-
-function AIMessageList({
-  messages,
-  currentUser,
-  onRegenerate,
-}: AIMessageListProps) {
-  const handleCopyText = useCallback((text: string) => {
-    navigator.clipboard.writeText(text);
-  }, []);
-
-  return (
-    <>
-      {messages.map((message, messageIndex) => {
-        const isUser = message.role === "user";
-        const isLastMessage = messageIndex === messages.length - 1;
-
-        return (
-          <Fragment key={message.id}>
-            {message.parts.map((part, partIndex) => {
-              if (part.type === "text") {
-                return (
-                  <Fragment key={`${message.id}-${partIndex}`}>
-                    <div
-                      data-testid="message-item"
-                      className={cn(
-                        "flex gap-2",
-                        isUser ? "flex-row-reverse" : "flex-row",
-                      )}
-                    >
-                      <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarFallback>
-                          {isUser
-                            ? currentUser?.name
-                              ? getInitials(currentUser.name)
-                              : "ME"
-                            : "AI"}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <Message from={message.role}>
-                        <MessageContent data-testid="message-body">
-                          {isUser ? (
-                            part.text
-                          ) : (
-                            <MessageResponse>{part.text}</MessageResponse>
-                          )}
-                        </MessageContent>
-                      </Message>
-                    </div>
-
-                    {/* Actions for assistant messages on the last message */}
-                    {message.role === "assistant" &&
-                      isLastMessage &&
-                      part.text && (
-                        <MessageActions className="ml-10">
-                          {onRegenerate && (
-                            <MessageAction
-                              onClick={() => onRegenerate()}
-                              label="Regenerate"
-                              tooltip="Regenerate response"
-                            >
-                              <RefreshCcwIcon className="size-3" />
-                            </MessageAction>
-                          )}
-                          <MessageAction
-                            onClick={() => handleCopyText(part.text)}
-                            label="Copy"
-                            tooltip="Copy to clipboard"
-                          >
-                            <CopyIcon className="size-3" />
-                          </MessageAction>
-                        </MessageActions>
-                      )}
-                  </Fragment>
-                );
-              }
-              return null;
-            })}
-          </Fragment>
-        );
-      })}
-    </>
-  );
-}
-
-interface RegularMessageListProps {
-  messages: MessageDTO[];
-  currentUser: UserProfile | null;
-  familyMembers: readonly FamilyMember[];
-}
-
-function RegularMessageList({
-  messages,
-  currentUser,
-  familyMembers,
-}: RegularMessageListProps) {
-  const getSenderInitials = (message: MessageDTO): string => {
-    if (message.senderId === currentUser?.id) {
-      return currentUser?.name ? getInitials(currentUser.name) : "ME";
-    }
-    const member = familyMembers.find((m) => m.memberId === message.senderId);
-    return member?.name ? getInitials(member.name) : "?";
-  };
-
-  const shouldShowAvatar = (message: MessageDTO, index: number) => {
-    if (index === 0) return true;
-    const prevMessage = messages[index - 1];
-    if (prevMessage.senderId !== message.senderId) return true;
-    const timeDiff =
-      new Date(message.createdAt).getTime() -
-      new Date(prevMessage.createdAt).getTime();
-    return timeDiff > 300000; // 5 minutes
-  };
-
-  return (
-    <>
-      {messages.map((message, index) => {
-        const isOwnMessage = message.senderId === currentUser?.id;
-        const showAvatar = shouldShowAvatar(message, index);
-
-        return (
-          <div
-            key={message._id}
-            data-testid="message-item"
-            className={cn(
-              "flex gap-2",
-              isOwnMessage ? "flex-row-reverse" : "flex-row",
-            )}
-          >
-            {showAvatar ? (
-              <Avatar className="h-8 w-8 shrink-0">
-                <AvatarFallback>{getSenderInitials(message)}</AvatarFallback>
-              </Avatar>
-            ) : (
-              <div className="w-8 shrink-0" />
-            )}
-
-            <Message from={isOwnMessage ? "user" : "assistant"}>
-              <MessageContent data-testid="message-body">
-                {message.body}
-              </MessageContent>
-              <span
-                className={cn(
-                  "text-xs text-muted-foreground",
-                  isOwnMessage ? "ml-auto" : "",
-                )}
-              >
-                {formatExactTime(message.createdAt)}
-              </span>
-            </Message>
-          </div>
-        );
-      })}
-    </>
   );
 }

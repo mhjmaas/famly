@@ -1,5 +1,5 @@
-import { authLimiter } from "@middleware/rate-limiter";
 import { HttpError } from "@lib/http-error";
+import { authLimiter } from "@middleware/rate-limiter";
 import { fromNodeHeaders } from "better-auth/node";
 import { type NextFunction, type Response, Router } from "express";
 import { getAuth } from "../better-auth";

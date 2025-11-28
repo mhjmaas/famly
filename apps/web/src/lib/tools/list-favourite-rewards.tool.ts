@@ -14,26 +14,33 @@ export const listFavouriteRewardsTool = {
     // Get cookie header for authentication
     const cookieHeader = await getCookieHeader();
 
-    // Fetch all rewards for the family
-    const rewards = await getRewards(familyId, cookieHeader);
+    try {
+      // Fetch all rewards for the family
+      const rewards = await getRewards(familyId, cookieHeader);
 
-    // Filter only favourite rewards
-    const favouriteRewards = rewards.filter(
-      (reward) => reward.isFavourite === true,
-    );
+      // Filter only favourite rewards
+      const favouriteRewards = rewards.filter(
+        (reward) => reward.isFavourite === true,
+      );
 
-    // Format the response with favourite reward details
-    const result = favouriteRewards.map((reward) => ({
-      rewardId: reward._id,
-      name: reward.name,
-      description: reward.description,
-      karmaCost: reward.karmaCost,
-      imageUrl: reward.imageUrl,
-      createdAt: reward.createdAt,
-      updatedAt: reward.updatedAt,
-    }));
+      // Format the response with favourite reward details
+      const result = favouriteRewards.map((reward) => ({
+        rewardId: reward._id,
+        name: reward.name,
+        description: reward.description,
+        karmaCost: reward.karmaCost,
+        imageUrl: reward.imageUrl,
+        createdAt: reward.createdAt,
+        updatedAt: reward.updatedAt,
+      }));
 
-    console.log("List Favourite Rewards Tool with result", result);
-    return result;
+      console.log("List Favourite Rewards Tool with result", result);
+      return result;
+    } catch (error) {
+      console.error("Error listing favourite rewards:", error);
+      throw new Error(
+        `Failed to list favourite rewards: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
   },
 };

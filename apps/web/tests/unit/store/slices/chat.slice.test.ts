@@ -17,7 +17,6 @@ import chatReducer, {
   selectMessagesForChat,
   sendMessage,
   setActiveChat,
-  syncAIMessages,
   updateChatFromEvent,
 } from "@/store/slices/chat.slice";
 import type { RootState } from "@/store/store";
@@ -387,111 +386,6 @@ describe("chat.slice", () => {
     });
   });
 
-  describe("syncAIMessages action", () => {
-    it("should set messages for a chat", () => {
-      const aiMessages: MessageDTO[] = [
-        {
-          _id: "ai-msg-1",
-          chatId: "ai-chat-1",
-          senderId: "user-1",
-          body: "Hello AI",
-          createdAt: "2024-01-01T10:00:00Z",
-          deleted: false,
-        },
-        {
-          _id: "ai-msg-2",
-          chatId: "ai-chat-1",
-          senderId: "ai-assistant",
-          body: "Hello! How can I help you?",
-          createdAt: "2024-01-01T10:00:01Z",
-          deleted: false,
-        },
-      ];
-
-      store.dispatch(
-        syncAIMessages({ chatId: "ai-chat-1", messages: aiMessages }),
-      );
-
-      const messages = store.getState().chat.messages["ai-chat-1"];
-      expect(messages).toEqual(aiMessages);
-    });
-
-    it("should replace existing messages for a chat", () => {
-      // First sync
-      const initialMessages: MessageDTO[] = [
-        {
-          _id: "ai-msg-1",
-          chatId: "ai-chat-1",
-          senderId: "user-1",
-          body: "First message",
-          createdAt: "2024-01-01T10:00:00Z",
-          deleted: false,
-        },
-      ];
-      store.dispatch(
-        syncAIMessages({ chatId: "ai-chat-1", messages: initialMessages }),
-      );
-
-      // Second sync with more messages
-      const updatedMessages: MessageDTO[] = [
-        ...initialMessages,
-        {
-          _id: "ai-msg-2",
-          chatId: "ai-chat-1",
-          senderId: "ai-assistant",
-          body: "Response",
-          createdAt: "2024-01-01T10:00:01Z",
-          deleted: false,
-        },
-      ];
-      store.dispatch(
-        syncAIMessages({ chatId: "ai-chat-1", messages: updatedMessages }),
-      );
-
-      const messages = store.getState().chat.messages["ai-chat-1"];
-      expect(messages).toHaveLength(2);
-      expect(messages).toEqual(updatedMessages);
-    });
-
-    it("should not affect messages in other chats", async () => {
-      // Set up messages in another chat first
-      mockedGetMessages.mockResolvedValueOnce({
-        messages: [mockMessage1, mockMessage2],
-      });
-      await store.dispatch(fetchMessages({ chatId: "chat-1" }));
-
-      // Sync AI messages to a different chat
-      const aiMessages: MessageDTO[] = [
-        {
-          _id: "ai-msg-1",
-          chatId: "ai-chat-1",
-          senderId: "user-1",
-          body: "AI message",
-          createdAt: "2024-01-01T10:00:00Z",
-          deleted: false,
-        },
-      ];
-      store.dispatch(
-        syncAIMessages({ chatId: "ai-chat-1", messages: aiMessages }),
-      );
-
-      // Original chat messages should be unchanged
-      const chat1Messages = store.getState().chat.messages["chat-1"];
-      expect(chat1Messages).toHaveLength(2);
-
-      // AI chat should have its messages
-      const aiChatMessages = store.getState().chat.messages["ai-chat-1"];
-      expect(aiChatMessages).toHaveLength(1);
-    });
-
-    it("should handle empty messages array", () => {
-      store.dispatch(syncAIMessages({ chatId: "ai-chat-1", messages: [] }));
-
-      const messages = store.getState().chat.messages["ai-chat-1"];
-      expect(messages).toEqual([]);
-    });
-  });
-
   describe("fetchChats async thunk", () => {
     it("should set loading state when pending", () => {
       mockedGetChats.mockImplementation(() => new Promise(() => {}));
@@ -767,45 +661,6 @@ describe("chat.slice", () => {
 
       expect(mockedGetMessages).toHaveBeenCalledWith("chat-1", undefined, 20);
       expect(store.getState().chat.messages["chat-1"]).toHaveLength(2);
-    });
-
-    it("should NOT fetch messages for AI chats", async () => {
-      const aiChat: ChatWithPreviewDTO = {
-        _id: "ai-chat-1",
-        type: "ai",
-        title: "AI Assistant",
-        createdBy: "user-1",
-        memberIds: ["user-1"],
-        createdAt: "2024-01-01T00:00:00Z",
-        updatedAt: "2024-01-01T00:00:00Z",
-        unreadCount: 0,
-      };
-      mockedGetChats.mockResolvedValueOnce({ chats: [aiChat] });
-      await store.dispatch(fetchChats({}));
-
-      // Pre-populate AI messages via syncAIMessages
-      const aiMessages: MessageDTO[] = [
-        {
-          _id: "ai-msg-1",
-          chatId: "ai-chat-1",
-          senderId: "user-1",
-          body: "Hello AI",
-          createdAt: "2024-01-01T10:00:00Z",
-          deleted: false,
-        },
-      ];
-      store.dispatch(
-        syncAIMessages({ chatId: "ai-chat-1", messages: aiMessages }),
-      );
-
-      // Now select the AI chat
-      await store.dispatch(selectChat("ai-chat-1"));
-
-      // Should NOT have called getMessages for AI chat
-      expect(mockedGetMessages).not.toHaveBeenCalled();
-
-      // AI messages should still be there (not overwritten)
-      expect(store.getState().chat.messages["ai-chat-1"]).toEqual(aiMessages);
     });
 
     it("should set active chat ID", async () => {

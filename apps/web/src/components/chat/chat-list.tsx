@@ -1,5 +1,6 @@
 "use client";
 
+import { FeatureKey } from "@famly/shared";
 import { MessageSquarePlus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectActiveChatId, selectChat } from "@/store/slices/chat.slice";
 import { selectFamilyMembers } from "@/store/slices/family.slice";
-import { selectUser } from "@/store/slices/user.slice";
+import { selectIsFeatureEnabled } from "@/store/slices/settings.slice";
+import { selectCurrentFamily, selectUser } from "@/store/slices/user.slice";
 import type { ChatWithPreviewDTO } from "@/types/api.types";
 import { ChatListEmpty } from "./chat-list-empty";
 import { ChatListItem } from "./chat-list-item";
@@ -61,6 +63,10 @@ export function ChatList({
   const activeChatId = useAppSelector(selectActiveChatId);
   const familyMembers = useAppSelector(selectFamilyMembers);
   const currentUser = useAppSelector(selectUser);
+  const currentFamily = useAppSelector(selectCurrentFamily);
+  const isAIIntegrationEnabled = useAppSelector(
+    selectIsFeatureEnabled(currentFamily?.familyId, FeatureKey.AIIntegration),
+  );
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
 
   const handleChatSelect = (chatId: string) => {
@@ -89,7 +95,16 @@ export function ChatList({
     );
   };
 
-  if (chats.length === 0) {
+  // Filter chats based on feature availability
+  const filteredChats = chats.filter((chat) => {
+    // Hide AI chats if the feature is disabled
+    if (chat.type === "ai" && !isAIIntegrationEnabled) {
+      return false;
+    }
+    return true;
+  });
+
+  if (filteredChats.length === 0) {
     return <ChatListEmpty dict={dict} familyMembers={familyMembers} />;
   }
 
@@ -113,7 +128,7 @@ export function ChatList({
       {/* Chat List */}
       <ScrollArea className="flex-1 scroll-area-block">
         <div className="w-full space-y-1 p-2" data-testid="chat-list-items">
-          {chats.map((chat) => (
+          {filteredChats.map((chat) => (
             <ChatListItem
               key={chat._id}
               chat={chat}

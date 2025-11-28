@@ -11,6 +11,7 @@ import {
   sendChatNotifications,
 } from "@modules/notifications";
 import type { Message, MessageDTO } from "../domain/message";
+import { isAISenderId } from "../lib/constants";
 import { toMessageDTO } from "../lib/message.mapper";
 import type { ChatRepository } from "../repositories/chat.repository";
 import type { MembershipRepository } from "../repositories/membership.repository";
@@ -37,8 +38,8 @@ export class MessageService {
    * - If promotion needed, updates both memberships to role='admin'
    *
    * @param chatId - The chat ID
-   * @param senderId - The user sending the message
-   * @param body - Message body (1-8000 chars)
+   * @param senderId - The user sending the message, or AI_SENDER_ID for AI messages
+   * @param body - Message body (max 100KB)
    * @param clientId - Optional client-supplied ID for idempotency
    * @returns { message: MessageDTO, isNew: boolean }
    */
@@ -49,16 +50,19 @@ export class MessageService {
     clientId?: string,
   ): Promise<{ message: MessageDTO; isNew: boolean }> {
     let normalizedChatId: ObjectIdString | undefined;
-    let normalizedSenderId: ObjectIdString | undefined;
+    const isAIMessage = isAISenderId(senderId);
     try {
       normalizedChatId = validateObjectId(chatId, "chatId");
-      normalizedSenderId = validateObjectId(senderId, "senderId");
       const chatObjectId = toObjectId(normalizedChatId, "chatId");
-      const senderObjectId = toObjectId(normalizedSenderId, "senderId");
+      // For AI messages, use the string directly; for user messages, convert to ObjectId
+      const senderIdForDb = isAIMessage
+        ? senderId
+        : toObjectId(validateObjectId(senderId, "senderId"), "senderId");
 
       logger.info("Creating message", {
         chatId: normalizedChatId,
-        senderId: normalizedSenderId,
+        senderId,
+        isAIMessage,
         hasClientId: !!clientId,
       });
 
@@ -86,7 +90,7 @@ export class MessageService {
           // Create new message
           message = await this.messageRepository.create(
             chatObjectId,
-            senderObjectId,
+            senderIdForDb,
             body,
             clientId,
           );
@@ -95,7 +99,7 @@ export class MessageService {
         // Create new message without clientId
         message = await this.messageRepository.create(
           chatObjectId,
-          senderObjectId,
+          senderIdForDb,
           body,
           undefined,
         );
@@ -133,14 +137,16 @@ export class MessageService {
           }
         }
 
-        // Send notifications to other chat members
-        await this.notifyChatMembers(
-          chatObjectId,
-          normalizedChatId,
-          normalizedSenderId,
-          senderObjectId,
-          body,
-        );
+        // Send notifications to other chat members (skip for AI messages)
+        if (!isAIMessage) {
+          await this.notifyChatMembers(
+            chatObjectId,
+            normalizedChatId,
+            senderId,
+            senderIdForDb as ReturnType<typeof toObjectId>,
+            body,
+          );
+        }
       }
 
       const dto = toMessageDTO(message);
@@ -155,7 +161,7 @@ export class MessageService {
     } catch (error) {
       logger.error("Failed to create message", {
         chatId: normalizedChatId ?? chatId,
-        senderId: normalizedSenderId ?? senderId,
+        senderId,
         error,
       });
       throw error;
@@ -346,13 +352,76 @@ export class MessageService {
   }
 
   /**
+   * Clear all messages in a chat
+   * Only allowed for AI chats and only by chat members
+   *
+   * @param chatId - The chat ID
+   * @param userId - The authenticated user ID (for membership verification)
+   * @returns { deletedCount: number }
+   */
+  async clearMessages(
+    chatId: string,
+    userId: string,
+  ): Promise<{ deletedCount: number }> {
+    let normalizedChatId: ObjectIdString | undefined;
+    let normalizedUserId: ObjectIdString | undefined;
+    try {
+      normalizedChatId = validateObjectId(chatId, "chatId");
+      normalizedUserId = validateObjectId(userId, "userId");
+      const chatObjectId = toObjectId(normalizedChatId, "chatId");
+      const userObjectId = toObjectId(normalizedUserId, "userId");
+
+      logger.info("Clearing messages", {
+        chatId: normalizedChatId,
+        userId: normalizedUserId,
+      });
+
+      // Verify user is a member of the chat
+      const membership = await this.membershipRepository.findByUserAndChat(
+        userObjectId,
+        chatObjectId,
+      );
+      if (!membership) {
+        throw HttpError.forbidden("You are not a member of this chat");
+      }
+
+      // Verify this is an AI chat
+      const chat = await this.chatRepository.findById(chatObjectId);
+      if (!chat) {
+        throw HttpError.notFound("Chat not found");
+      }
+      if (chat.type !== "ai") {
+        throw HttpError.forbidden("Can only clear messages in AI chats");
+      }
+
+      // Delete all messages in the chat
+      const deletedCount =
+        await this.messageRepository.deleteByChatId(chatObjectId);
+
+      logger.info("Messages cleared successfully", {
+        chatId: normalizedChatId,
+        deletedCount,
+      });
+
+      return { deletedCount };
+    } catch (error) {
+      logger.error("Failed to clear messages", {
+        chatId: normalizedChatId ?? chatId,
+        userId: normalizedUserId ?? userId,
+        error,
+      });
+      throw error;
+    }
+  }
+
+  /**
    * Send chat message notifications to all members except the sender
    * @private
    */
   private async notifyChatMembers(
     chatObjectId: ReturnType<typeof toObjectId>,
     normalizedChatId: ObjectIdString,
-    normalizedSenderId: ObjectIdString,
+    senderId: string,
     senderObjectId: ReturnType<typeof toObjectId>,
     body: string,
   ): Promise<void> {
@@ -374,7 +443,7 @@ export class MessageService {
       const memberIds = memberships.map((m) => m.userId.toString());
       await sendChatNotifications(
         memberIds,
-        normalizedSenderId,
+        senderId,
         (locale) =>
           createChatMessageNotification(
             locale,
@@ -389,7 +458,7 @@ export class MessageService {
     } catch (error) {
       logger.error("Failed to send chat message notifications", {
         chatId: normalizedChatId,
-        senderId: normalizedSenderId,
+        senderId,
         error,
       });
       // Don't throw - notification failure shouldn't prevent message creation

@@ -38,7 +38,9 @@ export const createTaskTool = {
     karma: z
       .number()
       .optional()
-      .describe("Optional karma points awarded for completing this task"),
+      .describe(
+        "Optional karma points awarded for completing this task, do not include karma points if not directly asked",
+      ),
   }),
   execute: async ({
     familyId,

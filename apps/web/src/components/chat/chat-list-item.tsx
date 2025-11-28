@@ -55,10 +55,10 @@ export function ChatListItem({
         isActive ? "bg-accent" : ""
       } ${isAIChat ? "border-l-2 border-l-primary" : ""}`}
     >
-      <div className="flex items-center gap-3">
+      <div className={`flex gap-3 ${chat.lastMessage ? "" : "items-center"}`}>
         {/* Avatar */}
         <Avatar
-          className={`h-10 w-10 ${isAIChat ? "bg-primary/10 text-primary" : ""}`}
+          className={`h-10 w-10 shrink-0 ${isAIChat ? "bg-primary/10 text-primary" : ""}`}
         >
           <AvatarFallback
             className={isAIChat ? "bg-primary/10 text-primary" : ""}

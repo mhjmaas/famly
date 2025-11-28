@@ -1,8 +1,5 @@
 import { errorHandler } from "@middleware/error-handler";
-import {
-  searchLimiter,
-  standardLimiter,
-} from "@middleware/rate-limiter";
+import { searchLimiter, standardLimiter } from "@middleware/rate-limiter";
 import cors from "cors";
 import express, { type Express } from "express";
 import expressOasGenerator from "express-oas-generator";

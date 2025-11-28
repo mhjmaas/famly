@@ -21,6 +21,7 @@ export const listTasksTool = {
     familyId: string;
     filter?: "all" | "today" | "completed-today";
   }) => {
+    console.log("List Tasks Tool called with", { familyId, filter });
     // Get cookie header for authentication
     const cookieHeader = await getCookieHeader();
 
@@ -29,11 +30,31 @@ export const listTasksTool = {
 
       // Build query parameters based on filter
       if (filter === "today" || filter === "completed-today") {
-        const today = new Date().toISOString().split("T")[0];
+        const today = new Date();
+        const startDate = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          0,
+          0,
+          0,
+        );
+        const endDate = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          23,
+          59,
+          59,
+        );
+
         params = {
-          dueDateFrom: today,
-          dueDateTo: today,
+          from: startDate.toISOString(),
+          to: endDate.toISOString(),
         };
+
+        console.log("Filtering tasks for today:", { startDate, endDate });
+        console.log(params);
       }
 
       // Fetch tasks
@@ -41,13 +62,28 @@ export const listTasksTool = {
 
       // Filter for completed today if requested
       if (filter === "completed-today") {
-        const today = new Date().toISOString().split("T")[0];
+        const today = new Date();
+        const startDate = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          0,
+          0,
+          0,
+        );
+        const endDate = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          23,
+          59,
+          59,
+        );
+
         tasks = tasks.filter((task) => {
           if (!task.completedAt) return false;
-          const completedDate = new Date(task.completedAt)
-            .toISOString()
-            .split("T")[0];
-          return completedDate === today;
+          const completedDate = new Date(task.completedAt);
+          return completedDate >= startDate && completedDate <= endDate;
         });
       }
 

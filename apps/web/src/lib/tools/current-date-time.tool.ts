@@ -6,14 +6,23 @@ export const currentDateTimeTool = {
     // No input required for this tool
   }),
   execute: async () => {
-    // Get current date and time
-    const now = new Date();
+    const now = new Date(); // always stored as UTC internally
 
-    // Return current date and time with timezone information
+    const time = new Intl.DateTimeFormat("nl-NL", {
+      timeZone: process.env.TIMEZONE || "Europe/Amsterdam",
+      dateStyle: "short",
+      timeStyle: "medium",
+    }).format(now);
+
+    const date = new Intl.DateTimeFormat("nl-NL", {
+      timeZone: "Europe/Amsterdam",
+      dateStyle: "full",
+    }).format(now);
 
     const result = {
-      localDateTime: now.toLocaleString(),
-      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      localDate: date,
+      localDateTime: time,
+      timeZone: process.env.TIMEZONE || "Europe/Amsterdam",
     };
 
     console.log("Current Date and Time Tool with result", result);
