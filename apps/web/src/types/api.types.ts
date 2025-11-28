@@ -129,6 +129,7 @@ export interface FamilySettings {
     apiEndpoint: string;
     modelName: string;
     aiName: string;
+    provider: "LM Studio" | "Ollama" | "OpenAI";
     // apiSecret is never returned from the API for security
   };
 }
@@ -140,6 +141,7 @@ export interface UpdateFamilySettingsRequest {
     apiSecret: string;
     modelName: string;
     aiName: string;
+    provider: "LM Studio" | "Ollama" | "OpenAI";
   };
 }
 

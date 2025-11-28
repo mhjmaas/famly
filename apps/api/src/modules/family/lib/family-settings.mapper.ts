@@ -21,6 +21,7 @@ export function toFamilySettingsView(
       apiEndpoint: settings.aiSettings.apiEndpoint,
       modelName: settings.aiSettings.modelName,
       aiName: settings.aiSettings.aiName,
+      provider: settings.aiSettings.provider,
       // apiSecret is intentionally omitted for security
     },
   };

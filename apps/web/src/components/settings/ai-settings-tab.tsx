@@ -6,6 +6,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { FamilySettings } from "@/lib/api-client";
 import { useAppDispatch } from "@/store/hooks";
 import { updateFamilySettingsThunk } from "@/store/slices/settings.slice";
@@ -18,6 +25,7 @@ interface AISettingsTabProps {
         apiEndpoint: { label: string; placeholder: string; helper: string };
         apiSecret: { label: string; placeholder: string; helper: string };
         modelName: { label: string; placeholder: string; helper: string };
+        provider: { label: string; placeholder: string; helper: string };
       };
       buttons: {
         save: string;
@@ -33,6 +41,7 @@ interface AISettingsTabProps {
       allFieldsRequired: string;
       invalidUrl: string;
       invalidUrlDescription: string;
+      providerRequired: string;
     };
   };
   settings: FamilySettings | null;
@@ -44,6 +53,7 @@ const DEFAULT_AI_SETTINGS = {
   apiSecret: "",
   modelName: "",
   aiName: "",
+  provider: "",
 };
 
 export function AISettingsTab({
@@ -59,6 +69,7 @@ export function AISettingsTab({
     apiSecret: "",
     modelName: settings?.aiSettings?.modelName || "",
     aiName: settings?.aiSettings?.aiName || "",
+    provider: settings?.aiSettings?.provider || "",
   });
 
   const handleSave = async () => {
@@ -71,7 +82,8 @@ export function AISettingsTab({
       !aiSettings.apiEndpoint ||
       !aiSettings.apiSecret ||
       !aiSettings.modelName ||
-      !aiSettings.aiName
+      !aiSettings.aiName ||
+      !aiSettings.provider
     ) {
       toast.error(dict.toast.validationError, {
         description: dict.toast.allFieldsRequired,
@@ -102,6 +114,10 @@ export function AISettingsTab({
               apiSecret: aiSettings.apiSecret,
               modelName: aiSettings.modelName,
               aiName: aiSettings.aiName,
+              provider: aiSettings.provider as
+                | "LM Studio"
+                | "Ollama"
+                | "OpenAI",
             },
           },
         }),
@@ -208,6 +224,32 @@ export function AISettingsTab({
         />
         <p className="text-xs text-muted-foreground">
           {dict.aiSettingsTab.fields.modelName.helper}
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="provider">
+          {dict.aiSettingsTab.fields.provider.label}
+        </Label>
+        <Select
+          value={aiSettings.provider}
+          onValueChange={(value) =>
+            setAISettings({ ...aiSettings, provider: value })
+          }
+        >
+          <SelectTrigger id="provider" data-testid="provider-select">
+            <SelectValue
+              placeholder={dict.aiSettingsTab.fields.provider.placeholder}
+            />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="LM Studio">LM Studio</SelectItem>
+            <SelectItem value="Ollama">Ollama</SelectItem>
+            <SelectItem value="OpenAI">OpenAI</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          {dict.aiSettingsTab.fields.provider.helper}
         </p>
       </div>
 

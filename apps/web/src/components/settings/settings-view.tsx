@@ -49,6 +49,7 @@ interface SettingsViewProps {
             apiEndpoint: { label: string; placeholder: string; helper: string };
             apiSecret: { label: string; placeholder: string; helper: string };
             modelName: { label: string; placeholder: string; helper: string };
+            provider: { label: string; placeholder: string; helper: string };
           };
           buttons: {
             save: string;
@@ -80,6 +81,7 @@ interface SettingsViewProps {
           allFieldsRequired: string;
           invalidUrl: string;
           invalidUrlDescription: string;
+          providerRequired: string;
         };
         errors: {
           unauthorized: string;

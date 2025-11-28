@@ -90,6 +90,7 @@ export class FamilySettingsService {
             apiSecret: input.aiSettings.apiSecret, // TODO: Encrypt this
             modelName: input.aiSettings.modelName,
             aiName: input.aiSettings.aiName,
+            provider: input.aiSettings.provider,
           }
         : undefined;
 

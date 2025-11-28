@@ -57,7 +57,7 @@
         },
         "aiSettingsTab": {
           "title": "AI-configuratie",
-          "description": "Verbind met een OpenAI-compatibel API-eindpunt om AI-chatfuncties in te schakelen",
+          "description": "Verbind met een OpenAI-compatibel API-endpoint om AI-chatfuncties in te schakelen",
           "fields": {
             "aiName": {
               "label": "AI-naam",
@@ -65,9 +65,9 @@
               "helper": "Geef je AI-assistent een vriendelijke naam"
             },
             "apiEndpoint": {
-              "label": "API-eindpunt",
+              "label": "API-endpoint",
               "placeholder": "https://api.openai.com/v1",
-              "helper": "OpenAI-compatibel API-eindpunt URL"
+              "helper": "OpenAI-compatibel API-endpoint URL"
             },
             "apiSecret": {
               "label": "API-geheim",
@@ -78,6 +78,11 @@
               "label": "Modelnaam",
               "placeholder": "gpt-4, gpt-3.5-turbo, etc.",
               "helper": "De model-ID om te gebruiken voor chat-voltooiingen"
+            },
+            "provider": {
+              "label": "AI-provider",
+              "placeholder": "Selecteer je AI-provider",
+              "helper": "Kies welke AI-serviceprovider je gebruikt"
             }
           },
           "buttons": {
@@ -87,7 +92,7 @@
           },
           "about": {
             "title": "Over AI-instellingen",
-            "description": "Met deze instellingen kun je Famly verbinden met elk OpenAI-compatibel API-eindpunt. Dit omvat:",
+            "description": "Met deze instellingen kun je Famly verbinden met elk OpenAI-compatibel API-endpoint. Dit omvat:",
             "providers": {
               "openai": "OpenAI API (GPT-4, GPT-3.5, etc.)",
               "azure": "Azure OpenAI Service",
@@ -109,7 +114,8 @@
           "validationError": "Validatiefout",
           "allFieldsRequired": "Alle velden zijn verplicht",
           "invalidUrl": "Ongeldige URL",
-          "invalidUrlDescription": "Voer een geldig API-eindpunt URL in"
+          "invalidUrlDescription": "Voer een geldig API-endpoint URL in",
+          "providerRequired": "AI-provider moet worden geselecteerd"
         },
         "errors": {
           "unauthorized": "Alleen ouders hebben toegang tot instellingen",

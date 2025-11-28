@@ -48,14 +48,14 @@
       "contributionGoal": {
         "awarded": "{amount} karma toegekend van \"{goalTitle}\"",
         "awardedTitle": "Bijdrage Toegekend",
-        "deducted": "{amount} karma afgetrokken van \"{goalTitle}\"",
-        "deductedTitle": "Bijdrage Afgetrokken"
+        "deducted": "{amount} minpunten voor \"{goalTitle}\"",
+        "deductedTitle": "Minpunten gekregen"
       },
       "karma": {
         "awarded": "Karma toegekend: {amount} {description}",
         "awardedTitle": "Karma Toegekend",
         "deducted": "Karma afgetrokken: {amount} {description}",
-        "deductedTitle": "Karma Afgetrokken"
+        "deductedTitle": "Karma Minpunten gekregen"
       },
       "reward": {
         "claimed": "Beloning geclaimd: {rewardName}",

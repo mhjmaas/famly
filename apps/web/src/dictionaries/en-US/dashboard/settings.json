@@ -78,6 +78,11 @@
               "label": "Model Name",
               "placeholder": "gpt-4, gpt-3.5-turbo, etc.",
               "helper": "The model identifier to use for chat completions"
+            },
+            "provider": {
+              "label": "AI Provider",
+              "placeholder": "Select your AI provider",
+              "helper": "Choose which AI service backend you are using"
             }
           },
           "buttons": {
@@ -109,7 +114,8 @@
           "validationError": "Validation Error",
           "allFieldsRequired": "All fields are required",
           "invalidUrl": "Invalid URL",
-          "invalidUrlDescription": "Please enter a valid API endpoint URL"
+          "invalidUrlDescription": "Please enter a valid API endpoint URL",
+          "providerRequired": "AI provider must be selected"
         },
         "errors": {
           "unauthorized": "Only parents can access settings",

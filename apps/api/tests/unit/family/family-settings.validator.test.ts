@@ -108,6 +108,7 @@ describe("updateFamilySettingsSchema", () => {
           apiSecret: "sk-test123",
           modelName: "gpt-4",
           aiName: "Jarvis",
+          provider: "OpenAI",
         },
       });
       expect(result.aiSettings).toEqual({
@@ -115,6 +116,7 @@ describe("updateFamilySettingsSchema", () => {
         apiSecret: "sk-test123",
         modelName: "gpt-4",
         aiName: "Jarvis",
+        provider: "OpenAI",
       });
     });
 
@@ -134,6 +136,7 @@ describe("updateFamilySettingsSchema", () => {
             apiSecret: "sk-test123",
             modelName: "gpt-4",
             aiName: "Jarvis",
+            provider: "OpenAI",
           },
         }),
       ).toThrow(/must be a valid URL/);
@@ -148,6 +151,7 @@ describe("updateFamilySettingsSchema", () => {
             apiSecret: "sk-test123",
             modelName: "gpt-4",
             aiName: "Jarvis",
+            provider: "OpenAI",
           },
         }),
       ).toThrow();
@@ -162,6 +166,7 @@ describe("updateFamilySettingsSchema", () => {
             apiSecret: "",
             modelName: "gpt-4",
             aiName: "Jarvis",
+            provider: "OpenAI",
           },
         }),
       ).toThrow(/required/);
@@ -176,6 +181,7 @@ describe("updateFamilySettingsSchema", () => {
             apiSecret: "sk-test123",
             modelName: "",
             aiName: "Jarvis",
+            provider: "OpenAI",
           },
         }),
       ).toThrow(/required/);
@@ -190,6 +196,7 @@ describe("updateFamilySettingsSchema", () => {
             apiSecret: "sk-test123",
             modelName: "gpt-4",
             aiName: "",
+            provider: "OpenAI",
           },
         }),
       ).toThrow(/required/);
@@ -223,6 +230,7 @@ describe("updateFamilySettingsSchema", () => {
             apiSecret: "sk-test123",
             modelName: "gpt-4",
             aiName: "Jarvis",
+            provider: "OpenAI",
           },
         });
         expect(result.aiSettings?.apiEndpoint).toBe(url);
@@ -243,6 +251,7 @@ describe("updateFamilySettingsSchema", () => {
           apiSecret: "sk-test123",
           modelName: "gpt-4",
           aiName: "Jarvis",
+          provider: "OpenAI",
         },
       });
       expect(result.enabledFeatures).toHaveLength(3);
@@ -257,6 +266,7 @@ describe("updateFamilySettingsSchema", () => {
           apiSecret: "sk-test123",
           modelName: "gpt-4",
           aiName: "Jarvis",
+          provider: "LM Studio",
         },
       });
       expect(result.enabledFeatures).toEqual([]);
@@ -271,6 +281,7 @@ describe("updateFamilySettingsSchema", () => {
           apiSecret: "sk-test123",
           modelName: "gpt-4",
           aiName: "Jarvis",
+          provider: "Ollama",
         },
         extraField: "should be ignored",
       });

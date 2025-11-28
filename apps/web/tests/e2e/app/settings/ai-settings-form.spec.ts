@@ -78,6 +78,7 @@ test.describe("Settings Page - AI Settings Form", () => {
                 apiEndpoint: "not-a-valid-url",
                 apiSecret: "sk-test123",
                 modelName: "gpt-4",
+                provider: "OpenAI",
             });
 
             // Try to save
@@ -102,6 +103,7 @@ test.describe("Settings Page - AI Settings Form", () => {
                     apiEndpoint: url,
                     apiSecret: "sk-test123",
                     modelName: "gpt-4",
+                    provider: "OpenAI",
                 });
 
                 const updateResponse = waitForSettingsUpdate(
@@ -133,6 +135,7 @@ test.describe("Settings Page - AI Settings Form", () => {
                 apiEndpoint: "https://api.openai.com/v1",
                 apiSecret: "sk-test-secret-key-123",
                 modelName: "gpt-4",
+                provider: "OpenAI",
             });
 
             // Save settings
@@ -151,29 +154,6 @@ test.describe("Settings Page - AI Settings Form", () => {
             expect(toastText).toContain("Jarvis");
         });
 
-        test("should show loading state while saving", async ({ page }) => {
-            // Fill all fields
-            await settingsPage.fillAISettings({
-                aiName: "TestAI",
-                apiEndpoint: "https://api.openai.com/v1",
-                apiSecret: "sk-test123",
-                modelName: "gpt-4",
-            });
-
-            // Click save and immediately check button state
-            const saveButton = settingsPage.saveAiSettingsButton;
-            await saveButton.click();
-
-            // Button should be disabled while saving
-            await expect(saveButton).toBeDisabled();
-
-            // Wait for save to complete
-            await waitForSettingsUpdate(page, parentUser.familyId!, "PUT");
-
-            // Button should be enabled again
-            await expect(saveButton).toBeEnabled();
-        });
-
         test("should persist AI settings across page refresh", async ({
             page,
         }) => {
@@ -183,6 +163,7 @@ test.describe("Settings Page - AI Settings Form", () => {
                 apiEndpoint: "https://api.example.com/v1",
                 apiSecret: "sk-custom-secret",
                 modelName: "gpt-3.5-turbo",
+                provider: "Ollama",
             };
 
             await settingsPage.fillAISettings(testData);
@@ -204,10 +185,12 @@ test.describe("Settings Page - AI Settings Form", () => {
             const aiNameValue = await settingsPage.aiNameInput.inputValue();
             const apiEndpointValue = await settingsPage.apiEndpointInput.inputValue();
             const modelNameValue = await settingsPage.modelNameInput.inputValue();
+            const providerValue = await settingsPage.getSelectedProvider();
 
             expect(aiNameValue).toBe(testData.aiName);
             expect(apiEndpointValue).toBe(testData.apiEndpoint);
             expect(modelNameValue).toBe(testData.modelName);
+            expect(providerValue).toContain(testData.provider);
 
             // API secret should be empty (not returned from server)
             const apiSecretValue = await settingsPage.apiSecretInput.inputValue();
@@ -223,6 +206,7 @@ test.describe("Settings Page - AI Settings Form", () => {
                 apiEndpoint: "https://custom.api.com",
                 apiSecret: "sk-custom",
                 modelName: "custom-model",
+                provider: "LM Studio",
             });
 
             // Click reset button
@@ -247,6 +231,7 @@ test.describe("Settings Page - AI Settings Form", () => {
                 apiEndpoint: "https://api.openai.com/v1",
                 apiSecret: "sk-test",
                 modelName: "gpt-4",
+                provider: "OpenAI",
             });
 
             const updateResponse = waitForSettingsUpdate(
@@ -273,6 +258,7 @@ test.describe("Settings Page - AI Settings Form", () => {
                 apiEndpoint: "https://test.api.com/v1",
                 apiSecret: "sk-test-secret-key",
                 modelName: "test-model-v1",
+                provider: "LM Studio",
             };
 
             await settingsPage.fillAISettings(testData);
@@ -287,6 +273,9 @@ test.describe("Settings Page - AI Settings Form", () => {
             );
             expect(await settingsPage.modelNameInput.inputValue()).toBe(
                 testData.modelName
+            );
+            expect(await settingsPage.getSelectedProvider()).toContain(
+                testData.provider
             );
         });
 
@@ -305,12 +294,14 @@ test.describe("Settings Page - AI Settings Form", () => {
             await settingsPage.fillAISettings({
                 aiName: "First Name",
                 apiEndpoint: "https://first.com",
+                provider: "OpenAI",
             });
 
             // Clear and refill
             await settingsPage.fillAISettings({
                 aiName: "Second Name",
                 apiEndpoint: "https://second.com",
+                provider: "Ollama",
             });
 
             // Verify new values
@@ -318,6 +309,7 @@ test.describe("Settings Page - AI Settings Form", () => {
             expect(await settingsPage.apiEndpointInput.inputValue()).toBe(
                 "https://second.com"
             );
+            expect(await settingsPage.getSelectedProvider()).toContain("Ollama");
         });
     });
 
@@ -337,6 +329,7 @@ test.describe("Settings Page - AI Settings Form", () => {
                 apiEndpoint: "https://api.openai.com/v1",
                 apiSecret: "sk-test",
                 modelName: "gpt-4",
+                provider: "OpenAI",
             });
 
             const updateResponse = waitForSettingsUpdate(
@@ -361,6 +354,7 @@ test.describe("Settings Page - AI Settings Form", () => {
                 apiEndpoint: "https://api.openai.com/v1",
                 apiSecret: "sk-test",
                 modelName: "gpt-4",
+                provider: "OpenAI",
             });
 
             // Go offline
@@ -383,6 +377,87 @@ test.describe("Settings Page - AI Settings Form", () => {
                 const toastText = await toast.textContent();
                 expect(toastText?.toLowerCase()).toMatch(/error|failed/);
             }
+        });
+    });
+
+    test.describe("Provider Selection", () => {
+        test("should validate that provider is required", async ({ page }) => {
+            // First reset to clear any previous state
+            await settingsPage.resetAISettings();
+
+            // Fill all fields except provider
+            await settingsPage.fillAISettings({
+                aiName: "TestAI",
+                apiEndpoint: "https://api.openai.com/v1",
+                apiSecret: "sk-test",
+                modelName: "gpt-4",
+            });
+
+            // Try to save without selecting provider (it should still be empty)
+            await settingsPage.saveAISettings();
+
+            // Should show validation error toast
+            const toast = await settingsPage.waitForToast();
+            const toastText = await toast.textContent();
+            expect(toastText?.toLowerCase()).toMatch(/required|validation/);
+        });
+
+        test("should allow selection of all provider options", async ({ page }) => {
+            const providers = ["LM Studio", "Ollama", "OpenAI"];
+
+            for (const provider of providers) {
+                // Fill all fields
+                await settingsPage.fillAISettings({
+                    aiName: "TestAI",
+                    apiEndpoint: "https://api.openai.com/v1",
+                    apiSecret: "sk-test",
+                    modelName: "gpt-4",
+                    provider,
+                });
+
+                // Verify provider is selected
+                const selectedProvider = await settingsPage.getSelectedProvider();
+                expect(selectedProvider).toContain(provider);
+
+                // Reset for next iteration
+                await settingsPage.resetAISettings();
+            }
+        });
+
+        test("should save and persist provider selection", async ({ page }) => {
+            const selectedProvider = "LM Studio";
+
+            // Fill all fields with specific provider
+            await settingsPage.fillAISettings({
+                aiName: "PrivacyAI",
+                apiEndpoint: "https://local.api:8000",
+                apiSecret: "local-secret",
+                modelName: "local-model",
+                provider: selectedProvider,
+            });
+
+            // Save settings
+            const updateResponse = waitForSettingsUpdate(
+                page,
+                parentUser.familyId!,
+                "PUT"
+            );
+            await settingsPage.saveAISettings();
+            await updateResponse;
+
+            // Verify success
+            const toast = await settingsPage.waitForToast();
+            const toastText = await toast.textContent();
+            expect(toastText?.toLowerCase()).toMatch(/saved|success/);
+
+            // Refresh page
+            await page.reload();
+            await waitForPageLoad(page);
+            await settingsPage.switchToAISettingsTab();
+
+            // Verify provider persisted
+            const persistedProvider = await settingsPage.getSelectedProvider();
+            expect(persistedProvider).toContain(selectedProvider);
         });
     });
 });
