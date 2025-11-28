@@ -1,3 +1,4 @@
+import { AI_SENDER_ID } from "@modules/chat/lib/constants";
 import request from "supertest";
 import { registerTestUser } from "../helpers/auth-setup";
 import { cleanDatabase } from "../helpers/database";
@@ -217,7 +218,7 @@ describe("E2E: POST /v1/chats/:chatId/messages - Create Message", () => {
   });
 
   describe("Validation Errors", () => {
-    it("should reject message exceeding max length (8000 chars) with 400", async () => {
+    it("should reject message exceeding max length (100KB) with 400", async () => {
       const user1 = await registerTestUser(baseUrl, testCounter++, "msg");
       const user2 = await registerTestUser(baseUrl, testCounter++, "msg");
 
@@ -232,12 +233,12 @@ describe("E2E: POST /v1/chats/:chatId/messages - Create Message", () => {
 
       const chatId = chatRes.body._id;
 
-      // Try to create message exceeding max length
+      // Try to create message exceeding max length (100KB + 1)
       const msgRes = await request(baseUrl)
         .post(`/v1/chats/${chatId}/messages`)
         .set("Authorization", `Bearer ${user1.token}`)
         .send({
-          body: "a".repeat(8001),
+          body: "a".repeat(100001),
         });
 
       expect(msgRes.status).toBe(400);
@@ -434,6 +435,195 @@ describe("E2E: POST /v1/chats/:chatId/messages - Create Message", () => {
       // Verify message was created successfully
       // Group members should NOT be promoted to admin - this is only for DMs
       expect(msgRes.status).toBe(201);
+    });
+  });
+
+  describe("AI Messages", () => {
+    it("should create message with AI sender ID", async () => {
+      const user1 = await registerTestUser(baseUrl, testCounter++, "msg");
+      const user2 = await registerTestUser(baseUrl, testCounter++, "msg");
+
+      // Create DM
+      const chatRes = await request(baseUrl)
+        .post("/v1/chats")
+        .set("Authorization", `Bearer ${user1.token}`)
+        .send({
+          type: "dm",
+          memberIds: [user2.userId],
+        });
+
+      const chatId = chatRes.body._id;
+
+      // Create AI message
+      const msgRes = await request(baseUrl)
+        .post(`/v1/chats/${chatId}/messages`)
+        .set("Authorization", `Bearer ${user1.token}`)
+        .send({
+          clientId: "ai-msg-001",
+          body: "This is an AI response with **markdown** support.",
+          senderId: AI_SENDER_ID,
+        });
+
+      expect(msgRes.status).toBe(201);
+      expect(msgRes.body).toHaveProperty("_id");
+      expect(msgRes.body).toHaveProperty("chatId", chatId);
+      expect(msgRes.body).toHaveProperty("senderId", AI_SENDER_ID);
+      expect(msgRes.body).toHaveProperty(
+        "body",
+        "This is an AI response with **markdown** support.",
+      );
+    });
+
+    it("should reject invalid senderId (not AI_SENDER_ID)", async () => {
+      const user1 = await registerTestUser(baseUrl, testCounter++, "msg");
+      const user2 = await registerTestUser(baseUrl, testCounter++, "msg");
+
+      // Create DM
+      const chatRes = await request(baseUrl)
+        .post("/v1/chats")
+        .set("Authorization", `Bearer ${user1.token}`)
+        .send({
+          type: "dm",
+          memberIds: [user2.userId],
+        });
+
+      const chatId = chatRes.body._id;
+
+      // Try to create message with invalid senderId
+      const msgRes = await request(baseUrl)
+        .post(`/v1/chats/${chatId}/messages`)
+        .set("Authorization", `Bearer ${user1.token}`)
+        .send({
+          body: "Trying to spoof sender",
+          senderId: "fake-sender-id",
+        });
+
+      expect(msgRes.status).toBe(400);
+    });
+
+    it("should require authentication even for AI messages", async () => {
+      const user1 = await registerTestUser(baseUrl, testCounter++, "msg");
+      const user2 = await registerTestUser(baseUrl, testCounter++, "msg");
+
+      // Create DM
+      const chatRes = await request(baseUrl)
+        .post("/v1/chats")
+        .set("Authorization", `Bearer ${user1.token}`)
+        .send({
+          type: "dm",
+          memberIds: [user2.userId],
+        });
+
+      const chatId = chatRes.body._id;
+
+      // Try to create AI message without auth
+      const msgRes = await request(baseUrl)
+        .post(`/v1/chats/${chatId}/messages`)
+        .send({
+          body: "AI message without auth",
+          senderId: AI_SENDER_ID,
+        });
+
+      expect(msgRes.status).toBe(401);
+    });
+
+    it("should require chat membership for AI messages", async () => {
+      const user1 = await registerTestUser(baseUrl, testCounter++, "msg");
+      const user2 = await registerTestUser(baseUrl, testCounter++, "msg");
+      const user3 = await registerTestUser(baseUrl, testCounter++, "msg");
+
+      // Create DM between user1 and user2
+      const chatRes = await request(baseUrl)
+        .post("/v1/chats")
+        .set("Authorization", `Bearer ${user1.token}`)
+        .send({
+          type: "dm",
+          memberIds: [user2.userId],
+        });
+
+      const chatId = chatRes.body._id;
+
+      // User3 (non-member) tries to create AI message
+      const msgRes = await request(baseUrl)
+        .post(`/v1/chats/${chatId}/messages`)
+        .set("Authorization", `Bearer ${user3.token}`)
+        .send({
+          body: "AI message from non-member",
+          senderId: AI_SENDER_ID,
+        });
+
+      expect(msgRes.status).toBe(403);
+    });
+
+    it("should support idempotency for AI messages", async () => {
+      const user1 = await registerTestUser(baseUrl, testCounter++, "msg");
+      const user2 = await registerTestUser(baseUrl, testCounter++, "msg");
+
+      // Create DM
+      const chatRes = await request(baseUrl)
+        .post("/v1/chats")
+        .set("Authorization", `Bearer ${user1.token}`)
+        .send({
+          type: "dm",
+          memberIds: [user2.userId],
+        });
+
+      const chatId = chatRes.body._id;
+
+      // Create AI message with clientId
+      const firstRes = await request(baseUrl)
+        .post(`/v1/chats/${chatId}/messages`)
+        .set("Authorization", `Bearer ${user1.token}`)
+        .send({
+          clientId: "ai-idempotent-123",
+          body: "AI response",
+          senderId: AI_SENDER_ID,
+        });
+
+      expect(firstRes.status).toBe(201);
+      const firstMessageId = firstRes.body._id;
+
+      // Send same AI message again (idempotent)
+      const secondRes = await request(baseUrl)
+        .post(`/v1/chats/${chatId}/messages`)
+        .set("Authorization", `Bearer ${user1.token}`)
+        .send({
+          clientId: "ai-idempotent-123",
+          body: "AI response",
+          senderId: AI_SENDER_ID,
+        });
+
+      expect(secondRes.status).toBe(200);
+      expect(secondRes.body._id).toBe(firstMessageId);
+    });
+
+    it("should accept large AI messages (up to 100KB)", async () => {
+      const user1 = await registerTestUser(baseUrl, testCounter++, "msg");
+      const user2 = await registerTestUser(baseUrl, testCounter++, "msg");
+
+      // Create DM
+      const chatRes = await request(baseUrl)
+        .post("/v1/chats")
+        .set("Authorization", `Bearer ${user1.token}`)
+        .send({
+          type: "dm",
+          memberIds: [user2.userId],
+        });
+
+      const chatId = chatRes.body._id;
+
+      // Create large AI message (50KB - within limit)
+      const largeBody = "a".repeat(50000);
+      const msgRes = await request(baseUrl)
+        .post(`/v1/chats/${chatId}/messages`)
+        .set("Authorization", `Bearer ${user1.token}`)
+        .send({
+          body: largeBody,
+          senderId: AI_SENDER_ID,
+        });
+
+      expect(msgRes.status).toBe(201);
+      expect(msgRes.body.body.length).toBe(50000);
     });
   });
 });

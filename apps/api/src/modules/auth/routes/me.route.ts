@@ -1,3 +1,4 @@
+import { standardLimiter } from "@middleware/rate-limiter";
 import { type NextFunction, type Response, Router } from "express";
 import {
   type AuthenticatedRequest,
@@ -24,6 +25,7 @@ export function createMeRoute(): Router {
 
   router.get(
     "/me",
+    standardLimiter,
     authenticate,
     async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
       try {

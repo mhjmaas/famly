@@ -426,7 +426,7 @@ export interface AddDeductionRequest {
 }
 
 // Chat types
-export type ChatType = "dm" | "group";
+export type ChatType = "dm" | "group" | "ai";
 
 export interface ChatDTO {
   _id: string;
@@ -480,4 +480,6 @@ export interface CreateChatRequest {
 export interface CreateMessageRequest {
   body: string;
   clientId?: string;
+  /** Optional sender ID for AI messages (must be AI_SENDER_ID) */
+  senderId?: string;
 }

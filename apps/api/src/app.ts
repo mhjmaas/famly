@@ -1,9 +1,5 @@
 import { errorHandler } from "@middleware/error-handler";
-import {
-  authLimiter,
-  searchLimiter,
-  standardLimiter,
-} from "@middleware/rate-limiter";
+import { searchLimiter, standardLimiter } from "@middleware/rate-limiter";
 import cors from "cors";
 import express, { type Express } from "express";
 import expressOasGenerator from "express-oas-generator";
@@ -100,7 +96,8 @@ export const createApp = (): Express => {
   app.use(standardLimiter);
 
   // Auth routes (Better Auth manages its own indexes)
-  app.use("/v1/auth", authLimiter, createAuthRouter());
+  // Note: Rate limiters are applied per-route instead of globally to allow different limits
+  app.use("/v1/auth", createAuthRouter());
 
   // Diary routes (requires authentication)
   app.use("/v1/diary", createDiaryRouter());

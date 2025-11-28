@@ -17,6 +17,13 @@ import type { ChatRepository } from "../repositories/chat.repository";
 import type { MembershipRepository } from "../repositories/membership.repository";
 import type { MessageRepository } from "../repositories/message.repository";
 
+/**
+ * AI chat configuration for creating/displaying AI chats
+ */
+export interface AIChatConfig {
+  aiName: string;
+}
+
 export class ChatService {
   constructor(
     private chatRepository: ChatRepository,
@@ -209,6 +216,97 @@ export class ChatService {
         creatorId: normalizedCreatorId ?? creatorId,
         memberCount: normalizedMemberIds.length + 1,
         title,
+        error,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Create an AI chat for a user
+   * Each user can have at most one AI chat
+   *
+   * @param userId - The user creating the AI chat
+   * @param aiName - The name of the AI assistant (from family settings)
+   * @returns The created AI chat
+   */
+  async createAIChat(userId: string, aiName: string): Promise<Chat> {
+    let normalizedUserId: ObjectIdString | undefined;
+    try {
+      normalizedUserId = validateObjectId(userId, "userId");
+      const userObjectId = toObjectId(normalizedUserId, "userId");
+
+      logger.info("Creating AI chat", {
+        userId: normalizedUserId,
+        aiName,
+      });
+
+      // Create AI chat with only the user as member
+      const chat = await this.chatRepository.create(
+        "ai",
+        userObjectId,
+        [userObjectId],
+        aiName,
+      );
+
+      // Create membership for the user
+      await this.membershipRepository.createBulk(chat._id, [
+        { userId: userObjectId, role: "member" },
+      ]);
+
+      logger.info("AI chat created successfully", {
+        chatId: chat._id.toString(),
+        userId: normalizedUserId,
+        aiName,
+      });
+
+      return chat;
+    } catch (error) {
+      logger.error("Failed to create AI chat", {
+        userId: normalizedUserId ?? userId,
+        aiName,
+        error,
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get or create an AI chat for a user
+   * Returns existing AI chat if one exists, otherwise creates a new one
+   *
+   * @param userId - The user ID
+   * @param aiName - The name of the AI assistant (from family settings)
+   * @returns Object with chat and isNew flag
+   */
+  async getOrCreateAIChat(
+    userId: string,
+    aiName: string,
+  ): Promise<{ chat: Chat; isNew: boolean }> {
+    let normalizedUserId: ObjectIdString | undefined;
+    try {
+      normalizedUserId = validateObjectId(userId, "userId");
+      const userObjectId = toObjectId(normalizedUserId, "userId");
+
+      // Check if AI chat already exists
+      const existingChat =
+        await this.chatRepository.findAIChatByUser(userObjectId);
+
+      if (existingChat) {
+        logger.debug("Found existing AI chat", {
+          chatId: existingChat._id.toString(),
+          userId: normalizedUserId,
+        });
+        return { chat: existingChat, isNew: false };
+      }
+
+      // Create new AI chat
+      const chat = await this.createAIChat(userId, aiName);
+      return { chat, isNew: true };
+    } catch (error) {
+      logger.error("Failed to get or create AI chat", {
+        userId: normalizedUserId ?? userId,
+        aiName,
         error,
       });
       throw error;

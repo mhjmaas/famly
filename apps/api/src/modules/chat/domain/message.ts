@@ -6,8 +6,8 @@ import type { ObjectId } from "mongodb";
 export interface Message {
   _id: ObjectId;
   chatId: ObjectId; // Reference to the chat this message belongs to
-  senderId: ObjectId; // User who sent the message
-  body: string; // Plain text + emoji content, max 8KB
+  senderId: ObjectId | string; // User who sent the message, or AI_SENDER_ID for AI messages
+  body: string; // Plain text + emoji content, max 100KB
   clientId?: string; // Client-supplied ID for idempotency (optional)
   createdAt: Date;
   editedAt?: Date; // Timestamp of last edit (future enhancement)

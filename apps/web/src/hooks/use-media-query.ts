@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
 
-export function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(false);
+/**
+ * Hook to check if a media query matches.
+ * Returns `undefined` during SSR/hydration to prevent hydration mismatches,
+ * then returns the actual value after the component mounts.
+ */
+export function useMediaQuery(query: string): boolean | undefined {
+  const [matches, setMatches] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
     const media = window.matchMedia(query);
 
-    // Set initial value
+    // Set initial value after mount
     setMatches(media.matches);
 
     // Create event listener

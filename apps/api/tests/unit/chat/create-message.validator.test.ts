@@ -1,7 +1,8 @@
+import { AI_SENDER_ID } from "@modules/chat/lib/constants";
 import { ObjectId } from "mongodb";
 import { z } from "zod";
 
-// Extract and test the schema directly
+// Extract and test the schema directly (mirrors the actual validator)
 const createMessageSchema = z.object({
   chatId: z
     .string()
@@ -11,7 +12,13 @@ const createMessageSchema = z.object({
   body: z
     .string()
     .min(1, "Message body is required")
-    .max(8000, "Message body exceeds maximum length of 8000 characters"),
+    .max(100000, "Message body exceeds maximum length of 100KB"),
+  senderId: z
+    .string()
+    .refine((val) => val === AI_SENDER_ID, {
+      message: `senderId must be '${AI_SENDER_ID}' for AI messages`,
+    })
+    .optional(),
 });
 
 describe("Unit: createMessageSchema Validator", () => {
@@ -45,8 +52,8 @@ describe("Unit: createMessageSchema Validator", () => {
       }
     });
 
-    it("should accept message with max length body (8000 chars)", () => {
-      const longBody = "a".repeat(8000);
+    it("should accept message with max length body (100KB)", () => {
+      const longBody = "a".repeat(100000);
       const result = createMessageSchema.safeParse({
         chatId: validChatId,
         body: longBody,
@@ -120,8 +127,8 @@ describe("Unit: createMessageSchema Validator", () => {
       expect(result.success).toBe(false);
     });
 
-    it("should reject body exceeding max length (8000 chars)", () => {
-      const longBody = "a".repeat(8001);
+    it("should reject body exceeding max length (100KB)", () => {
+      const longBody = "a".repeat(100001);
       const result = createMessageSchema.safeParse({
         chatId: validChatId,
         body: longBody,
@@ -156,6 +163,53 @@ describe("Unit: createMessageSchema Validator", () => {
       if (result.success) {
         expect(result.data.clientId).toBe("client-id-123-abc_xyz");
       }
+    });
+  });
+
+  describe("senderId field (AI messages)", () => {
+    it("should accept AI_SENDER_ID as senderId", () => {
+      const result = createMessageSchema.safeParse({
+        chatId: validChatId,
+        body: "AI response message",
+        senderId: AI_SENDER_ID,
+      });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.senderId).toBe(AI_SENDER_ID);
+      }
+    });
+
+    it("should allow omitting senderId (defaults to authenticated user)", () => {
+      const result = createMessageSchema.safeParse({
+        chatId: validChatId,
+        body: "User message",
+      });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.senderId).toBeUndefined();
+      }
+    });
+
+    it("should reject invalid senderId (not AI_SENDER_ID)", () => {
+      const result = createMessageSchema.safeParse({
+        chatId: validChatId,
+        body: "Message",
+        senderId: "some-other-id",
+      });
+
+      expect(result.success).toBe(false);
+    });
+
+    it("should reject user ObjectId as senderId", () => {
+      const result = createMessageSchema.safeParse({
+        chatId: validChatId,
+        body: "Message",
+        senderId: new ObjectId().toString(),
+      });
+
+      expect(result.success).toBe(false);
     });
   });
 });

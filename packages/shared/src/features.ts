@@ -44,8 +44,8 @@ export type Feature = (typeof ALL_FEATURES)[number];
  */
 interface FeatureMetadata {
   key: FeatureKey;
-  /** URL path for the feature (e.g., "/app/tasks") */
-  route: string;
+  /** URL path for the feature (e.g., "/app/tasks"). Can be null for features without a dedicated page. */
+  route: string | null;
   /** Navigation item name to display in sidebar */
   navName: string;
   /** Whether this feature appears in navigation and settings */
@@ -107,9 +107,9 @@ export const FEATURES_REGISTRY: Record<FeatureKey, FeatureMetadata> = {
   },
   [FeatureKey.AIIntegration]: {
     key: FeatureKey.AIIntegration,
-    route: "/app/ai-settings",
-    navName: "aiSettings",
-    isNavigable: true,
+    route: null,
+    navName: "aiIntegration",
+    isNavigable: false,
   },
 };
 
@@ -127,7 +127,7 @@ export function getFeatureMetadata(featureKey: FeatureKey): FeatureMetadata {
 export function getFeatureKeyByRoute(routePath: string): FeatureKey | null {
   for (const feature of ALL_FEATURES) {
     const metadata = FEATURES_REGISTRY[feature];
-    if (routePath.startsWith(metadata.route)) {
+    if (metadata.route && routePath.startsWith(metadata.route)) {
       return feature;
     }
   }
@@ -150,7 +150,9 @@ export function getFeatureRoutes(): Record<string, string> {
   const routes: Record<string, string> = {};
   for (const feature of ALL_FEATURES) {
     const metadata = FEATURES_REGISTRY[feature];
-    routes[metadata.key] = metadata.route;
+    if (metadata.route) {
+      routes[metadata.key] = metadata.route;
+    }
   }
   return routes;
 }

@@ -14,6 +14,26 @@
           "loading": "Loading chats...",
           "unreadCount": "{{count}} unread"
         },
+        "aiChat": {
+          "defaultName": "AI Assistant",
+          "emptyState": {
+            "title": "Start a conversation",
+            "description": "Ask me anything! I'm here to help your family."
+          },
+          "placeholder": "Ask the AI assistant..."
+        },
+        "aiMention": {
+          "hint": "Type @{{aiName}} to ask the AI",
+          "processing": "AI is thinking...",
+          "error": "Failed to get AI response"
+        },
+        "clearChat": {
+          "button": "Clear chat history",
+          "title": "Clear chat history?",
+          "description": "This will permanently delete all messages in this conversation. This action cannot be undone.",
+          "cancel": "Cancel",
+          "confirm": "Clear history"
+        },
         "conversation": {
           "emptyState": {
             "title": "Select a chat",

@@ -1,3 +1,4 @@
+import { authLimiter } from "@middleware/rate-limiter";
 import { toNodeHandler } from "better-auth/node";
 import { Router } from "express";
 import { getAuth } from "../better-auth";
@@ -17,13 +18,13 @@ export function createAuthRouter(): Router {
   router.use(createUpdateProfileRoute());
   router.use(createChangePasswordRoute());
 
-  // Mount Better Auth handler for all other endpoints:
+  // Mount Better Auth handler for all other endpoints with rate limiting:
   // - GET /token - Get new JWT access token
   // - GET /jwks - Get public keys for JWT verification
   // - POST /sign-out - Sign out and invalidate session
   // - GET /get-session - Get current session
   // And many more: https://www.better-auth.com/docs/concepts/api
-  router.all("*", toNodeHandler(getAuth()));
+  router.all("*", authLimiter, toNodeHandler(getAuth()));
 
   return router;
 }

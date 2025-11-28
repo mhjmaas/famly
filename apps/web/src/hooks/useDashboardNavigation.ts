@@ -3,7 +3,6 @@
 import { ALL_FEATURES, FEATURES_REGISTRY } from "@famly/shared";
 import {
   BookOpen,
-  Bot,
   Calendar,
   Camera,
   CheckSquare,
@@ -84,7 +83,6 @@ const createNavigationSections = (): NavigationSection[] => [
       },
       { name: "locations", href: "/app/locations", icon: MapPin },
       { name: "memories", href: "/app/memories", icon: Camera },
-      { name: "aiSettings", href: "/app/ai-settings", icon: Bot },
     ],
   },
   {

@@ -14,6 +14,11 @@ import {
   selectChatLoading,
   selectChats,
 } from "@/store/slices/chat.slice";
+import { selectCurrentFamily } from "@/store/slices/family.slice";
+import {
+  selectAISettings,
+  selectIsFeatureEnabled,
+} from "@/store/slices/settings.slice";
 import { ChatList } from "./chat-list";
 import { ConversationView } from "./conversation-view";
 
@@ -89,6 +94,12 @@ export function ChatInterface({ dict, initialChatId }: ChatInterfaceProps) {
   const chats = useAppSelector(selectChats);
   const activeChat = useAppSelector(selectActiveChat);
   const loading = useAppSelector(selectChatLoading);
+  const currentFamily = useAppSelector(selectCurrentFamily);
+  const familyId = currentFamily?.familyId;
+  const aiSettings = useAppSelector(selectAISettings(familyId));
+  const aiIntegrationEnabled = useAppSelector(
+    selectIsFeatureEnabled(familyId, "aiIntegration"),
+  );
   const lastFetch = useAppSelector((state) => state.chat.lastFetch);
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [error, setError] = useState<string | null>(null);
@@ -187,12 +198,26 @@ export function ChatInterface({ dict, initialChatId }: ChatInterfaceProps) {
     );
   }
 
+  // Show loading skeleton while determining layout to prevent hydration mismatch
+  if (isDesktop === undefined) {
+    return (
+      <div
+        className="flex h-[calc(100dvh-6.5rem)] min-h-0 flex-col gap-2 md:h-[calc(100vh-4rem)]"
+        data-testid="chat-interface"
+      >
+        <div className="flex flex-1 items-center justify-center">
+          <div className="animate-pulse text-muted-foreground">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="flex h-[calc(100dvh-6.5rem)] min-h-0 flex-col gap-2 md:h-[calc(100vh-4rem)]"
       data-testid="chat-interface"
     >
-      {/* Desktop & Tablet: unchanged two-column layout */}
+      {/* Desktop & Tablet: two-column layout */}
       {isDesktop ? (
         <div className="flex flex-1 gap-4 overflow-hidden min-h-0">
           <div className="w-[30%] min-w-[280px] max-w-[400px] border-r border-border">
@@ -208,6 +233,8 @@ export function ChatInterface({ dict, initialChatId }: ChatInterfaceProps) {
               dict={dict}
               chat={activeChat}
               loading={loading.messages}
+              aiName={aiSettings?.aiName}
+              aiIntegrationEnabled={aiIntegrationEnabled}
             />
           </div>
         </div>
@@ -240,6 +267,8 @@ export function ChatInterface({ dict, initialChatId }: ChatInterfaceProps) {
               dict={dict}
               chat={activeChat}
               loading={loading.messages}
+              aiName={aiSettings?.aiName}
+              aiIntegrationEnabled={aiIntegrationEnabled}
             />
           </TabsContent>
         </Tabs>

@@ -9,6 +9,7 @@ import chatReducer, {
   resetUnreadCount,
   selectActiveChat,
   selectActiveChatId,
+  selectChat,
   selectChatById,
   selectChatError,
   selectChatLoading,
@@ -644,6 +645,32 @@ describe("chat.slice", () => {
 
       // Should reject but not crash
       expect(result.meta.requestStatus).toBe("rejected");
+    });
+  });
+
+  describe("selectChat async thunk", () => {
+    it("should fetch messages for regular chats", async () => {
+      mockedGetChats.mockResolvedValueOnce({ chats: [mockChat1] });
+      await store.dispatch(fetchChats({}));
+
+      mockedGetMessages.mockResolvedValueOnce({
+        messages: [mockMessage1, mockMessage2],
+      });
+
+      await store.dispatch(selectChat("chat-1"));
+
+      expect(mockedGetMessages).toHaveBeenCalledWith("chat-1", undefined, 20);
+      expect(store.getState().chat.messages["chat-1"]).toHaveLength(2);
+    });
+
+    it("should set active chat ID", async () => {
+      mockedGetChats.mockResolvedValueOnce({ chats: [mockChat1] });
+      await store.dispatch(fetchChats({}));
+      mockedGetMessages.mockResolvedValueOnce({ messages: [] });
+
+      await store.dispatch(selectChat("chat-1"));
+
+      expect(store.getState().chat.activeChatId).toBe("chat-1");
     });
   });
 

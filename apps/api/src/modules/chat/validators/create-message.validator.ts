@@ -2,6 +2,7 @@ import { HttpError } from "@lib/http-error";
 import type { AuthenticatedRequest } from "@modules/auth/middleware/authenticate";
 import type { NextFunction, Response } from "express";
 import { z } from "zod";
+import { AI_SENDER_ID } from "../lib/constants";
 
 /**
  * Input DTO for creating a message
@@ -9,6 +10,7 @@ import { z } from "zod";
 export interface CreateMessageInput {
   clientId?: string; // Optional client-supplied ID for idempotency
   body: string; // Message body, 1-8000 chars
+  senderId?: string; // Optional sender ID for AI messages (must be AI_SENDER_ID)
 }
 
 /**
@@ -19,7 +21,13 @@ const createMessageSchema = z.object({
   body: z
     .string()
     .min(1, "Message body is required")
-    .max(8000, "Message body exceeds maximum length of 8000 characters"),
+    .max(100000, "Message body exceeds maximum length of 100KB"),
+  senderId: z
+    .string()
+    .refine((val) => val === AI_SENDER_ID, {
+      message: `senderId must be '${AI_SENDER_ID}' for AI messages`,
+    })
+    .optional(),
 });
 
 /**

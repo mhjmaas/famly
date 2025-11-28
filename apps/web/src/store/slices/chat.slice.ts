@@ -240,7 +240,7 @@ export const markMessagesAsRead = createAsyncThunk(
 export const selectChat = createAsyncThunk(
   "chat/selectChat",
   async (chatId: string, { dispatch }) => {
-    // Fetch messages for the selected chat
+    // Fetch messages for the selected chat (including AI chats - they're now persisted)
     const result = await dispatch(fetchMessages({ chatId }));
 
     // If messages were fetched successfully, mark the last one as read
@@ -348,6 +348,22 @@ const chatSlice = createSlice({
         if (chatIndex !== -1) {
           state.chats[chatIndex].unreadCount = 0;
         }
+      }
+    },
+
+    /**
+     * Clear all messages for a chat (used for AI chat clear history)
+     */
+    clearChatMessages: (state, action: PayloadAction<string>) => {
+      const chatId = action.payload;
+      // Clear messages for this chat
+      state.messages[chatId] = [];
+      // Reset cursor so next fetch starts fresh
+      state.messageCursors[chatId] = undefined as unknown as null;
+      // Clear last message preview on the chat
+      const chatIndex = state.chats.findIndex((c) => c._id === chatId);
+      if (chatIndex !== -1) {
+        state.chats[chatIndex].lastMessage = undefined;
       }
     },
   },
@@ -486,6 +502,7 @@ export const {
   updateChatFromEvent,
   resetUnreadCount,
   setActiveChat,
+  clearChatMessages,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

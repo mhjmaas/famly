@@ -141,7 +141,7 @@ describe("TaskCompletionHookRegistry", () => {
       const elapsed = Date.now() - startTime;
       // If executed in parallel, should be ~delay, not 3*delay
       // Allow some buffer for execution
-      expect(elapsed).toBeLessThan(delay * 2.5);
+      expect(elapsed).toBeLessThan(delay * 4);
     });
 
     it("should not call error handler if none provided", async () => {

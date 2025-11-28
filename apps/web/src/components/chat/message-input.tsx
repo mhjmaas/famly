@@ -1,5 +1,6 @@
 "use client";
 
+import type { FileUIPart } from "ai";
 import { CheckIcon, GlobeIcon, MicIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -33,6 +34,11 @@ import {
   PromptInputTextarea,
   PromptInputTools,
 } from "@/components/ai-elements/prompt-input";
+import { detectAIMention } from "@/hooks/use-mention-detection";
+import {
+  loadMessageInputPreferences,
+  updateMessageInputPreference,
+} from "@/lib/utils/message-input-preferences";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { selectChatLoading, sendMessage } from "@/store/slices/chat.slice";
 
@@ -75,8 +81,25 @@ const models = [
   },
 ];
 
+export interface MessageSubmitData {
+  text: string;
+  model?: string;
+  webSearch?: boolean;
+  files?: FileUIPart[];
+}
+
+export interface AIMentionData {
+  /** The original message with the mention */
+  originalMessage: string;
+  /** The question extracted from the message */
+  question: string;
+  /** The message to persist (without the mention) */
+  messageWithoutMention: string;
+}
+
 interface MessageInputProps {
-  chatId: string;
+  /** Chat ID for Redux-based message sending (optional if using onSendMessage) */
+  chatId?: string;
   dict: {
     messageInput: {
       placeholder: string;
@@ -88,6 +111,8 @@ interface MessageInputProps {
       sendMessage: string;
     };
   };
+  /** Override placeholder text (e.g., for AI chat) */
+  placeholderOverride?: string;
   /** Enable file attachments feature */
   enableAttachments?: boolean;
   /** Enable web search toggle */
@@ -104,11 +129,26 @@ interface MessageInputProps {
   onModelChange?: (modelId: string) => void;
   /** Default model ID */
   defaultModel?: string;
+  /** Custom submit handler - bypasses Redux dispatch when provided */
+  onSendMessage?: (data: MessageSubmitData) => void | Promise<void>;
+  /** External loading state (for AI streaming) */
+  isLoading?: boolean;
+  /** Controlled input value */
+  value?: string;
+  /** Callback when input value changes */
+  onValueChange?: (value: string) => void;
+  /** AI name for @mention detection (e.g., "Jarvis") */
+  aiName?: string;
+  /** Callback when AI is mentioned in a DM/Group chat */
+  onAIMention?: (data: AIMentionData) => void | Promise<void>;
+  /** Whether AI mention detection is enabled */
+  enableAIMention?: boolean;
 }
 
 export function MessageInput({
   chatId,
   dict,
+  placeholderOverride,
   enableAttachments = false,
   enableWebSearch = false,
   enableMicrophone = false,
@@ -117,11 +157,36 @@ export function MessageInput({
   onMicrophoneToggle,
   onModelChange,
   defaultModel = models[0].id,
+  onSendMessage,
+  isLoading: externalLoading,
+  value: controlledValue,
+  onValueChange,
+  aiName,
+  onAIMention,
+  enableAIMention = false,
 }: MessageInputProps) {
   const dispatch = useAppDispatch();
-  const loading = useAppSelector(selectChatLoading);
-  const [text, setText] = useState("");
-  const [useWebSearch, setUseWebSearch] = useState(false);
+  const reduxLoading = useAppSelector(selectChatLoading);
+  const [internalText, setInternalText] = useState("");
+
+  // Support both controlled and uncontrolled modes
+  const text = controlledValue ?? internalText;
+  const setText = (value: string) => {
+    if (onValueChange) {
+      onValueChange(value);
+    } else {
+      setInternalText(value);
+    }
+  };
+
+  // Load preferences from localStorage on mount
+  const [useWebSearch, setUseWebSearch] = useState(() => {
+    if (enableWebSearch) {
+      const preferences = loadMessageInputPreferences();
+      return preferences.webSearch ?? false;
+    }
+    return false;
+  });
   const [useMicrophone, setUseMicrophone] = useState(false);
   const [model, setModel] = useState(defaultModel);
   const [modelSelectorOpen, setModelSelectorOpen] = useState(false);
@@ -134,6 +199,8 @@ export function MessageInput({
   const handleWebSearchToggle = () => {
     const newValue = !useWebSearch;
     setUseWebSearch(newValue);
+    // Save to localStorage
+    updateMessageInputPreference("webSearch", newValue);
     onWebSearchToggle?.(newValue);
   };
 
@@ -165,20 +232,53 @@ export function MessageInput({
     setStatus("submitted");
 
     try {
-      await dispatch(
-        sendMessage({
-          chatId,
-          body: message.text || "",
-          clientId: `${Date.now()}-${Math.random()}`,
-          // Future: pass attachments, model, webSearch settings
-          // attachments: message.files,
-          // model: model,
-          // webSearch: useWebSearch,
-        }),
-      ).unwrap();
+      // Use custom handler if provided (AI mode), otherwise use Redux
+      if (onSendMessage) {
+        await onSendMessage({
+          text: message.text || "",
+          model,
+          webSearch: useWebSearch,
+          files: message.files,
+        });
+        setText("");
+        setStatus("ready");
+      } else if (chatId) {
+        // Check for AI mention in DM/Group chats
+        console.log("[Message Input] Checking for AI mention", {
+          enableAIMention,
+          aiName,
+          messageText: message.text,
+        });
 
-      setText("");
-      setStatus("ready");
+        const mentionResult =
+          enableAIMention && aiName
+            ? detectAIMention(message.text || "", aiName)
+            : null;
+
+        console.log("[Message Input] Mention detection result:", mentionResult);
+
+        // Send the user's message first
+        await dispatch(
+          sendMessage({
+            chatId,
+            body: message.text || "",
+            clientId: `${Date.now()}-${Math.random()}`,
+          }),
+        ).unwrap();
+
+        setText("");
+        setStatus("ready");
+
+        // If AI was mentioned, trigger the AI invocation callback
+        if (mentionResult?.hasAIMention && onAIMention) {
+          console.log("[Message Input] AI mentioned, invoking callback");
+          await onAIMention({
+            originalMessage: message.text || "",
+            question: mentionResult.question,
+            messageWithoutMention: mentionResult.messageWithoutMention,
+          });
+        }
+      }
     } catch (error) {
       console.error("Error sending message:", error);
       toast.error(dict.errors.sendMessage);
@@ -189,7 +289,8 @@ export function MessageInput({
 
   const charCount = text.length;
   const showCharCount = charCount > 7000;
-  const isDisabled = !text.trim() || charCount > 8000 || loading.sending;
+  const loading = externalLoading ?? reduxLoading.sending;
+  const isDisabled = !text.trim() || charCount > 8000 || loading;
 
   // Check if any tools are enabled
   const hasTools =
@@ -215,7 +316,7 @@ export function MessageInput({
         <PromptInputBody>
           <PromptInputTextarea
             onChange={(event) => setText(event.target.value)}
-            placeholder={dict.messageInput.placeholder}
+            placeholder={placeholderOverride || dict.messageInput.placeholder}
             value={text}
             data-testid="message-input-textarea"
           />
@@ -310,7 +411,7 @@ export function MessageInput({
           {!hasTools && <div />}
           <PromptInputSubmit
             disabled={isDisabled}
-            status={loading.sending ? "submitted" : status}
+            status={loading ? "submitted" : status}
             data-testid="message-input-submit"
           />
         </PromptInputFooter>
