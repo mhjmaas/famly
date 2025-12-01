@@ -105,7 +105,13 @@ export function ChatList({
   });
 
   if (filteredChats.length === 0) {
-    return <ChatListEmpty dict={dict} familyMembers={familyMembers} />;
+    return (
+      <ChatListEmpty
+        dict={dict}
+        familyMembers={familyMembers}
+        onChatSelected={onChatSelected}
+      />
+    );
   }
 
   return (
@@ -144,6 +150,7 @@ export function ChatList({
         dict={dict}
         open={isNewChatOpen}
         onOpenChange={setIsNewChatOpen}
+        onChatSelected={onChatSelected}
         familyMembers={familyMembers}
       />
     </div>

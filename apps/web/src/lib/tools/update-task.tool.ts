@@ -4,7 +4,7 @@ import { getCookieHeader } from "@/lib/server-cookies";
 
 export const updateTaskTool = {
   description:
-    "Update a task by ID. Can modify name, description, due date, assignment, or complete/uncomplete the task.",
+    "Update a task by ID. Can modify name, description, karma, due date, assignment, or complete/uncomplete the task.",
   inputSchema: z.object({
     familyId: z.string().describe("The ID of the family the task belongs to"),
     taskId: z.string().describe("The ID of the task to update"),
@@ -116,7 +116,9 @@ export const updateTaskTool = {
     } catch (error) {
       console.error("Error updating task:", error);
       throw new Error(
-        `Failed to update task: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to update task: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
       );
     }
   },
