@@ -45,6 +45,7 @@ jest.mock(
 import { logger } from "@lib/logger";
 import type { ActivityEventService } from "@modules/activity-events";
 import type { ContributionGoal } from "@modules/contribution-goals/domain/contribution-goal";
+import * as contributionGoalEvents from "@modules/contribution-goals/events/contribution-goal-events";
 import type { ContributionGoalRepository } from "@modules/contribution-goals/repositories/contribution-goal.repository";
 import { ContributionGoalProcessorService } from "@modules/contribution-goals/services/contribution-goal-processor.service";
 import type { KarmaService } from "@modules/karma";
@@ -74,6 +75,7 @@ describe("ContributionGoalProcessorService", () => {
       findByMemberAndWeek: jest.fn(),
       updateById: jest.fn(),
       addDeduction: jest.fn(),
+      createForWeek: jest.fn(),
     } as unknown as jest.Mocked<ContributionGoalRepository>;
 
     // Create mock karma service
@@ -574,6 +576,138 @@ describe("ContributionGoalProcessorService", () => {
 
       // Verify goal was deleted
       expect(mockContributionGoalRepository.deleteById).toHaveBeenCalled();
+    });
+
+    it("should recreate recurring goal with recurring flag set to true", async () => {
+      const mockGoal: ContributionGoal = {
+        _id: new ObjectId(),
+        familyId: mockFamilyId,
+        memberId: mockMemberId,
+        weekStartDate: mockWeekStartDate,
+        title: "Complete 5 chores",
+        description: "Help around the house",
+        maxKarma: 100,
+        recurring: true,
+        deductions: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const nextWeekDate = new Date(mockWeekStartDate);
+      nextWeekDate.setUTCDate(mockWeekStartDate.getUTCDate() + 7);
+      const nextWeekGoal: ContributionGoal = {
+        ...mockGoal,
+        _id: new ObjectId(),
+        weekStartDate: nextWeekDate,
+      };
+
+      mockContributionGoalRepository.findActiveGoalsForWeek.mockResolvedValue([
+        mockGoal,
+      ]);
+      mockKarmaService.awardKarma.mockResolvedValue({} as any);
+      mockActivityEventService.recordEvent.mockResolvedValue({} as any);
+      mockContributionGoalRepository.deleteById.mockResolvedValue(true);
+      mockContributionGoalRepository.createForWeek.mockResolvedValue(
+        nextWeekGoal,
+      );
+
+      const mockNotification = {
+        title: "Weekly Goal Completed! 🎯",
+        body: "You earned karma",
+        icon: expect.any(String),
+        badge: expect.any(String),
+        data: { type: "contribution_goal_awarded", url: expect.any(String) },
+      };
+
+      jest
+        .spyOn(notifications, "createContributionGoalAwardedNotification")
+        .mockReturnValue(mockNotification);
+      jest.spyOn(notifications, "sendToUser").mockResolvedValue(true);
+      jest
+        .spyOn(contributionGoalEvents, "emitContributionGoalUpdated")
+        .mockResolvedValue(void 0);
+
+      await processorService.processWeeklyGoals(mockWeekStartDate);
+
+      // Verify createForWeek was called
+      expect(
+        mockContributionGoalRepository.createForWeek,
+      ).toHaveBeenCalledTimes(1);
+
+      // Verify recurring: true was passed to createForWeek
+      expect(mockContributionGoalRepository.createForWeek).toHaveBeenCalledWith(
+        mockFamilyId.toString(),
+        {
+          memberId: mockMemberId.toString(),
+          title: "Complete 5 chores",
+          description: "Help around the house",
+          maxKarma: 100,
+          recurring: true, // THIS IS THE KEY ASSERTION
+        },
+        expect.any(Date),
+        expect.any(Date),
+      );
+
+      // Verify event was emitted so frontend knows about the new goal
+      expect(
+        contributionGoalEvents.emitContributionGoalUpdated,
+      ).toHaveBeenCalledWith(nextWeekGoal, "CREATED");
+    });
+
+    it("should NOT recreate non-recurring goal", async () => {
+      const mockGoal: ContributionGoal = {
+        _id: new ObjectId(),
+        familyId: mockFamilyId,
+        memberId: mockMemberId,
+        weekStartDate: mockWeekStartDate,
+        title: "One-time goal",
+        description: "Not recurring",
+        maxKarma: 50,
+        recurring: false, // This goal is NOT recurring
+        deductions: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockContributionGoalRepository.findActiveGoalsForWeek.mockResolvedValue([
+        mockGoal,
+      ]);
+      mockKarmaService.awardKarma.mockResolvedValue({} as any);
+      mockActivityEventService.recordEvent.mockResolvedValue({} as any);
+      mockContributionGoalRepository.deleteById.mockResolvedValue(true);
+
+      const mockNotification = {
+        title: "Weekly Goal Completed! 🎯",
+        body: "You earned karma",
+        icon: expect.any(String),
+        badge: expect.any(String),
+        data: { type: "contribution_goal_awarded", url: expect.any(String) },
+      };
+
+      jest
+        .spyOn(notifications, "createContributionGoalAwardedNotification")
+        .mockReturnValue(mockNotification);
+      jest.spyOn(notifications, "sendToUser").mockResolvedValue(true);
+      jest
+        .spyOn(contributionGoalEvents, "emitContributionGoalUpdated")
+        .mockResolvedValue(void 0);
+
+      await processorService.processWeeklyGoals(mockWeekStartDate);
+
+      // Verify createForWeek was NOT called since goal is not recurring
+      expect(
+        mockContributionGoalRepository.createForWeek,
+      ).not.toHaveBeenCalled();
+
+      // Verify event was NOT emitted since no new goal was created
+      expect(
+        contributionGoalEvents.emitContributionGoalUpdated,
+      ).not.toHaveBeenCalled();
+
+      // Verify goal was deleted
+      expect(mockContributionGoalRepository.deleteById).toHaveBeenCalledTimes(
+        1,
+      );
     });
   });
 });
