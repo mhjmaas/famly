@@ -8,7 +8,10 @@ import {
   createContributionGoalZeroKarmaNotification,
   sendToUser,
 } from "@modules/notifications";
-import { emitContributionGoalAwarded } from "../events/contribution-goal-events";
+import {
+  emitContributionGoalAwarded,
+  emitContributionGoalUpdated,
+} from "../events/contribution-goal-events";
 import { calculateCurrentKarma } from "../lib/contribution-goal.mapper";
 import type { ContributionGoalRepository } from "../repositories/contribution-goal.repository";
 
@@ -144,18 +147,28 @@ export class ContributionGoalProcessorService {
             nextWeekStart.setUTCDate(goal.weekStartDate.getUTCDate() + 7);
 
             try {
-              await this.contributionGoalRepository.createForWeek(
-                goal.familyId.toString(),
-                {
-                  memberId: goal.memberId.toString(),
-                  title: goal.title,
-                  description: goal.description,
-                  maxKarma: goal.maxKarma,
-                  recurring: true,
-                },
-                nextWeekStart,
-                new Date(),
-              );
+              const newGoal =
+                await this.contributionGoalRepository.createForWeek(
+                  goal.familyId.toString(),
+                  {
+                    memberId: goal.memberId.toString(),
+                    title: goal.title,
+                    description: goal.description,
+                    maxKarma: goal.maxKarma,
+                    recurring: true,
+                  },
+                  nextWeekStart,
+                  new Date(),
+                );
+
+              // Emit event so frontend is notified of the new recurring goal
+              await emitContributionGoalUpdated(newGoal, "CREATED");
+
+              logger.info("Recurring contribution goal created for next week", {
+                newGoalId: newGoal._id.toString(),
+                memberId: newGoal.memberId.toString(),
+                weekStartDate: nextWeekStart.toISOString(),
+              });
             } catch (createError) {
               logger.error("Failed to recreate recurring contribution goal", {
                 goalId: goal._id.toString(),

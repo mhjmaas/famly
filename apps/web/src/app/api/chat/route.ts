@@ -63,11 +63,6 @@ export async function POST(req: Request) {
     const name = meResponse.user.name;
     const language = meResponse.user.language || "en";
 
-    console.log(`User: ${name}, Language: ${language}`);
-
-    // Console.log the AI name
-    console.log("AI Name:", settings.aiSettings.aiName);
-
     const lmstudio = createOpenAICompatible({
       name: "lmstudio",
       baseURL: settings.aiSettings.apiEndpoint,
