@@ -3,7 +3,55 @@
     "pages": {
       "shoppingLists": {
         "title": "Boodschappenlijsten",
-        "placeholder": "Pagina Boodschappenlijsten verschijnt binnenkort"
+        "description": "Beheer de boodschappenlijsten van je gezin",
+        "newList": "Nieuwe Lijst",
+        "createList": "Lijst Maken",
+        "empty": {
+          "title": "Nog geen boodschappenlijsten",
+          "description": "Maak je eerste boodschappenlijst om te beginnen",
+          "action": "Lijst Maken"
+        },
+        "card": {
+          "itemCount": "{checked} van {total} items",
+          "noItems": "Geen items",
+          "checkAll": "Alles Afvinken",
+          "uncheckAll": "Alles Uitvinken",
+          "addItem": "Item toevoegen...",
+          "add": "Toevoegen"
+        },
+        "menu": {
+          "edit": "Bewerken",
+          "delete": "Verwijderen"
+        },
+        "dialog": {
+          "createTitle": "Nieuwe Boodschappenlijst",
+          "editTitle": "Boodschappenlijst Bewerken",
+          "nameLabel": "Naam",
+          "namePlaceholder": "Voer lijstnaam in",
+          "tagsLabel": "Tags",
+          "tagsPlaceholder": "Voeg een tag toe...",
+          "addTags": "Tags Toevoegen",
+          "cancel": "Annuleren",
+          "create": "Lijst Maken",
+          "update": "Lijst Bijwerken"
+        },
+        "deleteDialog": {
+          "title": "Boodschappenlijst Verwijderen",
+          "description": "Weet je zeker dat je \"{name}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+          "cancel": "Annuleren",
+          "confirm": "Verwijderen"
+        },
+        "sections": {
+          "active": "Actieve Lijsten",
+          "completed": "Voltooid"
+        },
+        "toast": {
+          "created": "Boodschappenlijst aangemaakt",
+          "updated": "Boodschappenlijst bijgewerkt",
+          "deleted": "Boodschappenlijst verwijderd",
+          "itemAdded": "Item toegevoegd",
+          "error": "Er is iets misgegaan"
+        }
       }
     }
   }

@@ -13,22 +13,28 @@ import { getAiInstructions } from "@/lib/ai-instructions";
 import { ApiError, getFamilySettings, getMe } from "@/lib/api-client";
 import { getCookieHeader } from "@/lib/server-cookies";
 import {
+  addMultipleShoppingListItemsTool,
+  addShoppingListItemTool,
   cancelClaimTool,
   checkContributionGoalTool,
+  checkShoppingListItemTool,
   claimRewardTool,
   completeTaskTool,
   createContributionGoalTool,
   createMultipleTasksTool,
+  createShoppingListTool,
   createTaskTool,
   currentDateTimeTool,
   deductContributionGoalTool,
   deleteMultipleTasksTool,
+  deleteShoppingListTool,
   deleteTaskTool,
   familyMembersTool,
   getClaimsTool,
   karmaBalanceTool,
   listFavouriteRewardsTool,
   listRewardsTool,
+  listShoppingListsTool,
   listTasksTool,
   modifyKarmaTool,
   updateTaskTool,
@@ -62,6 +68,12 @@ function buildTools(webSearchEnabled: boolean): Record<string, Tool> {
     completeTaskTool,
     deleteTaskTool,
     deleteMultipleTasksTool,
+    listShoppingListsTool,
+    createShoppingListTool,
+    addShoppingListItemTool,
+    addMultipleShoppingListItemsTool,
+    checkShoppingListItemTool,
+    deleteShoppingListTool,
   };
 
   if (webSearchEnabled) {

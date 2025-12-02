@@ -8,6 +8,7 @@ import karmaReducer from "./slices/karma.slice";
 import notificationsReducer from "./slices/notifications.slice";
 import rewardsReducer from "./slices/rewards.slice";
 import settingsReducer from "./slices/settings.slice";
+import shoppingListsReducer from "./slices/shopping-lists.slice";
 import tasksReducer from "./slices/tasks.slice";
 import userReducer from "./slices/user.slice";
 
@@ -24,6 +25,7 @@ const rootReducer = combineReducers({
   notifications: notificationsReducer,
   contributionGoals: contributionGoalsReducer,
   chat: chatReducer,
+  shoppingLists: shoppingListsReducer,
 });
 
 // Infer RootState from the rootReducer

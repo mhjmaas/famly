@@ -483,3 +483,43 @@ export interface CreateMessageRequest {
   /** Optional sender ID for AI messages (must be AI_SENDER_ID) */
   senderId?: string;
 }
+
+// ============= Shopping Lists Types =============
+
+export interface ShoppingListItem {
+  _id: string;
+  name: string;
+  checked: boolean;
+  createdAt: string;
+}
+
+export interface ShoppingList {
+  _id: string;
+  familyId: string;
+  name: string;
+  tags: string[];
+  items: ShoppingListItem[];
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateShoppingListRequest {
+  name: string;
+  tags?: string[];
+  items?: Array<{ name: string }>;
+}
+
+export interface UpdateShoppingListRequest {
+  name?: string;
+  tags?: string[];
+}
+
+export interface AddShoppingListItemRequest {
+  name: string;
+}
+
+export interface UpdateShoppingListItemRequest {
+  name?: string;
+  checked?: boolean;
+}

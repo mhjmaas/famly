@@ -3,7 +3,55 @@
     "pages": {
       "shoppingLists": {
         "title": "Shopping Lists",
-        "placeholder": "Shopping lists page coming soon"
+        "description": "Manage your family shopping lists",
+        "newList": "New List",
+        "createList": "Create List",
+        "empty": {
+          "title": "No shopping lists yet",
+          "description": "Create your first shopping list to get started",
+          "action": "Create List"
+        },
+        "card": {
+          "itemCount": "{checked} of {total} items",
+          "noItems": "No items",
+          "checkAll": "Check All",
+          "uncheckAll": "Uncheck All",
+          "addItem": "Add item...",
+          "add": "Add"
+        },
+        "menu": {
+          "edit": "Edit",
+          "delete": "Delete"
+        },
+        "dialog": {
+          "createTitle": "Create New Shopping List",
+          "editTitle": "Edit Shopping List",
+          "nameLabel": "Name",
+          "namePlaceholder": "Enter list name",
+          "tagsLabel": "Tags",
+          "tagsPlaceholder": "Add a tag...",
+          "addTags": "Add Tags",
+          "cancel": "Cancel",
+          "create": "Create List",
+          "update": "Update List"
+        },
+        "deleteDialog": {
+          "title": "Delete Shopping List",
+          "description": "Are you sure you want to delete \"{name}\"? This action cannot be undone.",
+          "cancel": "Cancel",
+          "confirm": "Delete"
+        },
+        "sections": {
+          "active": "Active Lists",
+          "completed": "Completed"
+        },
+        "toast": {
+          "created": "Shopping list created",
+          "updated": "Shopping list updated",
+          "deleted": "Shopping list deleted",
+          "itemAdded": "Item added",
+          "error": "Something went wrong"
+        }
       }
     }
   }
