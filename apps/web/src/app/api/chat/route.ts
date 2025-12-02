@@ -1,3 +1,14 @@
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import {
+  createAgentUIStreamResponse,
+  type LanguageModel,
+  stepCountIs,
+  type Tool,
+  ToolLoopAgent,
+  type UIMessage,
+} from "ai";
+import { createOllama } from "ai-sdk-ollama";
+import { NextResponse } from "next/server";
 import { getAiInstructions } from "@/lib/ai-instructions";
 import { ApiError, getFamilySettings, getMe } from "@/lib/api-client";
 import { getCookieHeader } from "@/lib/server-cookies";
@@ -31,17 +42,6 @@ import {
   updateTaskTool,
 } from "@/lib/tools";
 import { webSearchTool } from "@/lib/tools/web-search.tool";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import {
-  createAgentUIStreamResponse,
-  type LanguageModel,
-  stepCountIs,
-  type Tool,
-  ToolLoopAgent,
-  type UIMessage,
-} from "ai";
-import { createOllama } from "ai-sdk-ollama";
-import { NextResponse } from "next/server";
 
 // Language mapping enum
 const LANGUAGE_MAP: Record<string, string> = {
