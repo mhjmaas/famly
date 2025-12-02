@@ -1,14 +1,3 @@
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import {
-  createAgentUIStreamResponse,
-  type LanguageModel,
-  stepCountIs,
-  type Tool,
-  ToolLoopAgent,
-  type UIMessage,
-} from "ai";
-import { createOllama } from "ai-sdk-ollama";
-import { NextResponse } from "next/server";
 import { getAiInstructions } from "@/lib/ai-instructions";
 import { ApiError, getFamilySettings, getMe } from "@/lib/api-client";
 import { getCookieHeader } from "@/lib/server-cookies";
@@ -21,6 +10,7 @@ import {
   claimRewardTool,
   completeTaskTool,
   createContributionGoalTool,
+  createDiaryEntryTool,
   createMultipleTasksTool,
   createShoppingListTool,
   createTaskTool,
@@ -32,6 +22,7 @@ import {
   familyMembersTool,
   getClaimsTool,
   karmaBalanceTool,
+  listDiaryEntriesTool,
   listFavouriteRewardsTool,
   listRewardsTool,
   listShoppingListsTool,
@@ -40,6 +31,17 @@ import {
   updateTaskTool,
 } from "@/lib/tools";
 import { webSearchTool } from "@/lib/tools/web-search.tool";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import {
+  createAgentUIStreamResponse,
+  type LanguageModel,
+  stepCountIs,
+  type Tool,
+  ToolLoopAgent,
+  type UIMessage,
+} from "ai";
+import { createOllama } from "ai-sdk-ollama";
+import { NextResponse } from "next/server";
 
 // Language mapping enum
 const LANGUAGE_MAP: Record<string, string> = {
@@ -74,6 +76,8 @@ function buildTools(webSearchEnabled: boolean): Record<string, Tool> {
     addMultipleShoppingListItemsTool,
     checkShoppingListItemTool,
     deleteShoppingListTool,
+    listDiaryEntriesTool,
+    createDiaryEntryTool,
   };
 
   if (webSearchEnabled) {

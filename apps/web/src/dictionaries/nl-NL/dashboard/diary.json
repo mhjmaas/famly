@@ -2,8 +2,45 @@
   "dashboard": {
     "pages": {
       "diary": {
-        "title": "Dagboek",
-        "placeholder": "Dagboekpagina verschijnt binnenkort"
+        "title": "Persoonlijk Dagboek",
+        "description": "Schrijf je gedachten en herinneringen",
+        "newEntry": {
+          "title": "Nieuwe Notitie",
+          "placeholder": "Wat houdt je vandaag bezig?",
+          "submit": "Toevoegen",
+          "submitting": "Toevoegen..."
+        },
+        "search": {
+          "placeholder": "Zoek notities..."
+        },
+        "datePicker": {
+          "label": "Ga naar Datum"
+        },
+        "filters": {
+          "showing": "Resultaten voor:",
+          "showingDate": "Notities van:",
+          "showingDateRange": "Notities van:",
+          "clear": "Filters wissen"
+        },
+        "emptyState": {
+          "title": "Nog geen dagboeknotities",
+          "description": "Nog geen dagboeknotities. Begin met schrijven!",
+          "noResults": "Geen notities gevonden voor je zoekopdracht"
+        },
+        "entry": {
+          "timeFormat": "HH:mm"
+        },
+        "scrollToTop": "Naar boven",
+        "loading": "Notities laden...",
+        "error": {
+          "fetch": "Kon dagboeknotities niet laden",
+          "create": "Kon notitie niet toevoegen",
+          "delete": "Kon notitie niet verwijderen"
+        },
+        "success": {
+          "create": "Notitie toegevoegd",
+          "delete": "Notitie verwijderd"
+        }
       }
     }
   }

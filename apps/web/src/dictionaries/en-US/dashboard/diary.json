@@ -2,8 +2,45 @@
   "dashboard": {
     "pages": {
       "diary": {
-        "title": "Diary",
-        "placeholder": "Diary page coming soon"
+        "title": "Personal Diary",
+        "description": "Write your thoughts and memories",
+        "newEntry": {
+          "title": "New Entry",
+          "placeholder": "What's on your mind today?",
+          "submit": "Add Entry",
+          "submitting": "Adding..."
+        },
+        "search": {
+          "placeholder": "Search entries..."
+        },
+        "datePicker": {
+          "label": "Go to Date"
+        },
+        "filters": {
+          "showing": "Showing results for:",
+          "showingDate": "Showing entries from:",
+          "showingDateRange": "Showing entries from:",
+          "clear": "Clear filters"
+        },
+        "emptyState": {
+          "title": "No diary entries yet",
+          "description": "No diary entries yet. Start writing!",
+          "noResults": "No entries found matching your search"
+        },
+        "entry": {
+          "timeFormat": "h:mm a"
+        },
+        "scrollToTop": "Scroll to top",
+        "loading": "Loading entries...",
+        "error": {
+          "fetch": "Failed to load diary entries",
+          "create": "Failed to create entry",
+          "delete": "Failed to delete entry"
+        },
+        "success": {
+          "create": "Entry added successfully",
+          "delete": "Entry deleted"
+        }
       }
     }
   }

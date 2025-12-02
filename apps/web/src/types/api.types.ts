@@ -523,3 +523,25 @@ export interface UpdateShoppingListItemRequest {
   name?: string;
   checked?: boolean;
 }
+
+// ============= Diary Types =============
+
+export interface DiaryEntry {
+  _id: string;
+  date: string; // Format: YYYY-MM-DD
+  entry: string;
+  isPersonal: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateDiaryEntryRequest {
+  date: string; // Format: YYYY-MM-DD
+  entry: string; // Min 1 char, max 10,000 chars
+}
+
+export interface UpdateDiaryEntryRequest {
+  date?: string; // Format: YYYY-MM-DD
+  entry?: string; // Max 10,000 chars
+}

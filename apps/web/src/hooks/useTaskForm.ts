@@ -112,7 +112,7 @@ export function useTaskForm({
 
       onSuccess();
       resetForm();
-      toast.success(dict.dashboard.pages.tasks.create.success);
+      // Success notification is handled by websocket task events
     } catch (_err) {
       toast.error(dict.dashboard.pages.tasks.create.error);
     }
@@ -152,7 +152,7 @@ export function useTaskForm({
 
       onSuccess();
       resetForm();
-      toast.success(dict.dashboard.pages.tasks.create.success);
+      // Success notification is handled by websocket task events
     } catch (_err) {
       toast.error(dict.dashboard.pages.tasks.create.error);
     }
