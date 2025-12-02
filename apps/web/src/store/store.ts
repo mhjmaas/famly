@@ -3,6 +3,7 @@ import activitiesReducer from "./slices/activities.slice";
 import chatReducer from "./slices/chat.slice";
 import claimsReducer from "./slices/claims.slice";
 import contributionGoalsReducer from "./slices/contribution-goals.slice";
+import diaryReducer from "./slices/diary.slice";
 import familyReducer from "./slices/family.slice";
 import karmaReducer from "./slices/karma.slice";
 import notificationsReducer from "./slices/notifications.slice";
@@ -24,6 +25,7 @@ const rootReducer = combineReducers({
   notifications: notificationsReducer,
   contributionGoals: contributionGoalsReducer,
   chat: chatReducer,
+  diary: diaryReducer,
 });
 
 // Infer RootState from the rootReducer

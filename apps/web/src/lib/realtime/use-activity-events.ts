@@ -49,6 +49,24 @@ export function useActivityEvents(
             // Task notifications are handled by use-task-events.ts
             // Skip showing duplicate notifications here
             break;
+          case "DIARY":
+            toast.success(
+              localized?.title ?? t.activity.diary.entryTitle ?? "Diary Entry",
+              {
+                description: localized?.description ?? event.title,
+              },
+            );
+            break;
+          case "FAMILY_DIARY":
+            toast.success(
+              localized?.title ??
+                t.activity.diary.familyEntryTitle ??
+                "Family Diary Entry",
+              {
+                description: localized?.description ?? event.title,
+              },
+            );
+            break;
           case "KARMA":
             toast.success(
               localized?.title ??

@@ -18,6 +18,7 @@ import {
   claimRewardTool,
   completeTaskTool,
   createContributionGoalTool,
+  createDiaryEntryTool,
   createMultipleTasksTool,
   createTaskTool,
   currentDateTimeTool,
@@ -27,6 +28,7 @@ import {
   familyMembersTool,
   getClaimsTool,
   karmaBalanceTool,
+  listDiaryEntriesTool,
   listFavouriteRewardsTool,
   listRewardsTool,
   listTasksTool,
@@ -62,6 +64,8 @@ function buildTools(webSearchEnabled: boolean): Record<string, Tool> {
     completeTaskTool,
     deleteTaskTool,
     deleteMultipleTasksTool,
+    listDiaryEntriesTool,
+    createDiaryEntryTool,
   };
 
   if (webSearchEnabled) {

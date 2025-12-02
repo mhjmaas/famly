@@ -20,12 +20,14 @@ import type {
   ContributionGoal,
   CreateChatRequest,
   CreateContributionGoalRequest,
+  CreateDiaryEntryRequest,
   CreateFamilyRequest,
   CreateFamilyResponse,
   CreateMessageRequest,
   CreateRewardRequest,
   CreateScheduleRequest,
   CreateTaskRequest,
+  DiaryEntry,
   FamilySettings,
   FamilyWithMembers,
   GrantKarmaRequest,
@@ -42,6 +44,7 @@ import type {
   TaskQueryParams,
   TaskSchedule,
   UpdateContributionGoalRequest,
+  UpdateDiaryEntryRequest,
   UpdateFamilySettingsRequest,
   UpdateMemberRoleRequest,
   UpdateMemberRoleResponse,
@@ -923,5 +926,85 @@ export async function clearChatMessages(
   return apiClient<{ deletedCount: number }>(`/v1/chats/${chatId}/messages`, {
     method: "DELETE",
     ...options,
+  });
+}
+
+// ============= Personal Diary API =============
+
+export type {
+  CreateDiaryEntryRequest,
+  DiaryEntry,
+  UpdateDiaryEntryRequest,
+} from "@/types/api.types";
+
+/**
+ * Get all personal diary entries for the authenticated user
+ * @param startDate - Optional start date filter (YYYY-MM-DD)
+ * @param endDate - Optional end date filter (YYYY-MM-DD)
+ */
+export async function getDiaryEntries(
+  startDate?: string,
+  endDate?: string,
+  cookie?: string,
+): Promise<DiaryEntry[]> {
+  const params = new URLSearchParams();
+  if (startDate) params.set("startDate", startDate);
+  if (endDate) params.set("endDate", endDate);
+
+  const queryString = params.toString();
+  const endpoint = `/v1/diary${queryString ? `?${queryString}` : ""}`;
+
+  return apiClient<DiaryEntry[]>(endpoint, { cookie });
+}
+
+/**
+ * Get a specific diary entry by ID
+ */
+export async function getDiaryEntry(
+  entryId: string,
+  cookie?: string,
+): Promise<DiaryEntry> {
+  return apiClient<DiaryEntry>(`/v1/diary/${entryId}`, { cookie });
+}
+
+/**
+ * Create a new personal diary entry
+ */
+export async function createDiaryEntry(
+  data: CreateDiaryEntryRequest,
+  cookie?: string,
+): Promise<DiaryEntry> {
+  return apiClient<DiaryEntry>("/v1/diary", {
+    method: "POST",
+    body: data,
+    cookie,
+  });
+}
+
+/**
+ * Update an existing diary entry
+ */
+export async function updateDiaryEntry(
+  entryId: string,
+  data: UpdateDiaryEntryRequest,
+  cookie?: string,
+): Promise<DiaryEntry> {
+  return apiClient<DiaryEntry>(`/v1/diary/${entryId}`, {
+    method: "PATCH",
+    body: data,
+    cookie,
+  });
+}
+
+/**
+ * Delete a diary entry
+ */
+export async function deleteDiaryEntry(
+  entryId: string,
+  cookie?: string,
+): Promise<void> {
+  return apiClient<void>(`/v1/diary/${entryId}`, {
+    method: "DELETE",
+    cookie,
   });
 }

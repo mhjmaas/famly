@@ -38,8 +38,17 @@ export function useTaskEvents(
       // Refresh tasks list to include new task
       dispatch(fetchTasks(familyId));
 
-      // Show notification if task is assigned to current user
-      if (
+      // Show notification to the creator of the task
+      if (event.task.createdBy === userId) {
+        toast.success(t.activity.task.createdTitle ?? "Task Created", {
+          description: t.activity.task.created.replace(
+            "{taskName}",
+            event.task.name,
+          ),
+        });
+      }
+      // Show notification if task is assigned to current user (and they didn't create it)
+      else if (
         event.task.assignment.type === "member" &&
         event.task.assignment.memberId === userId
       ) {
