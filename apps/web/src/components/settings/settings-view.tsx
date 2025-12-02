@@ -1,7 +1,8 @@
 "use client";
 
 import { Bot, CheckCircle2 } from "lucide-react";
-import { useEffect } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -60,8 +61,6 @@ interface SettingsViewProps {
             title: string;
             description: string;
             providers: {
-              openai: string;
-              azure: string;
               local: string;
               other: string;
             };
@@ -90,16 +89,52 @@ interface SettingsViewProps {
       };
     };
   };
+  initialTab?: string;
 }
 
-export function SettingsView({ dict }: SettingsViewProps) {
+export function SettingsView({ dict, initialTab }: SettingsViewProps) {
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const currentFamily = useAppSelector(selectCurrentFamily);
   const settings = useAppSelector(
     selectFamilySettings(currentFamily?.familyId),
   );
   const isLoading = useAppSelector(selectSettingsLoading);
   const error = useAppSelector(selectSettingsError);
+  const [selectedTab, setSelectedTab] = useState<string>(() => {
+    const paramTab = searchParams?.get("tab");
+    return (paramTab ?? initialTab) || "features";
+  });
+
+  const setTabInUrl = useCallback(
+    (tab: string) => {
+      const params = new URLSearchParams(searchParams?.toString());
+      if (tab && tab !== "features") {
+        params.set("tab", tab);
+      } else {
+        params.delete("tab");
+      }
+
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, {
+        scroll: false,
+      });
+    },
+    [pathname, router, searchParams],
+  );
+
+  // Sync selectedTab with URL changes (back/forward nav)
+  useEffect(() => {
+    const paramTab = searchParams?.get("tab") ?? null;
+    setSelectedTab(paramTab ?? initialTab ?? "features");
+  }, [searchParams, initialTab]);
+
+  const handleTabChange = (tab: string) => {
+    setSelectedTab(tab);
+    setTabInUrl(tab);
+  };
 
   useEffect(() => {
     if (currentFamily?.familyId) {
@@ -136,19 +171,31 @@ export function SettingsView({ dict }: SettingsViewProps) {
         </div>
       </div>
 
-      <Tabs defaultValue="features" className="w-full">
+      <Tabs
+        value={selectedTab}
+        onValueChange={handleTabChange}
+        className="w-full"
+      >
         <div className="flex justify-center">
-          <TabsList>
-            <TabsTrigger value="features" data-testid="features-tab">
+          <TabsList className="inline-flex items-center rounded-full bg-muted/60 p-1 shadow-sm">
+            <TabsTrigger
+              value="features"
+              className="rounded-full px-4 py-1.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
+              data-testid="features-tab"
+            >
               {dict.pages.settings.tabs.features}
             </TabsTrigger>
-            <TabsTrigger value="ai-settings" data-testid="ai-settings-tab">
+            <TabsTrigger
+              value="ai-settings"
+              className="rounded-full px-4 py-1.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
+              data-testid="ai-settings-tab"
+            >
               {dict.pages.settings.tabs.aiSettings}
             </TabsTrigger>
           </TabsList>
         </div>
 
-        <TabsContent value="features" className="space-y-6">
+        <TabsContent value="features" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -185,7 +232,7 @@ export function SettingsView({ dict }: SettingsViewProps) {
           </Card>
         </TabsContent>
 
-        <TabsContent value="ai-settings" className="space-y-6">
+        <TabsContent value="ai-settings" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -220,12 +267,6 @@ export function SettingsView({ dict }: SettingsViewProps) {
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               <p>{dict.pages.settings.aiSettingsTab.about.description}</p>
               <ul className="list-disc list-inside space-y-1 ml-2">
-                <li>
-                  {dict.pages.settings.aiSettingsTab.about.providers.openai}
-                </li>
-                <li>
-                  {dict.pages.settings.aiSettingsTab.about.providers.azure}
-                </li>
                 <li>
                   {dict.pages.settings.aiSettingsTab.about.providers.local}
                 </li>

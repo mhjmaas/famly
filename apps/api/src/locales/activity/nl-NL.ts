@@ -9,6 +9,9 @@ export const activityNlNL = {
     contributionGoal: {
       deducted: '{amount} minpunten van "{goalTitle}"',
       deductedTitle: "Minpunten",
+      deductedWithReason:
+        '{amount} minpunten van "{goalTitle}" omdat: "{reason}"',
+      deductedWithReasonTitle: "Minpunten",
       awarded: '{amount} pluspunten toegekend van "{goalTitle}"',
       awardedTitle: "Pluspunten",
     },

@@ -13,8 +13,12 @@ export interface ActivityEventPayloads {
     eventId: string;
     userId: string;
     type: ActivityEventType;
+    detail?: string;
     title: string;
     description?: string;
+    templateKey?: ActivityEvent["templateKey"];
+    templateParams?: ActivityEvent["templateParams"];
+    locale?: ActivityEvent["locale"];
     metadata?: {
       karma?: number;
     };
@@ -34,8 +38,12 @@ export function emitActivityCreated(event: ActivityEvent): void {
       eventId: event._id.toString(),
       userId: event.userId.toString(),
       type: event.type,
+      detail: event.detail,
       title: event.title,
       description: event.description,
+      templateKey: event.templateKey,
+      templateParams: event.templateParams,
+      locale: event.locale,
       metadata: event.metadata,
       createdAt: event.createdAt.toISOString(),
     };

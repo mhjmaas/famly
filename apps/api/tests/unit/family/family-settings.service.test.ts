@@ -48,7 +48,7 @@ describe("FamilySettingsService", () => {
           apiSecret: "sk-secret",
           modelName: "gpt-4",
           aiName: "Jarvis",
-          provider: "OpenAI",
+          provider: "Ollama",
         },
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -65,7 +65,8 @@ describe("FamilySettingsService", () => {
         FeatureKey.Rewards,
       ]);
       expect(result.aiSettings.apiEndpoint).toBe("https://api.openai.com/v1");
-      expect(result.aiSettings).not.toHaveProperty("apiSecret");
+      // apiSecret must not be exposed in responses
+      expect(result.aiSettings.apiSecret).toBeUndefined();
     });
 
     it("should create and return default settings if none exist", async () => {
@@ -123,7 +124,7 @@ describe("FamilySettingsService", () => {
           apiSecret: "sk-new-secret",
           modelName: "gpt-4",
           aiName: "Jarvis",
-          provider: "OpenAI" as const,
+          provider: "LM Studio" as const,
         },
       };
 
@@ -147,7 +148,7 @@ describe("FamilySettingsService", () => {
       );
       expect(result.familyId).toBe(familyId);
       expect(result.enabledFeatures).toEqual(input.enabledFeatures);
-      expect(result.aiSettings).not.toHaveProperty("apiSecret");
+      expect(result.aiSettings.apiSecret).toBeUndefined();
     });
 
     it("should update settings without AI settings", async () => {
@@ -314,7 +315,7 @@ describe("FamilySettingsService", () => {
       expect(result.aiSettings.apiEndpoint).toBe("");
     });
 
-    it("should not include apiSecret in response", async () => {
+    it("should not include apiSecret in response when empty", async () => {
       const familyId = fromObjectId(new ObjectId());
       const familyObjectId = new ObjectId(familyId);
       const defaultSettings: FamilySettings = {
@@ -323,7 +324,7 @@ describe("FamilySettingsService", () => {
         enabledFeatures: [...ALL_FEATURES],
         aiSettings: {
           apiEndpoint: "",
-          apiSecret: "should-not-appear",
+          apiSecret: "", // Empty apiSecret should not be included in response
           modelName: "",
           aiName: "Jarvis",
           provider: "LM Studio",
@@ -336,7 +337,8 @@ describe("FamilySettingsService", () => {
 
       const result = await service.createDefaultSettings(familyId);
 
-      expect(result.aiSettings).not.toHaveProperty("apiSecret");
+      // apiSecret is optional and omitted when empty (default)
+      expect(result.aiSettings.apiSecret).toBeUndefined();
     });
 
     it("should throw error for invalid familyId format", async () => {

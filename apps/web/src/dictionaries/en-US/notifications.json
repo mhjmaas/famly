@@ -49,7 +49,9 @@
         "awarded": "{amount} karma awarded from \"{goalTitle}\"",
         "awardedTitle": "Contribution Awarded",
         "deducted": "{amount} karma deducted from \"{goalTitle}\"",
-        "deductedTitle": "Contribution Deducted"
+        "deductedTitle": "Contribution Deducted",
+        "deductedWithReason": "{amount} karma deducted from \"{goalTitle}\" because: \"{reason}\"",
+        "deductedWithReasonTitle": "Contribution Deducted"
       },
       "karma": {
         "awarded": "{amount} karma points: {description}",

@@ -58,6 +58,8 @@ export const notificationsNlNL = {
       deducted: "Minpunt Toegepast",
       deductedDescription:
         "{memberName} had {amount} karma afgetrokken van hun doel",
+      deductedWithReasonTitle: "Minpunten: {amount} punt(en)",
+      deductedWithReasonDescription: "{reason}",
       updated: "Doel Bijgewerkt",
       updatedDescription: "Gezinsbijdrage-doel is bijgewerkt",
       zeroKarma: "Wekelijks Doel Beëindigd",

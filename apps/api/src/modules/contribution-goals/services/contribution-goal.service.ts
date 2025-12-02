@@ -2,9 +2,14 @@ import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import { type ObjectIdString, validateObjectId } from "@lib/objectid-utils";
 import type { ActivityEventService } from "@modules/activity-events";
+import { getUserLanguage } from "@modules/auth/language";
 import { requireFamilyRole } from "@modules/auth/lib/require-family-role";
 import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";
+import {
+  createContributionGoalDeductionNotification,
+  sendToUser,
+} from "@modules/notifications";
 import type {
   AddDeductionInput,
   ContributionGoal,
@@ -313,22 +318,23 @@ export class ContributionGoalService {
         amount: input.amount,
       });
 
-      // Record activity event for the deduction
+      // Record activity event for the deduction (include the reason so it shows in the activity feed)
       if (this.activityEventService) {
         await this.activityEventService.recordEvent({
           userId: validateObjectId(memberId, "userId"),
           type: "CONTRIBUTION_GOAL",
           detail: "DEDUCTED",
           title: `Deduction: ${input.reason}`,
-          description: `${input.amount} karma deducted from contribution goal "${goal.title}"`,
+          description: `${input.amount} karma deducted from contribution goal "${goal.title}" because: "${input.reason}"`,
           metadata: {
             karma: -input.amount,
             triggeredBy: normalizedUserId,
           },
-          templateKey: "activity.contributionGoal.deducted",
+          templateKey: "activity.contributionGoal.deductedWithReason",
           templateParams: {
             amount: input.amount,
             goalTitle: goal.title,
+            reason: input.reason,
           },
         });
       }
@@ -338,6 +344,23 @@ export class ContributionGoalService {
 
       // Emit real-time event for deduction
       emitContributionGoalDeducted(goal, latestDeduction);
+
+      // Send push notification to the member about the deduction (localized)
+      try {
+        const locale = await getUserLanguage(memberId);
+        const notification = createContributionGoalDeductionNotification(
+          locale,
+          input.amount,
+          input.reason,
+        );
+        await sendToUser(memberId, notification);
+      } catch (notificationError) {
+        logger.error("Failed to send deduction notification", {
+          familyId: normalizedFamilyId,
+          memberId,
+          error: notificationError,
+        });
+      }
 
       return goal;
     } catch (error) {

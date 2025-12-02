@@ -53,7 +53,7 @@ const DEFAULT_AI_SETTINGS = {
   apiSecret: "",
   modelName: "",
   aiName: "",
-  provider: "",
+  provider: "LM Studio" as "LM Studio" | "Ollama",
 };
 
 export function AISettingsTab({
@@ -69,7 +69,9 @@ export function AISettingsTab({
     apiSecret: "",
     modelName: settings?.aiSettings?.modelName || "",
     aiName: settings?.aiSettings?.aiName || "",
-    provider: settings?.aiSettings?.provider || "",
+    provider: (settings?.aiSettings?.provider || "LM Studio") as
+      | "LM Studio"
+      | "Ollama",
   });
 
   const handleSave = async () => {
@@ -80,7 +82,6 @@ export function AISettingsTab({
     // Validate required fields
     if (
       !aiSettings.apiEndpoint ||
-      !aiSettings.apiSecret ||
       !aiSettings.modelName ||
       !aiSettings.aiName ||
       !aiSettings.provider
@@ -104,21 +105,25 @@ export function AISettingsTab({
     }
 
     try {
+      const apiSecret = aiSettings.apiSecret.trim();
+      const aiSettingsPayload: FamilySettings["aiSettings"] = {
+        apiEndpoint: aiSettings.apiEndpoint,
+        modelName: aiSettings.modelName,
+        aiName: aiSettings.aiName,
+        provider: aiSettings.provider as "LM Studio" | "Ollama",
+      };
+
+      // Avoid overwriting an existing secret with an empty string
+      if (apiSecret) {
+        aiSettingsPayload.apiSecret = apiSecret;
+      }
+
       await dispatch(
         updateFamilySettingsThunk({
           familyId,
           settings: {
             enabledFeatures: settings?.enabledFeatures || [],
-            aiSettings: {
-              apiEndpoint: aiSettings.apiEndpoint,
-              apiSecret: aiSettings.apiSecret,
-              modelName: aiSettings.modelName,
-              aiName: aiSettings.aiName,
-              provider: aiSettings.provider as
-                | "LM Studio"
-                | "Ollama"
-                | "OpenAI",
-            },
+            aiSettings: aiSettingsPayload,
           },
         }),
       ).unwrap();
@@ -153,6 +158,34 @@ export function AISettingsTab({
 
   return (
     <div className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="provider">
+          {dict.aiSettingsTab.fields.provider.label}
+        </Label>
+        <Select
+          value={aiSettings.provider}
+          onValueChange={(value) =>
+            setAISettings({
+              ...aiSettings,
+              provider: value as "LM Studio" | "Ollama",
+            })
+          }
+        >
+          <SelectTrigger id="provider" data-testid="provider-select">
+            <SelectValue
+              placeholder={dict.aiSettingsTab.fields.provider.placeholder}
+            />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="LM Studio">LM Studio</SelectItem>
+            <SelectItem value="Ollama">Ollama</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          {dict.aiSettingsTab.fields.provider.helper}
+        </p>
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="ai-name">
           {dict.aiSettingsTab.fields.aiName.label}
@@ -191,25 +224,6 @@ export function AISettingsTab({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="api-secret">
-          {dict.aiSettingsTab.fields.apiSecret.label}
-        </Label>
-        <Input
-          id="api-secret"
-          type="password"
-          placeholder={dict.aiSettingsTab.fields.apiSecret.placeholder}
-          value={aiSettings.apiSecret}
-          onChange={(e) =>
-            setAISettings({ ...aiSettings, apiSecret: e.target.value })
-          }
-          data-testid="api-secret-input"
-        />
-        <p className="text-xs text-muted-foreground">
-          {dict.aiSettingsTab.fields.apiSecret.helper}
-        </p>
-      </div>
-
-      <div className="space-y-2">
         <Label htmlFor="model-name">
           {dict.aiSettingsTab.fields.modelName.label}
         </Label>
@@ -228,28 +242,19 @@ export function AISettingsTab({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="provider">
-          {dict.aiSettingsTab.fields.provider.label}
+        <Label htmlFor="api-secret">
+          {dict.aiSettingsTab.fields.apiSecret.label}
         </Label>
-        <Select
-          value={aiSettings.provider}
-          onValueChange={(value) =>
-            setAISettings({ ...aiSettings, provider: value })
-          }
-        >
-          <SelectTrigger id="provider" data-testid="provider-select">
-            <SelectValue
-              placeholder={dict.aiSettingsTab.fields.provider.placeholder}
-            />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="LM Studio">LM Studio</SelectItem>
-            <SelectItem value="Ollama">Ollama</SelectItem>
-            <SelectItem value="OpenAI">OpenAI</SelectItem>
-          </SelectContent>
-        </Select>
+        <Input
+          id="api-secret"
+          type="password"
+          placeholder={dict.aiSettingsTab.fields.apiSecret.placeholder}
+          value={aiSettings.apiSecret}
+          disabled
+          data-testid="api-secret-input"
+        />
         <p className="text-xs text-muted-foreground">
-          {dict.aiSettingsTab.fields.provider.helper}
+          {dict.aiSettingsTab.fields.apiSecret.helper}
         </p>
       </div>
 

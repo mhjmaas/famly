@@ -92,10 +92,8 @@
           },
           "about": {
             "title": "Over AI-instellingen",
-            "description": "Met deze instellingen kun je Famly verbinden met elk OpenAI-compatibel API-endpoint. Dit omvat:",
+            "description": "Deze instellingen stellen je in staat om Famly te verbinden met een lokale LLM-server of een ander OpenAI-compatibel API-endpoint. Ondersteunde providers zijn:",
             "providers": {
-              "openai": "OpenAI API (GPT-4, GPT-3.5, etc.)",
-              "azure": "Azure OpenAI Service",
               "local": "Lokale LLM-servers (LM Studio, Ollama, etc.)",
               "other": "Andere compatibele providers"
             },

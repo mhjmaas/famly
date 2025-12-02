@@ -70,7 +70,7 @@ describe("E2E: GET /v1/families/:familyId/settings", () => {
       ]);
     });
 
-    it("should omit apiSecret from response", async () => {
+    it("should omit apiSecret from response for security", async () => {
       // Update with AI settings including secret
       await request(baseUrl)
         .put(`/v1/families/${familyId}/settings`)
@@ -82,6 +82,7 @@ describe("E2E: GET /v1/families/:familyId/settings", () => {
             apiSecret: "sk-secret-should-not-be-returned",
             modelName: "gpt-4",
             aiName: "Jarvis",
+            provider: "LM Studio",
           },
         });
 
@@ -91,10 +92,12 @@ describe("E2E: GET /v1/families/:familyId/settings", () => {
         .set("Authorization", `Bearer ${parentToken}`);
 
       expect(response.status).toBe(200);
+      // API secret should NEVER be returned to client for security
       expect(response.body.aiSettings).not.toHaveProperty("apiSecret");
       expect(response.body.aiSettings.apiEndpoint).toBe(
         "https://api.openai.com/v1",
       );
+      expect(response.body.aiSettings.provider).toBe("LM Studio");
     });
   });
 

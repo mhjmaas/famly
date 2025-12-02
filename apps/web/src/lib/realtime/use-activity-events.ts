@@ -46,14 +46,8 @@ export function useActivityEvents(
         // Show notification based on activity type
         switch (event.type) {
           case "TASK":
-            toast.success(
-              localized?.title ??
-                t.activity.task.completedTitle ??
-                "Task Completed",
-              {
-                description: localized?.description ?? event.title,
-              },
-            );
+            // Task notifications are handled by use-task-events.ts
+            // Skip showing duplicate notifications here
             break;
           case "KARMA":
             toast.success(

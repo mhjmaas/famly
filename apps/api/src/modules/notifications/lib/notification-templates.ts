@@ -181,6 +181,34 @@ export function createContributionGoalZeroKarmaNotification(
 }
 
 /**
+ * Create a notification for a contribution goal deduction with reason
+ */
+export function createContributionGoalDeductionNotification(
+  localeInput: string | undefined,
+  amount: number,
+  reason: string,
+): NotificationPayload {
+  const locale = resolveNotificationLocale(localeInput);
+  const baseUrl = getBaseUrl();
+  const iconUrl = `${baseUrl}/web-app-manifest-192x192.png`;
+
+  return {
+    title: translate(locale, "contributionGoal.deductedWithReasonTitle", {
+      amount,
+    }),
+    body: translate(locale, "contributionGoal.deductedWithReasonDescription", {
+      reason,
+    }),
+    icon: iconUrl,
+    badge: iconUrl,
+    data: {
+      type: "contribution_goal_deducted",
+      url: `${baseUrl}/app`,
+    },
+  };
+}
+
+/**
  * Create a notification for new chat message
  */
 export function createChatMessageNotification(

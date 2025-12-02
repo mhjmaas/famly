@@ -101,17 +101,27 @@ export function CreateTaskDialog({
           className="w-full"
           data-testid="task-dialog-tabs"
         >
-          <TabsList
-            className="grid w-full grid-cols-2"
-            data-testid="task-dialog-type-tabs"
-          >
-            <TabsTrigger value="single" data-testid="task-type-single">
-              {t.create.tabs.single}
-            </TabsTrigger>
-            <TabsTrigger value="recurring" data-testid="task-type-recurring">
-              {t.create.tabs.recurring}
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex justify-center mb-4">
+            <TabsList
+              className="inline-flex items-center rounded-full bg-muted/60 p-1 shadow-sm"
+              data-testid="task-dialog-type-tabs"
+            >
+              <TabsTrigger
+                value="single"
+                className="rounded-full px-4 py-1.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
+                data-testid="task-type-single"
+              >
+                {t.create.tabs.single}
+              </TabsTrigger>
+              <TabsTrigger
+                value="recurring"
+                className="rounded-full px-4 py-1.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
+                data-testid="task-type-recurring"
+              >
+                {t.create.tabs.recurring}
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="single" className="space-y-4 mt-4">
             <SingleTaskForm

@@ -18,7 +18,7 @@ describe("toFamilySettingsView", () => {
         apiSecret: "sk-secret-key-should-not-appear",
         modelName: "gpt-4",
         aiName: "Jarvis",
-        provider: "OpenAI",
+        provider: "LM Studio",
       },
       createdAt,
       updatedAt,
@@ -35,19 +35,21 @@ describe("toFamilySettingsView", () => {
     expect(result.aiSettings.apiEndpoint).toBe("https://api.openai.com/v1");
     expect(result.aiSettings.modelName).toBe("gpt-4");
     expect(result.aiSettings.aiName).toBe("Jarvis");
+    // apiSecret must never be exposed in views
+    expect(result.aiSettings.apiSecret).toBeUndefined();
   });
 
-  it("should omit apiSecret from response", () => {
+  it("should omit apiSecret even when stored", () => {
     const settings: FamilySettings = {
       _id: new ObjectId(),
       familyId: new ObjectId(),
       enabledFeatures: [FeatureKey.Tasks],
       aiSettings: {
         apiEndpoint: "https://api.openai.com/v1",
-        apiSecret: "sk-secret-should-not-be-in-response",
+        apiSecret: "sk-secret-should-be-in-response",
         modelName: "gpt-4",
         aiName: "Jarvis",
-        provider: "OpenAI",
+        provider: "Ollama",
       },
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -55,7 +57,7 @@ describe("toFamilySettingsView", () => {
 
     const result = toFamilySettingsView(settings);
 
-    expect(result.aiSettings).not.toHaveProperty("apiSecret");
+    expect(result.aiSettings.apiSecret).toBeUndefined();
     expect(Object.keys(result.aiSettings)).toEqual([
       "apiEndpoint",
       "modelName",
@@ -105,7 +107,7 @@ describe("toFamilySettingsView", () => {
         apiSecret: "sk-secret",
         modelName: "gpt-4",
         aiName: "Jarvis",
-        provider: "OpenAI",
+        provider: "LM Studio",
       },
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -129,7 +131,7 @@ describe("toFamilySettingsView", () => {
         apiSecret: "sk-secret",
         modelName: "gpt-4",
         aiName: "Jarvis",
-        provider: "OpenAI",
+        provider: "LM Studio",
       },
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -162,7 +164,8 @@ describe("toFamilySettingsView", () => {
     expect(result.aiSettings.apiEndpoint).toBe("");
     expect(result.aiSettings.modelName).toBe("");
     expect(result.aiSettings.aiName).toBe("");
-    expect(result.aiSettings).not.toHaveProperty("apiSecret");
+    // apiSecret is optional and omitted when empty
+    expect(result.aiSettings.apiSecret).toBeUndefined();
   });
 
   it("should not include createdAt or updatedAt in view", () => {
@@ -175,7 +178,7 @@ describe("toFamilySettingsView", () => {
         apiSecret: "sk-secret",
         modelName: "gpt-4",
         aiName: "Jarvis",
-        provider: "OpenAI",
+        provider: "LM Studio",
       },
       createdAt: new Date(),
       updatedAt: new Date(),

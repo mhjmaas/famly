@@ -9,11 +9,11 @@ import { z } from "zod";
 const aiSettingsSchema = z
   .object({
     apiEndpoint: z.string().url("API endpoint must be a valid URL").min(1),
-    apiSecret: z.string().min(1, "API secret is required"),
+    apiSecret: z.string().optional(),
     modelName: z.string().min(1, "Model name is required"),
     aiName: z.string().min(1, "AI name is required"),
-    provider: z.enum(["LM Studio", "Ollama", "OpenAI"] as const, {
-      message: 'Provider must be one of: "LM Studio", "Ollama", or "OpenAI"',
+    provider: z.enum(["LM Studio", "Ollama"] as const, {
+      message: 'Provider must be one of: "LM Studio" or "Ollama"',
     }),
   })
   .optional();

@@ -2,7 +2,8 @@
 
 import { ArrowLeft, MoreVertical, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Breadcrumb,
@@ -55,6 +56,9 @@ export function MemberDetailView({
   lang,
 }: MemberDetailViewProps) {
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const user = useAppSelector(selectUser);
   const currentFamily = useAppSelector(selectCurrentFamily);
   const member = useAppSelector(selectFamilyMemberById(memberId));
@@ -67,6 +71,38 @@ export function MemberDetailView({
   const [isEditRoleDialogOpen, setIsEditRoleDialogOpen] = useState(false);
   const [isRemoveMemberDialogOpen, setIsRemoveMemberDialogOpen] =
     useState(false);
+  const [selectedTab, setSelectedTab] = useState<string>(() => {
+    const paramTab = searchParams?.get("tab");
+    return (paramTab ?? "contribution-goal") || "contribution-goal";
+  });
+
+  const setTabInUrl = useCallback(
+    (tab: string) => {
+      const params = new URLSearchParams(searchParams?.toString());
+      if (tab && tab !== "contribution-goal") {
+        params.set("tab", tab);
+      } else {
+        params.delete("tab");
+      }
+
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, {
+        scroll: false,
+      });
+    },
+    [pathname, router, searchParams],
+  );
+
+  // Sync selectedTab with URL changes (back/forward nav)
+  useEffect(() => {
+    const paramTab = searchParams?.get("tab") ?? null;
+    setSelectedTab(paramTab ?? "contribution-goal");
+  }, [searchParams]);
+
+  const handleTabChange = (tab: string) => {
+    setSelectedTab(tab);
+    setTabInUrl(tab);
+  };
 
   // Fetch member activity events on mount
   useEffect(() => {
@@ -189,7 +225,11 @@ export function MemberDetailView({
 
       {/* Tabs with Actions Menu - Only show for parents */}
       {isParent && (
-        <Tabs defaultValue="contribution-goal" className="w-full">
+        <Tabs
+          value={selectedTab}
+          onValueChange={handleTabChange}
+          className="w-full"
+        >
           <div className="mb-6 flex w-full flex-col items-center gap-4 sm:flex-row sm:justify-between">
             <div className="flex w-full justify-center sm:flex-1">
               <TabsList className="inline-flex items-center rounded-full bg-muted/60 p-1 shadow-sm">
@@ -241,14 +281,14 @@ export function MemberDetailView({
             </div>
           </div>
 
-          <TabsContent value="contribution-goal" className="mt-0">
+          <TabsContent value="contribution-goal" className="mt-6">
             <MemberContributionGoalView
               memberId={memberId}
               memberName={member.name}
               dict={dict.contributionGoals}
             />
           </TabsContent>
-          <TabsContent value="karma" className="mt-0">
+          <TabsContent value="karma" className="mt-6">
             <MemberKarmaCard
               member={member}
               familyId={currentFamily?.familyId || ""}
