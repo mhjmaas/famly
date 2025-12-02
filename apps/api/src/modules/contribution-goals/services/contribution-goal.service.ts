@@ -1,8 +1,8 @@
 import { HttpError } from "@lib/http-error";
 import { logger } from "@lib/logger";
 import { type ObjectIdString, validateObjectId } from "@lib/objectid-utils";
+import { getUserLanguage } from "@lib/user-utils";
 import type { ActivityEventService } from "@modules/activity-events";
-import { getUserLanguage } from "@modules/auth/language";
 import { requireFamilyRole } from "@modules/auth/lib/require-family-role";
 import { FamilyRole } from "@modules/family/domain/family";
 import type { FamilyMembershipRepository } from "@modules/family/repositories/family-membership.repository";

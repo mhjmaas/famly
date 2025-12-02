@@ -12,6 +12,7 @@ import type {
   AddDeductionRequest,
   AddFamilyMemberRequest,
   AddFamilyMemberResponse,
+  AddShoppingListItemRequest,
   ApiClientOptions,
   AuthResponse,
   ChangePasswordRequest,
@@ -26,6 +27,7 @@ import type {
   CreateMessageRequest,
   CreateRewardRequest,
   CreateScheduleRequest,
+  CreateShoppingListRequest,
   CreateTaskRequest,
   DiaryEntry,
   FamilySettings,
@@ -40,6 +42,7 @@ import type {
   MessageDTO,
   RegisterRequest,
   Reward,
+  ShoppingList,
   Task,
   TaskQueryParams,
   TaskSchedule,
@@ -52,6 +55,8 @@ import type {
   UpdateProfileResponse,
   UpdateRewardRequest,
   UpdateScheduleRequest,
+  UpdateShoppingListItemRequest,
+  UpdateShoppingListRequest,
   UpdateTaskRequest,
 } from "@/types/api.types";
 
@@ -927,6 +932,148 @@ export async function clearChatMessages(
     method: "DELETE",
     ...options,
   });
+}
+
+// ============= Shopping Lists API =============
+
+export type {
+  AddShoppingListItemRequest,
+  CreateShoppingListRequest,
+  ShoppingList,
+  ShoppingListItem,
+  UpdateShoppingListItemRequest,
+  UpdateShoppingListRequest,
+} from "@/types/api.types";
+
+/**
+ * Get all shopping lists for a family
+ */
+export async function getShoppingLists(
+  familyId: string,
+  cookie?: string,
+): Promise<ShoppingList[]> {
+  return apiClient<ShoppingList[]>(`/v1/families/${familyId}/shopping-lists`, {
+    cookie,
+  });
+}
+
+/**
+ * Get a specific shopping list by ID
+ */
+export async function getShoppingList(
+  familyId: string,
+  listId: string,
+  cookie?: string,
+): Promise<ShoppingList> {
+  return apiClient<ShoppingList>(
+    `/v1/families/${familyId}/shopping-lists/${listId}`,
+    { cookie },
+  );
+}
+
+/**
+ * Create a new shopping list
+ */
+export async function createShoppingList(
+  familyId: string,
+  data: CreateShoppingListRequest,
+  cookie?: string,
+): Promise<ShoppingList> {
+  return apiClient<ShoppingList>(`/v1/families/${familyId}/shopping-lists`, {
+    method: "POST",
+    body: data,
+    cookie,
+  });
+}
+
+/**
+ * Update a shopping list
+ */
+export async function updateShoppingList(
+  familyId: string,
+  listId: string,
+  data: UpdateShoppingListRequest,
+  cookie?: string,
+): Promise<ShoppingList> {
+  return apiClient<ShoppingList>(
+    `/v1/families/${familyId}/shopping-lists/${listId}`,
+    {
+      method: "PATCH",
+      body: data,
+      cookie,
+    },
+  );
+}
+
+/**
+ * Delete a shopping list
+ */
+export async function deleteShoppingList(
+  familyId: string,
+  listId: string,
+  cookie?: string,
+): Promise<void> {
+  return apiClient<void>(`/v1/families/${familyId}/shopping-lists/${listId}`, {
+    method: "DELETE",
+    cookie,
+  });
+}
+
+/**
+ * Add an item to a shopping list
+ */
+export async function addShoppingListItem(
+  familyId: string,
+  listId: string,
+  data: AddShoppingListItemRequest,
+  cookie?: string,
+): Promise<ShoppingList> {
+  return apiClient<ShoppingList>(
+    `/v1/families/${familyId}/shopping-lists/${listId}/items`,
+    {
+      method: "POST",
+      body: data,
+      cookie,
+    },
+  );
+}
+
+/**
+ * Update an item in a shopping list
+ */
+export async function updateShoppingListItem(
+  familyId: string,
+  listId: string,
+  itemId: string,
+  data: UpdateShoppingListItemRequest,
+  cookie?: string,
+): Promise<ShoppingList> {
+  return apiClient<ShoppingList>(
+    `/v1/families/${familyId}/shopping-lists/${listId}/items/${itemId}`,
+    {
+      method: "PATCH",
+      body: data,
+      cookie,
+    },
+  );
+}
+
+/**
+ * Delete an item from a shopping list
+ */
+export async function deleteShoppingListItem(
+  familyId: string,
+  listId: string,
+  itemId: string,
+  cookie?: string,
+): Promise<ShoppingList> {
+  return apiClient<ShoppingList>(
+    `/v1/families/${familyId}/shopping-lists/${listId}/items/${itemId}`,
+    {
+      method: "DELETE",
+      cookie,
+    },
+  );
 }
 
 // ============= Personal Diary API =============
