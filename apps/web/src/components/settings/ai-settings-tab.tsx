@@ -105,18 +105,25 @@ export function AISettingsTab({
     }
 
     try {
+      const apiSecret = aiSettings.apiSecret.trim();
+      const aiSettingsPayload: FamilySettings["aiSettings"] = {
+        apiEndpoint: aiSettings.apiEndpoint,
+        modelName: aiSettings.modelName,
+        aiName: aiSettings.aiName,
+        provider: aiSettings.provider as "LM Studio" | "Ollama",
+      };
+
+      // Avoid overwriting an existing secret with an empty string
+      if (apiSecret) {
+        aiSettingsPayload.apiSecret = apiSecret;
+      }
+
       await dispatch(
         updateFamilySettingsThunk({
           familyId,
           settings: {
             enabledFeatures: settings?.enabledFeatures || [],
-            aiSettings: {
-              apiEndpoint: aiSettings.apiEndpoint,
-              apiSecret: aiSettings.apiSecret,
-              modelName: aiSettings.modelName,
-              aiName: aiSettings.aiName,
-              provider: aiSettings.provider as "LM Studio" | "Ollama",
-            },
+            aiSettings: aiSettingsPayload,
           },
         }),
       ).unwrap();
