@@ -55,6 +55,7 @@ interface NewChatDialogProps {
   };
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onChatSelected?: (chatId: string) => void;
   familyMembers: readonly FamilyMember[];
 }
 
@@ -62,6 +63,7 @@ export function NewChatDialog({
   dict,
   open,
   onOpenChange,
+  onChatSelected,
   familyMembers,
 }: NewChatDialogProps) {
   const dispatch = useAppDispatch();
@@ -90,6 +92,7 @@ export function NewChatDialog({
 
     if (existingDm) {
       dispatch(selectChat(existingDm._id));
+      onChatSelected?.(existingDm._id);
       onOpenChange(false);
       return;
     }
@@ -105,6 +108,7 @@ export function NewChatDialog({
 
       // Select the new chat
       await dispatch(selectChat(result._id));
+      onChatSelected?.(result._id);
       onOpenChange(false);
       toast.success("Chat created");
     } catch (error) {
@@ -130,6 +134,7 @@ export function NewChatDialog({
 
       // Select the new chat
       dispatch(selectChat(result._id));
+      onChatSelected?.(result._id);
       onOpenChange(false);
       setGroupTitle("");
       setSelectedMembers([]);

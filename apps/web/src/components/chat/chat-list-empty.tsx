@@ -39,9 +39,14 @@ interface ChatListEmptyProps {
     };
   };
   familyMembers: readonly FamilyMember[];
+  onChatSelected?: (chatId: string) => void;
 }
 
-export function ChatListEmpty({ dict, familyMembers }: ChatListEmptyProps) {
+export function ChatListEmpty({
+  dict,
+  familyMembers,
+  onChatSelected,
+}: ChatListEmptyProps) {
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
 
   return (
@@ -73,6 +78,7 @@ export function ChatListEmpty({ dict, familyMembers }: ChatListEmptyProps) {
         dict={dict}
         open={isNewChatOpen}
         onOpenChange={setIsNewChatOpen}
+        onChatSelected={onChatSelected}
         familyMembers={familyMembers}
       />
     </div>
