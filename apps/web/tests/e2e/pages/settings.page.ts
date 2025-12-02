@@ -131,6 +131,7 @@ export class SettingsPage {
 
     /**
      * Fill AI settings form
+     * Note: apiSecret field is disabled and cannot be filled
      */
     async fillAISettings(data: {
         aiName?: string;
@@ -147,10 +148,7 @@ export class SettingsPage {
             await this.apiEndpointInput.clear();
             await this.apiEndpointInput.fill(data.apiEndpoint);
         }
-        if (data.apiSecret !== undefined) {
-            await this.apiSecretInput.clear();
-            await this.apiSecretInput.fill(data.apiSecret);
-        }
+        // apiSecret field is disabled and read-only, skip filling it
         if (data.modelName !== undefined) {
             await this.modelNameInput.clear();
             await this.modelNameInput.fill(data.modelName);

@@ -44,6 +44,7 @@ describe("E2E: AI Chat Feature", () => {
             apiSecret: "test-secret",
             modelName: "gpt-4",
             aiName: "Jarvis",
+            provider: "LM Studio",
           },
         });
 
@@ -122,6 +123,7 @@ describe("E2E: AI Chat Feature", () => {
             apiSecret: "test-secret",
             modelName: "gpt-4",
             aiName: "Assistant",
+            provider: "LM Studio",
           },
         });
 
@@ -200,6 +202,7 @@ describe("E2E: AI Chat Feature", () => {
             apiSecret: "test-secret",
             modelName: "gpt-4",
             aiName: "TestAI",
+            provider: "LM Studio",
           },
         });
 
@@ -249,6 +252,7 @@ describe("E2E: AI Chat Feature", () => {
             apiSecret: "test-secret",
             modelName: "gpt-4",
             aiName: "TestAI",
+            provider: "LM Studio",
           },
         });
 
@@ -328,6 +332,7 @@ describe("E2E: AI Chat Feature", () => {
             apiSecret: "test-secret",
             modelName: "gpt-4",
             aiName: "FamilyAI",
+            provider: "LM Studio",
           },
         });
 

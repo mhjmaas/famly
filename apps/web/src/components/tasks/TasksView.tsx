@@ -1,7 +1,8 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
@@ -55,6 +56,9 @@ export function TasksView({
   familyMembers,
 }: TasksViewProps) {
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const normalizedRole = (userRole.charAt(0).toUpperCase() +
     userRole.slice(1)) as "Parent" | "Child";
 
@@ -66,9 +70,55 @@ export function TasksView({
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [filter, setFilter] = useState<FilterType>("my-tasks");
+  const [filter, setFilter] = useState<FilterType>(() => {
+    const paramFilter = searchParams?.get("filter");
+    const validFilters: FilterType[] = [
+      "my-tasks",
+      "all",
+      "active",
+      "completed",
+    ];
+    return (
+      paramFilter && validFilters.includes(paramFilter as FilterType)
+        ? paramFilter
+        : "my-tasks"
+    ) as FilterType;
+  });
   const [hasInitializedFilter, setHasInitializedFilter] = useState(false);
   const [deleteConfirmTask, setDeleteConfirmTask] = useState<Task | null>(null);
+
+  const setFilterInUrl = useCallback(
+    (newFilter: FilterType) => {
+      const params = new URLSearchParams(searchParams?.toString());
+      if (newFilter && newFilter !== "my-tasks") {
+        params.set("filter", newFilter);
+      } else {
+        params.delete("filter");
+      }
+
+      const query = params.toString();
+      router.replace(query ? `${pathname}?${query}` : pathname, {
+        scroll: false,
+      });
+    },
+    [pathname, router, searchParams],
+  );
+
+  // Sync filter with URL changes (back/forward nav)
+  useEffect(() => {
+    const paramFilter = searchParams?.get("filter");
+    const validFilters: FilterType[] = [
+      "my-tasks",
+      "all",
+      "active",
+      "completed",
+    ];
+    if (paramFilter && validFilters.includes(paramFilter as FilterType)) {
+      setFilter(paramFilter as FilterType);
+    } else {
+      setFilter("my-tasks");
+    }
+  }, [searchParams]);
 
   // Use custom hooks
   const {
@@ -297,7 +347,9 @@ export function TasksView({
         <Tabs
           value={filter}
           onValueChange={(v) => {
-            setFilter(v as FilterType);
+            const newFilter = v as FilterType;
+            setFilter(newFilter);
+            setFilterInUrl(newFilter);
             setHasInitializedFilter(true);
           }}
           data-testid="tasks-tabs"

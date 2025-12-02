@@ -47,6 +47,8 @@ describe("settings.slice", () => {
       apiEndpoint: "https://api.openai.com/v1",
       modelName: "gpt-4",
       aiName: "Jarvis",
+      apiSecret: "sk-test-secret",
+      provider: "OpenAI",
     },
   };
 
@@ -57,6 +59,8 @@ describe("settings.slice", () => {
       apiEndpoint: "",
       modelName: "",
       aiName: "Jarvis",
+      apiSecret: "",
+      provider: "LM Studio",
     },
   };
 
@@ -247,6 +251,8 @@ describe("settings.slice", () => {
           apiEndpoint: "",
           modelName: "",
           aiName: "Jarvis",
+          apiSecret: "",
+          provider: "LM Studio",
         },
       };
 
@@ -411,6 +417,8 @@ describe("settings.slice", () => {
             apiEndpoint: "",
             modelName: "",
             aiName: "Jarvis",
+            apiSecret: "",
+            provider: "LM Studio",
           },
         };
 
@@ -492,6 +500,8 @@ describe("settings.slice", () => {
             apiEndpoint: "",
             modelName: "",
             aiName: "Jarvis",
+            apiSecret: "",
+            provider: "LM Studio",
           },
         };
 
@@ -528,6 +538,8 @@ describe("settings.slice", () => {
           apiEndpoint: "https://api.openai.com/v1",
           modelName: "gpt-4",
           aiName: "Jarvis",
+          apiSecret: "sk-test-secret",
+          provider: "OpenAI",
         });
       });
 
@@ -673,6 +685,8 @@ describe("settings.slice", () => {
           apiEndpoint: "https://api.anthropic.com/v1",
           modelName: "claude-3",
           aiName: "Claude",
+          apiSecret: "sk-secret",
+          provider: "OpenAI",
         },
       };
 
@@ -691,7 +705,7 @@ describe("settings.slice", () => {
       expect(aiSettings?.apiEndpoint).toBe("https://api.anthropic.com/v1");
       expect(aiSettings?.modelName).toBe("claude-3");
       expect(aiSettings?.aiName).toBe("Claude");
-      expect(aiSettings).not.toHaveProperty("apiSecret");
+      expect(aiSettings?.apiSecret).toBe("sk-secret");
     });
 
     it("should handle simultaneous updates to different families", async () => {
@@ -705,13 +719,25 @@ describe("settings.slice", () => {
       const settings1: FamilySettings = {
         familyId: "family-123",
         enabledFeatures: ["tasks"],
-        aiSettings: { apiEndpoint: "", modelName: "", aiName: "Jarvis" },
+        aiSettings: {
+          apiEndpoint: "",
+          modelName: "",
+          aiName: "Jarvis",
+          apiSecret: "",
+          provider: "LM Studio",
+        },
       };
 
       const settings2: FamilySettings = {
         familyId: "family-456",
         enabledFeatures: ["rewards"],
-        aiSettings: { apiEndpoint: "", modelName: "", aiName: "Jarvis" },
+        aiSettings: {
+          apiEndpoint: "",
+          modelName: "",
+          aiName: "Jarvis",
+          apiSecret: "",
+          provider: "LM Studio",
+        },
       };
 
       mockedUpdateFamilySettings

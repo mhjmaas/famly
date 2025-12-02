@@ -81,9 +81,10 @@ export class FamilySettingsRepository {
     enabledFeatures: string[],
     aiSettings?: {
       apiEndpoint: string;
-      apiSecret: string;
+      apiSecret?: string;
       modelName: string;
       aiName: string;
+      provider: "LM Studio" | "Ollama";
     },
   ): Promise<FamilySettings> {
     const now = new Date();

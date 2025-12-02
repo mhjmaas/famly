@@ -9,6 +9,9 @@ export const activityEnUS = {
     contributionGoal: {
       deducted: '{amount} karma deducted from "{goalTitle}"',
       deductedTitle: "Contribution Deducted",
+      deductedWithReason:
+        '{amount} karma deducted from "{goalTitle}" because: "{reason}"',
+      deductedWithReasonTitle: "Contribution Deducted",
       awarded: '{amount} karma awarded from "{goalTitle}"',
       awardedTitle: "Contribution Awarded",
     },

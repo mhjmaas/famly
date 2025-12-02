@@ -119,6 +119,7 @@ describe("E2E: PUT /v1/families/:familyId/settings", () => {
             apiSecret: "sk-test-secret-key",
             modelName: "gpt-4",
             aiName: "Jarvis",
+            provider: "LM Studio",
           },
         });
 
@@ -128,6 +129,7 @@ describe("E2E: PUT /v1/families/:familyId/settings", () => {
       );
       expect(response.body.aiSettings.modelName).toBe("gpt-4");
       expect(response.body.aiSettings.aiName).toBe("Jarvis");
+      expect(response.body.aiSettings.provider).toBe("LM Studio");
       expect(response.body.aiSettings).not.toHaveProperty("apiSecret");
     });
 
@@ -248,7 +250,7 @@ describe("E2E: PUT /v1/families/:familyId/settings", () => {
           enabledFeatures: [FeatureKey.AIIntegration],
           aiSettings: {
             apiEndpoint: "https://api.openai.com/v1",
-            // Missing apiSecret, modelName, aiName
+            // Missing modelName, aiName, and provider (required fields)
           },
         });
 
@@ -266,6 +268,7 @@ describe("E2E: PUT /v1/families/:familyId/settings", () => {
             apiSecret: "",
             modelName: "",
             aiName: "",
+            provider: "",
           },
         });
 
@@ -371,6 +374,7 @@ describe("E2E: PUT /v1/families/:familyId/settings", () => {
               apiSecret: "sk-test",
               modelName: "gpt-4",
               aiName: "Jarvis",
+              provider: "LM Studio",
             },
           });
 
@@ -416,6 +420,7 @@ describe("E2E: PUT /v1/families/:familyId/settings", () => {
             apiSecret: "sk-super-secret-key-should-never-be-returned",
             modelName: "gpt-4",
             aiName: "Jarvis",
+            provider: "LM Studio",
           },
         });
 
@@ -436,6 +441,7 @@ describe("E2E: PUT /v1/families/:familyId/settings", () => {
             apiSecret: "sk-stored-but-hidden",
             modelName: "gpt-4",
             aiName: "Jarvis",
+            provider: "LM Studio",
           },
         });
 

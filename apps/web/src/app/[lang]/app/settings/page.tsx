@@ -7,10 +7,15 @@ import { getUser } from "@/lib/dal";
 
 interface PageProps {
   params: Promise<{ lang: string }>;
+  searchParams?: Promise<{ tab?: string }>;
 }
 
-export default async function SettingsPage({ params }: PageProps) {
+export default async function SettingsPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { lang: rawLang } = await params;
+  const { tab } = (await searchParams) ?? {};
   const lang = (isLocale(rawLang) ? rawLang : i18n.defaultLocale) as Locale;
   const dict = await getDictionary(lang);
 
@@ -32,7 +37,7 @@ export default async function SettingsPage({ params }: PageProps) {
       lang={lang}
       title={dict.dashboard.pages.settings.title}
     >
-      <SettingsView dict={dict.dashboard} />
+      <SettingsView dict={dict.dashboard} initialTab={tab} />
     </DashboardLayout>
   );
 }

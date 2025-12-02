@@ -57,6 +57,8 @@ export const notificationsEnUS = {
       deducted: "Deduction Applied",
       deductedDescription:
         "{memberName} had {amount} karma deducted from their goal",
+      deductedWithReasonTitle: "Deduction: {amount} point(s)",
+      deductedWithReasonDescription: "{reason}",
       updated: "Goal Updated",
       updatedDescription: "Contribution goal has been updated",
       zeroKarma: "Weekly Goal Ended",

@@ -9,10 +9,10 @@ export { FeatureKey, ALL_FEATURES };
  */
 export interface AISettings {
   apiEndpoint: string;
-  apiSecret: string; // Encrypted at rest
+  apiSecret?: string; // Encrypted at rest
   modelName: string;
   aiName: string;
-  provider: "LM Studio" | "Ollama" | "OpenAI";
+  provider: "LM Studio" | "Ollama";
 }
 
 /**
@@ -38,7 +38,8 @@ export interface FamilySettingsView {
     apiEndpoint: string;
     modelName: string;
     aiName: string;
-    provider: "LM Studio" | "Ollama" | "OpenAI";
+    provider: "LM Studio" | "Ollama";
+    apiSecret?: string;
   };
 }
 
@@ -49,10 +50,10 @@ export interface UpdateFamilySettingsRequest {
   enabledFeatures: string[];
   aiSettings?: {
     apiEndpoint: string;
-    apiSecret: string;
+    apiSecret?: string;
     modelName: string;
     aiName: string;
-    provider: "LM Studio" | "Ollama" | "OpenAI";
+    provider: "LM Studio" | "Ollama";
   };
 }
 

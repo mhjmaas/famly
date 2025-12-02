@@ -158,14 +158,24 @@ export function NewChatDialog({
         onValueChange={(value) => setActiveTab(value as "dm" | "group")}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="dm" data-testid="new-chat-dm-tab">
-            {dict.newChatDialog.dm.title}
-          </TabsTrigger>
-          <TabsTrigger value="group" data-testid="new-chat-group-tab">
-            {dict.newChatDialog.group.title}
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex justify-center mb-4">
+          <TabsList className="inline-flex items-center rounded-full bg-muted/60 p-1 shadow-sm">
+            <TabsTrigger
+              value="dm"
+              className="rounded-full px-4 py-1.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
+              data-testid="new-chat-dm-tab"
+            >
+              {dict.newChatDialog.dm.title}
+            </TabsTrigger>
+            <TabsTrigger
+              value="group"
+              className="rounded-full px-4 py-1.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
+              data-testid="new-chat-group-tab"
+            >
+              {dict.newChatDialog.group.title}
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* DM Tab */}
         <TabsContent value="dm" className="space-y-4 mt-4">

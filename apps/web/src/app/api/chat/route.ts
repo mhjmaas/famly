@@ -1,10 +1,13 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import {
   createAgentUIStreamResponse,
+  type LanguageModel,
   stepCountIs,
+  type Tool,
   ToolLoopAgent,
   type UIMessage,
 } from "ai";
+import { createOllama } from "ai-sdk-ollama";
 import { NextResponse } from "next/server";
 import { getAiInstructions } from "@/lib/ai-instructions";
 import { ApiError, getFamilySettings, getMe } from "@/lib/api-client";
@@ -38,6 +41,81 @@ const LANGUAGE_MAP: Record<string, string> = {
   "en-US": "English",
 };
 
+function buildTools(webSearchEnabled: boolean): Record<string, Tool> {
+  const tools: Record<string, Tool> = {
+    familyMembersTool,
+    currentDateTimeTool,
+    karmaBalanceTool,
+    modifyKarmaTool,
+    checkContributionGoalTool,
+    deductContributionGoalTool,
+    createContributionGoalTool,
+    listRewardsTool,
+    listFavouriteRewardsTool,
+    claimRewardTool,
+    getClaimsTool,
+    cancelClaimTool,
+    listTasksTool,
+    createTaskTool,
+    createMultipleTasksTool,
+    updateTaskTool,
+    completeTaskTool,
+    deleteTaskTool,
+    deleteMultipleTasksTool,
+  };
+
+  if (webSearchEnabled) {
+    tools.webSearchTool = webSearchTool;
+  }
+
+  return tools;
+}
+
+function createModel(
+  provider: string,
+  modelName: string,
+  apiEndpoint: string,
+): LanguageModel {
+  const lmStudioProvider = createOpenAICompatible({
+    name: "lmstudio",
+    baseURL: apiEndpoint,
+  });
+
+  const ollamaProvider = createOllama({
+    baseURL: apiEndpoint,
+  });
+
+  switch (provider) {
+    case "LM Studio":
+      return lmStudioProvider(modelName);
+    case "Ollama":
+      return ollamaProvider(modelName);
+    default:
+      throw new Error(`Unsupported AI provider: ${provider}`);
+  }
+}
+
+async function getUserContext(cookieHeader: string) {
+  const meResponse = await getMe(cookieHeader);
+  const familyId = meResponse.user.families?.[0]?.familyId;
+
+  if (!familyId) {
+    throw new Error("No family found");
+  }
+
+  const settings = await getFamilySettings(familyId, cookieHeader);
+  const language = meResponse.user.language || "en";
+
+  const instructions = getAiInstructions({
+    aiName: settings.aiSettings.aiName,
+    language: LANGUAGE_MAP[language] || "English",
+    userName: meResponse.user.name,
+    familyId,
+  });
+
+  return { settings, instructions };
+}
+
 export async function POST(req: Request) {
   const {
     messages,
@@ -45,69 +123,23 @@ export async function POST(req: Request) {
   }: { messages: UIMessage[]; data?: { webSearch?: boolean } } =
     await req.json();
   const webSearchEnabled = data?.webSearch ?? false;
+
   try {
-    // Get cookie header for authentication (same method DAL uses)
     const cookieHeader = await getCookieHeader();
+    const { settings, instructions } = await getUserContext(cookieHeader);
 
-    // Get user info to extract familyId
-    const meResponse = await getMe(cookieHeader);
-    const familyId = meResponse.user.families?.[0]?.familyId;
-
-    if (!familyId) {
-      return NextResponse.json({ error: "No family found" }, { status: 400 });
-    }
-
-    // Get family settings including AI settings
-    const settings = await getFamilySettings(familyId, cookieHeader);
-    const name = meResponse.user.name;
-    const language = meResponse.user.language || "en";
-
-    const lmstudio = createOpenAICompatible({
-      name: "lmstudio",
-      baseURL: settings.aiSettings.apiEndpoint,
-    });
-
-    const instructions = getAiInstructions({
-      aiName: settings.aiSettings.aiName,
-      language: LANGUAGE_MAP[language] || "English",
-      userName: name,
-      familyId,
-    });
-
-    // Base tools always available
-    const tools: Record<string, any> = {
-      familyMembersTool: familyMembersTool,
-      currentDateTimeTool: currentDateTimeTool,
-      karmaBalanceTool: karmaBalanceTool,
-      modifyKarmaTool: modifyKarmaTool,
-      checkContributionGoalTool: checkContributionGoalTool,
-      deductContributionGoalTool: deductContributionGoalTool,
-      createContributionGoalTool: createContributionGoalTool,
-      listRewardsTool: listRewardsTool,
-      listFavouriteRewardsTool: listFavouriteRewardsTool,
-      claimRewardTool: claimRewardTool,
-      getClaimsTool: getClaimsTool,
-      cancelClaimTool: cancelClaimTool,
-      listTasksTool: listTasksTool,
-      createTaskTool: createTaskTool,
-      createMultipleTasksTool: createMultipleTasksTool,
-      updateTaskTool: updateTaskTool,
-      completeTaskTool: completeTaskTool,
-      deleteTaskTool: deleteTaskTool,
-      deleteMultipleTasksTool: deleteMultipleTasksTool,
-    };
-
-    // Conditionally add web search tool if enabled
-    if (webSearchEnabled) {
-      tools.webSearchTool = webSearchTool;
-      console.log("Web search tool enabled for this request");
-    }
+    const tools = buildTools(webSearchEnabled);
+    const model = createModel(
+      settings.aiSettings.provider,
+      settings.aiSettings.modelName,
+      settings.aiSettings.apiEndpoint,
+    );
 
     const myAgent = new ToolLoopAgent({
-      model: lmstudio(settings.aiSettings.modelName),
+      model,
       instructions,
       tools,
-      stopWhen: stepCountIs(40), // Allow up to 40 steps
+      stopWhen: stepCountIs(40),
       providerOptions: {
         openai: {
           reasoningEffort: "high",
@@ -121,12 +153,15 @@ export async function POST(req: Request) {
       sendReasoning: false,
     });
   } catch (error) {
-    // Handle authentication errors with proper HTTP response (not redirect)
     if (error instanceof ApiError && error.isAuthError()) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 },
       );
+    }
+
+    if (error instanceof Error && error.message === "No family found") {
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
     console.error("Error fetching AI settings:", error);

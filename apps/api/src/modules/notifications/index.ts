@@ -7,6 +7,7 @@ export {
 export {
   createChatMessageNotification,
   createContributionGoalAwardedNotification,
+  createContributionGoalDeductionNotification,
   createContributionGoalZeroKarmaNotification,
   createFamilyMemberAddedNotification,
   createKarmaGrantNotification,

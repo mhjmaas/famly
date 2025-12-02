@@ -203,6 +203,19 @@
     /* biome-ignore  lint/complexity/noImportantStyles: Needs to be important to override inline style */
     min-width: 100% !important;
   }
+
+  /* Improve contrast for Sonner toast descriptions in light theme */
+  [data-sonner-toaster] [data-description] {
+    /* biome-ignore  lint/complexity/noImportantStyles: Needs to override Sonner's default styles */
+    color: oklch(0.4015 0.0572 282.4176) !important;
+    /* biome-ignore  lint/complexity/noImportantStyles: Needs to override Sonner's default styles */
+    opacity: 1 !important;
+  }
+
+  .dark [data-sonner-toaster] [data-description] {
+    /* biome-ignore  lint/complexity/noImportantStyles: Needs to override Sonner's default styles */
+    color: oklch(0.7166 0.0462 285.1741) !important;
+  }
 }
 
 /* Custom animations for landing page */

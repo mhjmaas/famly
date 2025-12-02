@@ -108,7 +108,7 @@ describe("updateFamilySettingsSchema", () => {
           apiSecret: "sk-test123",
           modelName: "gpt-4",
           aiName: "Jarvis",
-          provider: "OpenAI",
+          provider: "LM Studio",
         },
       });
       expect(result.aiSettings).toEqual({
@@ -116,7 +116,7 @@ describe("updateFamilySettingsSchema", () => {
         apiSecret: "sk-test123",
         modelName: "gpt-4",
         aiName: "Jarvis",
-        provider: "OpenAI",
+        provider: "LM Studio",
       });
     });
 
@@ -136,7 +136,7 @@ describe("updateFamilySettingsSchema", () => {
             apiSecret: "sk-test123",
             modelName: "gpt-4",
             aiName: "Jarvis",
-            provider: "OpenAI",
+            provider: "LM Studio",
           },
         }),
       ).toThrow(/must be a valid URL/);
@@ -151,13 +151,14 @@ describe("updateFamilySettingsSchema", () => {
             apiSecret: "sk-test123",
             modelName: "gpt-4",
             aiName: "Jarvis",
-            provider: "OpenAI",
+            provider: "LM Studio",
           },
         }),
       ).toThrow();
     });
 
-    it("should reject empty apiSecret", () => {
+    it("should allow empty or omitted apiSecret", () => {
+      // apiSecret is now optional
       expect(() =>
         updateFamilySettingsSchema.parse({
           enabledFeatures: [FeatureKey.AIIntegration],
@@ -166,10 +167,23 @@ describe("updateFamilySettingsSchema", () => {
             apiSecret: "",
             modelName: "gpt-4",
             aiName: "Jarvis",
-            provider: "OpenAI",
+            provider: "LM Studio",
           },
         }),
-      ).toThrow(/required/);
+      ).not.toThrow();
+
+      // Also test with omitted apiSecret
+      expect(() =>
+        updateFamilySettingsSchema.parse({
+          enabledFeatures: [FeatureKey.AIIntegration],
+          aiSettings: {
+            apiEndpoint: "https://api.openai.com/v1",
+            modelName: "gpt-4",
+            aiName: "Jarvis",
+            provider: "Ollama",
+          },
+        }),
+      ).not.toThrow();
     });
 
     it("should reject empty modelName", () => {
@@ -181,7 +195,7 @@ describe("updateFamilySettingsSchema", () => {
             apiSecret: "sk-test123",
             modelName: "",
             aiName: "Jarvis",
-            provider: "OpenAI",
+            provider: "LM Studio",
           },
         }),
       ).toThrow(/required/);
@@ -196,7 +210,7 @@ describe("updateFamilySettingsSchema", () => {
             apiSecret: "sk-test123",
             modelName: "gpt-4",
             aiName: "",
-            provider: "OpenAI",
+            provider: "LM Studio",
           },
         }),
       ).toThrow(/required/);
@@ -230,7 +244,7 @@ describe("updateFamilySettingsSchema", () => {
             apiSecret: "sk-test123",
             modelName: "gpt-4",
             aiName: "Jarvis",
-            provider: "OpenAI",
+            provider: "LM Studio",
           },
         });
         expect(result.aiSettings?.apiEndpoint).toBe(url);
@@ -251,7 +265,7 @@ describe("updateFamilySettingsSchema", () => {
           apiSecret: "sk-test123",
           modelName: "gpt-4",
           aiName: "Jarvis",
-          provider: "OpenAI",
+          provider: "LM Studio",
         },
       });
       expect(result.enabledFeatures).toHaveLength(3);

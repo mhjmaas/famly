@@ -49,7 +49,9 @@
         "awarded": "{amount} karma toegekend van \"{goalTitle}\"",
         "awardedTitle": "Bijdrage Toegekend",
         "deducted": "{amount} minpunten voor \"{goalTitle}\"",
-        "deductedTitle": "Minpunten gekregen"
+        "deductedTitle": "Minpunten gekregen",
+        "deductedWithReason": "{amount} minpunten voor \"{goalTitle}\" omdat: \"{reason}\"",
+        "deductedWithReasonTitle": "Minpunten gekregen"
       },
       "karma": {
         "awarded": "Karma toegekend: {amount} {description}",

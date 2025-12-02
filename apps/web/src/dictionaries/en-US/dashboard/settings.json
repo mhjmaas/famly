@@ -92,10 +92,8 @@
           },
           "about": {
             "title": "About AI Settings",
-            "description": "These settings allow you to connect Famly to any OpenAI-compatible API endpoint. This includes:",
+            "description": "These settings allow you to connect Famly to a local LLM server or other OpenAI-compatible API endpoint. Supported providers include:",
             "providers": {
-              "openai": "OpenAI API (GPT-4, GPT-3.5, etc.)",
-              "azure": "Azure OpenAI Service",
               "local": "Local LLM servers (LM Studio, Ollama, etc.)",
               "other": "Other compatible providers"
             },

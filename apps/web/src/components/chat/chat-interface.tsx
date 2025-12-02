@@ -244,11 +244,17 @@ export function ChatInterface({ dict, initialChatId }: ChatInterfaceProps) {
           onValueChange={(val) => setMobileTab(val as "chats" | "messages")}
           className="flex flex-1 flex-col overflow-hidden"
         >
-          <TabsList className="grid w-full grid-cols-2 mb-2">
-            <TabsTrigger value="chats">
+          <TabsList className="inline-flex w-full items-center justify-center rounded-full bg-muted/60 p-1 shadow-sm mb-2">
+            <TabsTrigger
+              value="chats"
+              className="flex-1 rounded-full px-4 py-1.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
+            >
               {dict.tabs?.chats ?? dict.chatList.title}
             </TabsTrigger>
-            <TabsTrigger value="messages">
+            <TabsTrigger
+              value="messages"
+              className="flex-1 rounded-full px-4 py-1.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
+            >
               {dict.tabs?.messages ?? "Messages"}
             </TabsTrigger>
           </TabsList>
