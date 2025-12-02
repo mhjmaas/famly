@@ -2,6 +2,7 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import {
   createAgentUIStreamResponse,
   stepCountIs,
+  type Tool,
   ToolLoopAgent,
   type UIMessage,
 } from "ai";
@@ -75,7 +76,7 @@ export async function POST(req: Request) {
     });
 
     // Base tools always available
-    const tools: Record<string, any> = {
+    const tools: Record<string, Tool> = {
       familyMembersTool: familyMembersTool,
       currentDateTimeTool: currentDateTimeTool,
       karmaBalanceTool: karmaBalanceTool,

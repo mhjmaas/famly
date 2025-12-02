@@ -69,7 +69,7 @@ famly.local {
 		}
 	}
 
-  # Next.js API route for chat - proxy to web service (Next.js)
+    # Next.js API route for chat - proxy to web service (Next.js)
 	# Preserves cookies for authentication
 	handle /api/chat {
 		reverse_proxy web:3000 {
