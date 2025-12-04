@@ -2,6 +2,7 @@
 
 import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,16 +31,22 @@ export function FamilyMemberCard({
   dict,
   lang,
 }: FamilyMemberCardProps) {
+  const router = useRouter();
   const age = calculateAge(member.birthdate);
   const initials = getInitials(member.name);
 
   // Read karma from karma slice (single source of truth)
   const memberKarma = useAppSelector(selectKarmaBalance(member.memberId));
 
+  const handleViewDetails = () => {
+    router.push(`/${lang}/app/family/${member.memberId}`);
+  };
+
   return (
     <Card
-      className="hover:shadow-lg transition-shadow"
+      className="group cursor-pointer hover:shadow-lg transition-shadow"
       data-testid="family-member-card"
+      onClick={handleViewDetails}
     >
       <CardContent>
         <div className="flex items-start justify-between mb-4">
@@ -92,6 +99,7 @@ export function FamilyMemberCard({
             size="sm"
             asChild
             className="gap-2"
+            onClick={(e) => e.stopPropagation()}
             data-testid="member-view-details-link"
           >
             <Link href={`/${lang}/app/family/${member.memberId}`}>

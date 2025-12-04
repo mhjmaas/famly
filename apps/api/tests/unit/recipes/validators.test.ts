@@ -99,14 +99,21 @@ describe("Recipe Validators", () => {
         expect(result.steps).toEqual(["Prepare", "Cook", "Serve"]);
       });
 
-      it("should reject empty steps array", () => {
-        expect(() =>
-          createRecipeSchema.parse({
-            name: "Recipe",
-            description: "Desc",
-            steps: [],
-          }),
-        ).toThrow();
+      it("should accept empty steps array", () => {
+        const result = createRecipeSchema.parse({
+          name: "Recipe",
+          description: "Desc",
+          steps: [],
+        });
+        expect(result.steps).toEqual([]);
+      });
+
+      it("should default to empty steps array when not provided", () => {
+        const result = createRecipeSchema.parse({
+          name: "Recipe",
+          description: "Desc",
+        });
+        expect(result.steps).toEqual([]);
       });
 
       it("should reject empty step strings", () => {
@@ -324,12 +331,11 @@ describe("Recipe Validators", () => {
       ).toThrow();
     });
 
-    it("should reject empty steps array", () => {
-      expect(() =>
-        updateRecipeSchema.parse({
-          steps: [],
-        }),
-      ).toThrow();
+    it("should accept empty steps array", () => {
+      const result = updateRecipeSchema.parse({
+        steps: [],
+      });
+      expect(result.steps).toEqual([]);
     });
 
     it("should allow partial empty object", () => {

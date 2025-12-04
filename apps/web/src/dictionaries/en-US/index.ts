@@ -14,6 +14,7 @@ import dashboardLocations from "./dashboard/locations.json";
 import dashboardMemberDetail from "./dashboard/member-detail.json";
 import dashboardMemories from "./dashboard/memories.json";
 import dashboardNavigation from "./dashboard/navigation.json";
+import dashboardRecipes from "./dashboard/recipes.json";
 import dashboardRewards from "./dashboard/rewards.json";
 import dashboardSettings from "./dashboard/settings.json";
 import dashboardShoppingLists from "./dashboard/shopping-lists.json";
@@ -57,6 +58,7 @@ type DictionaryFragments = typeof app &
   typeof dashboardLocations &
   typeof dashboardMemories &
   typeof dashboardNavigation &
+  typeof dashboardRecipes &
   typeof dashboardMemberDetail &
   typeof dashboardAiSettings &
   typeof dashboardShoppingLists;
@@ -92,6 +94,7 @@ const dictionary: DictionaryFragments = deepMerge<DictionaryFragments>(
   dashboardDiary,
   dashboardChat,
   dashboardSettings,
+  dashboardRecipes,
 );
 
 export default dictionary;

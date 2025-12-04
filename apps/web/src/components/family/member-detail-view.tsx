@@ -146,8 +146,8 @@ export function MemberDetailView({
 
   return (
     <div className="space-y-6">
-      {/* Back Button - Mobile */}
-      <div className="lg:hidden -mx-4 mb-4">
+      {/* Back Button - Always visible */}
+      <div className="-mx-4 mb-4">
         <Button
           variant="ghost"
           size="sm"

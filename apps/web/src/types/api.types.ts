@@ -545,3 +545,40 @@ export interface UpdateDiaryEntryRequest {
   date?: string; // Format: YYYY-MM-DD
   entry?: string; // Max 10,000 chars
 }
+
+// ============= Recipe Types =============
+
+export interface Recipe {
+  _id: string;
+  familyId: string;
+  name: string;
+  description: string;
+  durationMinutes?: number;
+  steps: string[];
+  tags: string[];
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateRecipeRequest {
+  name: string;
+  description: string;
+  durationMinutes?: number;
+  steps: string[];
+  tags?: string[];
+}
+
+export interface UpdateRecipeRequest {
+  name?: string;
+  description?: string;
+  durationMinutes?: number | null;
+  steps?: string[];
+  tags?: string[];
+}
+
+export interface SearchRecipesRequest {
+  query: string;
+  limit?: number;
+  offset?: number;
+}

@@ -289,7 +289,7 @@ describe("E2E: PATCH /v1/families/:familyId/recipes/:recipeId", () => {
       expect(response.status).toBe(400);
     });
 
-    it("should reject update with empty steps array", async () => {
+    it("should accept update with empty steps array", async () => {
       const family = await setupTestFamily(baseUrl, testCounter);
 
       const createResponse = await request(baseUrl)
@@ -308,7 +308,8 @@ describe("E2E: PATCH /v1/families/:familyId/recipes/:recipeId", () => {
         .set("Authorization", `Bearer ${family.token}`)
         .send({ steps: [] });
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(200);
+      expect(response.body.steps).toEqual([]);
     });
 
     it("should reject update with too many tags", async () => {

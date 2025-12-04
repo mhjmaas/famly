@@ -25,6 +25,7 @@ import type {
   CreateFamilyRequest,
   CreateFamilyResponse,
   CreateMessageRequest,
+  CreateRecipeRequest,
   CreateRewardRequest,
   CreateScheduleRequest,
   CreateShoppingListRequest,
@@ -40,6 +41,7 @@ import type {
   LoginRequest,
   MeResponse,
   MessageDTO,
+  Recipe,
   RegisterRequest,
   Reward,
   ShoppingList,
@@ -53,6 +55,7 @@ import type {
   UpdateMemberRoleResponse,
   UpdateProfileRequest,
   UpdateProfileResponse,
+  UpdateRecipeRequest,
   UpdateRewardRequest,
   UpdateScheduleRequest,
   UpdateShoppingListItemRequest,
@@ -344,10 +347,7 @@ export async function getKarmaBalance(
 
 // Activity Events API
 
-export type {
-  ActivityEvent,
-  ActivityEventType,
-} from "@/types/api.types";
+export type { ActivityEvent, ActivityEventType } from "@/types/api.types";
 
 export async function getActivityEvents(
   startDate?: string,
@@ -376,7 +376,9 @@ export async function getFamilyMemberActivityEvents(
   if (endDate) params.set("endDate", endDate);
 
   const queryString = params.toString();
-  const endpoint = `/v1/families/${familyId}/members/${memberId}/activity-events${queryString ? `?${queryString}` : ""}`;
+  const endpoint = `/v1/families/${familyId}/members/${memberId}/activity-events${
+    queryString ? `?${queryString}` : ""
+  }`;
 
   return apiClient<ActivityEvent[]>(endpoint, { cookie });
 }
@@ -404,7 +406,9 @@ export async function getTasks(
   if (params?.dueDateTo) queryParams.set("dueDateTo", params.dueDateTo);
 
   const queryString = queryParams.toString();
-  const endpoint = `/v1/families/${familyId}/tasks${queryString ? `?${queryString}` : ""}`;
+  const endpoint = `/v1/families/${familyId}/tasks${
+    queryString ? `?${queryString}` : ""
+  }`;
 
   return apiClient<Task[]>(endpoint, { cookie });
 }
@@ -638,7 +642,9 @@ export async function getClaims(
   if (status) params.set("status", status);
 
   const queryString = params.toString();
-  const endpoint = `/v1/families/${familyId}/claims${queryString ? `?${queryString}` : ""}`;
+  const endpoint = `/v1/families/${familyId}/claims${
+    queryString ? `?${queryString}` : ""
+  }`;
 
   return apiClient<Claim[]>(endpoint, { cookie });
 }
@@ -1154,4 +1160,120 @@ export async function deleteDiaryEntry(
     method: "DELETE",
     cookie,
   });
+}
+
+// ============= Recipes API =============
+
+export type {
+  CreateRecipeRequest,
+  Recipe,
+  SearchRecipesRequest,
+  UpdateRecipeRequest,
+} from "@/types/api.types";
+
+interface RecipesListResponse {
+  recipes: Recipe[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+/**
+ * Get all recipes for a family
+ */
+export async function getRecipes(
+  familyId: string,
+  cookie?: string,
+): Promise<Recipe[]> {
+  const response = await apiClient<RecipesListResponse>(
+    `/v1/families/${familyId}/recipes`,
+    { cookie },
+  );
+  return response.recipes;
+}
+
+/**
+ * Get a specific recipe by ID
+ */
+export async function getRecipe(
+  familyId: string,
+  recipeId: string,
+  cookie?: string,
+): Promise<Recipe> {
+  return apiClient<Recipe>(`/v1/families/${familyId}/recipes/${recipeId}`, {
+    cookie,
+  });
+}
+
+/**
+ * Create a new recipe
+ */
+export async function createRecipe(
+  familyId: string,
+  data: CreateRecipeRequest,
+  cookie?: string,
+): Promise<Recipe> {
+  return apiClient<Recipe>(`/v1/families/${familyId}/recipes`, {
+    method: "POST",
+    body: data,
+    cookie,
+  });
+}
+
+/**
+ * Update an existing recipe
+ */
+export async function updateRecipe(
+  familyId: string,
+  recipeId: string,
+  data: UpdateRecipeRequest,
+  cookie?: string,
+): Promise<Recipe> {
+  return apiClient<Recipe>(`/v1/families/${familyId}/recipes/${recipeId}`, {
+    method: "PATCH",
+    body: data,
+    cookie,
+  });
+}
+
+/**
+ * Delete a recipe
+ */
+export async function deleteRecipe(
+  familyId: string,
+  recipeId: string,
+  cookie?: string,
+): Promise<void> {
+  return apiClient<void>(`/v1/families/${familyId}/recipes/${recipeId}`, {
+    method: "DELETE",
+    cookie,
+  });
+}
+
+interface RecipesSearchResponse {
+  recipes: Recipe[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+/**
+ * Search recipes by query
+ */
+export async function searchRecipes(
+  familyId: string,
+  query: string,
+  limit = 10,
+  offset = 0,
+  cookie?: string,
+): Promise<Recipe[]> {
+  const response = await apiClient<RecipesSearchResponse>(
+    `/v1/families/${familyId}/recipes/search`,
+    {
+      method: "POST",
+      body: { query, limit, offset },
+      cookie,
+    },
+  );
+  return response.recipes;
 }

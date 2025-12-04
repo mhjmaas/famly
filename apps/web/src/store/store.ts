@@ -7,6 +7,7 @@ import diaryReducer from "./slices/diary.slice";
 import familyReducer from "./slices/family.slice";
 import karmaReducer from "./slices/karma.slice";
 import notificationsReducer from "./slices/notifications.slice";
+import recipesReducer from "./slices/recipes.slice";
 import rewardsReducer from "./slices/rewards.slice";
 import settingsReducer from "./slices/settings.slice";
 import shoppingListsReducer from "./slices/shopping-lists.slice";
@@ -28,6 +29,7 @@ const rootReducer = combineReducers({
   chat: chatReducer,
   shoppingLists: shoppingListsReducer,
   diary: diaryReducer,
+  recipes: recipesReducer,
 });
 
 // Infer RootState from the rootReducer
