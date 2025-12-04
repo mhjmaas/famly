@@ -237,7 +237,7 @@ describe("E2E: POST /v1/families/:familyId/recipes", () => {
   });
 
   describe("Validation - Steps", () => {
-    it("should reject recipe with missing steps", async () => {
+    it("should accept recipe with missing steps (defaults to empty array)", async () => {
       const family = await setupTestFamily(baseUrl, testCounter);
 
       const response = await request(baseUrl)
@@ -248,10 +248,11 @@ describe("E2E: POST /v1/families/:familyId/recipes", () => {
           description: "No steps",
         });
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(201);
+      expect(response.body.steps).toEqual([]);
     });
 
-    it("should reject recipe with empty steps array", async () => {
+    it("should accept recipe with empty steps array", async () => {
       const family = await setupTestFamily(baseUrl, testCounter);
 
       const response = await request(baseUrl)
@@ -263,7 +264,8 @@ describe("E2E: POST /v1/families/:familyId/recipes", () => {
           steps: [],
         });
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(201);
+      expect(response.body.steps).toEqual([]);
     });
 
     it("should reject recipe with empty step", async () => {

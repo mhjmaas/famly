@@ -6,6 +6,7 @@ import {
   Calendar,
   Camera,
   CheckSquare,
+  ChefHat,
   Gift,
   Home,
   MapPin,
@@ -74,6 +75,7 @@ const createNavigationSections = (): NavigationSection[] => [
         href: "/app/shopping-lists",
         icon: ShoppingCart,
       },
+      { name: "recipes", href: "/app/recipes", icon: ChefHat },
       { name: "rewards", href: "/app/rewards", icon: Gift },
       {
         name: "calendar",

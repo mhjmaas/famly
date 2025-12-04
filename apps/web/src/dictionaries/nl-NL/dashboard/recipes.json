@@ -1,0 +1,117 @@
+{
+  "dashboard": {
+    "pages": {
+      "recipes": {
+        "title": "Recepten",
+        "description": "Beheer de recepten van je gezin",
+        "newRecipe": "Recept Toevoegen",
+        "search": {
+          "placeholder": "Zoek recepten...",
+          "resultsCount": "{count} recepten gevonden",
+          "noResults": "Geen recepten gevonden",
+          "noResultsHint": "Probeer andere zoektermen",
+          "clear": "Zoekopdracht wissen"
+        },
+        "emptyState": {
+          "title": "Nog geen recepten",
+          "description": "Maak je eerste recept aan om te beginnen met koken",
+          "cta": "Recept Maken"
+        },
+        "card": {
+          "duration": "{minutes} min",
+          "viewDetails": "Details Bekijken",
+          "noDescription": "Geen beschrijving"
+        },
+        "create": {
+          "title": "Nieuw Recept Maken",
+          "description": "Voeg een nieuw recept toe voor je gezin",
+          "fields": {
+            "name": {
+              "label": "Receptnaam",
+              "placeholder": "bijv. Spaghetti Bolognese",
+              "required": "Receptnaam is verplicht"
+            },
+            "description": {
+              "label": "Beschrijving",
+              "placeholder": "Beschrijf je recept..."
+            },
+            "duration": {
+              "label": "Bereidingstijd (minuten)",
+              "placeholder": "bijv. 30"
+            },
+            "tags": {
+              "label": "Tags",
+              "placeholder": "Voeg een tag toe...",
+              "addTags": "Tags Toevoegen"
+            }
+          },
+          "buttons": {
+            "cancel": "Annuleren",
+            "create": "Recept Maken",
+            "creating": "Bezig met maken..."
+          },
+          "success": "Recept succesvol aangemaakt",
+          "error": "Kon recept niet aanmaken"
+        },
+        "edit": {
+          "title": "Recept Bewerken",
+          "description": "Werk de receptgegevens bij",
+          "buttons": {
+            "cancel": "Annuleren",
+            "update": "Recept Bijwerken",
+            "updating": "Bezig met bijwerken..."
+          },
+          "success": "Recept succesvol bijgewerkt",
+          "error": "Kon recept niet bijwerken"
+        },
+        "delete": {
+          "title": "Recept Verwijderen",
+          "description": "Weet je zeker dat je dit recept wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+          "buttons": {
+            "cancel": "Annuleren",
+            "delete": "Recept Verwijderen"
+          },
+          "success": "Recept verwijderd",
+          "error": "Kon recept niet verwijderen"
+        },
+        "detail": {
+          "backToRecipes": "Terug naar Recepten",
+          "breadcrumbs": {
+            "recipes": "Recepten"
+          },
+          "addedBy": "Toegevoegd door {name}",
+          "createdAt": "Gemaakt op {date}",
+          "duration": "{minutes} minuten",
+          "steps": {
+            "title": "Stappen",
+            "progress": "{completed} van {total} voltooid",
+            "allCompleted": "Alle stappen voltooid!",
+            "celebration": "Recept voltooid! Eet smakelijk!",
+            "resetAll": "Alles Resetten",
+            "resetSuccess": "Stappen gereset",
+            "add": {
+              "placeholder": "Voeg een nieuwe stap toe...",
+              "button": "Stap Toevoegen"
+            },
+            "edit": {
+              "save": "Opslaan",
+              "cancel": "Annuleren"
+            },
+            "empty": "Nog geen stappen. Voeg hierboven je eerste stap toe."
+          },
+          "notFound": {
+            "title": "Recept niet gevonden",
+            "description": "Het recept dat je zoekt bestaat niet of is verwijderd.",
+            "cta": "Terug naar Recepten"
+          }
+        },
+        "menu": {
+          "edit": "Bewerken",
+          "delete": "Verwijderen"
+        },
+        "loading": "Recepten laden...",
+        "error": "Kon recepten niet laden"
+      }
+    }
+  }
+}

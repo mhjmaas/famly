@@ -9,6 +9,7 @@ export type Dictionary = {
       members: string;
       tasks: string;
       shoppingLists: string;
+      recipes: string;
       rewards: string;
       calendar: string;
       locations: string;

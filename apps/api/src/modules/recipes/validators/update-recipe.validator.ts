@@ -30,7 +30,6 @@ export const updateRecipeSchema = z.object({
         .min(1, "Steps cannot be empty")
         .max(500, "Each step must not exceed 500 characters"),
     )
-    .min(1, "At least one step is required")
     .optional(),
   tags: z
     .array(z.string().min(1).max(50, "Each tag must not exceed 50 characters"))
