@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
-import { RecipeDetailView } from "@/components/recipes/RecipeDetailView";
+import { RecipeDetailView } from "@/components/recipes/recipe-detail-view";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
 import { getFamilies } from "@/lib/api-client";

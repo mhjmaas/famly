@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sheet";
 import type { Dictionary } from "@/i18n/types";
 import type { Reward } from "@/types/api.types";
-import { RewardImage } from "./RewardImage";
+import { RewardImage } from "./reward-image";
 
 interface ClaimConfirmationSheetProps {
   reward: Reward | null;

@@ -1,6 +1,6 @@
 import type { Dictionary } from "@/i18n/types";
 import type { Claim, Reward } from "@/types/api.types";
-import { RewardCard } from "./RewardCard";
+import { RewardCard } from "./reward-card";
 
 interface RewardsGridProps {
   rewards: Reward[];

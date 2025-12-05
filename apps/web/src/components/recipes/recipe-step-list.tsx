@@ -13,8 +13,8 @@ import {
   updateRecipe,
 } from "@/store/slices/recipes.slice";
 import type { Recipe } from "@/types/api.types";
-import { AddStepForm } from "./AddStepForm";
-import { RecipeStepItem } from "./RecipeStepItem";
+import { AddStepForm } from "./add-step-form";
+import { RecipeStepItem } from "./recipe-step-item";
 
 interface RecipeStepListProps {
   recipe: Recipe;

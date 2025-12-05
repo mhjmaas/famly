@@ -1,6 +1,6 @@
 import { format, isSameDay, isToday, isYesterday, startOfDay } from "date-fns";
 import { useMemo } from "react";
-import type { FilterType } from "@/components/tasks/TaskFilters";
+import type { FilterType } from "@/components/tasks/task-filters";
 import type { Task } from "@/types/api.types";
 
 interface TaskGroup {

@@ -2,7 +2,7 @@
 
 import type { Dictionary } from "@/i18n/types";
 import type { Recipe } from "@/types/api.types";
-import { RecipeCard } from "./RecipeCard";
+import { RecipeCard } from "./recipe-card";
 
 interface RecipeGridProps {
   recipes: Recipe[];

@@ -3,7 +3,7 @@
 import { Menu } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { LogoComponent } from "@/components/navigation/LogoComponent";
+import { LogoComponent } from "@/components/navigation/logo-component";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -23,9 +23,9 @@ import type { DashboardLayoutProps } from "@/types/dashboard-layout.types";
 import { InstallPromptDrawer } from "../pwa/install-prompt-drawer";
 import { NotificationPermissionDrawer } from "../pwa/notification-permission-drawer";
 import { PWAProvider } from "../pwa/pwa-provider";
-import { DesktopSidebar } from "./sidebars/DesktopSidebar";
-import { MobileSidebar } from "./sidebars/MobileSidebar";
-import { TabletSidebar } from "./sidebars/TabletSidebar";
+import { DesktopSidebar } from "./sidebars/desktop-sidebar";
+import { MobileSidebar } from "./sidebars/mobile-sidebar";
+import { TabletSidebar } from "./sidebars/tablet-sidebar";
 
 export type { Dictionary } from "@/types/dashboard-layout.types";
 

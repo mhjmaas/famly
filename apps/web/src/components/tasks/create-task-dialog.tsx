@@ -20,9 +20,9 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import type { TaskFormData } from "@/hooks/useTaskForm";
 import type { Dictionary } from "@/i18n/types";
 import type { Task } from "@/types/api.types";
-import { EditTaskForm } from "./EditTaskForm";
-import { RecurringTaskForm } from "./RecurringTaskForm";
-import { SingleTaskForm } from "./SingleTaskForm";
+import { EditTaskForm } from "./edit-task-form";
+import { RecurringTaskForm } from "./recurring-task-form";
+import { SingleTaskForm } from "./single-task-form";
 
 type TaskType = "single" | "recurring";
 

@@ -22,10 +22,10 @@ import {
   updateRecipe,
 } from "@/store/slices/recipes.slice";
 import type { CreateRecipeRequest, Recipe } from "@/types/api.types";
-import { CreateRecipeDialog } from "./CreateRecipeDialog";
-import { RecipeEmptyState } from "./RecipeEmptyState";
-import { RecipeGrid } from "./RecipeGrid";
-import { RecipeSearch } from "./RecipeSearch";
+import { CreateRecipeDialog } from "./create-recipe-dialog";
+import { RecipeEmptyState } from "./recipe-empty-state";
+import { RecipeGrid } from "./recipe-grid";
+import { RecipeSearch } from "./recipe-search";
 
 interface RecipesViewProps {
   dict: Dictionary;

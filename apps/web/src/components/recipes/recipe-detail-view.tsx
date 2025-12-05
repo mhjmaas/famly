@@ -34,9 +34,9 @@ import {
   updateRecipe,
 } from "@/store/slices/recipes.slice";
 import type { UpdateRecipeRequest } from "@/types/api.types";
-import { EditRecipeDialog } from "./EditRecipeDialog";
-import { RecipeImage } from "./RecipeImage";
-import { RecipeStepList } from "./RecipeStepList";
+import { EditRecipeDialog } from "./edit-recipe-dialog";
+import { RecipeImage } from "./recipe-image";
+import { RecipeStepList } from "./recipe-step-list";
 
 interface RecipeDetailViewProps {
   recipeId: string;

@@ -4,7 +4,7 @@ import {
   getTaskCompletionBlockedReason,
 } from "@/lib/utils/task-completion-utils";
 import type { Task } from "@/types/api.types";
-import { TaskCard } from "./TaskCard";
+import { TaskCard } from "./task-card";
 
 interface TaskGroupProps {
   date: Date | null;

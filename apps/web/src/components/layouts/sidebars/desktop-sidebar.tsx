@@ -1,8 +1,8 @@
 "use client";
 
-import { LogoComponent } from "@/components/navigation/LogoComponent";
-import { NavigationItem } from "@/components/navigation/NavigationItem";
-import { SectionNavigation } from "@/components/navigation/SectionNavigation";
+import { LogoComponent } from "@/components/navigation/logo-component";
+import { NavigationItem } from "@/components/navigation/navigation-item";
+import { SectionNavigation } from "@/components/navigation/section-navigation";
 import { UserProfileDisplay } from "@/components/profile/UserProfileDisplay";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type {

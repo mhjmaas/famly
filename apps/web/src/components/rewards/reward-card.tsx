@@ -21,8 +21,8 @@ import { Progress } from "@/components/ui/progress";
 import type { Dictionary } from "@/i18n/types";
 import { cn } from "@/lib/utils/style-utils";
 import type { Reward } from "@/types/api.types";
-import { CancelClaimButton } from "./CancelClaimButton";
-import { RewardImage } from "./RewardImage";
+import { CancelClaimButton } from "./cancel-claim-button";
+import { RewardImage } from "./reward-image";
 
 interface RewardCardProps {
   reward: Reward;

@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
-import { RewardsView } from "@/components/rewards/RewardsView";
+import { RewardsView } from "@/components/rewards/rewards-view";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
 import { getFamilies, getKarmaBalance, getMe } from "@/lib/api-client";

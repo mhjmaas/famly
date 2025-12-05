@@ -2,7 +2,7 @@
 
 import { format, parseISO } from "date-fns";
 import type { DiaryEntry } from "@/types/api.types";
-import { DiaryEntryCard } from "./DiaryEntryCard";
+import { DiaryEntryCard } from "./diary-entry-card";
 
 interface DiaryEntryGroupProps {
   date: string; // YYYY-MM-DD format

@@ -27,4 +27,5 @@ docker/caddy/certs/*.pem
 docker/caddy/Caddyfile.production
 # Local custom Caddyfile (user-specific configuration)
 docker/caddy/Caddyfile.localhost.custom
+
 apps/ios/

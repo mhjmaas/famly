@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils/style-utils";
 import type { ShoppingList } from "@/types/api.types";
-import { AddItemInput } from "./AddItemInput";
-import { ShoppingListItem } from "./ShoppingListItem";
+import { AddItemInput } from "./add-item-input";
+import { ShoppingListItem } from "./shopping-list-item";
 
 interface ShoppingListCardProps {
   list: ShoppingList;

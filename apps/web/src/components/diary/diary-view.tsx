@@ -14,11 +14,11 @@ import {
   selectDiaryLoading,
 } from "@/store/slices/diary.slice";
 import type { DiaryEntry } from "@/types/api.types";
-import { DiaryEmptyState } from "./DiaryEmptyState";
-import { DiaryEntryForm } from "./DiaryEntryForm";
-import { DiaryEntryGroup } from "./DiaryEntryGroup";
-import { DiaryFilters } from "./DiaryFilters";
-import { DiaryHeader } from "./DiaryHeader";
+import { DiaryEmptyState } from "./diary-empty-state";
+import { DiaryEntryForm } from "./diary-entry-form";
+import { DiaryEntryGroup } from "./diary-entry-group";
+import { DiaryFilters } from "./diary-filters";
+import { DiaryHeader } from "./diary-header";
 
 interface DiaryDict {
   title: string;
