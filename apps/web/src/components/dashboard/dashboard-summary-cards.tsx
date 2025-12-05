@@ -20,13 +20,32 @@ export function DashboardSummaryCards({
   labels,
 }: DashboardSummaryCardsProps) {
   return (
-    <div className="hidden gap-4 lg:grid lg:grid-cols-3">
-      <KarmaCard karma={availableKarma} label={labels.availableKarma} />
-      <PendingTasksCard count={pendingTasksCount} label={labels.pendingTasks} />
-      <PotentialKarmaCard
-        karma={potentialKarma}
-        label={labels.potentialKarma}
-      />
-    </div>
+    <>
+      {/* Karma card - mobile only (standalone) */}
+      <div className="lg:hidden">
+        <KarmaCard
+          karma={availableKarma}
+          label={labels.availableKarma}
+          testIdSuffix="mobile"
+        />
+      </div>
+
+      {/* All cards - desktop only (in grid) */}
+      <div className="hidden gap-4 lg:grid lg:grid-cols-3">
+        <KarmaCard
+          karma={availableKarma}
+          label={labels.availableKarma}
+          testIdSuffix="desktop"
+        />
+        <PendingTasksCard
+          count={pendingTasksCount}
+          label={labels.pendingTasks}
+        />
+        <PotentialKarmaCard
+          karma={potentialKarma}
+          label={labels.potentialKarma}
+        />
+      </div>
+    </>
   );
 }

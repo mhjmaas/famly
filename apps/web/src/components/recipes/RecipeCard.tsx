@@ -1,17 +1,11 @@
 "use client";
 
-import { ArrowRight, Clock, MoreHorizontal } from "lucide-react";
+import { ArrowRight, Clock, Edit, MoreVertical, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Dictionary } from "@/i18n/types";
 import type { Recipe } from "@/types/api.types";
+import { RecipeImage } from "./RecipeImage";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -45,35 +40,27 @@ export function RecipeCard({
 
   return (
     <Card
-      className="group cursor-pointer transition-shadow hover:shadow-md"
+      className="group cursor-pointer overflow-hidden hover:shadow-lg transition-shadow flex flex-col p-0 gap-0"
       data-testid={`recipe-card-${recipe._id}`}
       onClick={handleViewDetails}
     >
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <CardTitle
-              className="text-lg truncate"
-              data-testid={`recipe-card-title-${recipe._id}`}
-            >
-              {recipe.name}
-            </CardTitle>
-            <CardDescription
-              className="line-clamp-2 mt-1"
-              data-testid={`recipe-card-description-${recipe._id}`}
-            >
-              {recipe.description || t.card.noDescription}
-            </CardDescription>
-          </div>
+      {/* Recipe Image with overlaid menu button */}
+      <div
+        className="relative aspect-video w-full overflow-hidden bg-muted rounded-t-xl"
+        data-testid={`recipe-card-image-container-${recipe._id}`}
+      >
+        <RecipeImage imageUrl={recipe.imageUrl} name={recipe.name} />
+        {/* Menu button overlaid on image */}
+        <div className="absolute top-2 right-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <Button
-                variant="ghost"
+                variant="secondary"
                 size="icon"
-                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="h-8 w-8 bg-background/90 backdrop-blur opacity-0 group-hover:opacity-100 transition-opacity"
                 data-testid={`recipe-card-menu-${recipe._id}`}
               >
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreVertical className="h-4 w-4" />
                 <span className="sr-only">Open menu</span>
               </Button>
             </DropdownMenuTrigger>
@@ -83,27 +70,29 @@ export function RecipeCard({
             >
               <DropdownMenuItem
                 onClick={() => onEdit(recipe)}
+                className="gap-2"
                 data-testid={`recipe-card-edit-${recipe._id}`}
               >
+                <Edit className="h-4 w-4" />
                 {t.menu.edit}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onDelete(recipe)}
-                className="text-destructive"
+                className="gap-2 text-destructive"
                 data-testid={`recipe-card-delete-${recipe._id}`}
               >
+                <Trash2 className="h-4 w-4" />
                 {t.menu.delete}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </CardHeader>
-      <CardContent className="pt-2">
-        <div className="flex flex-wrap items-center gap-2">
-          {recipe.durationMinutes && (
+        {/* Duration badge overlaid on image */}
+        {recipe.durationMinutes && (
+          <div className="absolute top-2 left-2">
             <Badge
               variant="secondary"
-              className="flex items-center gap-1"
+              className="gap-1 bg-background/90 backdrop-blur"
               data-testid={`recipe-card-duration-${recipe._id}`}
             >
               <Clock className="h-3 w-3" />
@@ -112,20 +101,41 @@ export function RecipeCard({
                 recipe.durationMinutes.toString(),
               )}
             </Badge>
-          )}
-          {recipe.tags.slice(0, 3).map((tag) => (
-            <Badge
-              key={tag}
-              variant="outline"
-              data-testid={`recipe-card-tag-${recipe._id}-${tag}`}
-            >
-              {tag}
-            </Badge>
-          ))}
-          {recipe.tags.length > 3 && (
-            <Badge variant="outline">+{recipe.tags.length - 3}</Badge>
-          )}
-        </div>
+          </div>
+        )}
+      </div>
+
+      <CardContent className="p-4 flex-1 flex flex-col">
+        <h3
+          className="font-semibold text-lg truncate"
+          data-testid={`recipe-card-title-${recipe._id}`}
+        >
+          {recipe.name}
+        </h3>
+        <p
+          className="text-sm text-muted-foreground line-clamp-2 mt-1 flex-1"
+          data-testid={`recipe-card-description-${recipe._id}`}
+        >
+          {recipe.description || t.card.noDescription}
+        </p>
+
+        {/* Tags */}
+        {recipe.tags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            {recipe.tags.slice(0, 3).map((tag) => (
+              <Badge
+                key={tag}
+                variant="outline"
+                data-testid={`recipe-card-tag-${recipe._id}-${tag}`}
+              >
+                {tag}
+              </Badge>
+            ))}
+            {recipe.tags.length > 3 && (
+              <Badge variant="outline">+{recipe.tags.length - 3}</Badge>
+            )}
+          </div>
+        )}
 
         <div className="mt-4 pt-4 border-t flex justify-end">
           <Button

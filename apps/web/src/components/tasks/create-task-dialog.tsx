@@ -101,7 +101,7 @@ export function CreateTaskDialog({
           className="w-full"
           data-testid="task-dialog-tabs"
         >
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center mb-2">
             <TabsList
               className="inline-flex items-center rounded-full bg-muted/60 p-1 shadow-sm"
               data-testid="task-dialog-type-tabs"
@@ -123,7 +123,7 @@ export function CreateTaskDialog({
             </TabsList>
           </div>
 
-          <TabsContent value="single" className="space-y-4 mt-4">
+          <TabsContent value="single" className="space-y-4 mt-2">
             <SingleTaskForm
               formData={formData}
               setFormData={setFormData}
@@ -141,7 +141,7 @@ export function CreateTaskDialog({
             />
           </TabsContent>
 
-          <TabsContent value="recurring" className="space-y-4 mt-4">
+          <TabsContent value="recurring" className="space-y-4 mt-2">
             <RecurringTaskForm
               formData={formData}
               setFormData={setFormData}

@@ -2,6 +2,32 @@ import { HttpError } from "@lib/http-error";
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
+/**
+ * Validates imageUrl format - accepts HTTP(S) URLs or relative paths from upload
+ */
+const imageUrlSchema = z
+  .string()
+  .max(500, "Image URL must not exceed 500 characters")
+  .refine(
+    (url) => {
+      // Accept relative paths from upload endpoint
+      if (url.startsWith("/api/images/")) {
+        return true;
+      }
+      // Accept valid HTTP(S) URLs
+      try {
+        const parsed = new URL(url);
+        return ["http:", "https:"].includes(parsed.protocol);
+      } catch {
+        return false;
+      }
+    },
+    {
+      message:
+        "Image URL must be a valid HTTP(S) URL or a relative path starting with /api/images/",
+    },
+  );
+
 export const createRecipeSchema = z.object({
   name: z
     .string()
@@ -17,6 +43,7 @@ export const createRecipeSchema = z.object({
     .min(1, "Duration must be at least 1 minute")
     .max(1440, "Duration must not exceed 1440 minutes")
     .optional(),
+  imageUrl: imageUrlSchema.optional(),
   steps: z
     .array(
       z

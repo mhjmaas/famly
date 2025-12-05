@@ -69,18 +69,25 @@ export function RecipesView({ dict, familyId, locale }: RecipesViewProps) {
     dispatch(setSearchQuery(""));
   }, [dispatch]);
 
-  const handleCreateRecipe = async (data: CreateRecipeRequest) => {
-    await dispatch(createRecipe({ familyId, data })).unwrap();
+  const handleCreateRecipe = async (
+    data: CreateRecipeRequest,
+    imageFile?: File,
+  ) => {
+    await dispatch(createRecipe({ familyId, data, imageFile })).unwrap();
     toast.success(t.create.success);
   };
 
-  const handleUpdateRecipe = async (data: CreateRecipeRequest) => {
+  const handleUpdateRecipe = async (
+    data: CreateRecipeRequest,
+    imageFile?: File,
+  ) => {
     if (!editingRecipe) return;
     await dispatch(
       updateRecipe({
         familyId,
         recipeId: editingRecipe._id,
         data,
+        imageFile,
       }),
     ).unwrap();
     toast.success(t.edit.success);

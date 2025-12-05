@@ -17,6 +17,10 @@ export function toRecipeDTO(recipe: Recipe): RecipeDTO {
     dto.durationMinutes = recipe.durationMinutes;
   }
 
+  if (recipe.imageUrl) {
+    dto.imageUrl = recipe.imageUrl;
+  }
+
   return dto;
 }
 

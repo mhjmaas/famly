@@ -242,6 +242,78 @@ describe("E2E: PATCH /v1/families/:familyId/recipes/:recipeId", () => {
       expect(response.status).toBe(200);
       expect(response.body).not.toHaveProperty("durationMinutes");
     });
+
+    it("should update recipe imageUrl", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      const createResponse = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Recipe",
+          description: "Desc",
+          steps: ["Step"],
+        });
+
+      const recipeId = createResponse.body._id;
+
+      const response = await request(baseUrl)
+        .patch(`/v1/families/${family.familyId}/recipes/${recipeId}`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({ imageUrl: "https://example.com/new-image.jpg" });
+
+      expect(response.status).toBe(200);
+      expect(response.body.imageUrl).toBe("https://example.com/new-image.jpg");
+    });
+
+    it("should clear recipe imageUrl when null sent", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      const createResponse = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Recipe",
+          description: "Desc",
+          steps: ["Step"],
+          imageUrl: "https://example.com/image.jpg",
+        });
+
+      const recipeId = createResponse.body._id;
+
+      const response = await request(baseUrl)
+        .patch(`/v1/families/${family.familyId}/recipes/${recipeId}`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({ imageUrl: null });
+
+      expect(response.status).toBe(200);
+      expect(response.body.imageUrl).toBeUndefined();
+    });
+
+    it("should update imageUrl to relative path", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      const createResponse = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Recipe",
+          description: "Desc",
+          steps: ["Step"],
+        });
+
+      const recipeId = createResponse.body._id;
+
+      const response = await request(baseUrl)
+        .patch(`/v1/families/${family.familyId}/recipes/${recipeId}`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({ imageUrl: `/api/images/${family.familyId}/uploaded.jpg` });
+
+      expect(response.status).toBe(200);
+      expect(response.body.imageUrl).toBe(
+        `/api/images/${family.familyId}/uploaded.jpg`,
+      );
+    });
   });
 
   describe("Validation", () => {

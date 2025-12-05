@@ -466,8 +466,8 @@ test.describe("Dashboard Overview", () => {
       await expect(dashboardPage.mobileHeader).toBeVisible();
       await expect(dashboardPage.mobilePageTitle).toContainText(/dashboard/i);
 
-      // Summary cards should be hidden on mobile viewports
-      await expect(dashboardPage.karmaCard).toBeHidden();
+      // Karma card is visible on mobile, but other summary cards are hidden
+      await expect(dashboardPage.karmaCard).toBeVisible();
       await expect(dashboardPage.pendingTasksCard).toBeHidden();
       await expect(dashboardPage.potentialKarmaCard).toBeHidden();
 
@@ -481,8 +481,8 @@ test.describe("Dashboard Overview", () => {
       await page.reload();
       await waitForPageLoad(page);
 
-      // Summary cards remain hidden on tablet
-      await expect(dashboardPage.karmaCard).toBeHidden();
+      // Karma card is visible on tablet, but other summary cards are hidden
+      await expect(dashboardPage.karmaCard).toBeVisible();
       await expect(dashboardPage.pendingTasksCard).toBeHidden();
       await expect(dashboardPage.potentialKarmaCard).toBeHidden();
 

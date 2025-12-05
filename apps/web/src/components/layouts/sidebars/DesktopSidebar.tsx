@@ -38,34 +38,36 @@ export function DesktopSidebar({
       </div>
 
       {/* Navigation */}
-      <ScrollArea ref={navScrollRef} className="flex-1 px-3 py-4">
-        <nav className="space-y-1" data-testid="desktop-navigation">
-          {navigationSections.map((section) => {
-            if (section.type === "single") {
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea ref={navScrollRef} className="h-full px-3 py-4">
+          <nav className="space-y-1" data-testid="desktop-navigation">
+            {navigationSections.map((section) => {
+              if (section.type === "single") {
+                return (
+                  <NavigationItem
+                    key={section.name}
+                    item={section}
+                    isSingleItem
+                    isActive={section.href === pathWithoutLocale}
+                    dict={dict}
+                  />
+                );
+              }
+
               return (
-                <NavigationItem
+                <SectionNavigation
                   key={section.name}
-                  item={section}
-                  isSingleItem
-                  isActive={section.href === pathWithoutLocale}
+                  section={section}
+                  isExpanded={expandedSections.includes(section.name as string)}
+                  pathWithoutLocale={pathWithoutLocale}
                   dict={dict}
+                  onToggleSection={onToggleSection}
                 />
               );
-            }
-
-            return (
-              <SectionNavigation
-                key={section.name}
-                section={section}
-                isExpanded={expandedSections.includes(section.name as string)}
-                pathWithoutLocale={pathWithoutLocale}
-                dict={dict}
-                onToggleSection={onToggleSection}
-              />
-            );
-          })}
-        </nav>
-      </ScrollArea>
+            })}
+          </nav>
+        </ScrollArea>
+      </div>
 
       {/* User Info */}
       <div

@@ -1277,3 +1277,45 @@ export async function searchRecipes(
   );
   return response.recipes;
 }
+
+/**
+ * Upload an image file for a recipe
+ * @param familyId - The family ID
+ * @param file - The image file to upload
+ * @param cookie - Optional cookie string for server-side requests
+ * @returns The relative URL to access the uploaded image
+ */
+export async function uploadRecipeImage(
+  familyId: string,
+  file: File,
+  cookie?: string,
+): Promise<{ imageUrl: string }> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const headers: Record<string, string> = {};
+  if (cookie) {
+    headers.Cookie = cookie;
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/v1/families/${familyId}/recipes/upload-image`,
+    {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+      headers,
+    },
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage =
+      typeof errorData === "object" && errorData !== null
+        ? (errorData as { error?: string }).error || "Upload failed"
+        : "Upload failed";
+    throw new ApiError(errorMessage, response.status, errorData);
+  }
+
+  return response.json();
+}

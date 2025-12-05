@@ -43,6 +43,19 @@
               "label": "Tags",
               "placeholder": "Add a tag...",
               "addTags": "Add Tags"
+            },
+            "image": {
+              "label": "Image",
+              "uploadButton": "Upload Image",
+              "orLabel": "or provide URL",
+              "urlPlaceholder": "https://example.com/image.jpg (optional)",
+              "preview": "Recipe image preview",
+              "remove": "Remove image",
+              "errors": {
+                "fileSize": "File size must be less than 5MB",
+                "fileType": "Only JPEG, PNG, GIF, and WebP images are allowed",
+                "uploadFailed": "Failed to upload image"
+              }
             }
           },
           "buttons": {

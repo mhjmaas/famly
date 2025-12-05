@@ -1,7 +1,8 @@
 "use client";
 
-import { Plus, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Plus, Upload, X } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +30,7 @@ import type { CreateRecipeRequest, Recipe } from "@/types/api.types";
 interface CreateRecipeDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateRecipeRequest) => Promise<void>;
+  onSubmit: (data: CreateRecipeRequest, imageFile?: File) => Promise<void>;
   editingRecipe?: Recipe | null;
   dict: Dictionary;
 }
@@ -53,6 +54,11 @@ export function CreateRecipeDialog({
   const [showTags, setShowTags] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset form when dialog opens/closes or editingRecipe changes
   useEffect(() => {
@@ -63,6 +69,7 @@ export function CreateRecipeDialog({
         setDurationMinutes(editingRecipe.durationMinutes?.toString() || "");
         setTags(editingRecipe.tags || []);
         setShowTags((editingRecipe.tags?.length ?? 0) > 0);
+        setImageUrl(editingRecipe.imageUrl || "");
       } else {
         setName("");
         setDescription("");
@@ -70,10 +77,62 @@ export function CreateRecipeDialog({
         setTags([]);
         setTagInput("");
         setShowTags(false);
+        setImageUrl("");
       }
       setError(null);
+      setSelectedFile(null);
+      setImagePreview(null);
+      setUploadError(null);
     }
   }, [isOpen, editingRecipe]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      setUploadError(
+        t.create.fields.image?.errors?.fileType ||
+          "Only JPEG, PNG, GIF, and WebP images are allowed",
+      );
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError(
+        t.create.fields.image?.errors?.fileSize ||
+          "File size must be less than 5MB",
+      );
+      return;
+    }
+
+    // Clear any previous errors
+    setUploadError(null);
+
+    // Set the file and generate preview
+    setSelectedFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+
+    // Clear URL input when file is selected
+    setImageUrl("");
+  };
+
+  const handleRemoveFile = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setSelectedFile(null);
+    setImagePreview(null);
+    setUploadError(null);
+    setImageUrl("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const handleAddTag = () => {
     const trimmed = tagInput.trim();
@@ -118,11 +177,12 @@ export function CreateRecipeDialog({
         durationMinutes: durationMinutes
           ? parseInt(durationMinutes, 10)
           : undefined,
+        imageUrl: imageUrl || undefined,
         steps: editingRecipe?.steps || [],
         tags,
       };
 
-      await onSubmit(data);
+      await onSubmit(data, selectedFile || undefined);
       handleOpenChange(false);
     } catch {
       setError(isEditing ? t.edit.error : t.create.error);
@@ -173,6 +233,90 @@ export function CreateRecipeDialog({
           placeholder={t.create.fields.duration.placeholder}
           data-testid="create-recipe-duration-input"
         />
+      </div>
+
+      {/* Image Upload Section */}
+      <div className="space-y-2">
+        <Label>{t.create.fields.image?.label || "Image"}</Label>
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          onChange={handleFileSelect}
+          className="hidden"
+          data-testid="create-recipe-file-input"
+        />
+
+        {/* Upload button or preview */}
+        {!imagePreview && !editingRecipe?.imageUrl ? (
+          <div className="space-y-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full gap-2"
+              data-testid="create-recipe-upload-button"
+            >
+              <Upload className="h-4 w-4" />
+              {t.create.fields.image?.uploadButton || "Upload Image"}
+            </Button>
+
+            {/* "or provide URL" label */}
+            <div className="text-center text-sm text-muted-foreground">
+              {t.create.fields.image?.orLabel || "or provide URL"}
+            </div>
+
+            {/* URL input */}
+            <Input
+              id="imageUrl"
+              type="url"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder={
+                t.create.fields.image?.urlPlaceholder ||
+                "https://example.com/image.jpg (optional)"
+              }
+              disabled={!!selectedFile}
+              data-testid="create-recipe-image-url-input"
+            />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {/* Image preview */}
+            <div className="relative inline-block">
+              <Image
+                src={imagePreview || editingRecipe?.imageUrl || ""}
+                alt={t.create.fields.image?.preview || "Recipe image preview"}
+                width={192}
+                height={192}
+                className="max-h-48 rounded-md border object-cover"
+                data-testid="create-recipe-image-preview"
+              />
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                className="absolute -right-2 -top-2 h-6 w-6 rounded-full"
+                onClick={handleRemoveFile}
+                data-testid="create-recipe-remove-image-button"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Upload error */}
+        {uploadError && (
+          <p
+            className="text-sm text-destructive"
+            data-testid="create-recipe-upload-error"
+          >
+            {uploadError}
+          </p>
+        )}
       </div>
 
       {!showTags ? (
