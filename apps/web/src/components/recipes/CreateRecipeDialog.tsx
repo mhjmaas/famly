@@ -128,6 +128,7 @@ export function CreateRecipeDialog({
     setSelectedFile(null);
     setImagePreview(null);
     setUploadError(null);
+    setImageUrl("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
