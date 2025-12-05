@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Dictionary } from "@/i18n/types";
 import type { Recipe } from "@/types/api.types";
-import { RecipeImage } from "./RecipeImage";
+import { RecipeImage } from "./recipe-image";
 
 interface RecipeCardProps {
   recipe: Recipe;

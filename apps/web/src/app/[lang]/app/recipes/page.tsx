@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
-import { RecipesView } from "@/components/recipes/RecipesView";
+import { RecipesView } from "@/components/recipes/recipes-view";
 import { getDictionary } from "@/dictionaries";
 import { i18n, type Locale } from "@/i18n/config";
 import { getFamilies } from "@/lib/api-client";

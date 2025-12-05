@@ -20,10 +20,10 @@ import {
   updateShoppingList,
 } from "@/store/slices/shopping-lists.slice";
 import type { ShoppingList } from "@/types/api.types";
-import { DeleteShoppingListDialog } from "./DeleteShoppingListDialog";
-import { EmptyState } from "./EmptyState";
-import { ShoppingListCard } from "./ShoppingListCard";
-import { ShoppingListDialog } from "./ShoppingListDialog";
+import { DeleteShoppingListDialog } from "./delete-shopping-list-dialog";
+import { EmptyState } from "./empty-state";
+import { ShoppingListCard } from "./shopping-list-card";
+import { ShoppingListDialog } from "./shopping-list-dialog";
 
 interface ListGroup {
   date: Date | null;

@@ -35,10 +35,10 @@ import {
 import type { Task } from "@/types/api.types";
 import { CreateTaskDialog } from "./create-task-dialog";
 import { DeleteTaskDialog } from "./delete-task-dialog";
-import { EmptyState } from "./EmptyState";
-import type { FilterType } from "./TaskFilters";
-import { TaskFilters } from "./TaskFilters";
-import { TaskGroup } from "./TaskGroup";
+import { EmptyState } from "./empty-state";
+import type { FilterType } from "./task-filters";
+import { TaskFilters } from "./task-filters";
+import { TaskGroup } from "./task-group";
 
 interface TasksViewProps {
   dict: Dictionary;

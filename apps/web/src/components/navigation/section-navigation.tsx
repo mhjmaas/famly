@@ -11,7 +11,7 @@ import type {
   Dictionary,
   NavigationSection,
 } from "@/types/dashboard-layout.types";
-import { NavigationItem } from "./NavigationItem";
+import { NavigationItem } from "./navigation-item";
 
 interface SectionNavigationProps {
   section: NavigationSection;

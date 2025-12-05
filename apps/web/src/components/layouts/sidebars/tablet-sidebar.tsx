@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogoComponent } from "@/components/navigation/LogoComponent";
+import { LogoComponent } from "@/components/navigation/logo-component";
 import { UserProfileDisplay } from "@/components/profile/UserProfileDisplay";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils/style-utils";

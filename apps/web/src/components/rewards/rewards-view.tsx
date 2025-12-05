@@ -23,12 +23,12 @@ import {
   updateReward,
 } from "@/store/slices/rewards.slice";
 import type { CreateRewardRequest, Reward } from "@/types/api.types";
-import { ClaimConfirmationSheet } from "./ClaimConfirmationSheet";
-import { DeleteRewardDialog } from "./DeleteRewardDialog";
-import { EmptyState } from "./EmptyState";
-import { KarmaBalanceCard } from "./KarmaBalanceCard";
-import { RewardDialog } from "./RewardDialog";
-import { RewardsGrid } from "./RewardsGrid";
+import { ClaimConfirmationSheet } from "./claim-confirmation-sheet";
+import { DeleteRewardDialog } from "./delete-reward-dialog";
+import { EmptyState } from "./empty-state";
+import { KarmaBalanceCard } from "./karma-balance-card";
+import { RewardDialog } from "./reward-dialog";
+import { RewardsGrid } from "./rewards-grid";
 
 interface RewardsViewProps {
   dict: Dictionary;
