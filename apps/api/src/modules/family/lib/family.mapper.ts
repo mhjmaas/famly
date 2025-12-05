@@ -124,13 +124,16 @@ export function toFamilyMemberView(
   userName: string,
   userBirthdate: string | Date,
 ): FamilyMemberView {
+  // Convert Date to YYYY-MM-DD format, keep string as-is
+  const birthdateString =
+    typeof userBirthdate === "string"
+      ? userBirthdate
+      : userBirthdate.toISOString().split("T")[0];
+
   return {
     memberId: membership.userId.toString(),
     name: userName,
-    birthdate:
-      typeof userBirthdate === "string"
-        ? userBirthdate
-        : userBirthdate.toISOString(),
+    birthdate: birthdateString,
     role: membership.role,
     linkedAt: membership.createdAt.toISOString(),
     ...(membership.addedBy ? { addedBy: membership.addedBy.toString() } : {}),

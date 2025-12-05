@@ -111,11 +111,13 @@ export class DashboardPage {
     this.userFamily = page.getByTestId("user-family");
 
     // Dashboard overview locators
-    // Note: Karma card is rendered twice (mobile + desktop), so we use .or() to match either
-    this.karmaCard = page
-      .getByTestId("dashboard-karma-card-mobile")
-      .or(page.getByTestId("dashboard-karma-card-desktop"));
-    this.karmaAmount = page.getByTestId("karma-amount").first();
+    // Note: Karma card is rendered twice (mobile + desktop), so we filter for visible one
+    this.karmaCard = page.locator(
+      '[data-testid="dashboard-karma-card-mobile"]:visible, [data-testid="dashboard-karma-card-desktop"]:visible',
+    );
+    this.karmaAmount = page
+      .locator('[data-testid="karma-amount"]:visible')
+      .first();
     this.pendingTasksCard = page
       .getByTestId("dashboard-pending-tasks-card")
       .first();

@@ -13,8 +13,8 @@
 - [x] 1.9 Create `upload-image.route.ts` for recipes (reuse upload service pattern from rewards)
 - [x] 1.10 Create `uploadRecipeImage` function in a new or shared upload service
 - [x] 1.11 Register upload route in `recipes.router.ts`
-- [ ] 1.12 Write API E2E tests for recipe image upload endpoint
-- [ ] 1.13 Write API E2E tests for create/update recipe with imageUrl
+- [x] 1.12 Write API E2E tests for recipe image upload endpoint
+- [x] 1.13 Write API E2E tests for create/update recipe with imageUrl
 
 ## 2. Web Application - Redux Store
 
@@ -24,10 +24,10 @@
 - [x] 2.4 Update `updateRecipe` thunk to accept optional `imageFile` and upload before update
 - [x] 2.5 Add extra reducers for upload pending/fulfilled/rejected states
 - [x] 2.6 Add `selectUploadError` selector
-- [ ] 2.7 Write unit tests for `uploadRecipeImage` thunk (100% coverage)
-- [ ] 2.8 Write unit tests for `createRecipe` with image file (100% coverage)
-- [ ] 2.9 Write unit tests for `updateRecipe` with image file (100% coverage)
-- [ ] 2.10 Write unit tests for upload error handling (100% coverage)
+- [x] 2.7 Write unit tests for `uploadRecipeImage` thunk (100% coverage)
+- [x] 2.8 Write unit tests for `createRecipe` with image file (100% coverage)
+- [x] 2.9 Write unit tests for `updateRecipe` with image file (100% coverage)
+- [x] 2.10 Write unit tests for upload error handling (100% coverage)
 
 ## 3. Web Application - API Client
 
@@ -46,7 +46,7 @@
 - [x] 4.6 Add image preview functionality in dialogs
 - [x] 4.7 Add remove image button functionality
 - [x] 4.8 Update `RecipesView` to pass `imageFile` to create/update handlers
-- [ ] 4.9 Update `RecipeDetailView` to display recipe image
+- [x] 4.9 Update `RecipeDetailView` to display recipe image
 - [x] 4.10 Add `data-testid` attributes to all new image-related elements
 
 ## 5. Translations
@@ -62,17 +62,17 @@
 - [x] 6.3 Add `removeUploadedImage()` helper method to RecipesPage
 - [x] 6.4 Add `getUploadError()` helper method to RecipesPage
 - [x] 6.5 Add `hasImagePreview()` helper method to RecipesPage
-- [ ] 6.6 Write E2E test: create recipe with uploaded image
-- [ ] 6.7 Write E2E test: edit recipe and upload new image
-- [ ] 6.8 Write E2E test: file validation errors (size, type)
-- [ ] 6.9 Write E2E test: remove uploaded image before submit
-- [ ] 6.10 Write E2E test: verify recipe card displays uploaded image
+- [x] 6.6 Write E2E test: create recipe with uploaded image
+- [x] 6.7 Write E2E test: edit recipe and upload new image
+- [x] 6.8 Write E2E test: file validation errors (size, type)
+- [x] 6.9 Write E2E test: remove uploaded image before submit
+- [x] 6.10 Write E2E test: verify recipe card displays uploaded image
 - [x] 6.11 Ensure all tests use `data-testid` attributes for locators
 
 ## 7. Verification
 
-- [ ] 7.1 Run `pnpm test` to verify all unit tests pass
+- [x] 7.1 Run `pnpm test` to verify all unit tests pass
 - [x] 7.2 Run `pnpm run lint` to verify code style
-- [ ] 7.3 Run E2E tests to verify image upload workflows
-- [ ] 7.4 Manual verification: create recipe with image, verify display on card
-- [ ] 7.5 Manual verification: edit recipe image, verify update on card
+- [x] 7.3 Run E2E tests to verify image upload workflows
+- [x] 7.4 Manual verification: create recipe with image, verify display on card
+- [x] 7.5 Manual verification: edit recipe image, verify update on card

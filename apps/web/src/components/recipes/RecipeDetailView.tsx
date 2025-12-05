@@ -35,6 +35,7 @@ import {
 } from "@/store/slices/recipes.slice";
 import type { UpdateRecipeRequest } from "@/types/api.types";
 import { EditRecipeDialog } from "./EditRecipeDialog";
+import { RecipeImage } from "./RecipeImage";
 import { RecipeStepList } from "./RecipeStepList";
 
 interface RecipeDetailViewProps {
@@ -211,7 +212,16 @@ export function RecipeDetailView({
       </div>
 
       {/* Recipe metadata card */}
-      <Card data-testid="recipe-detail-card">
+      <Card data-testid="recipe-detail-card" className="overflow-hidden">
+        {/* Recipe Image */}
+        {recipe.imageUrl && (
+          <div
+            className="relative aspect-video w-full overflow-hidden bg-muted"
+            data-testid="recipe-detail-image-container"
+          >
+            <RecipeImage imageUrl={recipe.imageUrl} name={recipe.name} />
+          </div>
+        )}
         <CardHeader>
           <CardTitle>{recipe.name}</CardTitle>
           <CardDescription data-testid="recipe-detail-description">

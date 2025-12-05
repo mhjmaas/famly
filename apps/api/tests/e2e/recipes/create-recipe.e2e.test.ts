@@ -92,6 +92,108 @@ describe("E2E: POST /v1/families/:familyId/recipes", () => {
       expect(response.status).toBe(201);
       expect(response.body.durationMinutes).toBe(15);
     });
+
+    it("should create recipe with imageUrl (HTTP URL)", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      const response = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Recipe with Image",
+          description: "Has an image",
+          steps: ["Step 1"],
+          imageUrl: "https://example.com/recipe.jpg",
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.imageUrl).toBe("https://example.com/recipe.jpg");
+    });
+
+    it("should create recipe with imageUrl (relative path)", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      const response = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Recipe with Uploaded Image",
+          description: "Has an uploaded image",
+          steps: ["Step 1"],
+          imageUrl: `/api/images/${family.familyId}/test-image.jpg`,
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.imageUrl).toBe(
+        `/api/images/${family.familyId}/test-image.jpg`,
+      );
+    });
+
+    it("should create recipe without imageUrl", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      const response = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Recipe without Image",
+          description: "No image",
+          steps: ["Step 1"],
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.imageUrl).toBeUndefined();
+    });
+  });
+
+  describe("Validation - ImageUrl", () => {
+    it("should reject invalid imageUrl protocol", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      const response = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Recipe",
+          description: "Desc",
+          steps: ["Step"],
+          imageUrl: "ftp://example.com/image.jpg",
+        });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should reject imageUrl exceeding max length", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      const response = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Recipe",
+          description: "Desc",
+          steps: ["Step"],
+          imageUrl: `https://example.com/${"a".repeat(500)}.jpg`,
+        });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should reject invalid relative path", async () => {
+      const family = await setupTestFamily(baseUrl, testCounter);
+
+      const response = await request(baseUrl)
+        .post(`/v1/families/${family.familyId}/recipes`)
+        .set("Authorization", `Bearer ${family.token}`)
+        .send({
+          name: "Recipe",
+          description: "Desc",
+          steps: ["Step"],
+          imageUrl: "/invalid/path/image.jpg",
+        });
+
+      expect(response.status).toBe(400);
+    });
   });
 
   describe("Validation - Name", () => {
