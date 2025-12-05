@@ -40,36 +40,38 @@ export function TabletSidebar({
       </div>
 
       {/* Navigation - Icons Only */}
-      <ScrollArea className="flex-1 px-2 py-4">
-        <nav className="space-y-1" data-testid="tablet-navigation">
-          {allItems.map((item) => {
-            const itemHref = item.href;
-            const isActive = itemHref === pathname;
-            const isDisabled = item.disabled;
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full px-2 py-4">
+          <nav className="space-y-1" data-testid="tablet-navigation">
+            {allItems.map((item) => {
+              const itemHref = item.href;
+              const isActive = itemHref === pathname;
+              const isDisabled = item.disabled;
 
-            return (
-              <Link
-                key={item.name}
-                href={isDisabled ? "#" : itemHref}
-                className={cn(
-                  "flex items-center justify-center p-3 rounded-lg transition-colors relative group",
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : isDisabled
-                      ? "text-muted-foreground/50 cursor-not-allowed"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                )}
-                title={dict.dashboard.navigation[item.name]}
-              >
-                <item.icon className="h-5 w-5" />
-                {isDisabled && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-muted rounded-full" />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-      </ScrollArea>
+              return (
+                <Link
+                  key={item.name}
+                  href={isDisabled ? "#" : itemHref}
+                  className={cn(
+                    "flex items-center justify-center p-3 rounded-lg transition-colors relative group",
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : isDisabled
+                        ? "text-muted-foreground/50 cursor-not-allowed"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  )}
+                  title={dict.dashboard.navigation[item.name]}
+                >
+                  <item.icon className="h-5 w-5" />
+                  {isDisabled && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-muted rounded-full" />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        </ScrollArea>
+      </div>
 
       {/* User Info - Icon Only with Karma */}
       <div

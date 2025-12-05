@@ -111,12 +111,21 @@ export class DashboardPage {
     this.userFamily = page.getByTestId("user-family");
 
     // Dashboard overview locators
-    this.karmaCard = page.getByTestId("dashboard-karma-card");
-    this.karmaAmount = page.getByTestId("karma-amount");
-    this.pendingTasksCard = page.getByTestId("dashboard-pending-tasks-card");
-    this.pendingTasksCount = page.getByTestId("pending-tasks-count");
-    this.potentialKarmaCard = page.getByTestId("dashboard-potential-karma-card");
-    this.potentialKarmaAmount = page.getByTestId("potential-karma-amount");
+    // Note: Karma card is rendered twice (mobile + desktop), so we use .or() to match either
+    this.karmaCard = page
+      .getByTestId("dashboard-karma-card-mobile")
+      .or(page.getByTestId("dashboard-karma-card-desktop"));
+    this.karmaAmount = page.getByTestId("karma-amount").first();
+    this.pendingTasksCard = page
+      .getByTestId("dashboard-pending-tasks-card")
+      .first();
+    this.pendingTasksCount = page.getByTestId("pending-tasks-count").first();
+    this.potentialKarmaCard = page
+      .getByTestId("dashboard-potential-karma-card")
+      .first();
+    this.potentialKarmaAmount = page
+      .getByTestId("potential-karma-amount")
+      .first();
     this.pendingTasksSection = page.getByTestId("pending-tasks-section");
     this.taskCards = page.getByTestId("task-card");
     this.emptyTasksState = page.getByTestId("empty-tasks-state");

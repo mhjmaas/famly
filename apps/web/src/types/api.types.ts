@@ -554,6 +554,7 @@ export interface Recipe {
   name: string;
   description: string;
   durationMinutes?: number;
+  imageUrl?: string;
   steps: string[];
   tags: string[];
   createdBy: string;
@@ -565,6 +566,7 @@ export interface CreateRecipeRequest {
   name: string;
   description: string;
   durationMinutes?: number;
+  imageUrl?: string;
   steps: string[];
   tags?: string[];
 }
@@ -573,6 +575,7 @@ export interface UpdateRecipeRequest {
   name?: string;
   description?: string;
   durationMinutes?: number | null;
+  imageUrl?: string | null;
   steps?: string[];
   tags?: string[];
 }

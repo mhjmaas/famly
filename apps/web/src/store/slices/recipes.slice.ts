@@ -9,6 +9,7 @@ import {
   getRecipe as apiGetRecipe,
   searchRecipes as apiSearchRecipes,
   updateRecipe as apiUpdateRecipe,
+  uploadRecipeImage as apiUploadRecipeImage,
   getRecipes,
 } from "@/lib/api-client";
 import type {
@@ -24,6 +25,7 @@ interface RecipesState {
   stepProgress: Record<string, boolean>; // "recipeId-stepIndex" -> completed
   isLoading: boolean;
   error: string | null;
+  uploadError: string | null;
   searchQuery: string;
   searchResults: Recipe[];
   isSearching: boolean;
@@ -35,6 +37,7 @@ const initialState: RecipesState = {
   stepProgress: {},
   isLoading: false,
   error: null,
+  uploadError: null,
   searchQuery: "",
   searchResults: [],
   isSearching: false,
@@ -69,16 +72,34 @@ export const fetchRecipe = createAsyncThunk(
   },
 );
 
+export const uploadRecipeImage = createAsyncThunk(
+  "recipes/uploadRecipeImage",
+  async ({ familyId, file }: { familyId: string; file: File }) => {
+    const response = await apiUploadRecipeImage(familyId, file);
+    return response.imageUrl;
+  },
+);
+
 export const createRecipe = createAsyncThunk(
   "recipes/createRecipe",
   async ({
     familyId,
     data,
+    imageFile,
   }: {
     familyId: string;
     data: CreateRecipeRequest;
+    imageFile?: File;
   }) => {
-    const recipe = await apiCreateRecipe(familyId, data);
+    // If image file provided, upload it first
+    let imageUrl = data.imageUrl;
+    if (imageFile) {
+      const uploadResponse = await apiUploadRecipeImage(familyId, imageFile);
+      imageUrl = uploadResponse.imageUrl;
+    }
+
+    // Create recipe with uploaded image URL
+    const recipe = await apiCreateRecipe(familyId, { ...data, imageUrl });
     return recipe;
   },
 );
@@ -89,12 +110,25 @@ export const updateRecipe = createAsyncThunk(
     familyId,
     recipeId,
     data,
+    imageFile,
   }: {
     familyId: string;
     recipeId: string;
     data: UpdateRecipeRequest;
+    imageFile?: File;
   }) => {
-    const recipe = await apiUpdateRecipe(familyId, recipeId, data);
+    // If image file provided, upload it first
+    let imageUrl = data.imageUrl;
+    if (imageFile) {
+      const uploadResponse = await apiUploadRecipeImage(familyId, imageFile);
+      imageUrl = uploadResponse.imageUrl;
+    }
+
+    // Update recipe with uploaded image URL
+    const recipe = await apiUpdateRecipe(familyId, recipeId, {
+      ...data,
+      imageUrl,
+    });
     return recipe;
   },
 );
@@ -237,6 +271,18 @@ const recipesSlice = createSlice({
         state.isSearching = false;
         state.error = action.error.message || "Failed to search recipes";
       });
+
+    // Upload recipe image
+    builder
+      .addCase(uploadRecipeImage.pending, (state) => {
+        state.uploadError = null;
+      })
+      .addCase(uploadRecipeImage.fulfilled, (state) => {
+        state.uploadError = null;
+      })
+      .addCase(uploadRecipeImage.rejected, (state, action) => {
+        state.uploadError = action.error.message || "Failed to upload image";
+      });
   },
 });
 
@@ -257,6 +303,8 @@ export const selectCurrentRecipe = (state: RootState) =>
 export const selectRecipesLoading = (state: RootState) =>
   state.recipes.isLoading;
 export const selectRecipesError = (state: RootState) => state.recipes.error;
+export const selectUploadError = (state: RootState) =>
+  state.recipes.uploadError;
 export const selectSearchQuery = (state: RootState) =>
   state.recipes.searchQuery;
 export const selectSearchResults = (state: RootState) =>

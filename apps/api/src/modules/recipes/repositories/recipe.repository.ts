@@ -65,6 +65,10 @@ export class RecipeRepository {
       recipe.durationMinutes = input.durationMinutes;
     }
 
+    if (input.imageUrl) {
+      recipe.imageUrl = input.imageUrl;
+    }
+
     await this.collection.insertOne(recipe);
 
     return recipe;
@@ -166,6 +170,13 @@ export class RecipeRepository {
         unsetFields.durationMinutes = "";
       } else {
         updateFields.durationMinutes = input.durationMinutes;
+      }
+    }
+    if (input.imageUrl !== undefined) {
+      if (input.imageUrl === null) {
+        unsetFields.imageUrl = "";
+      } else {
+        updateFields.imageUrl = input.imageUrl;
       }
     }
 

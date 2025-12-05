@@ -85,6 +85,14 @@ export class RecipesPage {
   readonly editCancelButton: Locator;
   readonly editSubmitButton: Locator;
 
+  // Image upload elements
+  readonly fileInput: Locator;
+  readonly uploadButton: Locator;
+  readonly imagePreview: Locator;
+  readonly removeImageButton: Locator;
+  readonly uploadError: Locator;
+  readonly imageUrlInput: Locator;
+
   constructor(page: Page) {
     this.page = page;
 
@@ -130,6 +138,16 @@ export class RecipesPage {
     this.dialogCancelButton = page.getByTestId("create-recipe-cancel-button");
     this.dialogSubmitButton = page.getByTestId("create-recipe-submit-button");
     this.dialogError = page.getByTestId("create-recipe-error");
+
+    // Image upload elements
+    this.fileInput = page.getByTestId("create-recipe-file-input");
+    this.uploadButton = page.getByTestId("create-recipe-upload-button");
+    this.imagePreview = page.getByTestId("create-recipe-image-preview");
+    this.removeImageButton = page.getByTestId(
+      "create-recipe-remove-image-button"
+    );
+    this.uploadError = page.getByTestId("create-recipe-upload-error");
+    this.imageUrlInput = page.getByTestId("create-recipe-image-url-input");
 
     // Breadcrumbs (detail page)
     this.breadcrumbNavigation = page.getByTestId("breadcrumb-navigation");
@@ -406,5 +424,41 @@ export class RecipesPage {
     } else {
       await this.detailBackButton.click();
     }
+  }
+
+  // Image upload helpers
+
+  /**
+   * Upload an image file via file input
+   */
+  async uploadImage(filePath: string): Promise<void> {
+    await this.fileInput.setInputFiles(filePath);
+    // Wait for preview to appear
+    await this.imagePreview.waitFor({ state: "visible" });
+  }
+
+  /**
+   * Remove uploaded image
+   */
+  async removeUploadedImage(): Promise<void> {
+    await this.removeImageButton.click();
+    await this.imagePreview.waitFor({ state: "hidden" });
+  }
+
+  /**
+   * Get upload error message
+   */
+  async getUploadError(): Promise<string | null> {
+    if (!(await this.uploadError.isVisible())) {
+      return null;
+    }
+    return await this.uploadError.textContent();
+  }
+
+  /**
+   * Check if image preview is visible
+   */
+  async hasImagePreview(): Promise<boolean> {
+    return await this.imagePreview.isVisible();
   }
 }

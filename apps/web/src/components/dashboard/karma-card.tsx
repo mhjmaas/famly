@@ -5,14 +5,19 @@ import { Card, CardContent } from "@/components/ui/card";
 interface KarmaCardProps {
   karma: number;
   label: string;
+  testIdSuffix?: string;
 }
 
 export const KarmaCard = memo(function KarmaCard({
   karma,
   label,
+  testIdSuffix = "",
 }: KarmaCardProps) {
+  const testId = testIdSuffix
+    ? `dashboard-karma-card-${testIdSuffix}`
+    : "dashboard-karma-card";
   return (
-    <Card className="bg-muted/50" data-testid="dashboard-karma-card">
+    <Card className="bg-muted/50" data-testid={testId}>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>

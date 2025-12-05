@@ -137,8 +137,8 @@ export function RecipeDetailView({
 
   return (
     <div className="space-y-6" data-testid="recipe-detail-page">
-      {/* Back Button - Always visible */}
-      <div className="-mx-4 mb-4">
+      {/* Back Button - Mobile only */}
+      <div className="-mx-4 mb-4 lg:hidden">
         <Button
           variant="ghost"
           size="sm"

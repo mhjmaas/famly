@@ -43,6 +43,19 @@
               "label": "Tags",
               "placeholder": "Voeg een tag toe...",
               "addTags": "Tags Toevoegen"
+            },
+            "image": {
+              "label": "Afbeelding",
+              "uploadButton": "Afbeelding Uploaden",
+              "orLabel": "of geef een URL op",
+              "urlPlaceholder": "https://voorbeeld.com/afbeelding.jpg (optioneel)",
+              "preview": "Voorbeeld receptafbeelding",
+              "remove": "Afbeelding verwijderen",
+              "errors": {
+                "fileSize": "Bestandsgrootte moet kleiner zijn dan 5MB",
+                "fileType": "Alleen JPEG, PNG, GIF en WebP afbeeldingen zijn toegestaan",
+                "uploadFailed": "Afbeelding uploaden mislukt"
+              }
             }
           },
           "buttons": {

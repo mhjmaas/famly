@@ -7,6 +7,7 @@ export interface Recipe {
   name: string;
   description: string;
   durationMinutes?: number;
+  imageUrl?: string;
   steps: string[];
   tags: string[];
   createdBy: ObjectId;
@@ -19,6 +20,7 @@ export interface CreateRecipeInput {
   name: string;
   description: string;
   durationMinutes?: number;
+  imageUrl?: string;
   steps: string[];
   tags?: string[];
 }
@@ -27,6 +29,7 @@ export interface UpdateRecipeInput {
   name?: string;
   description?: string;
   durationMinutes?: number | null;
+  imageUrl?: string | null;
   steps?: string[];
   tags?: string[];
 }
@@ -38,6 +41,7 @@ export interface RecipeDTO {
   name: string;
   description: string;
   durationMinutes?: number;
+  imageUrl?: string;
   steps: string[];
   tags: string[];
   createdBy: string;

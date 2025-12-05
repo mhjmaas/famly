@@ -66,6 +66,7 @@ describe("recipes slice", () => {
         stepProgress: {},
         isLoading: false,
         error: null,
+        uploadError: null,
         searchQuery: "",
         searchResults: [],
         isSearching: false,
