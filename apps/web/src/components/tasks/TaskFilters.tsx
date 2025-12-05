@@ -51,7 +51,7 @@ export function TaskFilters({ taskCounts, dict }: TaskFiltersProps) {
         </TabsTrigger>
         <TabsTrigger
           value="active"
-          className="rounded-full px-4 py-1.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
+          className="hidden sm:block rounded-full px-4 py-1.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
           data-testid="tasks-filter-active"
         >
           {t.filters.active}
@@ -59,7 +59,7 @@ export function TaskFilters({ taskCounts, dict }: TaskFiltersProps) {
         </TabsTrigger>
         <TabsTrigger
           value="completed"
-          className="rounded-full px-4 py-1.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
+          className="hidden sm:block rounded-full px-4 py-1.5 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
           data-testid="tasks-filter-completed"
         >
           {t.filters.completed}
